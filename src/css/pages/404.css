@@ -1,0 +1,376 @@
+/* ========================================
+   404 PAGE - OUTLET
+   ======================================== */
+
+/* Reset y variables locales (usa tus variables globales) */
+.outlet-404-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    width: 100%;
+    overflow: hidden;
+    background-color: var(--outlet-bg-primary);
+}
+
+@media (min-width: 768px) {
+    .outlet-404-container {
+        flex-direction: row;
+    }
+}
+
+/* ===== SECCIÓN IZQUIERDA - CONTENIDO ===== */
+.outlet-404-content {
+    position: relative;
+    width: 100%;
+    background-color: var(--outlet-bg-primary);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 48px 32px;
+    z-index: 10;
+    transition: background-color var(--outlet-transition-base);
+}
+
+@media (min-width: 768px) {
+    .outlet-404-content {
+        width: 41.666%;
+        padding: 64px 80px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .outlet-404-content {
+        width: 45%;
+        padding: 96px 80px;
+    }
+}
+
+/* Marca de agua 404 */
+.outlet-404-watermark {
+    position: absolute;
+    top: -5%;
+    left: -5%;
+    font-size: 18rem;
+    font-weight: 700;
+    color: var(--outlet-watermark-light, rgba(0, 0, 0, 0.03));
+    line-height: 1;
+    pointer-events: none;
+    z-index: 0;
+    font-family: Georgia, 'Times New Roman', serif;
+    transition: color var(--outlet-transition-base);
+}
+
+@media (min-width: 768px) {
+    .outlet-404-watermark {
+        font-size: 22rem;
+        top: -8%;
+        left: -8%;
+    }
+}
+
+@media (min-width: 1024px) {
+    .outlet-404-watermark {
+        font-size: 28rem;
+    }
+}
+
+body.dark-mode .outlet-404-watermark {
+    color: var(--outlet-watermark-dark, rgba(255, 255, 255, 0.03));
+}
+
+/* Contenido principal */
+.outlet-404-inner {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+/* Etiqueta de error */
+.outlet-404-badge {
+    color: var(--outlet-accent);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    display: inline-block;
+}
+
+/* Título principal */
+.outlet-404-title {
+    font-size: 42px;
+    font-weight: 500;
+    font-style: italic;
+    letter-spacing: -0.02em;
+    color: var(--outlet-text-primary);
+    line-height: 1.2;
+    text-transform: uppercase;
+    font-family: Georgia, 'Times New Roman', serif;
+    transition: color var(--outlet-transition-base);
+}
+
+@media (min-width: 768px) {
+    .outlet-404-title {
+        font-size: 56px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .outlet-404-title {
+        font-size: 72px;
+    }
+}
+
+/* Descripción */
+.outlet-404-description {
+    border-left: 2px solid var(--outlet-accent);
+    padding-left: 24px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    max-width: 400px;
+}
+
+.outlet-404-description p {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--outlet-text-secondary);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    transition: color var(--outlet-transition-base);
+}
+
+@media (min-width: 768px) {
+    .outlet-404-description p {
+        font-size: 14px;
+    }
+}
+
+/* Mensaje de mejora */
+.outlet-404-message {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    color: var(--outlet-accent);
+    background-color: rgba(229, 165, 52, 0.08);
+    padding: 10px 20px;
+    border-radius: 40px;
+    width: fit-content;
+    border: 1px solid rgba(229, 165, 52, 0.25);
+}
+
+.outlet-404-message .material-symbols-outlined {
+    font-size: 16px;
+}
+
+@media (min-width: 768px) {
+    .outlet-404-message {
+        font-size: 12px;
+        gap: 12px;
+        padding: 12px 24px;
+    }
+    .outlet-404-message .material-symbols-outlined {
+        font-size: 18px;
+    }
+}
+
+body.dark-mode .outlet-404-message {
+    background-color: rgba(221, 171, 59, 0.12);
+    border-color: rgba(221, 171, 59, 0.3);
+}
+
+/* Botones */
+.outlet-404-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-top: 16px;
+}
+
+@media (min-width: 480px) {
+    .outlet-404-buttons {
+        flex-direction: row;
+    }
+}
+
+.outlet-404-btn-primary,
+.outlet-404-btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 32px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all var(--outlet-transition-base);
+    text-align: center;
+}
+
+@media (min-width: 768px) {
+    .outlet-404-btn-primary,
+    .outlet-404-btn-secondary {
+        padding: 16px 40px;
+        font-size: 11px;
+    }
+}
+
+.outlet-404-btn-primary {
+    background-color: var(--outlet-accent);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.outlet-404-btn-primary:hover {
+    background-color: var(--outlet-accent-light);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.outlet-404-btn-secondary {
+    background-color: transparent;
+    color: var(--outlet-text-primary);
+    border: 1px solid var(--outlet-border-color);
+}
+
+.outlet-404-btn-secondary:hover {
+    border-color: var(--outlet-text-primary);
+    transform: translateY(-2px);
+}
+
+body.dark-mode .outlet-404-btn-secondary {
+    border-color: var(--outlet-accent);
+    color: var(--outlet-accent);
+}
+
+body.dark-mode .outlet-404-btn-secondary:hover {
+    background-color: var(--outlet-accent);
+    color: #1a1a1a;
+    border-color: var(--outlet-accent);
+}
+
+/* ===== SECCIÓN DERECHA - IMAGEN ===== */
+.outlet-404-image {
+    position: relative;
+    width: 100%;
+    height: 320px;
+    background-color: var(--outlet-primary-dark);
+    overflow: hidden;
+    transition: background-color var(--outlet-transition-base);
+}
+
+@media (min-width: 768px) {
+    .outlet-404-image {
+        width: 58.333%;
+        height: auto;
+        min-height: 100vh;
+    }
+}
+
+@media (min-width: 1024px) {
+    .outlet-404-image {
+        width: 55%;
+    }
+}
+
+.outlet-404-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(0.3) brightness(0.95);
+    transition: transform 0.5s ease, filter var(--outlet-transition-base);
+}
+
+.outlet-404-image:hover .outlet-404-img {
+    transform: scale(1.02);
+    filter: grayscale(0.1) brightness(1);
+}
+
+/* Etiqueta editorial esquina */
+.outlet-404-editorial {
+    position: absolute;
+    bottom: 32px;
+    right: 32px;
+    display: none;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    z-index: 10;
+}
+
+@media (min-width: 768px) {
+    .outlet-404-editorial {
+        display: flex;
+    }
+}
+
+.outlet-404-editorial span {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 400;
+}
+
+.outlet-404-gold-line {
+    width: 64px;
+    height: 1px;
+    background-color: var(--outlet-accent);
+}
+
+/* Variables para watermark (agrega a tus variables.css) */
+:root {
+    --outlet-watermark-light: rgba(0, 0, 0, 0.03);
+    --outlet-watermark-dark: rgba(255, 255, 255, 0.03);
+}
+
+body.dark-mode {
+    --outlet-watermark-light: rgba(255, 255, 255, 0.02);
+    --outlet-watermark-dark: rgba(255, 255, 255, 0.03);
+}
+
+/* Responsive adicionales */
+@media (max-width: 768px) {
+    .outlet-404-content {
+        padding: 48px 24px;
+    }
+    
+    .outlet-404-title {
+        font-size: 36px;
+    }
+    
+    .outlet-404-description {
+        padding-left: 16px;
+    }
+    
+    .outlet-404-description p {
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 480px) {
+    .outlet-404-content {
+        padding: 40px 20px;
+    }
+    
+    .outlet-404-title {
+        font-size: 28px;
+    }
+    
+    .outlet-404-message {
+        font-size: 9px;
+        padding: 8px 16px;
+    }
+    
+    .outlet-404-btn-primary,
+    .outlet-404-btn-secondary {
+        padding: 12px 20px;
+        font-size: 9px;
+    }
+}

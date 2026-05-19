@@ -1,0 +1,46 @@
+/* ========================================
+   GRID - OUTLET
+   Sistema de grillas
+   ======================================== */
+
+.outlet-value-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--outlet-spacing-xl);
+    margin-top: var(--outlet-spacing-2xl);
+}
+
+.outlet-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--outlet-spacing-xl);
+    max-width: 1000px;
+    margin: var(--outlet-spacing-2xl) auto;
+}
+
+.outlet-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--outlet-spacing-xl);
+    margin-top: var(--outlet-spacing-2xl);
+}
+
+/* Responsive grid */
+@media (max-width: 992px) {
+    .outlet-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--outlet-spacing-lg);
+    }
+}
+
+@media (max-width: 768px) {
+    .outlet-value-grid,
+    .outlet-card-grid {
+        gap: var(--outlet-spacing-lg);
+    }
+    
+    .outlet-stats-grid {
+        grid-template-columns: 1fr;
+        gap: var(--outlet-spacing-md);
+    }
+}

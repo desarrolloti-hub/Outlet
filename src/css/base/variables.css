@@ -1,0 +1,313 @@
+/* ========================================
+   VARIABLES GLOBALES OUTLET
+   Basado en la unificación de todos tus archivos CSS
+   ======================================== */
+
+:root {
+    /* ========== COLORES PRIMARIOS ========== */
+    --outlet-primary: #1f1b13;        /* Texto principal modo claro */
+    --outlet-primary-dark: #000000;
+    --outlet-primary-light: #4f4635;
+    
+    /* ========== COLOR DORADO (el mismo en ambos modos) ========== */
+    --outlet-gold: #ddab3b;
+    --outlet-gold-light: #f3bf4d;
+    --outlet-gold-dark: #7a5900;
+    
+    /* ========== COLORES DE FONDO - MODO CLARO ========== */
+    --outlet-bg-primary: #fff8f2;      /* Fondo principal */
+    --outlet-bg-secondary: #f1e7da;    /* Fondo secundario / alternativo */
+    --outlet-bg-container: #f7ecdf;    /* Fondo de contenedores */
+    --outlet-bg-container-low: #fcf2e5;
+    --outlet-bg-container-lowest: #ffffff;
+    --outlet-bg-container-high: #ebe1d4;
+    --outlet-bg-card: #ffffff;
+    --outlet-bg-surface: #ffffff;
+    
+    /* ========== COLORES DE TEXTO - MODO CLARO ========== */
+    --outlet-text-primary: #1f1b13;
+    --outlet-text-secondary: #4f4635;
+    --outlet-text-variant: #4f4635;
+    --outlet-text-disabled: rgba(79, 70, 53, 0.4);
+    
+    /* ========== COLORES DE ESTADO ========== */
+    --outlet-success: #2e7d32;
+    --outlet-warning: #ffc107;
+    --outlet-danger: #ba1a1a;
+    --outlet-info: #17a2b8;
+    
+    /* ========== COLORES NEUTROS (grises) ========== */
+    --outlet-white: #ffffff;
+    --outlet-black: #000000;
+    --outlet-gray-100: #f8f9fa;
+    --outlet-gray-200: #e9ecef;
+    --outlet-gray-300: #dee2e6;
+    --outlet-gray-400: #ced4da;
+    --outlet-gray-500: #adb5bd;
+    --outlet-gray-600: #6c757d;
+    --outlet-gray-700: #495057;
+    --outlet-gray-800: #343a40;
+    --outlet-gray-900: #212529;
+    
+    /* ========== BORDES ========== */
+    --outlet-border-color: #d2c5b0;
+    --outlet-border-soft: #e2d9cc;
+    
+    /* ========== SOMBRAS - MODO CLARO ========== */
+    --outlet-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --outlet-shadow-md: 0 5px 15px rgba(0, 0, 0, 0.08);
+    --outlet-shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.12);
+    --outlet-shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.15);
+    --outlet-shadow-gold: 0 0 20px rgba(221, 171, 59, 0.3);
+    --outlet-shadow-gold-lg: 0 0 35px rgba(221, 171, 59, 0.4);
+    
+    /* ========== BOTONES ========== */
+    --outlet-btn-bg: #000000;
+    --outlet-btn-text: #ffffff;
+    
+    /* ========== TOAST / NOTIFICACIONES ========== */
+    --outlet-toast-bg: #1f1b13;
+    --outlet-toast-text: #fff8f2;
+    
+    /* ========== MODAL ========== */
+    --outlet-modal-bg: #ffffff;
+    
+    /* ========== GRADIENTES DORADOS ========== */
+    --outlet-gold-gradient: linear-gradient(135deg, 
+        #c9a03d 0%,
+        #f2d06b 20%,
+        #fff2a8 40%,
+        #e8c44c 60%,
+        #d4af37 80%,
+        #c9a03d 100%
+    );
+    --outlet-gold-gradient-hover: linear-gradient(135deg, 
+        #d4af37 0%, 
+        #f2d06b 25%, 
+        #fff2a8 50%, 
+        #f2d06b 75%, 
+        #d4af37 100%
+    );
+    --outlet-gold-gradient-horizontal: linear-gradient(90deg, 
+        #c9a03d 0%, 
+        #f2d06b 30%, 
+        #fff2a8 50%, 
+        #f2d06b 70%, 
+        #c9a03d 100%
+    );
+    
+    /* ========== TRANSICIONES ========== */
+    --outlet-transition-fast: 0.2s ease;
+    --outlet-transition-base: 0.3s ease;
+    --outlet-transition-slow: 0.5s ease;
+    
+    /* ========== BORDES RADIUS ========== */
+    --outlet-radius-sm: 4px;
+    --outlet-radius-md: 8px;
+    --outlet-radius-lg: 12px;
+    --outlet-radius-xl: 16px;
+    --outlet-radius-full: 9999px;
+    
+    /* ========== TIPOGRAFÍA ========== */
+    --outlet-font-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+    --outlet-font-secondary: 'Mifuente', serif;
+    
+    /* ========== ESPACIADOS ========== */
+    --outlet-spacing-xs: 4px;
+    --outlet-spacing-sm: 8px;
+    --outlet-spacing-md: 16px;
+    --outlet-spacing-lg: 24px;
+    --outlet-spacing-xl: 32px;
+    --outlet-spacing-2xl: 48px;
+    --outlet-spacing-3xl: 64px;
+    --outlet-spacing-4xl: 80px;
+    
+    /* ========== Z-INDEX ========== */
+    --outlet-z-dropdown: 1000;
+    --outlet-z-sticky: 1020;
+    --outlet-z-fixed: 1030;
+    --outlet-z-modal: 1050;
+    --outlet-z-popover: 1060;
+    --outlet-z-tooltip: 1070;
+}
+
+/* ========================================
+   MODO OSCURO - SOBRESCRITURA DE VARIABLES
+   ======================================== */
+body.dark-mode {
+    /* ========== COLORES DE FONDO - MODO OSCURO ========== */
+    --outlet-bg-primary: #142d4a;
+    --outlet-bg-secondary: #1a3a5c;
+    --outlet-bg-container: #0f243d;
+    --outlet-bg-container-low: #0f243d;
+    --outlet-bg-container-lowest: #0a1c2f;
+    --outlet-bg-container-high: #1a3a5c;
+    --outlet-bg-card: #0f243d;
+    --outlet-bg-surface: #0f243d;
+    
+    /* ========== COLORES DE TEXTO - MODO OSCURO ========== */
+    --outlet-text-primary: #d6e5f7;
+    --outlet-text-secondary: #b0c4de;
+    --outlet-text-variant: #8aadcc;
+    --outlet-text-disabled: rgba(176, 196, 222, 0.3);
+    
+    /* ========== COLOR DORADO (se mantiene o se aclara ligeramente) ========== */
+    --outlet-gold-dark: #b8860b;    /* Más brillante en modo oscuro */
+    
+    /* ========== BORDES - MODO OSCURO ========== */
+    --outlet-border-color: #2a4a6e;
+    --outlet-border-soft: #1e3a5a;
+    
+    /* ========== SOMBRAS - MODO OSCURO ========== */
+    --outlet-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+    --outlet-shadow-md: 0 5px 15px rgba(0, 0, 0, 0.4);
+    --outlet-shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.5);
+    --outlet-shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.6);
+    --outlet-shadow-primary: 0 4px 12px rgba(221, 171, 59, 0.15);
+    
+    /* ========== BOTONES - MODO OSCURO ========== */
+    --outlet-btn-bg: var(--outlet-gold);
+    --outlet-btn-text: #1a1a1a;
+    
+    /* ========== TOAST - MODO OSCURO ========== */
+    --outlet-toast-bg: #1a3a5c;
+    --outlet-toast-text: #d6e5f7;
+    
+    /* ========== MODAL - MODO OSCURO ========== */
+    --outlet-modal-bg: #142d4a;
+    
+    /* ========== COLORES DE ESTADO - MODO OSCURO ========== */
+    --outlet-danger: #ff6b6b;
+    --outlet-success: #4caf50;
+}
+
+/* ========================================
+   TRANSICIÓN SUAVE ENTRE MODOS
+   ======================================== */
+body,
+body * {
+    transition: background-color 0.3s ease, 
+                color 0.3s ease, 
+                border-color 0.3s ease,
+                box-shadow 0.3s ease,
+                fill 0.3s ease,
+                stroke 0.3s ease;
+}
+
+/* ========================================
+   CLASES DE UTILIDAD PARA EFECTO DORADO
+   ======================================== */
+
+/* Texto con gradiente dorado metálico */
+.outlet-text-gold {
+    background: var(--outlet-gold-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    display: inline-block;
+}
+
+/* Texto con gradiente dorado horizontal (efecto brillo) */
+.outlet-text-gold-shine {
+    background: var(--outlet-gold-gradient-horizontal);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    display: inline-block;
+    background-size: 200% auto;
+    animation: outletGoldShineHorizontal 3s linear infinite;
+}
+
+/* Borde con gradiente dorado */
+.outlet-border-gold {
+    border: 2px solid transparent;
+    border-image: var(--outlet-gold-gradient);
+    border-image-slice: 1;
+}
+
+/* Sombra dorada */
+.outlet-shadow-gold {
+    box-shadow: var(--outlet-shadow-gold);
+}
+
+.outlet-shadow-gold:hover {
+    box-shadow: var(--outlet-shadow-gold-lg);
+}
+
+/* Efecto brillo dorado al hover */
+.outlet-gold-hover {
+    transition: all var(--outlet-transition-base);
+}
+
+.outlet-gold-hover:hover {
+    background: var(--outlet-gold-gradient);
+    color: var(--outlet-black);
+    box-shadow: var(--outlet-shadow-gold-lg);
+    transform: translateY(-2px);
+}
+
+/* Icono dorado */
+.outlet-icon-gold {
+    background: var(--outlet-gold-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+/* Gradiente dorado para fondos */
+.outlet-bg-gold {
+    background: var(--outlet-gold-gradient);
+    background-size: 200% 200%;
+}
+
+.outlet-bg-gold-animated {
+    background: var(--outlet-gold-gradient);
+    background-size: 200% 200%;
+    animation: outletGoldShineVertical 3s ease infinite;
+}
+
+/* Pulso dorado */
+@keyframes outletGoldPulse {
+    0%, 100% {
+        box-shadow: 0 0 5px rgba(221, 171, 59, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(221, 171, 59, 0.6);
+    }
+}
+
+.outlet-gold-pulse {
+    animation: outletGoldPulse 2s ease-in-out infinite;
+}
+
+/* ========================================
+   ANIMACIONES DORADAS
+   ======================================== */
+@keyframes outletGoldShineVertical {
+    0% {
+        background-position: 0% 0%;
+    }
+    100% {
+        background-position: 100% 100%;
+    }
+}
+
+@keyframes outletGoldShineHorizontal {
+    0% {
+        background-position: -100% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+/* ========================================
+   VARIABLE DE RESPALDO (bg-container-low)
+   ======================================== */
+:root {
+    --outlet-bg-container-low: #fcf2e5;
+}
+
+body.dark-mode {
+    --outlet-bg-container-low: #0f243d;
+}
