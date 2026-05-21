@@ -1,29 +1,53 @@
-<section class="outlet-404-page outlet-flex-center">
-
-    <div class="outlet-404-card">
-
-        <img 
-            src="/img/logo.png" 
-            alt="OUTLET" 
-            class="outlet-404-logo"
-        >
-
-        <div class="outlet-404-icon">
-            <i class="fas fa-compass"></i>
+<div class="outlet-404-container">
+    <!-- SECCIÓN IZQUIERDA - CONTENIDO -->
+    <div class="outlet-404-content">
+        <div class="outlet-404-watermark">404</div>
+        
+        <div class="outlet-404-inner">
+            <span class="outlet-404-badge">Error 404</span>
+            
+            <h1 class="outlet-404-title">
+                Lost in<br>Luxury
+            </h1>
+            
+            <div class="outlet-404-description">
+                <p>
+                    La pieza que buscas es exclusiva. Puede que se haya movido
+                    a una colección privada o que nunca haya existido en esta dimensión.
+                </p>
+            </div>
+            
+            <div class="outlet-404-message">
+                <i class="fas fa-gem"></i>
+                <span>ESTAMOS MEJORANDO NUESTRA EXPERIENCIA DE LUJO</span>
+                <i class="fas fa-arrow-right"></i>
+            </div>
+            
+            <div class="outlet-404-buttons">
+                <button class="outlet-404-btn-primary" id="backButton">
+                    <i class="fas fa-arrow-left"></i>
+                    Volver al Inicio
+                </button>
+                
+                <button class="outlet-404-btn-secondary" onclick="window.location.href='/contacto'">
+                    Contactar Soporte
+                    <i class="fas fa-envelope"></i>
+                </button>
+            </div>
         </div>
-
-        <h1>Lost in Luxury</h1>
-
-        <p class="outlet-404-message">
-            La pieza que buscas es exclusiva. Puede que se haya movido
-            a una colección privada o que nunca haya existido en esta dimensión.
-        </p>
-
-        <button class="outlet-404-btn" id="backButton">
-            <i class="fas fa-arrow-left"></i>
-            Volver al Inicio
-        </button>
-
     </div>
-
-</section>
+    
+    <!-- SECCIÓN DERECHA - IMAGEN -->
+    <div class="outlet-404-image">
+        <img 
+            src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format" 
+            alt="Luxury Fashion" 
+            class="outlet-404-img"
+            loading="lazy"
+        >
+        <div class="outlet-404-editorial">
+            <span>Exclusive Collection</span>
+            <div class="outlet-404-gold-line"></div>
+        </div>
+    </div>
+</div>
