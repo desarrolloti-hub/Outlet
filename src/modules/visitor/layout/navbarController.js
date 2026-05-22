@@ -83,26 +83,11 @@ function bindEvents() {
     document.addEventListener('route:changed', () => {
         closeMobileMenu();
         closeMegaMenu();
+        updateCartCount();  // ← AGREGAR esta línea
+        setActiveLink();    // ← AGREGAR esta línea
     });
     
-    // Botones de acción
-    if (elements.searchBtn) {
-        elements.searchBtn.addEventListener('click', () => {
-            alert('🔍 Búsqueda - Próximamente');
-        });
-    }
-    
-    if (elements.userBtn) {
-        elements.userBtn.addEventListener('click', () => {
-            alert('👤 Mi cuenta - Próximamente');
-        });
-    }
-    
-    if (elements.cartBtn) {
-        elements.cartBtn.addEventListener('click', () => {
-            alert('🛒 Carrito - Próximamente');
-        });
-    }
+   
     
     // Escuchar cambios en el carrito (storage)
     window.addEventListener('storage', (e) => {

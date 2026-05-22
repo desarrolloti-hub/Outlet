@@ -1,0 +1,63 @@
+<!-- ========================================
+   LOGIN VIEW - OUTLET
+   Página de inicio de sesión
+   ======================================== -->
+
+<main class="outlet-login-container">
+    <!-- Layout dividido -->
+    <div class="outlet-login-layout">
+        
+        <!-- Panel izquierdo: Imagen editorial -->
+        <div class="outlet-login-panel-imagen">
+            <div class="outlet-login-overlay"></div>
+            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCnMLNNq0g8dgpfrVVcR_M__UcLNO4U3sDVlaOpvmPLkIbyCNRZzg5tThkRS2Ozv_HUAcDSLy208tz74S8N2boaacvVwbbtaJniZhidSo_9_U5hN6wiE2z-GYOVnNe5WCr6vFNnp7SV2T8pqsXTOfzOUvZ7JYQw9mczBJrGKT5JKeAesCbreWbYmyxjecEp3GLezIboPHYNsc7ochGRlVQjk0oQVVXVK5_RT0T5cAbtFhj0KmEq3XebNrsC5ZUeb9_ikCiCsR69J7n" alt="Luxury High Fashion Model" class="outlet-login-imagen-fondo">
+            
+            <!-- Texto flotante -->
+            <div class="outlet-login-texto-flotante">
+                <h2>THE ROCK IS LIFE.</h2>
+                <p>Una colección curada de siluetas atemporales y artesanía vanguardista para la era moderna.</p>
+            </div>
+        </div>
+        
+        <!-- Panel derecho: Formulario de login -->
+        <div class="outlet-login-panel-formulario">
+            <div class="outlet-login-contenido-form">
+                <div class="outlet-login-encabezado">
+                    <p class="outlet-login-etiqueta-acceso">ACCESO PRIVADO</p>
+                    <h1>Bienvenido de Vuelta</h1>
+                </div>
+                
+                <form class="outlet-login-formulario" id="loginForm">
+                    <div class="outlet-login-grupo-input">
+                        <label>CORREO ELECTRÓNICO</label>
+                        <input type="email" placeholder="nombre@archivo.com" id="email" required>
+                    </div>
+                    
+                    <div class="outlet-login-grupo-input">
+                        <label>CONTRASEÑA</label>
+                        <input type="password" placeholder="••••••••" id="password" required>
+                    </div>
+                    
+                    <div class="outlet-login-opciones">
+                        <label class="outlet-login-checkbox-label">
+                            <input type="checkbox" id="remember">
+                            <span>RECORDARME</span>
+                        </label>
+                        <a href="#" id="forgotPassword" class="outlet-login-link">¿OLVIDASTE TU CONTRASEÑA?</a>
+                    </div>
+                    
+                    <button type="submit" class="outlet-login-btn-ingresar">
+                        <span>INGRESAR</span>
+                    </button>
+                </form>
+                
+                <div class="outlet-login-registro">
+                    <p>¿Nuevo en el archivo?</p>
+                    <button class="outlet-login-btn-registro" id="signupBtn">
+                        CREAR UNA CUENTA
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>

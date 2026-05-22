@@ -1,0 +1,376 @@
+/* ========================================
+   LOGIN PAGE - OUTLET
+   Estilos para página de inicio de sesión
+   ======================================== */
+
+@font-face {
+    font-family: 'Mifuente';
+    src: url('/tipografias/LinLibertine_R.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* ===== CONTENEDOR PRINCIPAL ===== */
+.outlet-login-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--outlet-spacing-md);
+    background-color: var(--outlet-bg-primary);
+}
+
+/* ===== LAYOUT SPLIT ===== */
+.outlet-login-layout {
+    max-width: 1200px;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+    min-height: 650px;
+    background-color: var(--outlet-bg-surface);
+    box-shadow: var(--outlet-shadow-lg);
+    border-radius: var(--outlet-radius-lg);
+    overflow: hidden;
+}
+
+@media (min-width: 768px) {
+    .outlet-login-layout {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* ===== PANEL IZQUIERDO - IMAGEN ===== */
+.outlet-login-panel-imagen {
+    position: relative;
+    overflow: hidden;
+    display: none;
+    background-color: #0d1b2a;
+}
+
+@media (min-width: 768px) {
+    .outlet-login-panel-imagen {
+        display: block;
+    }
+}
+
+.outlet-login-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.6));
+    z-index: 2;
+}
+
+.outlet-login-imagen-fondo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(0.4) brightness(0.85);
+    transition: transform 0.8s ease;
+}
+
+.outlet-login-panel-imagen:hover .outlet-login-imagen-fondo {
+    transform: scale(1.05);
+}
+
+/* Texto flotante sobre la imagen */
+.outlet-login-texto-flotante {
+    position: absolute;
+    bottom: 40px;
+    left: 40px;
+    right: 40px;
+    z-index: 3;
+}
+
+.outlet-login-texto-flotante h2 {
+    font-family: 'Mifuente', serif;
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: white;
+    margin-bottom: 12px;
+    line-height: 1.2;
+}
+
+@media (min-width: 992px) {
+    .outlet-login-texto-flotante h2 {
+        font-size: 48px;
+    }
+}
+
+.outlet-login-texto-flotante p {
+    font-size: 14px;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+@media (min-width: 992px) {
+    .outlet-login-texto-flotante p {
+        font-size: 16px;
+    }
+}
+
+/* ===== PANEL DERECHO - FORMULARIO ===== */
+.outlet-login-panel-formulario {
+    background-color: var(--outlet-bg-surface);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 40px 24px;
+    transition: background-color var(--outlet-transition-base);
+}
+
+@media (min-width: 768px) {
+    .outlet-login-panel-formulario {
+        padding: 48px;
+    }
+}
+
+.outlet-login-contenido-form {
+    max-width: 380px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* Encabezado */
+.outlet-login-encabezado {
+    margin-bottom: 40px;
+    text-align: center;
+}
+
+@media (min-width: 768px) {
+    .outlet-login-encabezado {
+        text-align: left;
+    }
+}
+
+.outlet-login-etiqueta-acceso {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--outlet-gold);
+    margin-bottom: 12px;
+}
+
+.outlet-login-encabezado h1 {
+    font-family: 'Mifuente', serif;
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--outlet-text-primary);
+    line-height: 1.2;
+}
+
+@media (min-width: 768px) {
+    .outlet-login-encabezado h1 {
+        font-size: 42px;
+    }
+}
+
+/* Formulario */
+.outlet-login-formulario {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.outlet-login-grupo-input {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.outlet-login-grupo-input label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--outlet-text-secondary);
+}
+
+.outlet-login-grupo-input input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1.5px solid var(--outlet-text-secondary);
+    padding: 10px 0;
+    font-size: 15px;
+    color: var(--outlet-text-primary);
+    transition: border-color var(--outlet-transition-fast);
+}
+
+.outlet-login-grupo-input input:focus {
+    outline: none;
+    border-bottom-color: var(--outlet-gold);
+}
+
+.outlet-login-grupo-input input::placeholder {
+    color: var(--outlet-text-disabled);
+}
+
+/* Opciones del formulario */
+.outlet-login-opciones {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 8px 0;
+}
+
+.outlet-login-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--outlet-text-secondary);
+    cursor: pointer;
+}
+
+.outlet-login-checkbox-label input {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: var(--outlet-gold);
+}
+
+.outlet-login-link {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--outlet-gold);
+    text-decoration: none;
+    transition: opacity var(--outlet-transition-fast);
+}
+
+.outlet-login-link:hover {
+    opacity: 0.7;
+    text-decoration: underline;
+}
+
+/* Botón ingresar */
+.outlet-login-btn-ingresar {
+    width: 100%;
+    background-color: var(--outlet-gold);
+    color: #1a1a1a;
+    border: none;
+    padding: 14px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    margin-top: 16px;
+    transition: all var(--outlet-transition-base);
+    border-radius: var(--outlet-radius-sm);
+}
+
+.outlet-login-btn-ingresar:hover {
+    background-color: var(--outlet-gold-light);
+    transform: translateY(-2px);
+}
+
+.outlet-login-btn-ingresar:active {
+    transform: scale(0.98);
+}
+
+/* Registro */
+.outlet-login-registro {
+    margin-top: 40px;
+    text-align: center;
+    border-top: 1px solid var(--outlet-border-color);
+    padding-top: 32px;
+}
+
+@media (min-width: 768px) {
+    .outlet-login-registro {
+        text-align: left;
+    }
+}
+
+.outlet-login-registro p {
+    font-size: 13px;
+    color: var(--outlet-text-secondary);
+    margin-bottom: 16px;
+}
+
+.outlet-login-btn-registro {
+    width: 100%;
+    background: transparent;
+    border: 1.5px solid var(--outlet-gold);
+    color: var(--outlet-gold);
+    padding: 14px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all var(--outlet-transition-base);
+    border-radius: var(--outlet-radius-sm);
+}
+
+.outlet-login-btn-registro:hover {
+    background-color: var(--outlet-gold);
+    color: #1a1a1a;
+    border-color: var(--outlet-gold);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .outlet-login-container {
+        padding: 12px;
+    }
+    
+    .outlet-login-layout {
+        min-height: auto;
+    }
+    
+    .outlet-login-panel-formulario {
+        padding: 32px 20px;
+    }
+    
+    .outlet-login-encabezado h1 {
+        font-size: 32px;
+    }
+}
+
+/* ===== TOAST NOTIFICATION (reutilizado) ===== */
+.toast-notification {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: var(--outlet-toast-bg);
+    color: var(--outlet-toast-text);
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--outlet-radius-md);
+    font-size: 0.875rem;
+    font-weight: 500;
+    z-index: var(--outlet-z-tooltip);
+    animation: slideIn 0.3s ease-out;
+    box-shadow: var(--outlet-shadow-md);
+    border-left: 3px solid var(--outlet-gold);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .toast-notification {
+        bottom: 1rem;
+        right: 1rem;
+        left: 1rem;
+        text-align: center;
+    }
+}

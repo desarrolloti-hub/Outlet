@@ -1,0 +1,106 @@
+<!-- ========================================
+   COLECCIÓN VIEW - OUTLET
+   Página de listado de productos con filtros
+   ======================================== -->
+
+<main>
+    <!-- Hero Section -->
+    <section class="coleccion-hero" id="heroSection">
+        <img class="coleccion-hero-image" id="heroImage" alt="Colección" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDzu-fRuH3Pr70TzycsyqNKTq0wqXUKhvqpLQnKFosRgYpTYaHmMbiZTuR6057YH9mzWy7zyvF1Nayn_vmpuWt228rSPkB3bVGEyC4luNmuFA8zLymzV9_rpVIqWLkjNVhRh4POKNi-dzukNMftMlKjV48nwZdx-9jPYUoHEnMtd8MZWvsGmBNKlC-J5JgvgvS3TqUQb2UxHyyvWUysvPjpJ45zalixovYZXI-e_wzrc3bs-6m3CrEzBx9xQSLKPeQO6fx0aggigfMd">
+        <div class="coleccion-hero-overlay">
+            <h2 class="coleccion-hero-title" id="heroTitle">COLECCIÓN MUJER</h2>
+            <div class="coleccion-hero-underline"></div>
+        </div>
+    </section>
+
+    <!-- Main Content Area -->
+    <div class="coleccion-main-container">
+        <!-- Filter Sidebar -->
+        <aside class="coleccion-sidebar">
+            <h3 class="coleccion-sidebar-title">FILTROS</h3>
+
+            <!-- Talla -->
+            <div class="coleccion-filter-group">
+                <p class="coleccion-filter-label">Talla</p>
+                <div class="coleccion-size-grid">
+                    <button class="coleccion-size-btn" data-size="XS">XS</button>
+                    <button class="coleccion-size-btn active" data-size="S">S</button>
+                    <button class="coleccion-size-btn" data-size="M">M</button>
+                    <button class="coleccion-size-btn" data-size="L">L</button>
+                    <button class="coleccion-size-btn" data-size="XL">XL</button>
+                </div>
+            </div>
+
+            <!-- Color -->
+            <div class="coleccion-filter-group">
+                <p class="coleccion-filter-label">Color</p>
+                <div class="coleccion-color-options">
+                    <div class="coleccion-color-swatch black" data-color="black"></div>
+                    <div class="coleccion-color-swatch white" data-color="white"></div>
+                    <div class="coleccion-color-swatch gold" data-color="gold"></div>
+                    <div class="coleccion-color-swatch blue" data-color="blue"></div>
+                    <div class="coleccion-color-swatch brown" data-color="brown"></div>
+                </div>
+            </div>
+
+            <!-- Diseñador -->
+            <div class="coleccion-filter-group">
+                <p class="coleccion-filter-label">Diseñador</p>
+                <div class="coleccion-checkbox-group">
+                    <label class="coleccion-checkbox-label">
+                        <input type="checkbox" class="coleccion-checkbox" value="Maison Luxe">
+                        <span>Maison Luxe</span>
+                    </label>
+                    <label class="coleccion-checkbox-label">
+                        <input type="checkbox" class="coleccion-checkbox" value="Atelier Noir">
+                        <span>Atelier Noir</span>
+                    </label>
+                    <label class="coleccion-checkbox-label">
+                        <input type="checkbox" class="coleccion-checkbox" value="Ethereal Studio">
+                        <span>Ethereal Studio</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Precio -->
+            <div class="coleccion-filter-group">
+                <p class="coleccion-filter-label">Rango de Precio</p>
+                <input type="range" class="coleccion-price-range" min="0" max="5000" value="2500">
+                <div class="coleccion-price-labels">
+                    <span>0€</span>
+                    <span>5000€</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Product Grid -->
+        <section class="coleccion-products-section">
+            <div class="coleccion-products-header">
+                <p class="coleccion-results-count" id="resultsCount">Mostrando 6 de 6 productos</p>
+                <div class="coleccion-sort-container">
+                    <span class="coleccion-sort-label">ORDENAR POR:</span>
+                    <select class="coleccion-sort-select" id="sortSelect">
+                        <option value="newest">RECIÉN LLEGADOS</option>
+                        <option value="price-asc">PRECIO: MENOR A MAYOR</option>
+                        <option value="price-desc">PRECIO: MAYOR A MENOR</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="coleccion-product-grid" id="productGrid">
+                <!-- Los productos se inyectan desde JS -->
+            </div>
+
+            <!-- Pagination -->
+            <div class="coleccion-pagination">
+                <button class="coleccion-pagination-btn" id="prevPage">
+                    <span class="material-symbols-outlined">chevron_left</span>
+                </button>
+                <div class="coleccion-pagination-numbers" id="paginationNumbers"></div>
+                <button class="coleccion-pagination-btn" id="nextPage">
+                    <span class="material-symbols-outlined">chevron_right</span>
+                </button>
+            </div>
+        </section>
+    </div>
+</main>
