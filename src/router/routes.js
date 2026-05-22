@@ -9,6 +9,7 @@ import { productsController } from '../modules/visitor/products/productsControll
 import { coleccionController } from '../modules/visitor/collection/collectionController.js';
 import { loginController } from '../modules/visitor/login/loginController.js';
 import { wishlistController } from '../modules/visitor/wishlist/wishlist.js';
+import { cartController } from '../modules/visitor/cart/cart.js';
 
 export const routes = {
     "/": {
@@ -30,6 +31,10 @@ export const routes = {
     "/wishlist": {
         view: "/modules/visitor/wishlist/wishlist.html",
         controller: wishlistController
+    },
+    "/cart":{
+         view: "/modules/visitor/cart/cart.html",
+        controller:cartController 
     },
     "/services": {
         view: "/src/views/services.html",
