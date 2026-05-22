@@ -1,0 +1,29 @@
+{
+  "name": "OUTLET | Luxury Fashion Store",
+  "short_name": "OUTLET",
+  "description": "Curated luxury fashion. Architectural precision meets modern silhouette.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#ddab3b",
+  "background_color": "#fff8f2",
+  "icons": [
+    {
+      "src": "/assets/iconos/outlet_lineado_negro.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/iconos/outlet_lineado_negro.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["shopping", "fashion", "lifestyle"],
+  "lang": "en",
+  "dir": "ltr",
+  "prefer_related_applications": false
+}
