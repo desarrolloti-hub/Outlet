@@ -8,6 +8,7 @@ import { init404Controller } from '../modules/shared/errors/404Controller.js';
 import { productsController } from '../modules/visitor/products/productsController.js';
 import { coleccionController } from '../modules/visitor/collection/collectionController.js';
 import { loginController } from '../modules/visitor/login/loginController.js';
+import { wishlistController } from '../modules/visitor/wishlist/wishlist.js';
 
 export const routes = {
     "/": {
@@ -22,9 +23,13 @@ export const routes = {
         view: "/modules/visitor/collection/collection.html",
         controller: coleccionController  // ← CAMBIAR null por coleccionController
     },
-        "/login": {
-        view: "/modules/visitor/login/login.html",
-        controller: loginController  // ← CAMBIAR null por loginController
+    "/login": {
+    view: "/modules/visitor/login/login.html",
+    controller: loginController  // ← CAMBIAR null por loginController
+    },
+    "/wishlist": {
+        view: "/modules/visitor/wishlist/wishlist.html",
+        controller: wishlistController
     },
     "/services": {
         view: "/src/views/services.html",

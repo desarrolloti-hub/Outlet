@@ -222,13 +222,13 @@ body.dark-mode .outlet-404-message {
 }
 
 .outlet-404-btn-primary {
-    background-color: var(--outlet-accent);
+    background-color: var(--outlet-gold);
     color: #ffffff;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .outlet-404-btn-primary:hover {
-    background-color: var(--outlet-accent-light);
+    background-color: var(--outlet-gold-dark);
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }
