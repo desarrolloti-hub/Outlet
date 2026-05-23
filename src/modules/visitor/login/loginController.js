@@ -99,14 +99,19 @@ function handleForgotPassword(e) {
 /**
  * Maneja "crear cuenta"
  */
+/**
+ * Maneja "crear cuenta" - Redirige a createAccount
+ */
 function handleSignup(e) {
     e.preventDefault();
-    showNotification('✨ Redirigiendo a registro...');
-    
-    // Redirigir a registro (cuando esté implementado)
-    // setTimeout(() => {
-    //     window.navigateTo('/register');
-    // }, 1000);
+    window.navigateTo('/createAccount');
+}
+
+// En la función principal, agrega el event listener:
+const signupBtn = document.getElementById('signupBtn');
+if (signupBtn) {
+    signupBtn.removeEventListener('click', handleSignup);
+    signupBtn.addEventListener('click', handleSignup);
 }
 
 /**

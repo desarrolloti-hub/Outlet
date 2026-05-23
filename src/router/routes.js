@@ -10,6 +10,7 @@ import { coleccionController } from '../modules/visitor/collection/collectionCon
 import { loginController } from '../modules/visitor/login/loginController.js';
 import { wishlistController } from '../modules/visitor/wishlist/wishlist.js';
 import { cartController } from '../modules/visitor/cart/cart.js';
+import { createAccountController } from '../modules/visitor/createAccount/createAccount.js';
 
 export const routes = {
     "/": {
@@ -35,6 +36,10 @@ export const routes = {
     "/cart":{
          view: "/modules/visitor/cart/cart.html",
         controller:cartController 
+    },
+    "/createAccount": {
+        view: "/modules/visitor/createAccount/createAccount.html",
+        controller: createAccountController
     },
     "/services": {
         view: "/src/views/services.html",

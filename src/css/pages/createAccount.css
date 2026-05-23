@@ -1,0 +1,410 @@
+/* ========================================
+   CREATE ACCOUNT PAGE - OUTLET
+   Estilos para página de creación de cuenta
+   Basado en tus variables globales --outlet-*
+   ======================================== */
+
+/* ===== CONTENEDOR PRINCIPAL ===== */
+.outlet-account-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--outlet-spacing-md);
+    background-color: var(--outlet-bg-primary);
+}
+
+/* ===== LAYOUT SPLIT ===== */
+.outlet-account-layout {
+    max-width: 1200px;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+    min-height: 700px;
+    background-color: var(--outlet-bg-surface);
+    box-shadow: var(--outlet-shadow-lg);
+    border-radius: var(--outlet-radius-lg);
+    overflow: hidden;
+}
+
+@media (min-width: 768px) {
+    .outlet-account-layout {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* ===== PANEL IZQUIERDO - IMAGEN ===== */
+.outlet-account-panel-image {
+    position: relative;
+    overflow: hidden;
+    display: none;
+    background-color: #0d1b2a;
+}
+
+@media (min-width: 768px) {
+    .outlet-account-panel-image {
+        display: block;
+    }
+}
+
+.outlet-account-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.6));
+    z-index: 2;
+}
+
+.outlet-account-bg-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(0.4) brightness(0.85);
+    transition: transform 0.8s ease;
+}
+
+.outlet-account-panel-image:hover .outlet-account-bg-image {
+    transform: scale(1.05);
+}
+
+/* Texto flotante sobre la imagen */
+.outlet-account-floating-text {
+    position: absolute;
+    bottom: 40px;
+    left: 40px;
+    right: 40px;
+    z-index: 3;
+}
+
+.outlet-account-floating-text h2 {
+    font-family: var(--outlet-font-secondary);
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: white;
+    margin-bottom: 12px;
+    line-height: 1.2;
+}
+
+@media (min-width: 992px) {
+    .outlet-account-floating-text h2 {
+        font-size: 48px;
+    }
+}
+
+.outlet-account-floating-text p {
+    font-size: 14px;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+@media (min-width: 992px) {
+    .outlet-account-floating-text p {
+        font-size: 16px;
+    }
+}
+
+/* ===== PANEL DERECHO - FORMULARIO ===== */
+.outlet-account-panel-form {
+    background-color: var(--outlet-bg-surface);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 40px 24px;
+    transition: background-color var(--outlet-transition-base);
+}
+
+@media (min-width: 768px) {
+    .outlet-account-panel-form {
+        padding: 48px;
+    }
+}
+
+.outlet-account-form-content {
+    max-width: 400px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* Encabezado */
+.outlet-account-header {
+    margin-bottom: 32px;
+    text-align: center;
+}
+
+@media (min-width: 768px) {
+    .outlet-account-header {
+        text-align: left;
+    }
+}
+
+.outlet-account-badge {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--outlet-gold);
+    margin-bottom: 12px;
+}
+
+.outlet-account-header h1 {
+    font-family: var(--outlet-font-secondary);
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--outlet-text-primary);
+    line-height: 1.2;
+}
+
+@media (min-width: 768px) {
+    .outlet-account-header h1 {
+        font-size: 42px;
+    }
+}
+
+/* Formulario */
+.outlet-account-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.outlet-account-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.outlet-account-form-group label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--outlet-text-secondary);
+}
+
+.outlet-account-optional {
+    font-weight: 400;
+    letter-spacing: normal;
+    opacity: 0.6;
+}
+
+.outlet-account-form-group input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1.5px solid var(--outlet-text-secondary);
+    padding: 10px 0;
+    font-size: 15px;
+    color: var(--outlet-text-primary);
+    transition: border-color var(--outlet-transition-fast);
+}
+
+.outlet-account-form-group input:focus {
+    outline: none;
+    border-bottom-color: var(--outlet-gold);
+}
+
+.outlet-account-form-group input::placeholder {
+    color: var(--outlet-text-disabled);
+}
+
+/* Mensajes de error */
+.outlet-account-error {
+    font-size: 11px;
+    color: var(--outlet-danger);
+    margin-top: 4px;
+    min-height: 18px;
+}
+
+/* Requisitos de contraseña */
+.outlet-account-password-requirements {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 6px;
+    font-size: 10px;
+}
+
+.outlet-account-req {
+    color: var(--outlet-text-secondary);
+    transition: color var(--outlet-transition-fast);
+}
+
+.outlet-account-req.valid {
+    color: var(--outlet-success);
+}
+
+.outlet-account-req.invalid {
+    color: var(--outlet-danger);
+}
+
+/* Opciones del formulario */
+.outlet-account-form-options {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 4px 0;
+}
+
+.outlet-account-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--outlet-text-secondary);
+    cursor: pointer;
+}
+
+.outlet-account-checkbox input {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: var(--outlet-gold);
+}
+
+.outlet-account-checkbox a {
+    color: var(--outlet-gold);
+    text-decoration: none;
+}
+
+.outlet-account-checkbox a:hover {
+    text-decoration: underline;
+}
+
+/* Botón crear cuenta */
+.outlet-account-btn-submit {
+    width: 100%;
+    background-color: var(--outlet-gold);
+    color: #1a1a1a;
+    border: none;
+    padding: 14px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    margin-top: 16px;
+    transition: all var(--outlet-transition-base);
+    border-radius: var(--outlet-radius-sm);
+}
+
+.outlet-account-btn-submit:hover {
+    background-color: var(--outlet-gold-light);
+    transform: translateY(-2px);
+}
+
+.outlet-account-btn-submit:active {
+    transform: scale(0.98);
+}
+
+.outlet-account-btn-submit:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Enlace a login */
+.outlet-account-login-link {
+    margin-top: 32px;
+    text-align: center;
+    border-top: 1px solid var(--outlet-border-color);
+    padding-top: 28px;
+}
+
+@media (min-width: 768px) {
+    .outlet-account-login-link {
+        text-align: left;
+    }
+}
+
+.outlet-account-login-link p {
+    font-size: 13px;
+    color: var(--outlet-text-secondary);
+    margin-bottom: 16px;
+}
+
+.outlet-account-btn-login {
+    width: 100%;
+    background: transparent;
+    border: 1.5px solid var(--outlet-gold);
+    color: var(--outlet-gold);
+    padding: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all var(--outlet-transition-base);
+    border-radius: var(--outlet-radius-sm);
+}
+
+.outlet-account-btn-login:hover {
+    background-color: var(--outlet-gold);
+    color: #1a1a1a;
+    border-color: var(--outlet-gold);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .outlet-account-container {
+        padding: 12px;
+    }
+    
+    .outlet-account-layout {
+        min-height: auto;
+    }
+    
+    .outlet-account-panel-form {
+        padding: 32px 20px;
+    }
+    
+    .outlet-account-header h1 {
+        font-size: 32px;
+    }
+    
+    .outlet-account-password-requirements {
+        flex-direction: column;
+        gap: 6px;
+    }
+}
+
+/* ===== TOAST NOTIFICATION ===== */
+.toast-notification {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: var(--outlet-toast-bg);
+    color: var(--outlet-toast-text);
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--outlet-radius-md);
+    font-size: 0.875rem;
+    font-weight: 500;
+    z-index: var(--outlet-z-tooltip);
+    animation: slideIn 0.3s ease-out;
+    box-shadow: var(--outlet-shadow-md);
+    border-left: 3px solid var(--outlet-gold);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .toast-notification {
+        bottom: 1rem;
+        right: 1rem;
+        left: 1rem;
+        text-align: center;
+    }
+}
