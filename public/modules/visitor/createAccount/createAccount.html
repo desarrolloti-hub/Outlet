@@ -1,5 +1,5 @@
 <!-- ========================================
-   CREATE ACCOUNT VIEW - OUTLET
+   VISTA DE CREAR CUENTA - OUTLET
    Página de creación de cuenta / registro
    ======================================== -->
 
@@ -9,11 +9,11 @@
         <!-- Panel izquierdo: Imagen editorial -->
         <div class="outlet-account-panel-image">
             <div class="outlet-account-overlay"></div>
-            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCnMLNNq0g8dgpfrVVcR_M__UcLNO4U3sDVlaOpvmPLkIbyCNRZzg5tThkRS2Ozv_HUAcDSLy208tz74S8N2boaacvVwbbtaJniZhidSo_9_U5hN6wiE2z-GYOVnNe5WCr6vFNnp7SV2T8pqsXTOfzOUvZ7JYQw9mczBJrGKT5JKeAesCbreWbYmyxjecEp3GLezIboPHYNsc7ochGRlVQjk0oQVVXVK5_RT0T5cAbtFhj0KmEq3XebNrsC5ZUeb9_ikCiCsR69J7n" alt="Luxury High Fashion Model" class="outlet-account-bg-image" loading="lazy">
+            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCnMLNNq0g8dgpfrVVcR_M__UcLNO4U3sDVlaOpvmPLkIbyCNRZzg5tThkRS2Ozv_HUAcDSLy208tz74S8N2boaacvVwbbtaJniZhidSo_9_U5hN6wiE2z-GYOVnNe5WCr6vFNnp7SV2T8pqsXTOfzOUvZ7JYQw9mczBJrGKT5JKeAesCbreWbYmyxjecEp3GLezIboPHYNsc7ochGRlVQjk0oQVVXVK5_RT0T5cAbtFhj0KmEq3XebNrsC5ZUeb9_ikCiCsR69J7n" alt="Modelo de Moda de Lujo de Alta Costura" class="outlet-account-bg-image" loading="lazy">
             
             <div class="outlet-account-floating-text">
-                <h2>JOIN THE ARCHIVE.</h2>
-                <p>Early access to collections, exclusive events, and more.</p>
+                <h2>ÚNETE AL ARCHIVO.</h2>
+                <p>Acceso anticipado a colecciones, eventos exclusivos y más.</p>
             </div>
         </div>
         
@@ -21,75 +21,75 @@
         <div class="outlet-account-panel-form">
             <div class="outlet-account-form-content">
                 <div class="outlet-account-header">
-                    <p class="outlet-account-badge">CREATE ACCOUNT</p>
-                    <h1>New Member</h1>
+                    <p class="outlet-account-badge">CREAR CUENTA</p>
+                    <h1>Nuevo Miembro</h1>
                 </div>
                 
                 <form class="outlet-account-form" id="createAccountForm">
-                    <!-- Full name -->
+                    <!-- Nombre completo -->
                     <div class="outlet-account-form-group">
-                        <label>FULL NAME</label>
+                        <label>NOMBRE COMPLETO</label>
                         <input type="text" placeholder="Ana García" id="fullname" autocomplete="name">
                         <div class="outlet-account-error" id="errorFullname"></div>
                     </div>
                     
-                    <!-- Email -->
+                    <!-- Correo electrónico -->
                     <div class="outlet-account-form-group">
-                        <label>EMAIL ADDRESS</label>
-                        <input type="email" placeholder="name@archive.com" id="email" autocomplete="email">
+                        <label>CORREO ELECTRÓNICO</label>
+                        <input type="email" placeholder="nombre@archivo.com" id="email" autocomplete="email">
                         <div class="outlet-account-error" id="errorEmail"></div>
                     </div>
                     
-                    <!-- Phone (optional) -->
+                    <!-- Teléfono (opcional) -->
                     <div class="outlet-account-form-group">
-                        <label>PHONE <span class="outlet-account-optional">(OPTIONAL)</span></label>
+                        <label>TELÉFONO <span class="outlet-account-optional">(OPCIONAL)</span></label>
                         <input type="tel" placeholder="+34 123 456 789" id="phone" autocomplete="tel">
                     </div>
                     
-                    <!-- Password -->
+                    <!-- Contraseña -->
                     <div class="outlet-account-form-group">
-                        <label>PASSWORD</label>
+                        <label>CONTRASEÑA</label>
                         <input type="password" placeholder="••••••••" id="password" autocomplete="new-password">
                         <div class="outlet-account-error" id="errorPassword"></div>
                         <div class="outlet-account-password-requirements" id="passwordRequirements">
-                            <span class="outlet-account-req" id="reqLength">✗ Min. 8 characters</span>
-                            <span class="outlet-account-req" id="reqUppercase">✗ One uppercase</span>
-                            <span class="outlet-account-req" id="reqNumber">✗ One number</span>
+                            <span class="outlet-account-req" id="reqLength">✗ Mín. 8 caracteres</span>
+                            <span class="outlet-account-req" id="reqUppercase">✗ Una mayúscula</span>
+                            <span class="outlet-account-req" id="reqNumber">✗ Un número</span>
                         </div>
                     </div>
                     
-                    <!-- Confirm password -->
+                    <!-- Confirmar contraseña -->
                     <div class="outlet-account-form-group">
-                        <label>CONFIRM PASSWORD</label>
+                        <label>CONFIRMAR CONTRASEÑA</label>
                         <input type="password" placeholder="••••••••" id="confirmPassword" autocomplete="off">
                         <div class="outlet-account-error" id="errorConfirm"></div>
                     </div>
                     
-                    <!-- Terms and conditions -->
+                    <!-- Términos y condiciones -->
                     <div class="outlet-account-form-options">
                         <label class="outlet-account-checkbox">
                             <input type="checkbox" id="terms">
-                            <span>I ACCEPT THE <a href="#" id="termsLink">TERMS & CONDITIONS</a></span>
+                            <span>ACEPTO LOS <a href="#" id="termsLink">TÉRMINOS Y CONDICIONES</a></span>
                         </label>
                     </div>
                     
-                    <!-- Newsletter -->
+                    <!-- Boletín informativo -->
                     <div class="outlet-account-form-options">
                         <label class="outlet-account-checkbox">
                             <input type="checkbox" id="newsletter" checked>
-                            <span>RECEIVE NEWS & EXCLUSIVE OFFERS</span>
+                            <span>RECIBIR NOTICIAS Y OFERTAS EXCLUSIVAS</span>
                         </label>
                     </div>
                     
                     <button type="submit" class="outlet-account-btn-submit" id="submitBtn">
-                        <span>CREATE ACCOUNT</span>
+                        <span>CREAR CUENTA</span>
                     </button>
                 </form>
                 
                 <div class="outlet-account-login-link">
-                    <p>Already have an account?</p>
+                    <p>¿Ya tienes una cuenta?</p>
                     <button class="outlet-account-btn-login" id="loginBtn">
-                        SIGN IN
+                        INICIAR SESIÓN
                     </button>
                 </div>
             </div>

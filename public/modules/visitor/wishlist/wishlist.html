@@ -1,50 +1,50 @@
 <!-- ========================================
-   WISHLIST VIEW - OUTLET
+   VISTA DE LISTA DE DESEOS - OUTLET
    Página de productos favoritos / lista de deseos
    ======================================== -->
 
 <main class="outlet-wishlist-container">
     <div class="container min-h-screen">
-        <!-- Header Section -->
+        <!-- Sección de Encabezado -->
         <header class="wishlist-header" style="margin-bottom: var(--outlet-spacing-3xl); text-align: center;">
             <h1 class="wishlist-title" style="font-size: 40px; font-weight: bold; color: var(--outlet-text-primary); letter-spacing: -0.02em; margin-bottom: var(--outlet-spacing-sm);">
-                MY WISHLIST
+                MI LISTA DE DESEOS
             </h1>
             <p class="body-lg" style="color: var(--outlet-text-secondary); max-width: 42rem; margin: 0 auto;">
-                A curated selection of your most-coveted pieces. Review and finalize your collection.
+                Una selección curada de tus piezas más codiciadas. Revisa y finaliza tu colección.
             </p>
         </header>
 
-        <!-- Filter/Utility Bar -->
+        <!-- Barra de Filtros/Utilidades -->
         <div class="wishlist-filter-bar">
             <div class="wishlist-filter-info">
-                <span id="wishlistItemsCount">0 Items Saved</span>
+                <span id="wishlistItemsCount">0 Artículos Guardados</span>
                 <span class="filter-divider"></span>
                 <button class="wishlist-sort-btn" id="sortBtn">
-                    Sort by: Newest <i class="fa-solid fa-chevron-down" style="font-size: 12px; margin-left: 4px;"></i>
+                    Ordenar por: Más reciente <i class="fa-solid fa-chevron-down" style="font-size: 12px; margin-left: 4px;"></i>
                 </button>
             </div>
             <div class="wishlist-filter-actions">
-                <button class="wishlist-move-all-btn" id="moveAllToCartBtn">Move all to cart</button>
+                <button class="wishlist-move-all-btn" id="moveAllToCartBtn">Mover todo al carrito</button>
             </div>
         </div>
 
-        <!-- Product Grid -->
+        <!-- Grid de Productos -->
         <div class="wishlist-product-grid" id="wishlistGrid">
-            <!-- Products will be injected dynamically -->
+            <!-- Los productos se inyectarán dinámicamente -->
         </div>
 
-        <!-- Empty State -->
+        <!-- Estado Vacío -->
         <div class="wishlist-empty-state" id="wishlistEmptyState" style="display: none; text-align: center; padding: var(--outlet-spacing-4xl) 0;">
             <i class="fa-regular fa-heart" style="font-size: 64px; color: var(--outlet-gold); margin-bottom: var(--outlet-spacing-lg);"></i>
-            <h3 style="font-size: 24px; margin-bottom: var(--outlet-spacing-md);">Your wishlist is empty</h3>
-            <p style="color: var(--outlet-text-secondary); margin-bottom: var(--outlet-spacing-xl);">Save your favorite items here and they'll appear soon.</p>
-            <button class="outlet-btn-primary" id="exploreMoreBtn">Explore Collection</button>
+            <h3 style="font-size: 24px; margin-bottom: var(--outlet-spacing-md);">Tu lista de deseos está vacía</h3>
+            <p style="color: var(--outlet-text-secondary); margin-bottom: var(--outlet-spacing-xl);">Guarda tus artículos favoritos aquí y aparecerán pronto.</p>
+            <button class="outlet-btn-primary" id="exploreMoreBtn">Explorar Colección</button>
         </div>
 
-        <!-- Pagination or View More -->
+        <!-- Paginación o Ver Más -->
         <div class="wishlist-footer" style="margin-top: var(--outlet-spacing-xl); text-align: center; margin-bottom: var(--outlet-spacing-xl);" id="wishlistFooter">
-            <button class="luxury-button" id="exploreMoreFooterBtn">Explore More Pieces</button>
+            <button class="luxury-button" id="exploreMoreFooterBtn">Explorar Más Piezas</button>
         </div>
     </div>
 </main>
