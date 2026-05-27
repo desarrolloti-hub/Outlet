@@ -5,13 +5,13 @@
 // Importar controllers de vistas
 import { homeController } from '../modules/visitor/home/homeController.js';
 import { init404Controller } from '../modules/shared/errors/404Controller.js';
-import { productsController } from '../modules/visitor/products/productsController.js';
 import { coleccionController } from '../modules/visitor/collection/collectionController.js';
 import { loginController } from '../modules/visitor/login/loginController.js';
 import { wishlistController } from '../modules/visitor/wishlist/wishlistController.js';
 import { cartController } from '../modules/visitor/cart/cartController.js';
 import { createAccountController } from '../modules/visitor/createAccount/createAccount.js';
 import { adminController } from '../modules/admin/home/homeAdminController.js';
+import { productsController } from '../modules/admin/products/productsAdminController.js';
 
 export const routes = {
     "/": {
@@ -62,6 +62,11 @@ export const routes = {
         view: "/modules/admin/home/homeAdmin.html",
         controller: adminController
     },
+      "/productsAdmin": {
+        view: "/modules/admin/products/add/productsAdmin.html",
+        controller: productsController
+    },
+    
 
     '/404': {
     view: '/modules/shared/errors/404.html',

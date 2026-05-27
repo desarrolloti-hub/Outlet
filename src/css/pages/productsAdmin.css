@@ -1,0 +1,280 @@
+/* ========================================
+   PRODUCTS FORM - OUTLET (SPA)
+   Estilos para formulario de productos
+   ======================================== */
+
+/* ====== MAIN CONTAINER ====== */
+.products-admin-container {
+    padding: 40px 48px;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* ====== TOPBAR ====== */
+.products-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 48px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--outlet-border-color, rgba(0, 0, 0, 0.06));
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.products-topbar h1 {
+    font-size: 28px;
+    font-weight: 400;
+    letter-spacing: -0.5px;
+    color: var(--outlet-text-primary, #1a1a1a);
+}
+
+.products-subtitle {
+    color: var(--outlet-text-secondary, #6b6b6b);
+    font-size: 14px;
+    margin-top: 6px;
+}
+
+.products-header-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.products-btn-secondary {
+    background: transparent;
+    color: var(--outlet-text-primary, #1a1a1a);
+    border: 1px solid var(--outlet-border-color, #e0e0e0);
+    padding: 10px 24px;
+    border-radius: 40px;
+    font-size: 14px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.25s;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.products-btn-secondary:hover {
+    border-color: var(--outlet-gold, #ddab3b);
+    color: var(--outlet-gold, #ddab3b);
+}
+
+/* ====== FORMULARIO ====== */
+.products-form {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+.products-form-card {
+    background: var(--outlet-bg-card, white);
+    border-radius: 20px;
+    border: 1px solid rgba(221, 171, 59, 0.12);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.products-form-card:hover {
+    border-color: rgba(221, 171, 59, 0.25);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+}
+
+.products-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 24px 28px 0 28px;
+    margin-bottom: 8px;
+}
+
+.products-card-header i {
+    font-size: 22px;
+    color: var(--outlet-gold, #ddab3b);
+}
+
+.products-card-header h2 {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--outlet-text-primary, #1a1a1a);
+}
+
+.products-form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    padding: 0 28px 28px 28px;
+}
+
+.products-form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.products-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.products-form-group label {
+    font-weight: 500;
+    font-size: 13px;
+    color: var(--outlet-text-primary, #1a1a1a);
+    letter-spacing: 0.3px;
+}
+
+.products-form-group input,
+.products-form-group select,
+.products-form-group textarea {
+    padding: 12px 16px;
+    border: 1px solid var(--outlet-border-color, #e0e0e0);
+    border-radius: 12px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.25s;
+    background: var(--outlet-bg-card, #fff);
+    color: var(--outlet-text-primary, #1a1a1a);
+}
+
+.products-form-group input:focus,
+.products-form-group select:focus,
+.products-form-group textarea:focus {
+    outline: none;
+    border-color: var(--outlet-gold, #ddab3b);
+    box-shadow: 0 0 0 3px rgba(221, 171, 59, 0.1);
+}
+
+.products-form-group textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.products-form-group small {
+    font-size: 11px;
+    color: var(--outlet-text-disabled, #999);
+    margin-top: 4px;
+}
+
+/* ====== BOTÓN GUARDAR ====== */
+.products-save-btn {
+    background: var(--outlet-text-primary, #1a1a1a);
+    color: var(--outlet-gold, #ddab3b);
+    border: 1px solid rgba(221, 171, 59, 0.3);
+    padding: 16px 32px;
+    border-radius: 40px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+}
+
+.products-save-btn:hover {
+    background: var(--outlet-gold, #ddab3b);
+    color: var(--outlet-text-primary, #1a1a1a);
+    border-color: var(--outlet-gold, #ddab3b);
+    transform: translateY(-2px);
+}
+
+/* ====== TOAST NOTIFICATION ====== */
+.products-toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: var(--outlet-toast-bg, #1f1b13);
+    color: var(--outlet-toast-text, #fff8f2);
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    z-index: 1070;
+    animation: slideIn 0.3s ease-out;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    border-left: 3px solid var(--outlet-gold, #ddab3b);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* ====== DARK MODE ====== */
+body.dark-mode .products-form-card {
+    background: var(--outlet-bg-card, #0f243d);
+    border-color: rgba(221, 171, 59, 0.15);
+}
+
+body.dark-mode .products-form-group input,
+body.dark-mode .products-form-group select,
+body.dark-mode .products-form-group textarea {
+    background: var(--outlet-bg-container-low, #0a1c2c);
+    border-color: var(--outlet-border-color, #2a4a6e);
+    color: var(--outlet-text-primary, #d6e5f7);
+}
+
+body.dark-mode .products-form-group label {
+    color: var(--outlet-text-primary, #d6e5f7);
+}
+
+body.dark-mode .products-topbar h1 {
+    color: var(--outlet-text-primary, #d6e5f7);
+}
+
+body.dark-mode .products-subtitle {
+    color: var(--outlet-text-secondary, #b0c4de);
+}
+
+/* ====== RESPONSIVE ====== */
+@media (max-width: 768px) {
+    .products-admin-container {
+        padding: 24px;
+    }
+
+    .products-topbar h1 {
+        font-size: 22px;
+    }
+
+    .products-form-grid {
+        grid-template-columns: 1fr;
+        gap: 18px;
+        padding: 0 20px 20px 20px;
+    }
+
+    .products-card-header {
+        padding: 20px 20px 0 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .products-admin-container {
+        padding: 16px;
+    }
+
+    .products-topbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .products-header-actions {
+        justify-content: flex-start;
+    }
+
+    .products-save-btn {
+        padding: 14px 24px;
+        font-size: 14px;
+    }
+}
