@@ -3,7 +3,8 @@
    Operaciones CRUD directas con Firebase
    ======================================== */
 
-import { db, auth } from '/firebase/config.js';
+// ✅ Usar URLs CDN (como en el proyecto RSI)
+import { db, auth } from '/config/firebaseConfig.js';
 import { 
     collection, 
     doc, 
@@ -16,7 +17,7 @@ import {
     where,
     orderBy,
     limit
-} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+} from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
 import { 
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
@@ -25,16 +26,11 @@ import {
     sendEmailVerification,
     updateProfile,
     signOut
-} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+} from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
 
 const USERS_COLLECTION = 'usuarios';
 
 export const UserRepository = {
-    // ========== FIRESTORE OPERATIONS ==========
-    
-    /**
-     * Crear/Guardar usuario en Firestore
-     */
     async save(userData) {
         try {
             const userRef = doc(db, USERS_COLLECTION, userData.id);
@@ -46,9 +42,6 @@ export const UserRepository = {
         }
     },
     
-    /**
-     * Obtener usuario por ID
-     */
     async getById(userId) {
         try {
             const userRef = doc(db, USERS_COLLECTION, userId);
@@ -64,9 +57,6 @@ export const UserRepository = {
         }
     },
     
-    /**
-     * Obtener usuario por email
-     */
     async getByEmail(email) {
         try {
             const q = query(
@@ -87,9 +77,6 @@ export const UserRepository = {
         }
     },
     
-    /**
-     * Actualizar usuario
-     */
     async update(userId, updateData) {
         try {
             const userRef = doc(db, USERS_COLLECTION, userId);
@@ -98,7 +85,6 @@ export const UserRepository = {
                 fechaActualizacion: new Date().toISOString()
             });
             
-            // Obtener datos actualizados
             const updated = await this.getById(userId);
             return updated;
         } catch (error) {
@@ -107,9 +93,6 @@ export const UserRepository = {
         }
     },
     
-    /**
-     * Actualizar solo dirección
-     */
     async updateDireccion(userId, direccionData) {
         try {
             const userRef = doc(db, USERS_COLLECTION, userId);
@@ -125,106 +108,25 @@ export const UserRepository = {
         }
     },
     
-    /**
-     * Eliminar usuario (soft delete)
-     */
-    async delete(userId) {
-        try {
-            const userRef = doc(db, USERS_COLLECTION, userId);
-            await updateDoc(userRef, {
-                activo: false,
-                fechaActualizacion: new Date().toISOString()
-            });
-            return true;
-        } catch (error) {
-            console.error('Error eliminando usuario:', error);
-            throw new Error(`Error al eliminar usuario: ${error.message}`);
-        }
-    },
-    
-    /**
-     * Eliminar usuario permanentemente
-     */
-    async deletePermanently(userId) {
-        try {
-            const userRef = doc(db, USERS_COLLECTION, userId);
-            await deleteDoc(userRef);
-            return true;
-        } catch (error) {
-            console.error('Error eliminando usuario permanentemente:', error);
-            throw new Error(`Error al eliminar usuario: ${error.message}`);
-        }
-    },
-    
-    /**
-     * Obtener todos los usuarios (admin)
-     */
-    async getAll() {
-        try {
-            const q = query(
-                collection(db, USERS_COLLECTION),
-                orderBy('fechaRegistro', 'desc')
-            );
-            const querySnapshot = await getDocs(q);
-            
-            return querySnapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-        } catch (error) {
-            console.error('Error obteniendo usuarios:', error);
-            throw new Error(`Error al obtener usuarios: ${error.message}`);
-        }
-    },
-    
-    // ========== AUTHENTICATION OPERATIONS ==========
-    
-    /**
-     * Registro con email y contraseña
-     */
     async registerWithEmail(email, password, userData) {
         try {
-            // Crear usuario en Auth
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const firebaseUser = userCredential.user;
             
-            // Actualizar perfil con nombre
             await updateProfile(firebaseUser, {
-                displayName: userData.nombreCompleto || `${userData.nombre} ${userData.apellidoPa}`
+                displayName: userData.nombreCompleto
             });
             
-            // Enviar verificación de email
             await sendEmailVerification(firebaseUser);
             
-            // Guardar en Firestore
             const userToSave = {
                 id: firebaseUser.uid,
-                nombre: userData.nombre,
-                apellidoPa: userData.apellidoPa || '',
-                apellidoMa: userData.apellidoMa || '',
+                ...userData,
                 email: firebaseUser.email,
                 provider: 'email',
                 emailVerified: false,
-                direccion: userData.direccion || {
-                    destinatario: '',
-                    telefono1: '',
-                    telefono2: '',
-                    calle: '',
-                    numeroExterior: '',
-                    numeroInterior: '',
-                    colonia: '',
-                    ciudad: '',
-                    estado: '',
-                    codigoPostal: '',
-                    pais: 'México',
-                    referencias: ''
-                },
                 fechaRegistro: new Date().toISOString(),
-                activo: true,
-                preferencias: {
-                    newsletter: false,
-                    notificaciones: true
-                }
+                activo: true
             };
             
             await this.save(userToSave);
@@ -239,18 +141,13 @@ export const UserRepository = {
         }
     },
     
-    /**
-     * Login con email y contraseña
-     */
     async loginWithEmail(email, password) {
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const firebaseUser = userCredential.user;
             
-            // Obtener datos adicionales de Firestore
             const userData = await this.getById(firebaseUser.uid);
             
-            // Actualizar último login
             await this.update(firebaseUser.uid, {
                 ultimoLogin: new Date().toISOString()
             });
@@ -265,20 +162,15 @@ export const UserRepository = {
         }
     },
     
-    /**
-     * Login con Google
-     */
     async loginWithGoogle() {
         try {
             const provider = new GoogleAuthProvider();
             const userCredential = await signInWithPopup(auth, provider);
             const firebaseUser = userCredential.user;
             
-            // Verificar si ya existe en Firestore
             let userData = await this.getById(firebaseUser.uid);
             
             if (!userData) {
-                // Usuario nuevo - crear registro
                 userData = {
                     id: firebaseUser.uid,
                     nombre: firebaseUser.displayName?.split(' ')[0] || '',
@@ -312,7 +204,6 @@ export const UserRepository = {
                 
                 await this.save(userData);
             } else {
-                // Actualizar último login
                 await this.update(firebaseUser.uid, {
                     ultimoLogin: new Date().toISOString()
                 });
@@ -329,9 +220,6 @@ export const UserRepository = {
         }
     },
     
-    /**
-     * Cerrar sesión
-     */
     async logout() {
         try {
             await signOut(auth);
@@ -342,16 +230,10 @@ export const UserRepository = {
         }
     },
     
-    /**
-     * Obtener usuario actual de Auth
-     */
     getCurrentAuthUser() {
         return auth.currentUser;
     },
     
-    /**
-     * Manejar errores de autenticación
-     */
     _handleAuthError(error) {
         const errors = {
             'auth/email-already-in-use': 'Este correo ya está registrado',

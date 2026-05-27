@@ -1,16 +1,16 @@
 /* ========================================
-   CREATE ACCOUNT CONTROLLER - OUTLET
-   Controlador para página de creación de cuenta
+   CREATE ACCOUNT CONTROLLER - OUTLET VAL
+   Registro de usuarios con Firebase
    ======================================== */
 
-// Storage keys
-const STORAGE_KEYS = {
-    USERS: 'outlet_users',
-    CURRENT_USER: 'outlet_current_user'
-};
+import { UserService } from '/services/userService.js';
+import { AuthService } from '/services/authService.js';
+
+// Estado del controlador
+let isLoading = false;
 
 /**
- * Load styles for create account page
+ * Cargar estilos CSS
  */
 function loadStyles() {
     if (document.querySelector('link[href*="createAccount.css"]')) return;
@@ -22,7 +22,7 @@ function loadStyles() {
 }
 
 /**
- * Show toast notification
+ * Mostrar notificación toast
  */
 function showNotification(message, isError = false) {
     const existingToast = document.querySelector('.toast-notification');
@@ -46,7 +46,7 @@ function showNotification(message, isError = false) {
 }
 
 /**
- * Validate email format
+ * Validar formato de email
  */
 function isValidEmail(email) {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -54,7 +54,7 @@ function isValidEmail(email) {
 }
 
 /**
- * Validate full name (at least 2 words, min 2 chars each)
+ * Validar nombre completo (al menos nombre y apellido)
  */
 function isValidFullName(name) {
     const trimmed = name.trim();
@@ -64,99 +64,115 @@ function isValidFullName(name) {
 }
 
 /**
- * Validate password and return requirements object
+ * Separar nombre completo en nombre, apellido paterno y materno
+ */
+function splitFullName(fullname) {
+    const parts = fullname.trim().split(/\s+/);
+    
+    let nombre = '';
+    let apellidoPa = '';
+    let apellidoMa = '';
+    
+    if (parts.length === 1) {
+        nombre = parts[0];
+        apellidoPa = '';
+        apellidoMa = '';
+    } else if (parts.length === 2) {
+        nombre = parts[0];
+        apellidoPa = parts[1];
+        apellidoMa = '';
+    } else {
+        nombre = parts[0];
+        apellidoPa = parts[1];
+        apellidoMa = parts.slice(2).join(' ');
+    }
+    
+    return { nombre, apellidoPa, apellidoMa };
+}
+
+/**
+ * Validar contraseña y devolver requisitos
  */
 function validatePassword(password) {
     return {
-        length: password.length >= 8,
-        uppercase: /[A-Z]/.test(password),
-        number: /[0-9]/.test(password)
+        length: password.length >= 6,  // Firebase requiere mínimo 6
+        hasValue: password.length > 0
     };
 }
 
 /**
- * Update password requirements UI
+ * Actualizar UI de requisitos de contraseña
  */
 function updatePasswordRequirements(password) {
     const requirements = validatePassword(password);
     
     const reqLength = document.getElementById('reqLength');
-    const reqUppercase = document.getElementById('reqUppercase');
-    const reqNumber = document.getElementById('reqNumber');
     
     if (reqLength) {
-        reqLength.innerHTML = requirements.length ? '✓ Min. 8 characters' : '✗ Min. 8 characters';
+        reqLength.innerHTML = requirements.length ? '✓ Min. 6 characters' : '✗ Min. 6 characters';
         reqLength.className = `outlet-account-req ${requirements.length ? 'valid' : 'invalid'}`;
     }
-    if (reqUppercase) {
-        reqUppercase.innerHTML = requirements.uppercase ? '✓ One uppercase' : '✗ One uppercase';
-        reqUppercase.className = `outlet-account-req ${requirements.uppercase ? 'valid' : 'invalid'}`;
-    }
-    if (reqNumber) {
-        reqNumber.innerHTML = requirements.number ? '✓ One number' : '✗ One number';
-        reqNumber.className = `outlet-account-req ${requirements.number ? 'valid' : 'invalid'}`;
-    }
     
-    return requirements.length && requirements.uppercase && requirements.number;
+    return requirements.length;
 }
 
 /**
- * Validate entire form
+ * Validar formulario completo
  */
 function validateForm() {
     let isValid = true;
     
-    // Validate full name
+    // Validar nombre completo
     const fullname = document.getElementById('fullname').value;
     const errorFullname = document.getElementById('errorFullname');
     if (!isValidFullName(fullname)) {
-        errorFullname.textContent = 'Enter valid first and last name';
+        errorFullname.textContent = 'Ingresa nombre y apellido válidos';
         isValid = false;
     } else {
         errorFullname.textContent = '';
     }
     
-    // Validate email
+    // Validar email
     const email = document.getElementById('email').value;
     const errorEmail = document.getElementById('errorEmail');
     if (!email) {
-        errorEmail.textContent = 'Email is required';
+        errorEmail.textContent = 'El correo es requerido';
         isValid = false;
     } else if (!isValidEmail(email)) {
-        errorEmail.textContent = 'Enter a valid email address';
+        errorEmail.textContent = 'Ingresa un correo válido';
         isValid = false;
     } else {
         errorEmail.textContent = '';
     }
     
-    // Validate password
+    // Validar contraseña
     const password = document.getElementById('password').value;
     const errorPassword = document.getElementById('errorPassword');
     const passwordValid = validatePassword(password);
     if (!password) {
-        errorPassword.textContent = 'Password is required';
+        errorPassword.textContent = 'La contraseña es requerida';
         isValid = false;
-    } else if (!(passwordValid.length && passwordValid.uppercase && passwordValid.number)) {
-        errorPassword.textContent = 'Password does not meet requirements';
+    } else if (!passwordValid.length) {
+        errorPassword.textContent = 'La contraseña debe tener al menos 6 caracteres';
         isValid = false;
     } else {
         errorPassword.textContent = '';
     }
     
-    // Validate password confirmation
+    // Validar confirmación
     const confirmPassword = document.getElementById('confirmPassword').value;
     const errorConfirm = document.getElementById('errorConfirm');
     if (password !== confirmPassword) {
-        errorConfirm.textContent = 'Passwords do not match';
+        errorConfirm.textContent = 'Las contraseñas no coinciden';
         isValid = false;
     } else {
         errorConfirm.textContent = '';
     }
     
-    // Validate terms
+    // Validar términos
     const terms = document.getElementById('terms').checked;
     if (!terms) {
-        showNotification('❌ You must accept the Terms & Conditions', true);
+        showNotification('❌ Debes aceptar los Términos y Condiciones', true);
         isValid = false;
     }
     
@@ -164,83 +180,115 @@ function validateForm() {
 }
 
 /**
- * Save user to localStorage
+ * Manejar envío del formulario con Firebase
  */
-function saveUser(userData) {
-    const users = JSON.parse(localStorage.getItem(STORAGE_KEYS.USERS) || '[]');
-    
-    // Check if email already exists
-    const existingUser = users.find(u => u.email === userData.email);
-    if (existingUser) {
-        showNotification('❌ This email is already registered', true);
-        return false;
-    }
-    
-    users.push(userData);
-    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
-    return true;
-}
-
-/**
- * Handle form submission
- */
-function handleRegister(e) {
+async function handleRegister(e) {
     e.preventDefault();
+    
+    if (isLoading) return;
     
     if (!validateForm()) {
         return;
     }
     
+    // Obtener valores del formulario
     const fullname = document.getElementById('fullname').value.trim();
     const email = document.getElementById('email').value.trim();
     const phone = document.getElementById('phone').value.trim();
     const password = document.getElementById('password').value;
     const newsletter = document.getElementById('newsletter').checked;
     
+    // Separar nombre completo
+    const { nombre, apellidoPa, apellidoMa } = splitFullName(fullname);
+    
+    // Preparar datos del usuario
     const userData = {
-        id: Date.now(),
-        fullname,
-        email,
-        phone: phone || null,
-        password: btoa(password), // Base64 encoded (DEMO only, not for production!)
-        newsletter,
-        createdAt: new Date().toISOString()
+        nombre: nombre,
+        apellidoPa: apellidoPa,
+        apellidoMa: apellidoMa,
+        email: email,
+        direccion: {
+            destinatario: fullname,
+            telefono1: phone,
+            telefono2: '',
+            calle: '',
+            numeroExterior: '',
+            numeroInterior: '',
+            colonia: '',
+            ciudad: '',
+            estado: '',
+            codigoPostal: '',
+            pais: 'México',
+            referencias: ''
+        },
+        preferencias: {
+            newsletter: newsletter,
+            notificaciones: true
+        }
     };
     
-    if (saveUser(userData)) {
-        showNotification('✅ Account created successfully! Redirecting...');
+    // Deshabilitar botón y mostrar loading
+    isLoading = true;
+    const submitBtn = document.querySelector('#createAccountForm button[type="submit"]');
+    const originalText = submitBtn?.textContent;
+    
+    if (submitBtn) {
+        submitBtn.textContent = 'Creando cuenta...';
+        submitBtn.disabled = true;
+    }
+    
+    try {
+        // Registrar en Firebase
+        const result = await UserService.register(userData, password);
         
-        // Save simple session
-        localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify({
-            id: userData.id,
-            fullname: userData.fullname,
-            email: userData.email
-        }));
+        showNotification('✅ ¡Cuenta creada exitosamente! Revisa tu correo para verificar tu cuenta.');
         
+        // Limpiar formulario
+        document.getElementById('createAccountForm').reset();
+        
+        // Redirigir a página de verificación o login
         setTimeout(() => {
-            window.navigateTo('/login');
+            if (typeof window.navigateTo === 'function') {
+                window.navigateTo('/verificar-email');
+            } else {
+                window.location.href = '/verificar-email';
+            }
         }, 2000);
+        
+    } catch (error) {
+        console.error('Error en registro:', error);
+        showNotification(`❌ ${error.message}`, true);
+    } finally {
+        isLoading = false;
+        if (submitBtn) {
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+        }
     }
 }
 
 /**
- * Handle login redirect
+ * Manejar redirección a login
  */
 function handleLoginRedirect(e) {
     e.preventDefault();
-    window.navigateTo('/login');
+    if (typeof window.navigateTo === 'function') {
+        window.navigateTo('/login');
+    } else {
+        window.location.href = '/login';
+    }
 }
 
 /**
- * Handle terms link click
+ * Manejar clic en términos
  */
 function handleTerms(e) {
     e.preventDefault();
-    showNotification('📜 Please read our Terms & Conditions on the website');
+    showNotification('📜 Por favor lee nuestros Términos y Condiciones en el sitio web');
 }
 
 /**
- * Initialize real-time validation
+ * Inicializar validación en tiempo real
  */
 function initRealtimeValidation() {
     const passwordInput = document.getElementById('password');
@@ -248,12 +296,12 @@ function initRealtimeValidation() {
         passwordInput.addEventListener('input', (e) => {
             updatePasswordRequirements(e.target.value);
             
-            // Also validate confirm password in real-time
+            // Validar confirmación en tiempo real
             const confirm = document.getElementById('confirmPassword');
             if (confirm.value) {
                 const errorConfirm = document.getElementById('errorConfirm');
                 if (e.target.value !== confirm.value) {
-                    errorConfirm.textContent = 'Passwords do not match';
+                    errorConfirm.textContent = 'Las contraseñas no coinciden';
                 } else {
                     errorConfirm.textContent = '';
                 }
@@ -267,7 +315,7 @@ function initRealtimeValidation() {
             const password = document.getElementById('password').value;
             const errorConfirm = document.getElementById('errorConfirm');
             if (password !== e.target.value) {
-                errorConfirm.textContent = 'Passwords do not match';
+                errorConfirm.textContent = 'Las contraseñas no coinciden';
             } else {
                 errorConfirm.textContent = '';
             }
@@ -276,18 +324,18 @@ function initRealtimeValidation() {
 }
 
 /**
- * Main controller
+ * Controlador principal
  */
 export async function createAccountController() {
-    console.log('📝 Create Account Controller - Registration page');
+    console.log('📝 Create Account Controller - Registro con Firebase');
     
-    // Load styles
+    // Cargar estilos
     loadStyles();
     
-    // Initialize real-time validation
+    // Inicializar validación en tiempo real
     initRealtimeValidation();
     
-    // Bind form events
+    // Bindear eventos del formulario
     const registerForm = document.getElementById('createAccountForm');
     const loginBtn = document.getElementById('loginBtn');
     const termsLink = document.getElementById('termsLink');
@@ -296,5 +344,5 @@ export async function createAccountController() {
     if (loginBtn) loginBtn.addEventListener('click', handleLoginRedirect);
     if (termsLink) termsLink.addEventListener('click', handleTerms);
     
-    console.log('✅ Create Account page loaded successfully');
+    console.log('✅ Create Account page loaded with Firebase');
 }
