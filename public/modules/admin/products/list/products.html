@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OUTLET | Gestión de Productos</title>
+
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="products.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #fff8f2;
+      color: #1a1a1a;
+    }
+
+    /* ========== LAYOUT ========== */
+    .app {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ========== SIDEBAR ========== */
+    .sidebar {
+      width: 280px;
+      background: #1a1a1a;
+      padding: 40px 24px;
+      position: fixed;
+      height: 100vh;
+      border-right: 1px solid rgba(221, 171, 59, 0.15);
+    }
+
+    .logo {
+      margin-bottom: 48px;
+      border-bottom: 1px solid rgba(221, 171, 59, 0.3);
+      padding-bottom: 24px;
+    }
+
+    .logo h2 {
+      font-size: 24px;
+      letter-spacing: 2px;
+      font-weight: 300;
+      color: #ddab3b;
+    }
+
+    .logo p {
+      font-size: 11px;
+      color: #888;
+      letter-spacing: 1px;
+      margin-top: 6px;
+    }
+
+    .menu {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .menu a {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 18px;
+      border-radius: 8px;
+      color: #e0e0e0;
+      text-decoration: none;
+      transition: all 0.25s;
+      font-size: 15px;
+    }
+
+    .menu a i {
+      width: 22px;
+      font-size: 18px;
+      color: #888;
+    }
+
+    .menu a:hover {
+      background: rgba(221, 171, 59, 0.08);
+      color: #ddab3b;
+    }
+
+    .menu a:hover i {
+      color: #ddab3b;
+    }
+
+    /* ========== MAIN ========== */
+    .main {
+      margin-left: 280px;
+      flex: 1;
+      padding: 40px 48px;
+    }
+
+    /* ========== HEADER ========== */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 48px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      font-weight: 400;
+      letter-spacing: -0.5px;
+    }
+
+    .subtitle {
+      color: #6b6b6b;
+      font-size: 14px;
+      margin-top: 6px;
+    }
+
+    .btn-add {
+      background: #1a1a1a;
+      color: #ddab3b;
+      border: 1px solid rgba(221, 171, 59, 0.3);
+      padding: 12px 28px;
+      border-radius: 40px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.25s;
+    }
+
+    .btn-add:hover {
+      background: #ddab3b;
+      color: #1a1a1a;
+    }
+
+    /* ========== TABLA ========== */
+    .table-container {
+      background: white;
+      border-radius: 20px;
+      border: 1px solid rgba(221, 171, 59, 0.12);
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: #faf8f5;
+      border-bottom: 1px solid #eaeaea;
+    }
+
+    th {
+      padding: 18px 12px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 13px;
+      color: #888;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    td {
+      padding: 16px 12px;
+      text-align: center;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 14px;
+      vertical-align: middle;
+    }
+
+    /* IMAGEN PEQUEÑA Y CENTRADA */
+    .product-img {
+      width: 45px;
+      height: 45px;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 1.5px solid #ddab3b;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .product-name {
+      font-weight: 500;
+    }
+
+    .product-price {
+      font-weight: 600;
+      color: #ddab3b;
+    }
+
+    /* BOTÓN ELIMINAR */
+    .btn-delete {
+      background: transparent;
+      border: 1px solid #e0e0e0;
+      padding: 6px 16px;
+      border-radius: 30px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #888;
+      transition: all 0.25s;
+    }
+
+    .btn-delete:hover {
+      background: #ef4444;
+      border-color: #ef4444;
+      color: white;
+    }
+
+    /* ========== MODAL ========== */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal.hidden {
+      display: none;
+    }
+
+    .modal-content {
+      background: white;
+      width: 90%;
+      max-width: 500px;
+      border-radius: 24px;
+      padding: 32px;
+      border: 1px solid rgba(221, 171, 59, 0.2);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .modal-header h3 {
+      font-size: 24px;
+      font-weight: 500;
+    }
+
+    .close-modal {
+      background: none;
+      border: none;
+      font-size: 28px;
+      cursor: pointer;
+      color: #999;
+    }
+
+    .close-modal:hover {
+      color: #ef4444;
+    }
+
+    /* FORMULARIO */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #ddab3b;
+    }
+
+    .btn-submit {
+      width: 100%;
+      background: #1a1a1a;
+      color: #ddab3b;
+      border: 1px solid rgba(221, 171, 59, 0.3);
+      padding: 14px;
+      border-radius: 40px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .btn-submit:hover {
+      background: #ddab3b;
+      color: #1a1a1a;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 80px;
+        padding: 32px 12px;
+      }
+      .logo h2, .logo p, .menu a span {
+        display: none;
+      }
+      .menu a {
+        justify-content: center;
+      }
+      .main {
+        margin-left: 80px;
+        padding: 24px;
+      }
+      .btn-delete span {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">
+      <h2>OUTLET</h2>
+      <p>LA MEJOR INVERSION</p>
+    </div>
+    <nav class="menu">
+      <a href="#">
+        <i class="fa-solid fa-truck"></i>
+        <span>Inicio</span>
+      </a>
+      <a href="#">
+        <i class="fa-solid fa-box"></i>
+        <span>Productos</span>
+      </a>
+      <a href="#">
+        <i class="fa-solid fa-truck"></i>
+        <span>Pedidos</span>
+      </a>
+      <a href="#">
+        <i class="fa-solid fa-users"></i>
+        <span>Usuarios</span>
+      </a>
+      <a href="#">
+        <i class="fa-solid fa-gear"></i>
+        <span>Configuración</span>
+      </a>
+      <a href="#">
+        <i class="fa-solid fa-right-from-bracket"></i>
+        <span>Salir</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+    <div class="header">
+      <div>
+        <h1>Gestión de Productos</h1>
+        <p class="subtitle">Agrega, edita y administra tu catálogo</p>
+      </div>
+      <button class="btn-add" id="openModalBtn">
+        <i class="fa-solid fa-plus"></i>
+        Agregar Producto
+      </button>
+    </div>
+
+    <!-- TABLA -->
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Imagen</th>
+            <th>Nombre</th>
+            <th>Precio</th>
+            <th>Categoría</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="productTableBody">
+          <tr>
+            <td><img src="https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=100" class="product-img"></td>
+            <td class="product-name">Playera Oversize</td>
+            <td class="product-price">$499</td>
+            <td>Hombre</td>
+            <td><button class="btn-delete"><i class="fa-solid fa-trash"></i> Eliminar</button></td>
+          </tr>
+          <tr>
+            <td><img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100" class="product-img"></td>
+            <td class="product-name">Tenis Urban</td>
+            <td class="product-price">$1,299</td>
+            <td>Calzado</td>
+            <td><button class="btn-delete"><i class="fa-solid fa-trash"></i> Eliminar</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL -->
+<div id="productModal" class="modal hidden">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Agregar Producto</h3>
+      <button class="close-modal" id="closeModalBtn">✕</button>
+    </div>
+    <form id="productForm">
+      <div class="form-group">
+        <label>Nombre del producto</label>
+        <input type="text" id="productName" placeholder="Ej: Sudadera Nike" required>
+      </div>
+      <div class="form-group">
+        <label>Precio</label>
+        <input type="number" id="productPrice" placeholder="Ej: 999" required>
+      </div>
+      <div class="form-group">
+        <label>Categoría</label>
+        <input type="text" id="productCategory" placeholder="Ej: Hombre" required>
+      </div>
+      <div class="form-group">
+        <label>URL de la imagen</label>
+        <input type="text" id="productImage" placeholder="https://..." required>
+      </div>
+      <button type="submit" class="btn-submit">
+        <i class="fa-solid fa-check"></i>
+        Guardar Producto
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+  // Elementos
+  const modal = document.getElementById('productModal');
+  const openBtn = document.getElementById('openModalBtn');
+  const closeBtn = document.getElementById('closeModalBtn');
+  const form = document.getElementById('productForm');
+  const tableBody = document.getElementById('productTableBody');
+
+  // Abrir modal
+  openBtn.addEventListener('click', () => {
+    modal.classList.remove('hidden');
+  });
+
+  // Cerrar modal
+  closeBtn.addEventListener('click', () => {
+    modal.classList.add('hidden');
+  });
+
+  // Cerrar haciendo clic fuera
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.classList.add('hidden');
+    }
+  });
+
+  // Agregar producto
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const name = document.getElementById('productName').value;
+    const price = document.getElementById('productPrice').value;
+    const category = document.getElementById('productCategory').value;
+    const image = document.getElementById('productImage').value;
+
+    const newRow = document.createElement('tr');
+    newRow.innerHTML = `
+      <td><img src="${image}" class="product-img" onerror="this.src='https://placehold.co/100?text=Error'"></td>
+      <td class="product-name">${name}</td>
+      <td class="product-price">$${parseInt(price).toLocaleString()}</td>
+      <td>${category}</td>
+      <td><button class="btn-delete"><i class="fa-solid fa-trash"></i> Eliminar</button></td>
+    `;
+
+    // Agregar función de eliminar al nuevo botón
+    const deleteBtn = newRow.querySelector('.btn-delete');
+    deleteBtn.addEventListener('click', () => {
+      newRow.remove();
+    });
+
+    tableBody.appendChild(newRow);
+
+    // Resetear y cerrar
+    form.reset();
+    modal.classList.add('hidden');
+  });
+
+  // Eliminar productos existentes
+  document.querySelectorAll('.btn-delete').forEach(btn => {
+    btn.addEventListener('click', () => {
+      btn.closest('tr').remove();
+    });
+  });
+</script>
+
+</body>
+</html>

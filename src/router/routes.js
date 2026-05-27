@@ -11,6 +11,7 @@ import { loginController } from '../modules/visitor/login/loginController.js';
 import { wishlistController } from '../modules/visitor/wishlist/wishlistController.js';
 import { cartController } from '../modules/visitor/cart/cartController.js';
 import { createAccountController } from '../modules/visitor/createAccount/createAccount.js';
+import { adminController } from '../modules/admin/home/homeAdminController.js';
 
 export const routes = {
     "/": {
@@ -57,10 +58,11 @@ export const routes = {
         view: "/src/views/blogs.html",
         controller: null
     },
-    "/admin": {
-        view: "/src/views/admin.html",
-        controller: null
+    "/homeAdmin": {
+        view: "/modules/admin/home/homeAdmin.html",
+        controller: adminController
     },
+
     '/404': {
     view: '/modules/shared/errors/404.html',
     controller: init404Controller
