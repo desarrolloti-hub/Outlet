@@ -3,6 +3,11 @@
    Controlador para página de inicio de sesión
    ======================================== */
 
+import { UserService } from '/services/userService.js';
+
+// Estado del controlador
+let isLoading = false;
+
 /**
  * Carga los estilos CSS de la página
  */
@@ -48,10 +53,59 @@ function isValidEmail(email) {
 }
 
 /**
- * Maneja el login
+ * 🆕 Maneja el login con Google
  */
-function handleLogin(e) {
+async function handleGoogleLogin() {
+    if (isLoading) return;
+    
+    isLoading = true;
+    
+    // Mostrar loading en el botón de Google
+    const googleBtn = document.getElementById('googleLoginBtn');
+    const originalText = googleBtn?.innerHTML;
+    
+    if (googleBtn) {
+        googleBtn.innerHTML = '<span>⏳ CARGANDO...</span>';
+        googleBtn.disabled = true;
+    }
+    
+    try {
+        // Usar el login con Google del UserService
+        const result = await UserService.login(null, null, true);
+        
+        showNotification('✅ ¡Bienvenido! Sesión iniciada con Google');
+        
+        // Redirigir a la página que intentaba ver o al home
+        const redirectUrl = sessionStorage.getItem('redirectAfterLogin') || '/homeAdmin';
+        sessionStorage.removeItem('redirectAfterLogin');
+        
+        setTimeout(() => {
+            if (typeof window.navigateTo === 'function') {
+                window.navigateTo(redirectUrl);
+            } else {
+                window.location.href = redirectUrl;
+            }
+        }, 1500);
+        
+    } catch (error) {
+        console.error('Error en login con Google:', error);
+        showNotification(`❌ ${error.message}`, true);
+    } finally {
+        isLoading = false;
+        if (googleBtn) {
+            googleBtn.innerHTML = originalText;
+            googleBtn.disabled = false;
+        }
+    }
+}
+
+/**
+ * Maneja el login con email/contraseña
+ */
+async function handleLogin(e) {
     e.preventDefault();
+    
+    if (isLoading) return;
     
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value.trim();
@@ -78,14 +132,43 @@ function handleLogin(e) {
         localStorage.removeItem('outlet_remember_email');
     }
     
-    // Simular login exitoso
-    console.log('✅ Login exitoso:', { email, remember });
-    showNotification('✅ ¡Bienvenido de vuelta!');
+    isLoading = true;
+    const submitBtn = document.querySelector('#loginForm button[type="submit"]');
+    const originalText = submitBtn?.textContent;
     
-    // Redirigir al home después de login exitoso
-    setTimeout(() => {
-        window.navigateTo('/');
-    }, 1500);
+    if (submitBtn) {
+        submitBtn.textContent = 'INGRESANDO...';
+        submitBtn.disabled = true;
+    }
+    
+    try {
+        // Login con email y contraseña usando UserService
+        const result = await UserService.login(email, password);
+        
+        showNotification('✅ ¡Bienvenido de vuelta!');
+        
+        // Redirigir a la página que intentaba ver o al home
+        const redirectUrl = sessionStorage.getItem('redirectAfterLogin') || '/';
+        sessionStorage.removeItem('redirectAfterLogin');
+        
+        setTimeout(() => {
+            if (typeof window.navigateTo === 'function') {
+                window.navigateTo(redirectUrl);
+            } else {
+                window.location.href = redirectUrl;
+            }
+        }, 1500);
+        
+    } catch (error) {
+        console.error('Error en login:', error);
+        showNotification(`❌ ${error.message}`, true);
+    } finally {
+        isLoading = false;
+        if (submitBtn) {
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+        }
+    }
 }
 
 /**
@@ -97,21 +180,15 @@ function handleForgotPassword(e) {
 }
 
 /**
- * Maneja "crear cuenta"
- */
-/**
  * Maneja "crear cuenta" - Redirige a createAccount
  */
 function handleSignup(e) {
     e.preventDefault();
-    window.navigateTo('/createAccount');
-}
-
-// En la función principal, agrega el event listener:
-const signupBtn = document.getElementById('signupBtn');
-if (signupBtn) {
-    signupBtn.removeEventListener('click', handleSignup);
-    signupBtn.addEventListener('click', handleSignup);
+    if (typeof window.navigateTo === 'function') {
+        window.navigateTo('/createAccount');
+    } else {
+        window.location.href = '/createAccount';
+    }
 }
 
 /**
@@ -136,10 +213,12 @@ function initFormEvents() {
     const loginForm = document.getElementById('loginForm');
     const forgotBtn = document.getElementById('forgotPassword');
     const signupBtn = document.getElementById('signupBtn');
+    const googleLoginBtn = document.getElementById('googleLoginBtn');
     
     if (loginForm) loginForm.addEventListener('submit', handleLogin);
     if (forgotBtn) forgotBtn.addEventListener('click', handleForgotPassword);
     if (signupBtn) signupBtn.addEventListener('click', handleSignup);
+    if (googleLoginBtn) googleLoginBtn.addEventListener('click', handleGoogleLogin); // 🆕
 }
 
 /**

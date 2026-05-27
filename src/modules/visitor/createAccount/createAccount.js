@@ -95,7 +95,7 @@ function splitFullName(fullname) {
  */
 function validatePassword(password) {
     return {
-        length: password.length >= 6,  // Firebase requiere mínimo 6
+        length: password.length >= 6,
         hasValue: password.length > 0
     };
 }
@@ -122,7 +122,6 @@ function updatePasswordRequirements(password) {
 function validateForm() {
     let isValid = true;
     
-    // Validar nombre completo
     const fullname = document.getElementById('fullname').value;
     const errorFullname = document.getElementById('errorFullname');
     if (!isValidFullName(fullname)) {
@@ -132,7 +131,6 @@ function validateForm() {
         errorFullname.textContent = '';
     }
     
-    // Validar email
     const email = document.getElementById('email').value;
     const errorEmail = document.getElementById('errorEmail');
     if (!email) {
@@ -145,7 +143,6 @@ function validateForm() {
         errorEmail.textContent = '';
     }
     
-    // Validar contraseña
     const password = document.getElementById('password').value;
     const errorPassword = document.getElementById('errorPassword');
     const passwordValid = validatePassword(password);
@@ -159,7 +156,6 @@ function validateForm() {
         errorPassword.textContent = '';
     }
     
-    // Validar confirmación
     const confirmPassword = document.getElementById('confirmPassword').value;
     const errorConfirm = document.getElementById('errorConfirm');
     if (password !== confirmPassword) {
@@ -169,7 +165,6 @@ function validateForm() {
         errorConfirm.textContent = '';
     }
     
-    // Validar términos
     const terms = document.getElementById('terms').checked;
     if (!terms) {
         showNotification('❌ Debes aceptar los Términos y Condiciones', true);
@@ -177,6 +172,46 @@ function validateForm() {
     }
     
     return isValid;
+}
+
+/**
+ * 🆕 Manejar registro con Google
+ */
+async function handleGoogleRegister() {
+    if (isLoading) return;
+    
+    isLoading = true;
+    
+    // Mostrar loading en el botón de Google
+    const googleBtn = document.getElementById('googleRegisterBtn');
+    const originalText = googleBtn?.innerHTML;
+    
+    if (googleBtn) {
+        googleBtn.innerHTML = '<span>⏳ CARGANDO...</span>';
+        googleBtn.disabled = true;
+    }
+    
+    try {
+        // Usar el login con Google del UserService
+        const result = await UserService.login(null, null, true);
+        
+        showNotification('✅ ¡Cuenta creada con Google exitosamente!');
+        
+        // Redirigir a la página principal
+        setTimeout(() => {
+            window.location.href = '/';
+        }, 1500);
+        
+    } catch (error) {
+        console.error('Error en registro con Google:', error);
+        showNotification(`❌ ${error.message}`, true);
+    } finally {
+        isLoading = false;
+        if (googleBtn) {
+            googleBtn.innerHTML = originalText;
+            googleBtn.disabled = false;
+        }
+    }
 }
 
 /**
@@ -191,17 +226,14 @@ async function handleRegister(e) {
         return;
     }
     
-    // Obtener valores del formulario
     const fullname = document.getElementById('fullname').value.trim();
     const email = document.getElementById('email').value.trim();
     const phone = document.getElementById('phone').value.trim();
     const password = document.getElementById('password').value;
     const newsletter = document.getElementById('newsletter').checked;
     
-    // Separar nombre completo
     const { nombre, apellidoPa, apellidoMa } = splitFullName(fullname);
     
-    // Preparar datos del usuario
     const userData = {
         nombre: nombre,
         apellidoPa: apellidoPa,
@@ -227,7 +259,6 @@ async function handleRegister(e) {
         }
     };
     
-    // Deshabilitar botón y mostrar loading
     isLoading = true;
     const submitBtn = document.querySelector('#createAccountForm button[type="submit"]');
     const originalText = submitBtn?.textContent;
@@ -238,15 +269,12 @@ async function handleRegister(e) {
     }
     
     try {
-        // Registrar en Firebase
         const result = await UserService.register(userData, password);
         
         showNotification('✅ ¡Cuenta creada exitosamente! Revisa tu correo para verificar tu cuenta.');
         
-        // Limpiar formulario
         document.getElementById('createAccountForm').reset();
         
-        // Redirigir a página de verificación o login
         setTimeout(() => {
             if (typeof window.navigateTo === 'function') {
                 window.navigateTo('/verificar-email');
@@ -296,7 +324,6 @@ function initRealtimeValidation() {
         passwordInput.addEventListener('input', (e) => {
             updatePasswordRequirements(e.target.value);
             
-            // Validar confirmación en tiempo real
             const confirm = document.getElementById('confirmPassword');
             if (confirm.value) {
                 const errorConfirm = document.getElementById('errorConfirm');
@@ -329,20 +356,18 @@ function initRealtimeValidation() {
 export async function createAccountController() {
     console.log('📝 Create Account Controller - Registro con Firebase');
     
-    // Cargar estilos
     loadStyles();
-    
-    // Inicializar validación en tiempo real
     initRealtimeValidation();
     
-    // Bindear eventos del formulario
     const registerForm = document.getElementById('createAccountForm');
     const loginBtn = document.getElementById('loginBtn');
     const termsLink = document.getElementById('termsLink');
+    const googleRegisterBtn = document.getElementById('googleRegisterBtn');
     
     if (registerForm) registerForm.addEventListener('submit', handleRegister);
     if (loginBtn) loginBtn.addEventListener('click', handleLoginRedirect);
     if (termsLink) termsLink.addEventListener('click', handleTerms);
+    if (googleRegisterBtn) googleRegisterBtn.addEventListener('click', handleGoogleRegister); // 🆕
     
     console.log('✅ Create Account page loaded with Firebase');
 }

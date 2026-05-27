@@ -108,38 +108,56 @@ export const UserRepository = {
         }
     },
     
-    async registerWithEmail(email, password, userData) {
-        try {
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            const firebaseUser = userCredential.user;
-            
-            await updateProfile(firebaseUser, {
-                displayName: userData.nombreCompleto
-            });
-            
-            await sendEmailVerification(firebaseUser);
-            
-            const userToSave = {
-                id: firebaseUser.uid,
-                ...userData,
-                email: firebaseUser.email,
-                provider: 'email',
-                emailVerified: false,
-                fechaRegistro: new Date().toISOString(),
-                activo: true
-            };
-            
-            await this.save(userToSave);
-            
-            return {
-                user: firebaseUser,
-                userData: userToSave
-            };
-        } catch (error) {
-            console.error('Error en registro:', error);
-            throw this._handleAuthError(error);
-        }
-    },
+   async registerWithEmail(email, password, userData) {
+    try {
+        console.log('📝 1. Creando usuario en Auth...');
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const firebaseUser = userCredential.user;
+        console.log('✅ Usuario creado:', firebaseUser.uid);
+        
+        // ✅ Calcular nombre completo manualmente (evita el getter)
+        const nombreCompleto = [
+            userData.nombre || '',
+            userData.apellidoPa || '',
+            userData.apellidoMa || ''
+        ].filter(p => p).join(' ').trim();
+        
+        console.log('📝 2. Actualizando perfil con:', nombreCompleto);
+        await updateProfile(firebaseUser, {
+            displayName: nombreCompleto || email
+        });
+        
+        console.log('📝 3. Enviando email de verificación...');
+        await sendEmailVerification(firebaseUser);
+        
+        // ✅ Crear objeto plano (sin getters ni métodos)
+        const userToSave = {
+            id: firebaseUser.uid,
+            nombre: userData.nombre || '',
+            apellidoPa: userData.apellidoPa || '',
+            apellidoMa: userData.apellidoMa || '',
+            email: firebaseUser.email,
+            direccion: userData.direccion || {},
+            preferencias: userData.preferencias || {},
+            provider: 'email',
+            emailVerified: false,
+            fechaRegistro: new Date().toISOString(),
+            activo: true
+        };
+        
+        console.log('📝 4. Guardando en Firestore...');
+        await this.save(userToSave);
+        console.log('✅ Guardado exitosamente');
+        
+        return {
+            user: firebaseUser,
+            userData: userToSave
+        };
+    } catch (error) {
+        console.error('❌ Error en registro:', error);
+        throw this._handleAuthError(error);
+    }
+},
     
     async loginWithEmail(email, password) {
         try {
