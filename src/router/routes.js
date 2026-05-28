@@ -12,6 +12,7 @@ import { cartController } from '../modules/visitor/cart/cartController.js';
 import { createAccountController } from '../modules/visitor/createAccount/createAccount.js';
 import { adminController } from '../modules/admin/home/homeAdminController.js';
 import { productsController } from '../modules/admin/products/productsAdminController.js';
+import {productListController} from '../modules/admin/products/productsListController.js';
 
 export const routes = {
     "/": {
@@ -66,7 +67,10 @@ export const routes = {
         view: "/modules/admin/products/add/productsAdmin.html",
         controller: productsController
     },
-    
+       "/productsList": {
+        view: "/modules/admin/products/list/productsList.html",
+        controller: productListController
+    },
 
     '/404': {
     view: '/modules/shared/errors/404.html',

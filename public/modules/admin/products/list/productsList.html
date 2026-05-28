@@ -1,0 +1,72 @@
+<!-- ========================================
+   PRODUCT LIST - OUTLET (SPA)
+   Listado y gestión de productos
+   ======================================== -->
+
+<main class="productlist-container">
+    <div class="productlist-header">
+        <div>
+            <h1>Gestión de Productos</h1>
+            <p class="productlist-subtitle">Agrega, edita y administra tu catálogo</p>
+        </div>
+        <button class="productlist-btn-add" id="openProductModalBtn">
+            <i class="fa-solid fa-plus"></i>
+            Agregar Producto
+        </button>
+    </div>
+
+    <!-- TABLA -->
+    <div class="productlist-table-container">
+        <table class="productlist-table">
+            <thead>
+                <tr>
+                    <th>Imagen</th>
+                    <th>Nombre</th>
+                    <th>Precio</th>
+                    <th>Categoría</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="productlistTableBody">
+                <!-- Productos inyectados desde JS -->
+            </tbody>
+        </table>
+    </div>
+</main>
+
+<!-- MODAL -->
+<div id="productlistModal" class="productlist-modal" style="display: none;">
+    <div class="productlist-modal-content">
+        <div class="productlist-modal-header">
+            <h3 id="productlistModalTitle">Agregar Producto</h3>
+            <button class="productlist-modal-close" id="closeProductModalBtn">✕</button>
+        </div>
+        <form id="productlistForm">
+            <div class="productlist-form-group">
+                <label>Nombre del producto</label>
+                <input type="text" id="productlistName" placeholder="Ej: Vestido de Seda Noir" required>
+            </div>
+            <div class="productlist-form-group">
+                <label>Precio (€)</label>
+                <input type="number" id="productlistPrice" placeholder="Ej: 1250" required>
+            </div>
+            <div class="productlist-form-group">
+                <label>Categoría</label>
+                <input type="text" id="productlistCategory" placeholder="Ej: Mujer" required>
+            </div>
+            <div class="productlist-form-group">
+                <label>URL de la imagen</label>
+                <input type="text" id="productlistImage" placeholder="https://..." required>
+            </div>
+            <button type="submit" class="productlist-btn-submit">
+                <i class="fa-solid fa-check"></i>
+                Guardar Producto
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Toast notification -->
+<div class="productlist-toast" id="productlistToast" style="display: none;">
+    <span id="productlistToastMessage"></span>
+</div>
