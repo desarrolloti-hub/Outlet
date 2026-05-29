@@ -1,16 +1,16 @@
 /* ========================================
-   ADMIN CONTROLLER - OUTLET (SPA)
+   ADMIN CONTROLLER - OUTLET (SPA) - REDISEÑO PREMIUM
    Controlador para panel administrativo
    ======================================== */
 
 // Storage key para productos
 const ADMIN_STORAGE_KEY = 'outlet_admin_products';
 
-// Datos iniciales de productos
+// Datos iniciales de productos (con imágenes más elegantes)
 const defaultProducts = [
     {
         id: 1,
-        image: "https://picsum.photos/id/20/100/100",
+        image: "https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=100&h=100&fit=crop",
         name: "Vestido de Seda Noir",
         price: 1250,
         stock: 10,
@@ -18,7 +18,7 @@ const defaultProducts = [
     },
     {
         id: 2,
-        image: "https://picsum.photos/id/21/100/100",
+        image: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=100&h=100&fit=crop",
         name: "Blazer Estructurado",
         price: 890,
         stock: 5,
@@ -26,7 +26,7 @@ const defaultProducts = [
     },
     {
         id: 3,
-        image: "https://picsum.photos/id/22/100/100",
+        image: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=100&h=100&fit=crop",
         name: "Bolso Clutch Gold",
         price: 1800,
         stock: 0,
@@ -34,7 +34,7 @@ const defaultProducts = [
     },
     {
         id: 4,
-        image: "https://picsum.photos/id/23/100/100",
+        image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=100&h=100&fit=crop",
         name: "Zapatos Tacco Alto",
         price: 650,
         stock: 8,
@@ -46,7 +46,7 @@ let adminProducts = [];
 let editingProductId = null;
 
 /**
- * Cargar estilos CSS
+ * Cargar estilos CSS (verifica si ya existen)
  */
 function loadAdminStyles() {
     if (document.querySelector('link[href*="homeAdmin.css"]')) return;
@@ -89,7 +89,7 @@ function formatMoney(amount) {
 }
 
 /**
- * Mostrar notificación
+ * Mostrar notificación elegante
  */
 function showAdminNotification(message, isError = false) {
     const existing = document.querySelector('.admin-toast');
@@ -101,12 +101,14 @@ function showAdminNotification(message, isError = false) {
     
     if (isError) {
         toast.style.borderLeftColor = '#ef4444';
+        toast.style.color = '#fecaca';
     }
     
     document.body.appendChild(toast);
     
     setTimeout(() => {
         toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100%)';
         setTimeout(() => toast.remove(), 300);
     }, 3000);
 }
@@ -121,7 +123,8 @@ function renderProductsTable() {
     if (adminProducts.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="6" style="text-align: center; padding: 40px;">
+                <td colspan="6" style="text-align: center; padding: 56px 24px; color: #b0a88c;">
+                    <i class="fa-regular fa-box-open" style="font-size: 32px; margin-bottom: 12px; display: block;"></i>
                     No hay productos registrados
                 </td>
             </tr>
@@ -131,8 +134,8 @@ function renderProductsTable() {
 
     tbody.innerHTML = adminProducts.map(product => `
         <tr data-id="${product.id}">
-            <td><img src="${product.image}" class="product-image" alt="${product.name}"></td>
-            <td>${product.name}</td>
+            <td><img src="${product.image}" class="product-image" alt="${product.name}" onerror="this.src='https://picsum.photos/id/20/100/100'"></td>
+            <td><strong>${escapeHtml(product.name)}</strong></td>
             <td>${formatMoney(product.price)}</td>
             <td>${product.stock}</td>
             <td>
@@ -141,11 +144,11 @@ function renderProductsTable() {
                 </span>
             </td>
             <td>
-                <button class="admin-action-btn edit" data-id="${product.id}" data-action="edit">
-                    <i class="fa-solid fa-pencil"></i>
+                <button class="admin-action-btn edit" data-id="${product.id}" data-action="edit" title="Editar">
+                    <i class="fa-regular fa-pen-to-square"></i>
                 </button>
-                <button class="admin-action-btn delete" data-id="${product.id}" data-action="delete">
-                    <i class="fa-solid fa-trash"></i>
+                <button class="admin-action-btn delete" data-id="${product.id}" data-action="delete" title="Eliminar">
+                    <i class="fa-regular fa-trash-can"></i>
                 </button>
             </td>
         </tr>
@@ -169,16 +172,32 @@ function renderProductsTable() {
     });
 }
 
+// Función auxiliar para escapar HTML
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
+}
+
 /**
  * Actualizar estadísticas
  */
 function updateStats() {
-    document.getElementById('productsCount').textContent = adminProducts.length;
-    document.getElementById('usersCount').textContent = '28';
-    document.getElementById('ordersCount').textContent = '45';
+    const productsCountEl = document.getElementById('productsCount');
+    const usersCountEl = document.getElementById('usersCount');
+    const ordersCountEl = document.getElementById('ordersCount');
+    const salesCountEl = document.getElementById('salesCount');
+    
+    if (productsCountEl) productsCountEl.textContent = adminProducts.length;
+    if (usersCountEl) usersCountEl.textContent = '128';
+    if (ordersCountEl) ordersCountEl.textContent = '342';
     
     const totalSales = adminProducts.reduce((sum, p) => sum + (p.price * p.stock), 0);
-    document.getElementById('salesCount').textContent = formatMoney(totalSales);
+    if (salesCountEl) salesCountEl.textContent = formatMoney(totalSales);
 }
 
 /**
@@ -216,7 +235,8 @@ function openEditModal(id) {
  * Cerrar modal
  */
 function closeModal() {
-    document.getElementById('productModal').style.display = 'none';
+    const modal = document.getElementById('productModal');
+    if (modal) modal.style.display = 'none';
     editingProductId = null;
 }
 
@@ -227,27 +247,32 @@ function saveProduct() {
     const name = document.getElementById('productName').value.trim();
     const price = parseFloat(document.getElementById('productPrice').value);
     const stock = parseInt(document.getElementById('productStock').value);
-    const image = document.getElementById('productImage').value.trim();
+    let image = document.getElementById('productImage').value.trim();
     const status = document.getElementById('productStatus').value;
     
     if (!name) {
-        showAdminNotification('⚠️ El nombre del producto es obligatorio', true);
+        showAdminNotification('El nombre del producto es obligatorio', true);
         return;
     }
     
     if (isNaN(price) || price <= 0) {
-        showAdminNotification('⚠️ Ingrese un precio válido', true);
+        showAdminNotification('Ingrese un precio válido', true);
         return;
     }
     
     if (isNaN(stock) || stock < 0) {
-        showAdminNotification('⚠️ Ingrese un stock válido', true);
+        showAdminNotification('Ingrese un stock válido', true);
         return;
     }
     
     if (!image) {
-        showAdminNotification('⚠️ Ingrese una URL de imagen', true);
+        showAdminNotification('Ingrese una URL de imagen', true);
         return;
+    }
+    
+    // Si la imagen no tiene https al inicio, agregar placeholder
+    if (!image.startsWith('http')) {
+        image = 'https://picsum.photos/id/20/100/100';
     }
     
     if (editingProductId) {
@@ -266,7 +291,7 @@ function saveProduct() {
         }
     } else {
         // Crear nuevo
-        const newId = Math.max(...adminProducts.map(p => p.id), 0) + 1;
+        const newId = adminProducts.length > 0 ? Math.max(...adminProducts.map(p => p.id)) + 1 : 1;
         adminProducts.push({
             id: newId,
             name,
@@ -306,7 +331,11 @@ function deleteProduct(id) {
 function logout() {
     if (confirm('¿Cerrar sesión?')) {
         localStorage.removeItem('outlet_admin_auth');
-        window.navigateTo('/login');
+        if (typeof window.navigateTo === 'function') {
+            window.navigateTo('/login');
+        } else {
+            window.location.href = '/login';
+        }
     }
 }
 
@@ -315,27 +344,31 @@ function logout() {
  */
 function checkAdminAuth() {
     const isAdmin = localStorage.getItem('outlet_admin_auth') === 'true';
-    // Si no está autenticado, redirigir a login (opcional)
-    // if (!isAdmin) {
-    //     window.navigateTo('/login');
+    return true; // Por ahora siempre true, puedes descomentar la línea de abajo para habilitar auth
+    // if (!isAdmin && window.location.pathname !== '/login') {
+    //     if (typeof window.navigateTo === 'function') {
+    //         window.navigateTo('/login');
+    //     } else {
+    //         window.location.href = '/login';
+    //     }
     //     return false;
     // }
-    return true;
+    // return true;
 }
 
 /**
  * Inicializar sidebar (si se incluye en el layout)
  */
 function initAdminSidebar() {
-    // Si el sidebar se carga desde el HTML, agregar eventos
     const menuLinks = document.querySelectorAll('.admin-menu a');
     menuLinks.forEach(link => {
         link.addEventListener('click', (e) => {
+            e.preventDefault();
             menuLinks.forEach(l => l.classList.remove('active'));
             link.classList.add('active');
             
             const route = link.getAttribute('data-route');
-            if (route) {
+            if (route && typeof window.navigateTo === 'function') {
                 window.navigateTo(route);
             }
         });
@@ -346,9 +379,9 @@ function initAdminSidebar() {
  * Controlador principal
  */
 export async function adminController() {
-    console.log('👑 Admin Controller - Panel administrativo');
+    console.log('👑 Admin Controller - Panel administrativo premium');
     
-    // Verificar autenticación (opcional)
+    // Verificar autenticación
     checkAdminAuth();
     
     // Cargar estilos
@@ -363,7 +396,7 @@ export async function adminController() {
     // Actualizar estadísticas
     updateStats();
     
-    // Inicializar eventos
+    // Inicializar eventos del DOM
     const addBtn = document.getElementById('addProductBtn');
     if (addBtn) {
         addBtn.addEventListener('click', openAddModal);
@@ -402,5 +435,5 @@ export async function adminController() {
     // Inicializar sidebar
     initAdminSidebar();
     
-    console.log('✅ Admin panel loaded successfully');
+    console.log('✅ Admin panel premium loaded successfully');
 }
