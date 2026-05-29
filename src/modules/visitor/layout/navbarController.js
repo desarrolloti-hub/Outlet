@@ -3,7 +3,7 @@
    Controlador del layout persistente navbar
    ======================================== */
 
-import ThemeService from './themeService.js';
+import ThemeService from '../../shared/layout/themeService.js';  // ✅ Correcto
 
 // Estado privado
 let state = {

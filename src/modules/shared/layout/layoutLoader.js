@@ -1,9 +1,10 @@
 /* ========================================
    LAYOUT LOADER - Outlet Val
-   Versión corregida
+   Versión con ThemeService integrado
    ======================================== */
 
 import { AuthService, LAYOUT_PATHS, LAYOUT_CONTROLLERS, ROLES } from '/services/authService.js';
+import ThemeService from './themeService.js';  // ← Importar desde la misma carpeta
 
 // Cache de elementos DOM
 let elements = {
@@ -19,6 +20,11 @@ let isInitialized = false;
  */
 export async function initLayout() {
     console.log('🎯 Iniciando layoutLoader...');
+    
+    // 🔥 PRIMERO: Aplicar tema ANTES de cualquier renderizado
+    // Esto evita que al recargar (Ctrl+Shift+R) se pierda el modo oscuro
+    ThemeService.init();
+    console.log('🎨 Tema aplicado:', ThemeService.isDarkMode() ? 'dark' : 'light');
     
     // Cachear elementos
     elements.navbarContainer = document.getElementById('navbar');
@@ -87,7 +93,7 @@ async function loadLayoutByRole() {
         
         console.log(`✅ HTMLs cargados - Navbar: ${navbarHTML.length} bytes, Footer: ${footerHTML.length} bytes`);
         
-        // Insertar en el DOM - VERIFICAR QUE EXISTAN LAS VARIABLES
+        // Insertar en el DOM
         if (elements.navbarContainer && navbarHTML) {
             elements.navbarContainer.innerHTML = navbarHTML;
             console.log('✅ Navbar insertado en el DOM');
@@ -111,7 +117,6 @@ async function loadLayoutByRole() {
         
     } catch (error) {
         console.error('❌ Error en loadLayoutByRole:', error);
-        // No intentes usar navbarHTML aquí porque no está definido
         await loadFallbackLayout();
     }
 }
@@ -147,7 +152,6 @@ async function loadFallbackLayout() {
     console.warn('⚠️ Cargando layout de respaldo');
     
     try {
-        // HTML mínimo para que se vea algo
         const fallbackHTML = `
             <nav style="background:#1a1a2e; color:white; padding:15px 20px; font-family:sans-serif;">
                 <div style="display:flex; justify-content:space-between; align-items:center; max-width:1200px; margin:0 auto;">

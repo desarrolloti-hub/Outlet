@@ -34,6 +34,15 @@
 @import url('./pages/productsList.css');
 
 
+
+/* customer */
+
+/* -------------- editar usuario -------------- */
+@import url('./pages/customer/editUser/editUser.css');
+
+
+
+
 /* admin */
 
 /* -------------- Products -------------- */
