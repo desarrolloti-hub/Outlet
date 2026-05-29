@@ -11,8 +11,14 @@ import { wishlistController } from '../modules/visitor/wishlist/wishlistControll
 import { cartController } from '../modules/visitor/cart/cartController.js';
 import { createAccountController } from '../modules/visitor/createAccount/createAccount.js';
 import { adminController } from '../modules/admin/home/homeAdminController.js';
-import { productsController } from '../modules/admin/products/productsAdminController.js';
-import {productListController} from '../modules/admin/products/productsListController.js';
+import { productsController } from '../modules/visitor/products/productsController.js';
+
+
+//  importar controllers de administración de productos
+
+import { productCreateController } from '../modules/admin/products/create/createProductsController.js';
+import { productListController } from '../modules/admin/products/productsListController.js';
+import { editProductController }from '../modules/admin/products/edit/editProductController.js';
 
 export const routes = {
     "/": {
@@ -63,14 +69,30 @@ export const routes = {
         view: "/modules/admin/home/homeAdmin.html",
         controller: adminController
     },
-      "/productsAdmin": {
-        view: "/modules/admin/products/add/productsAdmin.html",
-        controller: productsController
+
+
+
+    /* ========================================
+         Rutas de administración de productos
+   ======================================== */
+      "/createProducts": {
+        view: "/modules/admin/products/create/createProducts.html",
+        controller: productCreateController
     },
        "/productsList": {
         view: "/modules/admin/products/list/productsList.html",
         controller: productListController
     },
+         "/editProducts": {
+        view: "/modules/admin/products/edit/editProducts.html",
+        controller: editProductController
+    },
+
+    
+
+    /* ========================================
+         Rutas de error y fallback  
+   ======================================== */
 
     '/404': {
     view: '/modules/shared/errors/404.html',

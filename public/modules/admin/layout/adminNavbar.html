@@ -1,0 +1,77 @@
+<!-- modules/admin/layout/adminNavbar.html -->
+<nav class="OUTLET-admin-nav">
+    <!-- Header del navbar -->
+    <div class="admin-nav-header">
+        <div class="admin-logo">
+            <img src="/assets/iconos/outlet_lineado_blanco.png" alt="OUTLET Admin" class="admin-logo-img">
+            <span class="admin-logo-text">Admin Panel</span>
+        </div>
+        <button class="admin-collapse-btn" id="adminCollapseBtn" title="Colapsar menú">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+    </div>
+    
+    <!-- Información del usuario -->
+    <div class="admin-user-info">
+        <div class="admin-avatar">
+            <i class="fas fa-user-shield"></i>
+        </div>
+        <div class="admin-user-details">
+            <span class="admin-user-name" id="adminUserName">Administrador</span>
+            <span class="admin-user-email" id="adminUserEmail">admin@outlet.com</span>
+        </div>
+    </div>
+    
+    <!-- Botón tema oscuro (opcional en admin) -->
+    <button class="admin-theme-toggle" id="adminThemeToggleBtn" title="Cambiar modo oscuro">
+        <i class="fas fa-moon"></i>
+    </button>
+    
+    <!-- Enlaces de navegación -->
+    <ul class="admin-nav-links">
+        <li>
+            <a href="/homeAdmin" data-link>
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </a>
+        </li>
+        <li>
+            <a href="/productsList" data-link>
+                <i class="fas fa-boxes"></i>
+                <span>Productos</span>
+            </a>
+        </li>
+        <li>
+            <a href="/productsAdmin" data-link>
+                <i class="fas fa-plus-circle"></i>
+                <span>Agregar Producto</span>
+            </a>
+        </li>
+        <li>
+            <a href="/orders" data-link>
+                <i class="fas fa-shopping-cart"></i>
+                <span>Pedidos</span>
+            </a>
+        </li>
+        <li>
+            <a href="/users" data-link>
+                <i class="fas fa-users"></i>
+                <span>Usuarios</span>
+            </a>
+        </li>
+        <li>
+            <a href="/settings" data-link>
+                <i class="fas fa-cog"></i>
+                <span>Configuración</span>
+            </a>
+        </li>
+    </ul>
+    
+    <!-- Footer del navbar -->
+    <div class="admin-nav-footer">
+        <a href="#" id="adminLogoutBtn" class="admin-logout-btn">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Cerrar Sesión</span>
+        </a>
+    </div>
+</nav>

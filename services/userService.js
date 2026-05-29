@@ -7,6 +7,13 @@ import { User } from '/classes/userModel.js';
 import { UserRepository } from '/repositories/userRepository.js';
 import { CacheService, STORES } from '/services/cacheService.js';
 
+// Roles disponibles
+export const ROLES = {
+    ADMIN: 'admin',
+    VISITOR: 'visitor',
+    GUEST: 'guest'
+};
+
 export const UserService = {
     /**
      * Registrar nuevo usuario
@@ -47,6 +54,9 @@ export const UserService = {
         // Guardar en localStorage sesión
         this._saveSession(result.userData.datosResumidos);
         
+        // Disparar evento de cambio de autenticación
+        this._dispatchAuthChange(result.userData.datosResumidos);
+        
         return result;
     },
     
@@ -65,10 +75,12 @@ export const UserService = {
             
             const result = await UserRepository.loginWithEmail(email.toLowerCase().trim(), password);
             this._saveSession(result.userData.datosResumidos);
+            this._dispatchAuthChange(result.userData.datosResumidos);
             return result;
         } else {
             const result = await UserRepository.loginWithGoogle();
             this._saveSession(result.userData.datosResumidos);
+            this._dispatchAuthChange(result.userData.datosResumidos);
             return result;
         }
     },
@@ -79,6 +91,7 @@ export const UserService = {
     async logout() {
         await UserRepository.logout();
         this._clearSession();
+        this._dispatchAuthChange(null);
         return true;
     },
     
@@ -138,7 +151,9 @@ export const UserService = {
         await CacheService.clearCache(STORES.USERS);
         
         // Actualizar sesión local
-        this._saveSession(new User(updated).datosResumidos);
+        const updatedSession = new User(updated).datosResumidos;
+        this._saveSession(updatedSession);
+        this._dispatchAuthChange(updatedSession);
         
         return new User(updated);
     },
@@ -167,6 +182,10 @@ export const UserService = {
         // Limpiar caché
         await CacheService.clearCache(STORES.USERS);
         
+        // Actualizar sesión local
+        const updatedSession = new User(updated).datosResumidos;
+        this._saveSession(updatedSession);
+        
         return new User(updated);
     },
     
@@ -191,6 +210,74 @@ export const UserService = {
     validateCheckout(userData) {
         const user = new User(userData);
         return user.validarParaCompra();
+    },
+    
+    // ========== NUEVOS MÉTODOS PARA ROLES ==========
+    
+    /**
+     * Obtener el rol del usuario actual (versión asíncrona desde Firestore)
+     */
+    async getUserRole() {
+        // Verificar si está autenticado
+        if (!this.isAuthenticated()) {
+            return ROLES.GUEST;
+        }
+        
+        try {
+            // Obtener usuario actual desde Firestore (para tener datos actualizados)
+            const user = await this.getCurrentUser(true);
+            
+            if (!user) {
+                return ROLES.GUEST;
+            }
+            
+            // Verificar si es admin
+            // Puedes ajustar esta condición según tu modelo de datos
+            if (user.email === 'admin@outlet.com' || 
+                user.rol === 'admin' || 
+                user.isAdmin === true ||
+                user.tipo === 'administrador') {
+                return ROLES.ADMIN;
+            }
+            
+            return ROLES.VISITOR;
+        } catch (error) {
+            console.error('Error obteniendo rol del usuario:', error);
+            return ROLES.GUEST;
+        }
+    },
+    
+    /**
+     * Obtener rol de forma síncrona (desde localStorage - más rápido)
+     */
+    getSyncRole() {
+        const session = this._getSession();
+        if (!session) return ROLES.GUEST;
+        
+        // Verificar condiciones de admin en la sesión guardada
+        if (session.role === 'admin' || 
+            session.isAdmin === true || 
+            session.email === 'admin@outlet.com' ||
+            session.tipo === 'administrador') {
+            return ROLES.ADMIN;
+        }
+        
+        return ROLES.VISITOR;
+    },
+    
+    /**
+     * Verificar si es administrador (versión síncrona - rápida)
+     */
+    isAdminSync() {
+        return this.getSyncRole() === ROLES.ADMIN;
+    },
+    
+    /**
+     * Verificar si es administrador (versión asíncrona - precisa)
+     */
+    async isAdmin() {
+        const role = await this.getUserRole();
+        return role === ROLES.ADMIN;
     },
     
     // ========== MÉTODOS PRIVADOS ==========
@@ -222,5 +309,15 @@ export const UserService = {
     _clearSession() {
         localStorage.removeItem('outlet_user');
         localStorage.removeItem('outlet_cart');
+    },
+    
+    /**
+     * Disparar evento de cambio de autenticación
+     */
+    _dispatchAuthChange(userData) {
+        const event = new CustomEvent('auth:stateChanged', { 
+            detail: userData 
+        });
+        window.dispatchEvent(event);
     }
 };

@@ -1,0 +1,199 @@
+/* modules/admin/layout/adminNavbar.css */
+.OUTLET-admin-nav {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 260px;
+    background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    z-index: 1050;
+    transition: width 0.3s ease;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.OUTLET-admin-nav.collapsed {
+    width: 70px;
+}
+
+.OUTLET-admin-nav.collapsed .admin-logo-text,
+.OUTLET-admin-nav.collapsed .admin-user-details,
+.OUTLET-admin-nav.collapsed .admin-nav-links span {
+    display: none;
+}
+
+.OUTLET-admin-nav.collapsed .admin-nav-links li a {
+    justify-content: center;
+    padding: 12px;
+}
+
+.OUTLET-admin-nav.collapsed .admin-nav-links li a i {
+    margin: 0;
+    font-size: 20px;
+}
+
+/* Header */
+.admin-nav-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.admin-logo-img {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+}
+
+.admin-logo-text {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.admin-collapse-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    transition: all 0.3s;
+}
+
+.admin-collapse-btn:hover {
+    background: rgba(221, 171, 59, 0.3);
+}
+
+/* User info */
+.admin-user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-avatar {
+    width: 40px;
+    height: 40px;
+    background: rgba(221, 171, 59, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.admin-avatar i {
+    font-size: 20px;
+    color: #ddab3b;
+}
+
+.admin-user-details {
+    flex: 1;
+}
+
+.admin-user-name {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.admin-user-email {
+    display: block;
+    font-size: 11px;
+    opacity: 0.7;
+}
+
+/* Theme toggle */
+.admin-theme-toggle {
+    margin: 15px 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: #fff;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.admin-theme-toggle:hover {
+    background: rgba(221, 171, 59, 0.3);
+}
+
+/* Navigation links */
+.admin-nav-links {
+    flex: 1;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.admin-nav-links li a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.admin-nav-links li a i {
+    width: 20px;
+    font-size: 16px;
+}
+
+.admin-nav-links li a:hover {
+    background: rgba(221, 171, 59, 0.1);
+    color: #ddab3b;
+}
+
+.admin-nav-links li a.active {
+    background: rgba(221, 171, 59, 0.2);
+    color: #ddab3b;
+    border-right: 3px solid #ddab3b;
+}
+
+/* Footer */
+.admin-nav-footer {
+    padding: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-logout-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.3s;
+}
+
+.admin-logout-btn:hover {
+    background: rgba(220, 38, 38, 0.2);
+    color: #ef4444;
+}
+
+/* Ajuste del main para admin */
+body.role-admin main {
+    margin-left: 260px;
+    transition: margin-left 0.3s ease;
+}
+
+body.role-admin .OUTLET-admin-nav.collapsed ~ main {
+    margin-left: 70px;
+}
