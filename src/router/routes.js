@@ -3,6 +3,11 @@
    ======================================== */
 
 // Importar controllers de vistas
+
+
+
+//         ---------   visitor   ---------
+
 import { homeController } from '../modules/visitor/home/homeController.js';
 import { init404Controller } from '../modules/shared/errors/404Controller.js';
 import { coleccionController } from '../modules/visitor/collection/collectionController.js';
@@ -12,6 +17,7 @@ import { cartController } from '../modules/visitor/cart/cartController.js';
 import { createAccountController } from '../modules/visitor/createAccount/createAccount.js';
 import { adminController } from '../modules/admin/home/homeAdminController.js';
 import { productsController } from '../modules/visitor/products/productsController.js';
+
 
 
 //         ---------   customer   ---------
