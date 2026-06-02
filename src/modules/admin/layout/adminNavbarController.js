@@ -3,7 +3,7 @@
    Controlador del navbar VERTICAL para administrador
    ======================================== */
 
-import ThemeService from '../../visitor/layout/themeService.js';
+import ThemeService from '../../shared/layout/themeService.js';  // ✅ Correcto
 
 // Estado privado
 let state = {

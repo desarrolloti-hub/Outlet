@@ -1,0 +1,156 @@
+/* ========================================
+   ADMIN FOOTER - OUTLET
+   Footer minimalista para panel de administración
+   Basado en variables globales --outlet-*
+   ======================================== */
+
+.outlet-admin-footer {
+    margin-top: auto;
+    width: 100%;
+    background: transparent;
+}
+
+/* Línea dorada superior */
+.outlet-admin-footer-gold-line {
+    height: 1px;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        var(--outlet-gold) 20%, 
+        var(--outlet-gold-light) 50%, 
+        var(--outlet-gold) 80%, 
+        transparent 100%);
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+
+/* Contenido principal */
+.outlet-admin-footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 16px 24px;
+    font-size: 12px;
+    color: var(--outlet-text-secondary);
+    border-top: 1px solid var(--outlet-border-soft);
+}
+
+/* Marca */
+.outlet-admin-footer-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.outlet-admin-brand-name {
+    font-weight: 700;
+    letter-spacing: 2px;
+    font-size: 13px;
+    color: var(--outlet-gold);
+}
+
+.outlet-admin-brand-tag {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    background: rgba(221, 171, 59, 0.15);
+    padding: 2px 8px;
+    border-radius: 4px;
+    color: var(--outlet-gold);
+}
+
+/* Copyright */
+.outlet-admin-footer-copyright {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--outlet-text-variant);
+}
+
+.outlet-admin-footer-copyright i {
+    font-size: 11px;
+    color: var(--outlet-text-muted);
+}
+
+.outlet-admin-footer-separator {
+    opacity: 0.5;
+    margin: 0 4px;
+}
+
+.outlet-admin-badge {
+    background: var(--outlet-border-light);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--outlet-text-secondary);
+}
+
+/* Versión */
+.outlet-admin-footer-version {
+    display: flex;
+    align-items: center;
+}
+
+.outlet-admin-version-badge {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: var(--outlet-text-muted);
+    border: 1px solid var(--outlet-border-soft);
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+/* Modo oscuro */
+body.dark-mode .outlet-admin-footer-gold-line {
+    opacity: 0.8;
+}
+
+body.dark-mode .outlet-admin-badge {
+    background: var(--outlet-border-medium);
+}
+
+body.dark-mode .outlet-admin-version-badge {
+    border-color: var(--outlet-border-medium);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .outlet-admin-footer-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 12px;
+        padding: 16px;
+    }
+    
+    .outlet-admin-footer-copyright {
+        justify-content: center;
+    }
+    
+    .outlet-admin-footer-brand {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .outlet-admin-footer-content {
+        padding: 12px;
+    }
+    
+    .outlet-admin-footer-copyright {
+        font-size: 10px;
+        gap: 4px;
+    }
+    
+    .outlet-admin-brand-name {
+        font-size: 11px;
+    }
+    
+    .outlet-admin-brand-tag {
+        font-size: 8px;
+    }
+}

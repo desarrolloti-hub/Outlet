@@ -1,12 +1,14 @@
 /* ========================================
    THEME SERVICE - Modo oscuro/claro
+   Shared entre todos los layouts (admin, customer, visitor)
    ======================================== */
 
 const THEME_KEY = 'outlet_theme';
 
 export const ThemeService = {
     /**
-     * Inicializar tema
+     * Inicializar tema - se llama UNA VEZ al inicio de la app
+     * ANTES de que se cargue cualquier navbar o vista
      */
     init() {
         const savedTheme = localStorage.getItem(THEME_KEY);
@@ -17,6 +19,14 @@ export const ThemeService = {
         } else {
             this.enableLightMode();
         }
+        
+        // Disparar evento para que los controladores se sincronicen
+        document.dispatchEvent(new CustomEvent('themeChanged', { 
+            detail: { isDarkMode: this.isDarkMode() } 
+        }));
+        
+        console.log('🎨 ThemeService inicializado:', this.isDarkMode() ? 'dark' : 'light');
+        return this.isDarkMode();
     },
     
     /**
@@ -25,6 +35,8 @@ export const ThemeService = {
     enableDarkMode() {
         document.body.classList.add('dark-mode');
         localStorage.setItem(THEME_KEY, 'dark');
+        
+        document.dispatchEvent(new CustomEvent('themeChanged', { detail: { isDarkMode: true } }));
         return true;
     },
     
@@ -34,6 +46,8 @@ export const ThemeService = {
     enableLightMode() {
         document.body.classList.remove('dark-mode');
         localStorage.setItem(THEME_KEY, 'light');
+        
+        document.dispatchEvent(new CustomEvent('themeChanged', { detail: { isDarkMode: false } }));
         return false;
     },
     
@@ -55,6 +69,13 @@ export const ThemeService = {
      */
     isDarkMode() {
         return document.body.classList.contains('dark-mode');
+    },
+    
+    /**
+     * Obtener tema actual
+     */
+    getTheme() {
+        return this.isDarkMode() ? 'dark' : 'light';
     }
 };
 
