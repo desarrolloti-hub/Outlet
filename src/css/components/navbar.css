@@ -251,6 +251,23 @@ body.dark-mode {
     transition: opacity 0.2s;
 }
 
+.wishlist-count {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: var(--nav-gold);
+    color: #1a1a1a;
+    font-size: 10px;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+}
+
 /* ========== HAMBURGER (MÓVIL) ========== */
 .hamburger-btn {
     display: none;
@@ -264,6 +281,8 @@ body.dark-mode {
     border: none;
     cursor: pointer;
     transition: all 0.3s ease;
+    z-index: 1002;
+    position: relative;
 }
 
 .hamburger-btn span {
@@ -286,24 +305,62 @@ body.dark-mode {
     transform: rotate(-45deg) translate(5px, -5px);
 }
 
-/* ========== MENÚ MÓVIL ========== */
+/* ========== MENÚ MÓVIL - VERSIÓN RESPONSIVE 100% ========== */
 .mobile-menu {
-    display: none;
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
+    width: 100%;
+    height: 100vh;
     background: var(--nav-bg);
-    z-index: 999;
-    padding-top: 100px;
+    z-index: 1001;
     transform: translateX(100%);
-    transition: transform 0.3s ease;
+    transition: transform 0.3s ease-in-out;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .mobile-menu.open {
     transform: translateX(0);
-    display: block;
+}
+
+/* Botón de cerrar (X) dentro del menú móvil - UN SOLO TACHE */
+.mobile-menu-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 44px;
+    height: 44px;
+    background: var(--nav-bg-secondary);
+    border: 1px solid var(--nav-border-color);
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 1003;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    font-size: 20px;
+    color: var(--nav-icon-color);
+}
+
+.mobile-menu-close:hover {
+    background: var(--nav-gold);
+    color: #1a1a1a;
+    transform: rotate(90deg);
+}
+
+/* Contenedor del contenido del menú móvil */
+.mobile-menu-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 80px 24px 40px;
+    width: 100%;
 }
 
 .mobile-nav-links {
@@ -311,10 +368,13 @@ body.dark-mode {
     padding: 0;
     margin: 0;
     text-align: center;
+    width: 100%;
+    max-width: 400px;
 }
 
 .mobile-nav-links li {
-    margin: 24px 0;
+    margin: 0;
+    border-bottom: 1px solid var(--nav-border-color);
 }
 
 .mobile-nav-links li a {
@@ -324,20 +384,37 @@ body.dark-mode {
     letter-spacing: 2px;
     color: var(--nav-icon-color);
     text-transform: uppercase;
-    padding: 12px 0;
-    display: inline-block;
-    transition: color 0.2s;
+    padding: 18px 0;
+    display: block;
+    transition: all 0.2s ease;
     position: relative;
+}
+
+.mobile-nav-links li a i {
+    margin-right: 12px;
+    width: 24px;
+    color: var(--nav-gold);
+    font-size: 18px;
 }
 
 .mobile-nav-links li a:hover {
     color: var(--nav-gold-light);
+    transform: translateX(5px);
 }
 
 .mobile-nav-links li a.active {
     color: var(--nav-gold);
 }
 
+.mobile-nav-links li a.active::before {
+    content: '✦';
+    position: absolute;
+    left: -20px;
+    color: var(--nav-gold);
+    font-size: 12px;
+}
+
+/* Overlay para fondo oscuro - SIN BLUR */
 .mobile-overlay {
     position: fixed;
     top: 0;
@@ -345,7 +422,7 @@ body.dark-mode {
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
-    z-index: 998;
+    z-index: 1000;
     display: none;
 }
 
@@ -669,10 +746,6 @@ body.menu-open {
         margin-right: 12px;
     }
     
-    .search-btn {
-        display: none;
-    }
-    
     .logo-img {
         height: 35px;
     }
@@ -694,6 +767,16 @@ body.menu-open {
     
     .marquee-content .promo-separator {
         margin: 0 6px;
+    }
+    
+    /* Ajustes del menú móvil en tablet */
+    .mobile-nav-links li a {
+        font-size: 16px;
+        padding: 16px 0;
+    }
+    
+    .mobile-menu-content {
+        padding: 80px 20px 40px;
     }
 }
 
@@ -731,11 +814,29 @@ body.menu-open {
         gap: 10px;
     }
     
-    .cart-count {
+    .cart-count,
+    .wishlist-count {
         min-width: 16px;
         height: 16px;
         font-size: 9px;
         top: -4px;
         right: -4px;
+    }
+    
+    /* Ajustes del menú móvil en móvil pequeño */
+    .mobile-nav-links li a {
+        font-size: 14px;
+        padding: 14px 0;
+    }
+    
+    .mobile-menu-content {
+        padding: 70px 16px 40px;
+    }
+    
+    .mobile-menu-close {
+        top: 15px;
+        right: 15px;
+        width: 36px;
+        height: 36px;
     }
 }
