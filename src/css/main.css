@@ -21,17 +21,17 @@
 @import url('./components/admin/navbar.css');
 
 /* Pages */
-@import url('./pages/home.css');
-@import url('./pages/404.css');
-@import url('./pages/products.css');
-@import url('./pages/collection.css');
-@import url('./pages/wishlist.css'); 
-@import url('./pages/cart.css');
-@import url('./pages/login.css');
-@import url('./pages/createAccount.css');
-@import url('./pages/homeAdmin.css');
+@import url('./pages/visitor/home/home.css');
+@import url('./pages/visitor/shared/errors/404.css');
+@import url('./pages/visitor/products/products.css');
+@import url('./pages/visitor/collection/collection.css');
+@import url('./pages/visitor/wishlist/wishlist.css'); 
+@import url('./pages/visitor/cart/cart.css');
+@import url('./pages/visitor/login/login.css');
+@import url('./pages/visitor/createAccount/createAccount.css');
+@import url('./pages/admin/home/homeAdmin.css');
 
-@import url('./pages/productsList.css');
+@import url('./pages/admin/products/list/productsList.css');
 
 
 
