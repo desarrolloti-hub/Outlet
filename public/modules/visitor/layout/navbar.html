@@ -3,7 +3,6 @@
    Componente de navegación principal
    ======================================== -->
 
-<!-- Asegúrate de incluir Font Awesome en tu index.html -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <nav class="OUTLET-nav">
@@ -16,7 +15,6 @@
 
     <!-- Contenedor principal -->
     <div class="nav-container">
-        <!-- Lado izquierdo: Logo + Theme toggle -->
         <div class="nav-left">
             <div class="nav-logo">
                 <a href="/" data-link class="logo-link">
@@ -28,9 +26,8 @@
             </button>
         </div>
 
-        <!-- Enlaces de navegación desktop -->
         <ul class="nav-links">
-            <li><a href="/" data-link class="active">NUEVO</a></li>
+            <li><a href="/" data-link>NUEVO</a></li>
             <li><a href="/collection?category=women" data-link>MUJER</a></li>
             <li><a href="/collection?category=men" data-link>HOMBRE</a></li>
             <li><a href="/products" data-link>NIÑOS</a></li>
@@ -38,7 +35,6 @@
             <li><a href="/sale" data-link>REBAJAS</a></li>
         </ul>
 
-        <!-- Iconos de acción -->
         <div class="nav-icons">
             <a href="/search" data-link class="icon-btn" id="searchBtn" aria-label="Buscar">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -71,7 +67,6 @@
             </a>
         </div>
 
-        <!-- Botón hamburguesa (móvil) -->
         <button class="hamburger-btn" id="hamburgerBtn" aria-label="Menú">
             <span></span>
             <span></span>
@@ -79,31 +74,30 @@
         </button>
     </div>
 
-    <!-- Línea dorada decorativa -->
     <div class="nav-gold-line"></div>
 
-    <!-- MEGA MENÚ DESPLEGABLE -->
     <div class="mega-menu-dropdown" id="megaMenuDropdown">
-        <!-- ... contenido del mega menú (se mantiene igual) ... -->
+        <!-- Aquí va el contenido del mega menú -->
     </div>
 
-    <!-- Menú móvil - DESDE LA IZQUIERDA -->
+    <!-- Menú móvil - MISMO COLOR QUE EL NAVBAR -->
     <div class="mobile-menu" id="mobileMenu">
         <button class="mobile-close-btn" id="mobileCloseBtn" aria-label="Cerrar menú">
             <i class="fas fa-times"></i>
-        </button>
-        <ul class="mobile-nav-links">
-            <li><a href="/" data-link><i class="fas fa-fire"></i> NUEVO</a></li>
-            <li><a href="/collection?category=women" data-link><i class="fas fa-female"></i> MUJER</a></li>
-            <li><a href="/collection?category=men" data-link><i class="fas fa-male"></i> HOMBRE</a></li>
-            <li><a href="/products" data-link><i class="fas fa-child"></i> NIÑOS</a></li>
-            <li><a href="#" id="mobileCategoriesBtn"><i class="fas fa-th-large"></i> CATEGORÍAS</a></li>
-            <li><a href="/sale" data-link><i class="fas fa-tags"></i> REBAJAS</a></li>
-            <li><hr class="mobile-divider"></li>
-            <li><a href="/search" data-link><i class="fas fa-search"></i> BUSCAR</a></li>
-            <li><a href="/login" data-link><i class="fas fa-user-circle"></i> MI CUENTA</a></li>
-            <li><a href="/wishlist" data-link><i class="fas fa-heart"></i> LISTA DE DESEOS</a></li>
-            <li><a href="/cart" data-link><i class="fas fa-shopping-cart"></i> CARRITO</a></li>
-        </ul>
-    </div>
+        </button> 
+    <ul class="mobile-nav-links">
+    <li><a href="/" data-link><i class="fas fa-fire"></i> NUEVO</a></li>
+    <li><a href="/collection?category=women" data-link><i class="fas fa-female"></i> MUJER</a></li>
+    <li><a href="/collection?category=men" data-link><i class="fas fa-male"></i> HOMBRE</a></li>
+    <li><a href="/products" data-link><i class="fas fa-child"></i> NIÑOS</a></li>
+    <li><a href="#" id="mobileCategoriesBtn"><i class="fas fa-th-large"></i> CATEGORÍAS</a></li>
+    <li><a href="/sale" data-link><i class="fas fa-tags"></i> REBAJAS</a></li>
+
+    <li><hr class="mobile-divider"></li>
+
+    <li><a href="/search" data-link><i class="fas fa-search"></i> BUSCAR</a></li>
+    <li><a href="/login" data-link><i class="fas fa-user-circle"></i> MI CUENTA</a></li>
+    <li><a href="/wishlist" data-link><i class="fas fa-heart"></i> LISTA DE DESEOS</a></li>
+    <li><a href="/cart" data-link><i class="fas fa-shopping-cart"></i> CARRITO</a></li>
+</ul>
 </nav>
