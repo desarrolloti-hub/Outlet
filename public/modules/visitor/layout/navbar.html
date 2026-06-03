@@ -1,19 +1,21 @@
 <!-- ========================================
-   NAVBAR - OUTLET
-   Componente de navegación principal
+   NAVBAR - OUTLET LUXURY EDITION
+   Diseño elegante y sofisticado
    ======================================== -->
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <nav class="OUTLET-nav">
-    <!-- Banner Promocional -->
+    <!-- Banner Promocional Elegante -->
     <div class="promo-banner">
-        <i class="fas fa-truck"></i>
-        <span>ENVÍO GRATIS EN PEDIDOS SUPERIORES A $50</span>
-        <span class="promo-separator">•</span>
-        <i class="fas fa-tag"></i>
-        <span>15% DE DESCUENTO EN TU PRIMER PEDIDO CON CÓDIGO: OUTLET15</span>
-        <i class="fas fa-gift"></i>
+        <div class="promo-content">
+            <i class="fas fa-gem"></i>
+            <span>ENVÍO GRATIS EN PEDIDOS SUPERIORES A $50</span>
+            <span class="promo-separator">—</span>
+            <i class="fas fa-crown"></i>
+            <span>15% DE DESCUENTO EN TU PRIMER PEDIDO CON CÓDIGO: LUXE15</span>
+            <i class="fas fa-gem"></i>
+        </div>
     </div>
 
     <!-- Contenedor principal -->
@@ -34,7 +36,119 @@
             <li><a href="/collection?category=women" data-link>MUJER</a></li>
             <li><a href="/collection?category=men" data-link>HOMBRE</a></li>
             <li><a href="/products" data-link>NIÑOS</a></li>
-            <li><a href="#" id="categoriesNavBtn">CATEGORÍAS</a></li>
+            <li class="categories-dropdown">
+                <a href="#" id="categoriesNavBtn">CATEGORÍAS <i class="fas fa-chevron-down"></i></a>
+                
+                <!-- MEGA MENÚ LUXURY -->
+                <div class="mega-menu-luxury" id="megaMenuDropdown">
+                    <div class="mega-luxury-container">
+                        <!-- Sección de Categorías con imágenes -->
+                        <div class="mega-luxury-section">
+                            <div class="luxury-grid">
+                                <!-- Categoría 1 - Vestidos -->
+                                <a href="/category/women/dresses" data-link class="luxury-category">
+                                    <div class="luxury-category-image">
+                                        <img src="https://images.pexels.com/photos/1462637/pexels-photo-1462637.jpeg?auto=compress&cs=tinysrgb&w=200" alt="Vestidos">
+                                        <div class="luxury-overlay"></div>
+                                    </div>
+                                    <div class="luxury-category-info">
+                                        <h4>Vestidos</h4>
+                                        <p>112 productos</p>
+                                    </div>
+                                </a>
+                                
+                                <!-- Categoría 2 - Blusas -->
+                                <a href="/category/women/tops" data-link class="luxury-category">
+                                    <div class="luxury-category-image">
+                                        <img src="https://images.pexels.com/photos/1598507/pexels-photo-1598507.jpeg?auto=compress&cs=tinysrgb&w=200" alt="Blusas">
+                                        <div class="luxury-overlay"></div>
+                                    </div>
+                                    <div class="luxury-category-info">
+                                        <h4>Blusas</h4>
+                                        <p>89 productos</p>
+                                    </div>
+                                </a>
+                                
+                                <!-- Categoría 3 - Pantalones -->
+                                <a href="/category/women/pants" data-link class="luxury-category">
+                                    <div class="luxury-category-image">
+                                        <img src="https://images.pexels.com/photos/1598507/pexels-photo-1598507.jpeg?auto=compress&cs=tinysrgb&w=200" alt="Pantalones">
+                                        <div class="luxury-overlay"></div>
+                                    </div>
+                                    <div class="luxury-category-info">
+                                        <h4>Pantalones</h4>
+                                        <p>156 productos</p>
+                                    </div>
+                                </a>
+                                
+                                <!-- Categoría 4 - Zapatos -->
+                                <a href="/category/shoes" data-link class="luxury-category">
+                                    <div class="luxury-category-image">
+                                        <img src="https://images.pexels.com/photos/2529148/pexels-photo-2529148.jpeg?auto=compress&cs=tinysrgb&w=200" alt="Zapatos">
+                                        <div class="luxury-overlay"></div>
+                                    </div>
+                                    <div class="luxury-category-info">
+                                        <h4>Zapatos</h4>
+                                        <p>203 productos</p>
+                                    </div>
+                                </a>
+                                
+                                <!-- Categoría 5 - Bolsos -->
+                                <a href="/category/accessories/bags" data-link class="luxury-category">
+                                    <div class="luxury-category-image">
+                                        <img src="https://images.pexels.com/photos/1152077/pexels-photo-1152077.jpeg?auto=compress&cs=tinysrgb&w=200" alt="Bolsos">
+                                        <div class="luxury-overlay"></div>
+                                    </div>
+                                    <div class="luxury-category-info">
+                                        <h4>Bolsos</h4>
+                                        <p>78 productos</p>
+                                    </div>
+                                </a>
+                                
+                                <!-- Categoría 6 - Joyas -->
+                                <a href="/category/accessories/jewelry" data-link class="luxury-category">
+                                    <div class="luxury-category-image">
+                                        <img src="https://images.pexels.com/photos/1124460/pexels-photo-1124460.jpeg?auto=compress&cs=tinysrgb&w=200" alt="Joyas">
+                                        <div class="luxury-overlay"></div>
+                                    </div>
+                                    <div class="luxury-category-info">
+                                        <h4>Joyas</h4>
+                                        <p>45 productos</p>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Separador elegante -->
+                        <div class="luxury-divider"></div>
+
+                        <!-- Sección de Colecciones Destacadas -->
+                        <div class="mega-luxury-featured">
+                            <h3 class="luxury-title">COLECCIONES DESTACADAS</h3>
+                            <div class="featured-collections">
+                                <a href="/sale" data-link class="featured-collection">
+                                    <i class="fas fa-fire"></i>
+                                    <span>Hot Sale</span>
+                                    <small>Hasta 50% OFF</small>
+                                </a>
+                                <a href="/category/new" data-link class="featured-collection">
+                                    <i class="fas fa-star"></i>
+                                    <span>Nuevo</span>
+                                    <small>Llegadas recientes</small>
+                                </a>
+                                <a href="/category/premium" data-link class="featured-collection">
+                                    <i class="fas fa-crown"></i>
+                                    <span>Premium</span>
+                                    <small>Edición limitada</small>
+                                </a>
+                            </div>
+                        </div>
+
+                
+                      
+                    </div>
+                </div>
+            </li>
             <li><a href="/sale" data-link>REBAJAS</a></li>
         </ul>
 
@@ -42,16 +156,13 @@
             <a href="/search" data-link class="icon-btn" id="searchBtn" aria-label="Buscar">
                 <i class="fas fa-search"></i>
             </a>
-            
             <a href="/login" data-link class="icon-btn" id="userBtn" aria-label="Mi cuenta">
                 <i class="fas fa-user-circle"></i>
             </a>
-            
             <a href="/wishlist" data-link class="icon-btn" id="wishlistBtn" aria-label="Lista de deseos">
                 <i class="fas fa-heart"></i>
                 <span class="wishlist-count" id="wishlistCount" style="display: none;">0</span>
             </a>
-            
             <a href="/cart" data-link class="icon-btn" id="cartBtn" aria-label="Carrito">
                 <i class="fas fa-shopping-cart"></i>
                 <span class="cart-count" id="cartCount">0</span>
@@ -67,11 +178,7 @@
 
     <div class="nav-gold-line"></div>
 
-    <div class="mega-menu-dropdown" id="megaMenuDropdown">
-        <!-- Aquí va el contenido del mega menú -->
-    </div>
-
-    <!-- Menú móvil - MISMO COLOR QUE EL NAVBAR -->
+    <!-- Menú móvil -->
     <div class="mobile-menu" id="mobileMenu">
         <button class="mobile-close-btn" id="mobileCloseBtn" aria-label="Cerrar menú">
             <i class="fas fa-times"></i>
@@ -83,9 +190,7 @@
             <li><a href="/products" data-link><i class="fas fa-child"></i> NIÑOS</a></li>
             <li><a href="#" id="mobileCategoriesBtn"><i class="fas fa-th-large"></i> CATEGORÍAS</a></li>
             <li><a href="/sale" data-link><i class="fas fa-tags"></i> REBAJAS</a></li>
-
             <li><hr class="mobile-divider"></li>
-
             <li><a href="/search" data-link><i class="fas fa-search"></i> BUSCAR</a></li>
             <li><a href="/login" data-link><i class="fas fa-user-circle"></i> MI CUENTA</a></li>
             <li><a href="/wishlist" data-link><i class="fas fa-heart"></i> LISTA DE DESEOS</a></li>

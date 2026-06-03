@@ -167,6 +167,10 @@ body.dark-mode {
     padding: 0;
 }
 
+.nav-links li {
+    position: relative;
+}
+
 .nav-links li a {
     text-decoration: none;
     font-size: 12px;
@@ -201,6 +205,189 @@ body.dark-mode {
 
 .nav-links li a.active {
     color: var(--nav-gold);
+}
+
+/* Flecha del botón categorías */
+#categoriesNavBtn i {
+    font-size: 10px;
+    margin-left: 5px;
+    transition: transform 0.2s ease;
+}
+
+.categories-dropdown:hover #categoriesNavBtn i {
+    transform: rotate(180deg);
+}
+
+/* ========== MEGA MENÚ ESTILO SHEIN ========== */
+.categories-dropdown {
+    position: relative;
+}
+
+.mega-menu-shein {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    background: var(--nav-bg);
+    min-width: 900px;
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1000;
+    border: 1px solid var(--nav-border-color);
+}
+
+.categories-dropdown:hover .mega-menu-shein {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Flecha decorativa */
+.mega-menu-shein::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid var(--nav-gold);
+}
+
+.mega-menu-container {
+    display: flex;
+    gap: 40px;
+    padding: 30px;
+    background: var(--nav-bg);
+    border-radius: 12px;
+}
+
+.mega-col {
+    flex: 1;
+    min-width: 140px;
+}
+
+.mega-col-title {
+    position: relative;
+    border-bottom: none;
+    padding-bottom: 12px;
+}
+
+.mega-col-title::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 40px;
+    height: 1px;
+    background: var(--nav-gold);
+}
+
+.mega-col-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.mega-col-links li {
+    margin-bottom: 10px;
+}
+
+.mega-col-links li a {
+    text-decoration: none;
+    font-size: 13px;
+    color: var(--nav-text-secondary);
+    transition: all 0.2s ease;
+    display: inline-block;
+}
+
+.mega-col-links li a:hover {
+    color: var(--nav-gold);
+    transform: translateX(4px);
+}
+
+/* Productos destacados */
+.mega-featured {
+    min-width: 180px;
+    background: var(--nav-hover-bg);
+    padding: 16px;
+    border-radius: 12px;
+}
+
+.featured-products {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.featured-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    background: var(--nav-bg);
+}
+
+.featured-item:hover {
+    transform: translateX(4px);
+    background: var(--nav-hover-bg);
+}
+
+.featured-item img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.featured-item span {
+    display: flex;
+    flex-direction: column;
+    font-size: 12px;
+    color: var(--nav-text-secondary);
+}
+
+.featured-item .price {
+    font-weight: 700;
+    color: var(--nav-gold);
+    font-size: 13px;
+    margin-top: 4px;
+}
+
+/* Banner dentro del mega menú */
+.mega-banner {
+    border-top: 1px solid var(--nav-border-color);
+    padding: 12px 30px;
+    background: linear-gradient(135deg, var(--nav-gold-dark), var(--nav-gold));
+    border-radius: 0 0 12px 12px;
+}
+
+.mega-banner a {
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.mega-banner a i {
+    font-size: 14px;
+}
+
+.mega-banner a:hover {
+    gap: 15px;
 }
 
 /* ========== ICONOS ========== */
@@ -251,6 +438,23 @@ body.dark-mode {
     transition: opacity 0.2s;
 }
 
+.wishlist-count {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: var(--nav-gold);
+    color: #1a1a1a;
+    font-size: 10px;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+}
+
 /* ========== HAMBURGER (MÓVIL) ========== */
 .hamburger-btn {
     display: none;
@@ -287,25 +491,19 @@ body.dark-mode {
     transform: rotate(-45deg) translate(5px, -5px);
 }
 
-/* ========== MENÚ MÓVIL - MISMO COLOR QUE EL NAVBAR ========== */
+/* ========== MENÚ MÓVIL ========== */
 .mobile-menu {
     position: fixed;
     top: 0;
     left: 0;
-
     width: 100%;
     height: 100%;
-
     background-color: var(--nav-container-bg) !important;
-
     z-index: 9999;
-
     transform: translateX(-100%);
     transition: transform 0.3s ease-in-out;
-
     overflow-y: auto;
     overflow-x: hidden;
-
     visibility: visible;
     display: block;
 }
@@ -375,7 +573,6 @@ body.dark-mode {
     color: var(--nav-gold-light);
 }
 
-/* Enlace activo en móvil - COLOR DORADO */
 .mobile-nav-links li a.active {
     color: var(--nav-gold);
 }
@@ -415,50 +612,36 @@ body.menu-open {
     overflow: hidden;
 }
 
-/* Solo mostrar en móvil */
-@media (max-width: 768px) {
-    .mobile-menu {
-        display: block;
-    }
-}
-
-@media (min-width: 769px) {
-    .mobile-menu {
-        display: none !important;
-    }
-    .mobile-overlay {
-        display: none !important;
-    }
-}
-
 /* ========== RESPONSIVE ========== */
+/* Responsive del Mega Menú Shein */
 @media (max-width: 1024px) {
-    .mega-menu-grid {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    .mega-menu-shein {
+        min-width: 700px;
+        left: 0;
+        transform: translateX(0);
+    }
+    
+    .categories-dropdown:hover .mega-menu-shein {
+        transform: translateX(0) translateY(0);
+    }
+    
+    .mega-menu-shein::before {
+        left: 30px;
+        transform: translateX(0);
     }
 }
 
 @media (max-width: 900px) {
-    .mega-menu-layout {
-        flex-direction: column;
+    .mega-menu-shein {
+        display: none;
     }
     
-    .mega-menu-sidebar {
-        width: 100%;
-        border-right: none;
-        border-bottom: 1px solid var(--nav-border-color);
-        padding-right: 0;
-        padding-bottom: 12px;
-        margin-bottom: 12px;
-    }
-    
-    .sidebar-filters {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-        gap: 12px;
+    .categories-dropdown:hover .mega-menu-shein {
+        display: none;
     }
 }
 
+/* Responsive general */
 @media (max-width: 768px) {
     .nav-container {
         padding: 12px 20px;
@@ -487,10 +670,6 @@ body.menu-open {
         font-size: 16px;
     }
     
-    .mega-menu-container {
-        padding: 16px 20px;
-    }
-    
     .promo-banner {
         font-size: 9px;
         padding: 6px 0;
@@ -499,15 +678,18 @@ body.menu-open {
     .marquee-content .promo-separator {
         margin: 0 6px;
     }
+    
+    .mobile-menu {
+        display: block;
+    }
 }
 
-@media (max-width: 640px) {
-    .mega-menu-grid {
-        grid-template-columns: 1fr;
+@media (min-width: 769px) {
+    .mobile-menu {
+        display: none !important;
     }
-    
-    .mega-menu-grid-wrapper {
-        max-height: 45vh;
+    .mobile-overlay {
+        display: none !important;
     }
 }
 
@@ -535,11 +717,331 @@ body.menu-open {
         gap: 10px;
     }
     
-    .cart-count {
+    .cart-count,
+    .wishlist-count {
         min-width: 16px;
         height: 16px;
         font-size: 9px;
         top: -4px;
         right: -4px;
+    }
+}
+/* ========================================
+   MEGA MENÚ LUXURY - EDICIÓN ELEGANTE
+   ======================================== */
+
+/* Flecha del botón categorías */
+#categoriesNavBtn i {
+    font-size: 10px;
+    margin-left: 5px;
+    transition: transform 0.3s ease;
+}
+
+.categories-dropdown:hover #categoriesNavBtn i {
+    transform: rotate(180deg);
+}
+
+/* Contenedor del mega menú */
+.categories-dropdown {
+    position: relative;
+}
+
+.mega-menu-luxury {
+    position: absolute;
+    top: calc(100% + 15px);
+    left: 50%;
+    transform: translateX(-50%) translateY(15px);
+    background: var(--nav-bg);
+    min-width: 850px;
+    border-radius: 20px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(221, 171, 59, 0.1);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.35s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    z-index: 1000;
+    backdrop-filter: blur(0px);
+}
+
+.categories-dropdown:hover .mega-menu-luxury {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Flecha decorativa elegante */
+.mega-menu-luxury::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 10px solid var(--nav-gold);
+}
+
+/* Contenedor principal */
+.mega-luxury-container {
+    padding: 28px;
+    background: var(--nav-bg);
+    border-radius: 20px;
+}
+
+/* Grid de categorías con imágenes */
+.luxury-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 28px;
+}
+
+/* Tarjeta de categoría elegante */
+.luxury-category {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    text-decoration: none;
+    padding: 14px;
+    border-radius: 0;
+    transition: all 0.35s ease;
+    background: transparent;
+    border-bottom: 1px solid rgba(221, 171, 59, 0.15);
+}
+
+.luxury-category:hover {
+    transform: translateX(8px);
+    background: transparent;
+    border-bottom: 1px solid var(--nav-gold);
+    box-shadow: none;
+}
+
+.luxury-category-image {
+    position: relative;
+    width: 65px;
+    height: 65px;
+    border-radius: 12px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.luxury-category-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.luxury-category:hover .luxury-category-image img {
+    transform: scale(1.08);
+}
+
+.luxury-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent 0%, rgba(221, 171, 59, 0.1) 100%);
+    pointer-events: none;
+}
+
+.luxury-category-info h4 {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--nav-text-secondary);
+    margin: 0 0 4px 0;
+    text-transform: uppercase;
+}
+
+.luxury-category-info p {
+    font-size: 11px;
+    color: var(--nav-gold);
+    margin: 0;
+    font-weight: 500;
+}
+
+/* Separador elegante */
+.luxury-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--nav-gold), var(--nav-gold-light), var(--nav-gold), transparent);
+    margin: 20px 0;
+}
+
+/* Sección de colecciones destacadas */
+.mega-luxury-featured {
+    margin-bottom: 24px;
+}
+
+.luxury-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--nav-gold);
+    text-align: center;
+    margin-bottom: 18px;
+    position: relative;
+}
+
+.luxury-title::before,
+.luxury-title::after {
+    content: '✦';
+    margin: 0 10px;
+    font-size: 10px;
+    color: var(--nav-gold-light);
+}
+
+.featured-collections {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    flex-wrap: wrap;
+}
+
+/* CAMBIO REALIZADO: Eliminado el fondo amarillo y sombreado de las opciones Hot Sale, Nuevo y Premium */
+.featured-collection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    padding: 12px 20px;
+    transition: all 0.3s ease;
+    background: transparent;
+    border-radius: 0;
+}
+
+.featured-collection:hover {
+    transform: translateY(-2px);
+    background: transparent;
+}
+
+.featured-collection i {
+    font-size: 24px;
+    color: var(--nav-gold);
+    transition: all 0.3s ease;
+}
+
+.featured-collection:hover i {
+    color: var(--nav-gold-light);
+}
+
+.featured-collection span {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: var(--nav-text-secondary);
+    text-transform: uppercase;
+}
+
+.featured-collection:hover span {
+    color: var(--nav-gold);
+}
+
+.featured-collection small {
+    font-size: 9px;
+    color: var(--nav-gold);
+}
+
+.featured-collection:hover small {
+    color: var(--nav-gold-light);
+}
+/* FIN DEL CAMBIO */
+
+/* Banner de lujo */
+.luxury-banner {
+    background: linear-gradient(135deg, var(--nav-gold-dark), var(--nav-gold), var(--nav-gold-light));
+    border-radius: 14px;
+    padding: 14px 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.luxury-banner:hover {
+    transform: scale(1.02);
+    box-shadow: 0 5px 15px rgba(221, 171, 59, 0.3);
+}
+
+.luxury-banner a {
+    text-decoration: none;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.luxury-banner a i:first-child {
+    font-size: 16px;
+}
+
+.luxury-banner a i:last-child {
+    transition: transform 0.3s ease;
+}
+
+.luxury-banner:hover a i:last-child {
+    transform: translateX(5px);
+}
+
+/* ========== RESPONSIVE DEL MEGA MENÚ LUXURY ========== */
+@media (max-width: 1100px) {
+    .mega-menu-luxury {
+        min-width: 700px;
+        left: 0;
+        transform: translateX(0);
+    }
+    
+    .categories-dropdown:hover .mega-menu-luxury {
+        transform: translateX(0) translateY(0);
+    }
+    
+    .mega-menu-luxury::before {
+        left: 30px;
+        transform: translateX(0);
+    }
+    
+    .luxury-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+}
+
+@media (max-width: 900px) {
+    .mega-menu-luxury {
+        display: none;
+    }
+    
+    .categories-dropdown:hover .mega-menu-luxury {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .featured-collections {
+        gap: 15px;
+    }
+    
+    .featured-collection {
+        padding: 8px 12px;
+        min-width: 80px;
+    }
+    
+    .featured-collection i {
+        font-size: 18px;
+    }
+    
+    .featured-collection span {
+        font-size: 10px;
+    }
+    
+    .featured-collection small {
+        font-size: 8px;
     }
 }
