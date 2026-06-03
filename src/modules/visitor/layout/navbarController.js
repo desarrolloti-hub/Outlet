@@ -30,7 +30,6 @@ export function initNavbarController() {
     bindEvents();
     handleScroll();
     updateCartCount();
-    updateWishlistCount();
     initMarquee();
     initMegaMenu();
     applyStoredTheme();
@@ -47,9 +46,8 @@ function cacheElements() {
         themeBtn: document.getElementById('themeToggleBtn'),
         hamburgerBtn: document.getElementById('hamburgerBtn'),
         mobileMenu: document.getElementById('mobileMenu'),
-        mobileMenuClose: document.getElementById('mobileMenuClose'),
+        mobileCloseBtn: document.getElementById('mobileCloseBtn'),
         cartCount: document.getElementById('cartCount'),
-        wishlistCount: document.getElementById('wishlistCount'),
         categoriesBtn: document.getElementById('categoriesNavBtn'),
         megaMenu: document.getElementById('megaMenuDropdown'),
         searchBtn: document.getElementById('searchBtn'),
@@ -68,20 +66,39 @@ function bindEvents() {
         elements.themeBtn.addEventListener('click', toggleTheme);
     }
     
-    // Menú móvil - botón hamburguesa
+    // Menú móvil - ABRIR
     if (elements.hamburgerBtn && elements.mobileMenu) {
         elements.hamburgerBtn.addEventListener('click', toggleMobileMenu);
     }
     
-    // Botón de cerrar menú móvil (X) - UN SOLO TACHE
-    if (elements.mobileMenuClose) {
-        elements.mobileMenuClose.addEventListener('click', closeMobileMenu);
+    // ✅ MEJORADO: Cerrar menú con la "X" (reforzado para asegurar funcionalidad)
+    if (elements.mobileCloseBtn) {
+        // Eliminar event listeners previos clonando y reemplazando para evitar duplicados
+        const newCloseBtn = elements.mobileCloseBtn.cloneNode(true);
+        if (elements.mobileCloseBtn.parentNode) {
+            elements.mobileCloseBtn.parentNode.replaceChild(newCloseBtn, elements.mobileCloseBtn);
+            elements.mobileCloseBtn = newCloseBtn;
+        }
+        
+        elements.mobileCloseBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('❌ Botón cerrar clickeado - cerrando menú');
+            closeMobileMenu();
+        });
+    } else {
+        console.warn('⚠️ Botón de cierre (mobileCloseBtn) no encontrado');
     }
     
     // Cerrar menú al hacer clic en enlaces
     const mobileLinks = document.querySelectorAll('.mobile-nav-links a');
     mobileLinks.forEach(link => {
-        link.addEventListener('click', closeMobileMenu);
+        link.addEventListener('click', (e) => {
+            // Solo cerrar si es un enlace interno (no el de categorías que abre mega menú)
+            if (!link.id || link.id !== 'mobileCategoriesBtn') {
+                closeMobileMenu();
+            }
+        });
     });
     
     // Scroll
@@ -92,7 +109,6 @@ function bindEvents() {
         closeMobileMenu();
         closeMegaMenu();
         updateCartCount();
-        updateWishlistCount();
         setActiveLink();
     });
     
@@ -101,14 +117,7 @@ function bindEvents() {
         if (e.key === 'OUTLET_cart' || e.key === 'cart') {
             updateCartCount();
         }
-        if (e.key === 'OUTLET_wishlist' || e.key === 'wishlist') {
-            updateWishlistCount();
-        }
     });
-    
-    // Evento personalizado para actualizar contadores desde cualquier parte
-    window.addEventListener('cart:updated', updateCartCount);
-    window.addEventListener('wishlist:updated', updateWishlistCount);
 }
 
 /**
@@ -130,14 +139,34 @@ function openMobileMenu() {
     elements.mobileMenu.classList.add('open');
     elements.hamburgerBtn?.classList.add('open');
     elements.body.classList.add('menu-open');
+    createOverlay();
     state.isMenuOpen = true;
+    console.log('📱 Menú móvil abierto desde izquierda');
 }
 
 function closeMobileMenu() {
     elements.mobileMenu?.classList.remove('open');
     elements.hamburgerBtn?.classList.remove('open');
     elements.body.classList.remove('menu-open');
+    
+    const overlay = document.querySelector('.mobile-overlay');
+    if (overlay) {
+        overlay.classList.remove('open');
+        setTimeout(() => overlay.remove(), 300);
+    }
     state.isMenuOpen = false;
+    console.log('📱 Menú móvil cerrado');
+}
+
+function createOverlay() {
+    let overlay = document.querySelector('.mobile-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.className = 'mobile-overlay';
+        document.body.appendChild(overlay);
+        overlay.addEventListener('click', closeMobileMenu);
+    }
+    overlay.classList.add('open');
 }
 
 /**
@@ -250,28 +279,6 @@ function updateCartCount() {
     const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
     elements.cartCount.textContent = totalItems;
     elements.cartCount.style.opacity = totalItems === 0 ? '0' : '1';
-}
-
-/**
- * Actualiza contador de lista de deseos
- */
-function updateWishlistCount() {
-    if (!elements.wishlistCount) return;
-    
-    let wishlist = [];
-    try {
-        const storedWishlist = localStorage.getItem('OUTLET_wishlist') || localStorage.getItem('wishlist');
-        if (storedWishlist) wishlist = JSON.parse(storedWishlist);
-    } catch (e) {}
-    
-    const totalItems = wishlist.length;
-    
-    if (totalItems > 0) {
-        elements.wishlistCount.textContent = totalItems;
-        elements.wishlistCount.style.display = 'flex';
-    } else {
-        elements.wishlistCount.style.display = 'none';
-    }
 }
 
 /**
