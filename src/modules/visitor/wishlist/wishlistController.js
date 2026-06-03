@@ -166,7 +166,7 @@ function renderWishlist() {
                 <div class="wishlist-card-footer">
                     <p class="wishlist-card-price">${formatMoney(product.price)}</p>
                     <button class="wishlist-add-cart-btn" data-id="${product.id}">
-                        <i class="fa-solid fa-bag-shopping"></i>
+                        <i class="fa-solid fa-shopping-cart"></i>
                     </button>
                 </div>
             </div>
