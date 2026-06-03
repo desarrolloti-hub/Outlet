@@ -1,20 +1,22 @@
 /* ========================================
-   404 PAGE - OUTLET
+   404 PAGE - OUTLET (ESTRUCTURA MEJORADA)
    ======================================== */
 
-/* Reset y variables locales (usa tus variables globales) */
+/* Contenedor principal - Mejor distribución en escritorio */
 .outlet-404-container {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
     width: 100%;
-    overflow: hidden;
     background-color: var(--outlet-bg-primary);
 }
 
-@media (min-width: 768px) {
+/* En escritorio: distribución fija 50/50 sin solapamiento */
+@media (min-width: 992px) {
     .outlet-404-container {
         flex-direction: row;
+        min-height: 100vh;
+        overflow: hidden;
     }
 }
 
@@ -31,60 +33,74 @@
     transition: background-color var(--outlet-transition-base);
 }
 
-@media (min-width: 768px) {
+@media (min-width: 992px) {
     .outlet-404-content {
-        width: 41.666%;
-        padding: 64px 80px;
+        width: 50%;
+        padding: 60px 80px;
+        min-height: 100vh;
+        justify-content: center;
     }
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 1400px) {
     .outlet-404-content {
-        width: 45%;
-        padding: 96px 80px;
+        padding: 80px 100px;
     }
 }
 
-/* Marca de agua 404 */
+/* Marca de agua 404 - reposicionada para no interferir */
 .outlet-404-watermark {
     position: absolute;
-    top: -5%;
-    left: -5%;
-    font-size: 18rem;
+    bottom: 0;
+    right: 0;
+    font-size: 15rem;
     font-weight: 700;
-    color: var(--outlet-watermark-light, rgba(0, 0, 0, 0.03));
-    line-height: 1;
+    color: var(--outlet-watermark-light, rgba(0, 0, 0, 0.04));
+    line-height: 0.8;
     pointer-events: none;
     z-index: 0;
     font-family: Georgia, 'Times New Roman', serif;
     transition: color var(--outlet-transition-base);
 }
 
-@media (min-width: 768px) {
+@media (min-width: 992px) {
     .outlet-404-watermark {
-        font-size: 22rem;
-        top: -8%;
-        left: -8%;
+        font-size: 20rem;
+        bottom: -5%;
+        right: -5%;
     }
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 1400px) {
     .outlet-404-watermark {
-        font-size: 28rem;
+        font-size: 26rem;
+        bottom: -8%;
+        right: -3%;
     }
 }
 
 body.dark-mode .outlet-404-watermark {
-    color: var(--outlet-watermark-dark, rgba(255, 255, 255, 0.03));
+    color: var(--outlet-watermark-dark, rgba(255, 255, 255, 0.04));
 }
 
-/* Contenido principal */
+/* Contenido principal - mejor espaciado */
 .outlet-404-inner {
     position: relative;
     z-index: 10;
     display: flex;
     flex-direction: column;
-    gap: 32px;
+    gap: 28px;
+    max-width: 550px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+@media (min-width: 992px) {
+    .outlet-404-inner {
+        margin: 0;
+        max-width: 520px;
+        gap: 32px;
+    }
 }
 
 /* Etiqueta de error */
@@ -97,9 +113,9 @@ body.dark-mode .outlet-404-watermark {
     display: inline-block;
 }
 
-/* Título principal */
+/* Título principal - más legible */
 .outlet-404-title {
-    font-size: 42px;
+    font-size: 38px;
     font-weight: 500;
     font-style: italic;
     letter-spacing: -0.02em;
@@ -108,27 +124,33 @@ body.dark-mode .outlet-404-watermark {
     text-transform: uppercase;
     font-family: Georgia, 'Times New Roman', serif;
     transition: color var(--outlet-transition-base);
+    margin: 0;
 }
 
 @media (min-width: 768px) {
+    .outlet-404-title {
+        font-size: 48px;
+    }
+}
+
+@media (min-width: 992px) {
     .outlet-404-title {
         font-size: 56px;
     }
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 1400px) {
     .outlet-404-title {
-        font-size: 72px;
+        font-size: 68px;
     }
 }
 
-/* Descripción */
+/* Descripción - más contenida */
 .outlet-404-description {
     border-left: 2px solid var(--outlet-accent);
-    padding-left: 24px;
-    padding-top: 8px;
-    padding-bottom: 8px;
-    max-width: 400px;
+    padding-left: 20px;
+    padding-top: 4px;
+    padding-bottom: 4px;
 }
 
 .outlet-404-description p {
@@ -138,11 +160,19 @@ body.dark-mode .outlet-404-watermark {
     letter-spacing: 0.02em;
     text-transform: uppercase;
     transition: color var(--outlet-transition-base);
+    margin: 0;
 }
 
 @media (min-width: 768px) {
     .outlet-404-description p {
         font-size: 14px;
+    }
+}
+
+@media (min-width: 992px) {
+    .outlet-404-description {
+        max-width: 400px;
+        padding-left: 24px;
     }
 }
 
@@ -153,7 +183,7 @@ body.dark-mode .outlet-404-watermark {
     justify-content: center;
     gap: 10px;
     flex-wrap: wrap;
-    font-size: 11px;
+    font-size: 10px;
     letter-spacing: 0.05em;
     color: var(--outlet-accent);
     background-color: rgba(229, 165, 52, 0.08);
@@ -163,18 +193,18 @@ body.dark-mode .outlet-404-watermark {
     border: 1px solid rgba(229, 165, 52, 0.25);
 }
 
-.outlet-404-message .material-symbols-outlined {
-    font-size: 16px;
+.outlet-404-message i {
+    font-size: 14px;
 }
 
 @media (min-width: 768px) {
     .outlet-404-message {
-        font-size: 12px;
+        font-size: 11px;
         gap: 12px;
         padding: 12px 24px;
     }
-    .outlet-404-message .material-symbols-outlined {
-        font-size: 18px;
+    .outlet-404-message i {
+        font-size: 16px;
     }
 }
 
@@ -188,7 +218,7 @@ body.dark-mode .outlet-404-message {
     display: flex;
     flex-direction: column;
     gap: 16px;
-    padding-top: 16px;
+    padding-top: 8px;
 }
 
 @media (min-width: 480px) {
@@ -202,7 +232,8 @@ body.dark-mode .outlet-404-message {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 14px 32px;
+    gap: 10px;
+    padding: 14px 28px;
     font-size: 10px;
     font-weight: 700;
     letter-spacing: 0.15em;
@@ -211,13 +242,24 @@ body.dark-mode .outlet-404-message {
     cursor: pointer;
     transition: all var(--outlet-transition-base);
     text-align: center;
+    border: none;
+    font-family: inherit;
+}
+
+.outlet-404-btn-primary i,
+.outlet-404-btn-secondary i {
+    font-size: 12px;
 }
 
 @media (min-width: 768px) {
     .outlet-404-btn-primary,
     .outlet-404-btn-secondary {
-        padding: 16px 40px;
+        padding: 15px 36px;
         font-size: 11px;
+    }
+    .outlet-404-btn-primary i,
+    .outlet-404-btn-secondary i {
+        font-size: 13px;
     }
 }
 
@@ -256,6 +298,7 @@ body.dark-mode .outlet-404-btn-secondary:hover {
 }
 
 /* ===== SECCIÓN DERECHA - IMAGEN ===== */
+/* La imagen ocupa exactamente el 50% en escritorio, sin solapamiento */
 .outlet-404-image {
     position: relative;
     width: 100%;
@@ -265,17 +308,12 @@ body.dark-mode .outlet-404-btn-secondary:hover {
     transition: background-color var(--outlet-transition-base);
 }
 
-@media (min-width: 768px) {
+@media (min-width: 992px) {
     .outlet-404-image {
-        width: 58.333%;
+        width: 50%;
         height: auto;
         min-height: 100vh;
-    }
-}
-
-@media (min-width: 1024px) {
-    .outlet-404-image {
-        width: 55%;
+        position: relative;
     }
 }
 
@@ -287,12 +325,23 @@ body.dark-mode .outlet-404-btn-secondary:hover {
     transition: transform 0.5s ease, filter var(--outlet-transition-base);
 }
 
+@media (min-width: 992px) {
+    .outlet-404-img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+}
+
 .outlet-404-image:hover .outlet-404-img {
     transform: scale(1.02);
     filter: grayscale(0.1) brightness(1);
 }
 
-/* Etiqueta editorial esquina */
+/* Etiqueta editorial esquina - bien posicionada */
 .outlet-404-editorial {
     position: absolute;
     bottom: 32px;
@@ -304,7 +353,7 @@ body.dark-mode .outlet-404-btn-secondary:hover {
     z-index: 10;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 992px) {
     .outlet-404-editorial {
         display: flex;
     }
@@ -314,7 +363,7 @@ body.dark-mode .outlet-404-btn-secondary:hover {
     font-size: 9px;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 0.6);
     font-weight: 400;
 }
 
@@ -324,7 +373,7 @@ body.dark-mode .outlet-404-btn-secondary:hover {
     background-color: var(--outlet-accent);
 }
 
-/* Variables para watermark (agrega a tus variables.css) */
+/* Variables para watermark */
 :root {
     --outlet-watermark-light: rgba(0, 0, 0, 0.03);
     --outlet-watermark-dark: rgba(255, 255, 255, 0.03);
@@ -335,14 +384,14 @@ body.dark-mode {
     --outlet-watermark-dark: rgba(255, 255, 255, 0.03);
 }
 
-/* Responsive adicionales */
-@media (max-width: 768px) {
+/* ===== RESPONSIVE MEJORADO ===== */
+@media (max-width: 991px) {
     .outlet-404-content {
-        padding: 48px 24px;
+        padding: 48px 28px;
     }
     
     .outlet-404-title {
-        font-size: 36px;
+        font-size: 34px;
     }
     
     .outlet-404-description {
@@ -350,13 +399,34 @@ body.dark-mode {
     }
     
     .outlet-404-description p {
-        font-size: 11px;
+        font-size: 12px;
+    }
+    
+    .outlet-404-watermark {
+        font-size: 12rem;
+        top: auto;
+        bottom: 0;
+        right: 0;
     }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
     .outlet-404-content {
-        padding: 40px 20px;
+        padding: 40px 24px;
+    }
+    
+    .outlet-404-title {
+        font-size: 32px;
+    }
+    
+    .outlet-404-inner {
+        gap: 24px;
+    }
+}
+
+@media (max-width: 576px) {
+    .outlet-404-content {
+        padding: 32px 20px;
     }
     
     .outlet-404-title {
@@ -372,5 +442,33 @@ body.dark-mode {
     .outlet-404-btn-secondary {
         padding: 12px 20px;
         font-size: 9px;
+    }
+    
+    .outlet-404-watermark {
+        font-size: 10rem;
+    }
+}
+
+/* Ajuste para pantallas muy grandes (4K) */
+@media (min-width: 1920px) {
+    .outlet-404-content {
+        padding: 100px 120px;
+    }
+    
+    .outlet-404-inner {
+        max-width: 650px;
+        gap: 40px;
+    }
+    
+    .outlet-404-title {
+        font-size: 82px;
+    }
+    
+    .outlet-404-description p {
+        font-size: 16px;
+    }
+    
+    .outlet-404-watermark {
+        font-size: 34rem;
     }
 }
