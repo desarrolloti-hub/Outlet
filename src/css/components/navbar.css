@@ -128,6 +128,12 @@ body.dark-mode {
     display: block;
     object-fit: contain;
     transition: opacity 0.2s, transform 0.2s;
+    content: url('/assets/iconos/outlet_lineado_negro.png');
+}
+
+/* ====== LOGO MODO OSCURO ====== */
+body.dark-mode .logo-img {
+    content: url('/assets/iconos/outlet_lineado_blanco.png');
 }
 
 .logo-link:hover .logo-img {
