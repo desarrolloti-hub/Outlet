@@ -75,3 +75,143 @@
         </a>
     </div>
 </nav>
+
+<style>
+/* Estilos responsive compactos para el navbar */
+@media (max-width: 1024px) {
+    .OUTLET-admin-nav {
+        width: 72px !important;
+        min-width: 72px !important;
+        padding: 16px 8px !important;
+    }
+    
+    .admin-logo-text,
+    .admin-user-details,
+    .admin-nav-links span,
+    .admin-logout-btn span,
+    .admin-theme-toggle span {
+        display: none !important;
+    }
+    
+    .admin-nav-header {
+        justify-content: center !important;
+        margin-bottom: 16px !important;
+    }
+    
+    .admin-logo-img {
+        max-width: 36px !important;
+    }
+    
+    .admin-collapse-btn {
+        display: none !important;
+    }
+    
+    .admin-user-info {
+        justify-content: center !important;
+        padding: 12px 0 !important;
+        margin-bottom: 16px !important;
+    }
+    
+    .admin-avatar {
+        width: 40px !important;
+        height: 40px !important;
+    }
+    
+    .admin-nav-links li a {
+        justify-content: center !important;
+        padding: 10px !important;
+    }
+    
+    .admin-nav-links li a i {
+        margin-right: 0 !important;
+        font-size: 18px !important;
+    }
+    
+    .admin-logout-btn {
+        justify-content: center !important;
+        padding: 10px !important;
+    }
+    
+    .admin-logout-btn i {
+        margin-right: 0 !important;
+        font-size: 18px !important;
+    }
+    
+    .admin-theme-toggle {
+        justify-content: center !important;
+        padding: 8px !important;
+        margin: 8px auto !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .OUTLET-admin-nav {
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+        width: 240px !important;
+        min-width: 240px !important;
+        position: fixed;
+        z-index: 1000;
+        height: 100vh;
+        overflow-y: auto;
+    }
+    
+    .OUTLET-admin-nav.open {
+        transform: translateX(0);
+    }
+    
+    .admin-logo-text,
+    .admin-user-details,
+    .admin-nav-links span,
+    .admin-logout-btn span {
+        display: flex !important;
+    }
+    
+    .admin-nav-links li a {
+        justify-content: flex-start !important;
+        padding: 10px 16px !important;
+    }
+    
+    .admin-nav-links li a i {
+        margin-right: 12px !important;
+        font-size: 18px !important;
+    }
+    
+    .admin-logout-btn {
+        justify-content: flex-start !important;
+        padding: 10px 16px !important;
+    }
+    
+    .admin-logout-btn i {
+        margin-right: 12px !important;
+    }
+}
+
+.mobile-menu-btn {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .mobile-menu-btn {
+        display: flex;
+        position: fixed;
+        bottom: 16px;
+        right: 16px;
+        z-index: 999;
+        background: var(--outlet-gold, #ddab3b);
+        border: none;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    
+    .mobile-menu-btn i {
+        font-size: 20px;
+        color: #000;
+    }
+}
+</style>

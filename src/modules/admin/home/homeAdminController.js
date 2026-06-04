@@ -110,7 +110,7 @@ function showAdminNotification(message, isError = false) {
         toast.style.opacity = '0';
         toast.style.transform = 'translateX(100%)';
         setTimeout(() => toast.remove(), 300);
-    }, 3000);
+    }, 2500);
 }
 
 /**
@@ -123,8 +123,8 @@ function renderProductsTable() {
     if (adminProducts.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="6" style="text-align: center; padding: 56px 24px; color: #b0a88c;">
-                    <i class="fa-regular fa-box-open" style="font-size: 32px; margin-bottom: 12px; display: block;"></i>
+                <td colspan="6" style="text-align: center; padding: 40px 20px; color: #b0a88c;">
+                    <i class="fa-regular fa-box-open" style="font-size: 28px; margin-bottom: 8px; display: block;"></i>
                     No hay productos registrados
                 </td>
             </tr>
@@ -270,13 +270,11 @@ function saveProduct() {
         return;
     }
     
-    // Si la imagen no tiene https al inicio, agregar placeholder
     if (!image.startsWith('http')) {
         image = 'https://picsum.photos/id/20/100/100';
     }
     
     if (editingProductId) {
-        // Editar existente
         const index = adminProducts.findIndex(p => p.id === editingProductId);
         if (index !== -1) {
             adminProducts[index] = {
@@ -290,7 +288,6 @@ function saveProduct() {
             showAdminNotification(`✏️ Producto "${name}" actualizado`);
         }
     } else {
-        // Crear nuevo
         const newId = adminProducts.length > 0 ? Math.max(...adminProducts.map(p => p.id)) + 1 : 1;
         adminProducts.push({
             id: newId,
@@ -343,17 +340,7 @@ function logout() {
  * Verificar autenticación (opcional)
  */
 function checkAdminAuth() {
-    const isAdmin = localStorage.getItem('outlet_admin_auth') === 'true';
-    return true; // Por ahora siempre true, puedes descomentar la línea de abajo para habilitar auth
-    // if (!isAdmin && window.location.pathname !== '/login') {
-    //     if (typeof window.navigateTo === 'function') {
-    //         window.navigateTo('/login');
-    //     } else {
-    //         window.location.href = '/login';
-    //     }
-    //     return false;
-    // }
-    // return true;
+    return true;
 }
 
 /**
@@ -376,64 +363,84 @@ function initAdminSidebar() {
 }
 
 /**
+ * Agregar botón de menú móvil y funcionalidad
+ */
+function initMobileMenu() {
+    if (document.querySelector('.mobile-menu-btn')) return;
+    
+    const mobileBtn = document.createElement('button');
+    mobileBtn.className = 'mobile-menu-btn';
+    mobileBtn.innerHTML = '<i class="fas fa-bars"></i>';
+    mobileBtn.setAttribute('aria-label', 'Abrir menú');
+    document.body.appendChild(mobileBtn);
+    
+    const sidebar = document.querySelector('.admin-sidebar');
+    
+    mobileBtn.addEventListener('click', () => {
+        if (sidebar) {
+            sidebar.classList.toggle('open');
+            const icon = mobileBtn.querySelector('i');
+            icon.className = sidebar.classList.contains('open') ? 'fas fa-times' : 'fas fa-bars';
+        }
+    });
+    
+    document.addEventListener('click', (e) => {
+        if (window.innerWidth <= 768 && sidebar && sidebar.classList.contains('open')) {
+            if (!sidebar.contains(e.target) && !mobileBtn.contains(e.target)) {
+                sidebar.classList.remove('open');
+                const icon = mobileBtn.querySelector('i');
+                icon.className = 'fas fa-bars';
+            }
+        }
+    });
+    
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 768 && sidebar) {
+            sidebar.classList.remove('open');
+            if (mobileBtn) {
+                const icon = mobileBtn.querySelector('i');
+                icon.className = 'fas fa-bars';
+            }
+        }
+    });
+}
+
+/**
  * Controlador principal
  */
 export async function adminController() {
     console.log('👑 Admin Controller - Panel administrativo premium');
     
-    // Verificar autenticación
     checkAdminAuth();
-    
-    // Cargar estilos
     loadAdminStyles();
-    
-    // Cargar datos
     loadAdminProducts();
-    
-    // Renderizar tabla
     renderProductsTable();
-    
-    // Actualizar estadísticas
     updateStats();
     
-    // Inicializar eventos del DOM
     const addBtn = document.getElementById('addProductBtn');
-    if (addBtn) {
-        addBtn.addEventListener('click', openAddModal);
-    }
+    if (addBtn) addBtn.addEventListener('click', openAddModal);
     
     const closeModalBtn = document.getElementById('closeModalBtn');
-    if (closeModalBtn) {
-        closeModalBtn.addEventListener('click', closeModal);
-    }
+    if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
     
     const cancelModalBtn = document.getElementById('cancelModalBtn');
-    if (cancelModalBtn) {
-        cancelModalBtn.addEventListener('click', closeModal);
-    }
+    if (cancelModalBtn) cancelModalBtn.addEventListener('click', closeModal);
     
     const saveBtn = document.getElementById('saveProductBtn');
-    if (saveBtn) {
-        saveBtn.addEventListener('click', saveProduct);
-    }
+    if (saveBtn) saveBtn.addEventListener('click', saveProduct);
     
     const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', logout);
-    }
+    if (logoutBtn) logoutBtn.addEventListener('click', logout);
     
-    // Cerrar modal al hacer clic fuera
     const modal = document.getElementById('productModal');
     if (modal) {
         modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                closeModal();
-            }
+            if (e.target === modal) closeModal();
         });
     }
     
-    // Inicializar sidebar
     initAdminSidebar();
+    initMobileMenu();
     
     console.log('✅ Admin panel premium loaded successfully');
 }

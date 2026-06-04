@@ -2,6 +2,7 @@
    CREATE PRODUCT CONTROLLER - OUTLET ADMIN
    Controlador para dar de alta nuevas prendas
    Wizard de 3 pasos | Botones de navegación abajo
+   RESPONSIVE: Se adapta a cualquier tamaño
    ======================================== */
 
 import { ProductService } from '/services/productService.js';

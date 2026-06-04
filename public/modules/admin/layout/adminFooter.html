@@ -29,3 +29,51 @@
         </div>
     </div>
 </footer>
+
+<style>
+/* Estilos responsive compactos para el footer */
+@media (max-width: 768px) {
+    .outlet-admin-footer-content {
+        flex-direction: column !important;
+        gap: 8px !important;
+        text-align: center !important;
+        padding: 8px 0 !important;
+    }
+    
+    .outlet-admin-footer-copyright {
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        gap: 4px !important;
+        font-size: 11px !important;
+    }
+    
+    .outlet-admin-footer-separator {
+        display: none;
+    }
+    
+    .outlet-admin-footer-brand,
+    .outlet-admin-footer-version {
+        justify-content: center !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .outlet-admin-footer {
+        padding: 8px 12px !important;
+    }
+    
+    .outlet-admin-brand-name {
+        font-size: 12px !important;
+    }
+    
+    .outlet-admin-brand-tag {
+        font-size: 8px !important;
+        padding: 2px 6px !important;
+    }
+    
+    .outlet-admin-version-badge {
+        font-size: 9px !important;
+        padding: 2px 8px !important;
+    }
+}
+</style>
