@@ -8,34 +8,37 @@ const STORAGE_KEYS = {
     CART: 'outlet_cart'
 };
 
-// Sample products for "You may also like"
+// Exchange rate (EUR to MXN)
+const EXCHANGE_RATE = 20; // 1 EUR = 20 MXN
+
+// Sample products for "You may also like" (prices in MXN)
 const UPSELl_ITEMS = [
     {
         id: 101,
         name: "CALZADO NOIR",
         category: "SNEAKERS",
-        price: 650.00,
+        price: 13000.00, // 650 EUR * 20
         image: "https://picsum.photos/id/0/400/500"
     },
     {
         id: 102,
         name: "CARTERA ORO NEGRO",
         category: "ACCESORIOS",
-        price: 420.00,
+        price: 8400.00, // 420 EUR * 20
         image: "https://picsum.photos/id/21/400/500"
     },
     {
         id: 103,
         name: "GAFAS ÉLITE",
         category: "ÓPTICA",
-        price: 380.00,
+        price: 7600.00, // 380 EUR * 20
         image: "https://picsum.photos/id/22/400/500"
     },
     {
         id: 104,
         name: "RELOJ CROMO",
         category: "JOYERÍA",
-        price: 1250.00,
+        price: 25000.00, // 1250 EUR * 20
         image: "https://picsum.photos/id/23/400/500"
     }
 ];
@@ -56,13 +59,14 @@ function loadStyles() {
 }
 
 /**
- * Format currency
+ * Format currency (Mexican Pesos)
  */
 function formatMoney(amount) {
-    return new Intl.NumberFormat('es-ES', { 
+    return new Intl.NumberFormat('es-MX', { 
         style: 'currency', 
-        currency: 'EUR',
-        minimumFractionDigits: 0
+        currency: 'MXN',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
     }).format(amount);
 }
 
@@ -74,7 +78,7 @@ function loadCart() {
     if (savedCart) {
         cartItems = JSON.parse(savedCart);
     } else {
-        // Default sample cart items
+        // Default sample cart items (prices in MXN)
         cartItems = [
             {
                 id: 1,
@@ -82,7 +86,7 @@ function loadCart() {
                 name: "VESTIDO DE SEDA NOCTURNE",
                 size: "38 (M)",
                 color: "Noir Anthracite",
-                price: 1250.00,
+                price: 25000.00, // 1250 EUR * 20
                 quantity: 1,
                 image: "https://picsum.photos/id/20/400/500"
             },
@@ -92,7 +96,7 @@ function loadCart() {
                 name: "BOLSO CLUTCH MINIMALISTA",
                 size: "Única",
                 color: "Oro Mate",
-                price: 890.00,
+                price: 17800.00, // 890 EUR * 20
                 quantity: 1,
                 image: "https://picsum.photos/id/26/400/500"
             }
@@ -217,7 +221,7 @@ function renderSummary() {
     if (!container) return;
 
     const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-    const shipping = subtotal > 100 ? 0 : 15;
+    const shipping = subtotal > 2000 ? 0 : 300; // Envío gratis sobre $2,000 MXN
     const tax = subtotal * 0.08;
     const total = subtotal + shipping + tax;
 
@@ -240,9 +244,9 @@ function renderSummary() {
             
             <div class="outlet-cart-summary-divider"></div>
             
-            <div class="outlet-cart-summary-total">
-                <span>TOTAL</span>
-                <span class="outlet-cart-total-amount">${formatMoney(total)}</span>
+             <div class="outlet-cart-summary-total">
+            <span>TOTAL A PAGAR</span>
+            <span class="outlet-cart-total-amount">${formatMoney(total)} MXN</span>
             </div>
             
             <div class="outlet-cart-promo">
