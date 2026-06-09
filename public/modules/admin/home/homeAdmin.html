@@ -1,133 +1,176 @@
 <!-- ========================================
-   ADMIN PANEL - OUTLET (SPA)
-   Panel administrativo - Completamente Responsive
+   ADMIN PANEL - OUTLET
+   Diseño simplificado y premium
    ======================================== -->
 
 <main class="admin-dashboard">
-    <!-- Botón menú móvil -->
-    <button class="mobile-menu-btn" id="mobileMenuBtn">
-        <i class="fas fa-bars"></i>
-    </button>
 
-    <!-- CONTENIDO PRINCIPAL -->
     <div class="admin-main-content">
+
+        <!-- TOPBAR -->
         <header class="admin-topbar">
-            <h1>Panel de Control</h1>
+
+            <h1>Inventario</h1>
+
             <div class="admin-info">
-                <div class="admin-avatar">
-                    <img src="https://i.pravatar.cc/100" alt="admin">
-                </div>
-                <span>Administrador</span>
+                <span class="admin-role">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    Administrador
+                </span>
+
                 <button class="admin-logout-btn" id="logoutBtn">
                     <i class="fa-solid fa-right-from-bracket"></i>
                 </button>
             </div>
+
         </header>
 
-        <!-- CARDS ESTADÍSTICAS RESPONSIVE -->
-        <div class="admin-cards">
+        <!-- ESTADÍSTICAS -->
+        <section class="admin-cards">
+
             <div class="outlet-stat-card">
-                <div class="outlet-stat-icon">
-                    <i class="fa-solid fa-box"></i>
-                </div>
                 <div class="outlet-stat-info">
                     <h3 id="productsCount">0</h3>
                     <p>Productos</p>
                 </div>
             </div>
+
             <div class="outlet-stat-card">
-                <div class="outlet-stat-icon">
-                    <i class="fa-solid fa-users"></i>
-                </div>
                 <div class="outlet-stat-info">
                     <h3 id="usersCount">0</h3>
                     <p>Usuarios</p>
                 </div>
             </div>
+
             <div class="outlet-stat-card">
-                <div class="outlet-stat-icon">
-                    <i class="fa-solid fa-cart-shopping"></i>
-                </div>
                 <div class="outlet-stat-info">
                     <h3 id="ordersCount">0</h3>
                     <p>Pedidos</p>
                 </div>
             </div>
+
             <div class="outlet-stat-card">
-                <div class="outlet-stat-icon">
-                    <i class="fa-solid fa-dollar-sign"></i>
-                </div>
                 <div class="outlet-stat-info">
                     <h3 id="salesCount">$0</h3>
                     <p>Ventas</p>
                 </div>
             </div>
-        </div>
 
-        <!-- TABLA DE PRODUCTOS RESPONSIVE -->
+        </section>
+
+        <!-- TABLA -->
         <section class="admin-table-section">
+
             <div class="admin-table-header">
-                <h2>Últimos productos</h2>
+
+                <h2>Catálogo</h2>
+
                 <button id="addProductBtn" class="admin-add-btn">
                     <i class="fa-solid fa-plus"></i>
                     Agregar producto
                 </button>
+
             </div>
 
             <div class="admin-table-wrapper">
+
                 <table class="admin-table">
+
                     <thead>
                         <tr>
                             <th>Imagen</th>
                             <th>Producto</th>
                             <th>Precio</th>
                             <th>Stock</th>
-                            <th>Estado</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody id="productsTable"></tbody>
+
+                    <tbody id="productsTable">
+                    </tbody>
+
                 </table>
+
             </div>
+
         </section>
+
     </div>
+
 </main>
 
-<!-- Modal para agregar/editar producto -->
-<div class="admin-modal" id="productModal" style="display: none;">
+<!-- ========================================
+   MODAL PRODUCTO
+   ======================================== -->
+
+<div class="admin-modal" id="productModal" style="display:none;">
+
     <div class="admin-modal-content">
+
         <div class="admin-modal-header">
-            <h3 id="modalTitle">Agregar Producto</h3>
-            <button class="admin-modal-close" id="closeModalBtn">&times;</button>
+
+            <h3 id="modalTitle">
+                Agregar Producto
+            </h3>
+
+            <button class="admin-modal-close" id="closeModalBtn">
+                &times;
+            </button>
+
         </div>
+
         <div class="admin-modal-body">
+
             <div class="admin-form-group">
                 <label>Nombre del producto</label>
-                <input type="text" id="productName" placeholder="Ej: Vestido de Seda">
+                <input
+                    type="text"
+                    id="productName"
+                    placeholder="Ej: Camisa Premium">
             </div>
+
             <div class="admin-form-group">
                 <label>Precio</label>
-                <input type="number" id="productPrice" placeholder="0">
+                <input
+                    type="number"
+                    id="productPrice"
+                    placeholder="0">
             </div>
+
             <div class="admin-form-group">
                 <label>Stock</label>
-                <input type="number" id="productStock" placeholder="0">
+                <input
+                    type="number"
+                    id="productStock"
+                    placeholder="0">
             </div>
+
             <div class="admin-form-group">
                 <label>URL de imagen</label>
-                <input type="text" id="productImage" placeholder="https://...">
+                <input
+                    type="text"
+                    id="productImage"
+                    placeholder="https://...">
             </div>
-            <div class="admin-form-group">
-                <label>Estado</label>
-                <select id="productStatus">
-                    <option value="Activo">Activo</option>
-                    <option value="Inactivo">Inactivo</option>
-                </select>
-            </div>
+
         </div>
+
         <div class="admin-modal-footer">
-            <button class="admin-btn-cancel" id="cancelModalBtn">Cancelar</button>
-            <button class="admin-btn-save" id="saveProductBtn">Guardar</button>
+
+            <button
+                class="admin-btn-cancel"
+                id="cancelModalBtn">
+                Cancelar
+            </button>
+
+            <button
+                class="admin-btn-save"
+                id="saveProductBtn">
+                Guardar
+            </button>
+
         </div>
+
     </div>
+
 </div>
