@@ -1,0 +1,108 @@
+<!-- ========================================
+   CREATE ADMIN - OUTLET
+   Página para crear usuario administrador
+   ======================================== -->
+
+<main class="outlet-admin-container">
+    <div class="outlet-admin-layout">
+        
+        <!-- Panel izquierdo: Imagen editorial -->
+        <div class="outlet-admin-panel-image">
+            <div class="outlet-admin-overlay"></div>
+            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCnMLNNq0g8dgpfrVVcR_M__UcLNO4U3sDVlaOpvmPLkIbyCNRZzg5tThkRS2Ozv_HUAcDSLy208tz74S8N2boaacvVwbbtaJniZhidSo_9_U5hN6wiE2z-GYOVnNe5WCr6vFNnp7SV2T8pqsXTOfzOUvZ7JYQw9mczBJrGKT5JKeAesCbreWbYmyxjecEp3GLezIboPHYNsc7ochGRlVQjk0oQVVXVK5_RT0T5cAbtFhj0KmEq3XebNrsC5ZUeb9_ikCiCsR69J7n" alt="Panel de Administración" class="outlet-admin-bg-image" loading="lazy">
+            
+            <div class="outlet-admin-floating-text">
+                <h2>PANEL DE ADMIN.</h2>
+                <p>Gestión completa del archivo, acceso privilegiado y control total.</p>
+            </div>
+        </div>
+        
+        <!-- Panel derecho: Formulario de creación de admin -->
+        <div class="outlet-admin-panel-form">
+            <div class="outlet-admin-form-content">
+                <div class="outlet-admin-header">
+                    <p class="outlet-admin-badge">ACCESO RESTRINGIDO</p>
+                    <h1>Crear Administrador</h1>
+                    <p class="outlet-admin-subtitle">Complete los datos para registrar un nuevo administrador del sistema</p>
+                </div>
+                
+                <form class="outlet-admin-form" id="createAdminForm">
+                    <!-- NOMBRE (campo individual) -->
+                    <div class="outlet-admin-form-group">
+                        <label>NOMBRE</label>
+                        <input type="text" placeholder="Carlos" id="nombre" autocomplete="given-name">
+                        <div class="outlet-admin-error" id="errorNombre"></div>
+                    </div>
+                    
+                    <!-- APELLIDO PATERNO -->
+                    <div class="outlet-admin-form-group">
+                        <label>APELLIDO PATERNO</label>
+                        <input type="text" placeholder="Rodríguez" id="apellidoPa" autocomplete="family-name">
+                        <div class="outlet-admin-error" id="errorApellidoPa"></div>
+                    </div>
+                    
+                    <!-- APELLIDO MATERNO (opcional) -->
+                    <div class="outlet-admin-form-group">
+                        <label>APELLIDO MATERNO (OPCIONAL)</label>
+                        <input type="text" placeholder="García" id="apellidoMa" autocomplete="additional-name">
+                        <div class="outlet-admin-error" id="errorApellidoMa"></div>
+                    </div>
+                    
+                    <!-- Correo electrónico -->
+                    <div class="outlet-admin-form-group">
+                        <label>CORREO ELECTRÓNICO</label>
+                        <input type="email" placeholder="admin@archivo.com" id="email" autocomplete="email">
+                        <div class="outlet-admin-error" id="errorEmail"></div>
+                    </div>
+                    
+                    <!-- Rol de administrador -->
+                    <div class="outlet-admin-form-group">
+                        <label>ROL DE ADMINISTRADOR</label>
+                        <select id="role" class="outlet-admin-select">
+                            <option value="admin">Administrador</option>
+                            <option value="editor">Editor</option>
+                            <option value="super_admin">Super Administrador</option>
+                        </select>
+                        <div class="outlet-admin-hint">Seleccione el nivel de permisos para este administrador</div>
+                    </div>
+                    
+                    <!-- Contraseña -->
+                    <div class="outlet-admin-form-group">
+                        <label>CONTRASEÑA</label>
+                        <input type="password" placeholder="••••••••" id="password" autocomplete="new-password">
+                        <div class="outlet-admin-error" id="errorPassword"></div>
+                        <div class="outlet-admin-password-requirements" id="passwordRequirements">
+                            <span class="outlet-admin-req" id="reqLength">✗ Mín. 6 caracteres</span>
+                            <span class="outlet-admin-req" id="reqUppercase">✗ Una mayúscula</span>
+                            <span class="outlet-admin-req" id="reqNumber">✗ Un número</span>
+                            <span class="outlet-admin-req" id="reqSpecial">✗ Un carácter especial</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Confirmar contraseña -->
+                    <div class="outlet-admin-form-group">
+                        <label>CONFIRMAR CONTRASEÑA</label>
+                        <input type="password" placeholder="••••••••" id="confirmPassword" autocomplete="off">
+                        <div class="outlet-admin-error" id="errorConfirm"></div>
+                    </div>
+                    
+                    <!-- Términos y condiciones -->
+                    <div class="outlet-admin-form-options">
+                        <label class="outlet-admin-checkbox">
+                            <input type="checkbox" id="adminTerms">
+                            <span>ACEPTO LOS <a href="#" id="termsLink">TÉRMINOS DE SEGURIDAD</a></span>
+                        </label>
+                    </div>
+                    
+                    <button type="submit" class="outlet-admin-btn-submit" id="submitBtn">
+                        <span>CREAR ADMINISTRADOR</span>
+                    </button>
+                </form>
+                
+                <div class="outlet-admin-footer-note">
+                    <p>© 2024 Outlet Val - Todos los derechos reservados</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>

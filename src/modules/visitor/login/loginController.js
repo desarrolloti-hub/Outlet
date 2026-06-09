@@ -1,9 +1,11 @@
 /* ========================================
    LOGIN CONTROLLER - OUTLET
    Controlador para página de inicio de sesión
+   Soporta login de Administradores y Usuarios normales
    ======================================== */
 
 import { UserService } from '/services/userService.js';
+import { AdminService } from '/services/adminService.js';
 
 // Estado del controlador
 let isLoading = false;
@@ -53,7 +55,37 @@ function isValidEmail(email) {
 }
 
 /**
- * 🆕 Maneja el login con Google
+ * Determina el rol del usuario desde el resultado del login
+ */
+function getUserRoleFromLogin(result) {
+    // Si el resultado tiene adminData, es un administrador
+    if (result.adminData) {
+        return 'admin';
+    }
+    // Si tiene userData, es un usuario normal
+    if (result.userData) {
+        return 'user';
+    }
+    return 'unknown';
+}
+
+/**
+ * Obtiene la URL de redirección según el rol del usuario
+ */
+function getRedirectUrlByRole(role, defaultUrl = '/') {
+    const redirectMap = {
+        'admin': '/admin/dashboard',
+        'super_admin': '/admin/dashboard',
+        'editor': '/admin/dashboard',
+        'user': '/',
+        'unknown': defaultUrl
+    };
+    
+    return redirectMap[role] || defaultUrl;
+}
+
+/**
+ * Maneja el login con Google (soporta Admin y User)
  */
 async function handleGoogleLogin() {
     if (isLoading) return;
@@ -70,14 +102,47 @@ async function handleGoogleLogin() {
     }
     
     try {
-        // Usar el login con Google del UserService
-        const result = await UserService.login(null, null, true);
+        let result = null;
+        let userRole = null;
+        let loginSuccess = false;
         
-        showNotification('✅ ¡Bienvenido! Sesión iniciada con Google');
+        // PRIMERO: Intentar login como administrador con Google
+        try {
+            console.log('🔐 Intentando login como administrador con Google...');
+            result = await AdminService.login(null, null, true);
+            userRole = 'admin';
+            loginSuccess = true;
+            console.log('✅ Login exitoso como ADMINISTRADOR con Google');
+            showNotification('✅ ¡Bienvenido Administrador!');
+        } catch (adminError) {
+            // Si no es administrador, intentar como usuario normal
+            console.log('⚠️ No es administrador, intentando como usuario normal...');
+            try {
+                result = await UserService.login(null, null, true);
+                userRole = 'user';
+                loginSuccess = true;
+                console.log('✅ Login exitoso como USUARIO con Google');
+                showNotification('✅ ¡Bienvenido! Sesión iniciada con Google');
+            } catch (userError) {
+                console.error('❌ Error en ambos intentos de login con Google:', userError);
+                throw userError;
+            }
+        }
         
-        // Redirigir a la página que intentaba ver o al home
-        const redirectUrl = sessionStorage.getItem('redirectAfterLogin') || '/homeAdmin';
+        if (!loginSuccess) {
+            throw new Error('No se pudo iniciar sesión con Google');
+        }
+        
+        // Obtener URL de redirección según el rol
+        let redirectUrl = sessionStorage.getItem('redirectAfterLogin') || getRedirectUrlByRole(userRole);
         sessionStorage.removeItem('redirectAfterLogin');
+        
+        // Si el usuario intentaba acceder a una página de admin pero no es admin, redirigir al home
+        const attemptedUrl = sessionStorage.getItem('attemptedUrl') || '';
+        if (attemptedUrl.includes('/admin') && userRole !== 'admin') {
+            redirectUrl = '/';
+            showNotification('⚠️ No tienes permisos de administrador', true);
+        }
         
         setTimeout(() => {
             if (typeof window.navigateTo === 'function') {
@@ -89,7 +154,16 @@ async function handleGoogleLogin() {
         
     } catch (error) {
         console.error('Error en login con Google:', error);
-        showNotification(`❌ ${error.message}`, true);
+        let errorMessage = error.message;
+        
+        // Mejorar mensajes de error
+        if (errorMessage.includes('No tiene permisos de administrador')) {
+            errorMessage = 'No tienes permisos de administrador. Intenta con otro correo.';
+        } else if (errorMessage.includes('account-exists-with-different-credential')) {
+            errorMessage = 'Ya existe una cuenta con este correo usando otro método. Inicia sesión con email y contraseña.';
+        }
+        
+        showNotification(`❌ ${errorMessage}`, true);
     } finally {
         isLoading = false;
         if (googleBtn) {
@@ -100,7 +174,7 @@ async function handleGoogleLogin() {
 }
 
 /**
- * Maneja el login con email/contraseña
+ * Maneja el login con email/contraseña (soporta Admin y User)
  */
 async function handleLogin(e) {
     e.preventDefault();
@@ -142,14 +216,59 @@ async function handleLogin(e) {
     }
     
     try {
-        // Login con email y contraseña usando UserService
-        const result = await UserService.login(email, password);
+        let result = null;
+        let userRole = null;
+        let loginSuccess = false;
         
-        showNotification('✅ ¡Bienvenido de vuelta!');
+        // PRIMERO: Intentar login como administrador
+        try {
+            console.log('🔐 Intentando login como administrador...');
+            result = await AdminService.login(email, password);
+            userRole = result.adminData?.rol || 'admin';
+            loginSuccess = true;
+            console.log('✅ Login exitoso como ADMINISTRADOR');
+            showNotification('✅ ¡Bienvenido Administrador!');
+        } catch (adminError) {
+            // Si no es administrador, intentar como usuario normal
+            console.log('⚠️ No es administrador, intentando como usuario normal...');
+            console.log('Error de admin:', adminError.message);
+            
+            try {
+                result = await UserService.login(email, password);
+                userRole = 'user';
+                loginSuccess = true;
+                console.log('✅ Login exitoso como USUARIO');
+                showNotification('✅ ¡Bienvenido de vuelta!');
+            } catch (userError) {
+                console.error('❌ Error en ambos intentos:', userError);
+                throw userError;
+            }
+        }
         
-        // Redirigir a la página que intentaba ver o al home
-        const redirectUrl = sessionStorage.getItem('redirectAfterLogin') || '/';
+        if (!loginSuccess) {
+            throw new Error('Credenciales inválidas');
+        }
+        
+        // Guardar información adicional según el tipo de usuario
+        if (userRole === 'admin' && result.adminData) {
+            // Guardar en sessionStorage que es admin para futuras verificaciones
+            sessionStorage.setItem('isAdmin', 'true');
+            sessionStorage.setItem('adminRole', result.adminData.rol);
+        } else if (userRole === 'user' && result.userData) {
+            sessionStorage.removeItem('isAdmin');
+            sessionStorage.removeItem('adminRole');
+        }
+        
+        // Obtener URL de redirección según el rol
+        let redirectUrl = sessionStorage.getItem('redirectAfterLogin') || getRedirectUrlByRole(userRole);
         sessionStorage.removeItem('redirectAfterLogin');
+        
+        // Si el usuario intentaba acceder a una página de admin pero no es admin, redirigir al home
+        const attemptedUrl = sessionStorage.getItem('attemptedUrl') || '';
+        if (attemptedUrl.includes('/admin') && userRole !== 'admin') {
+            redirectUrl = '/';
+            showNotification('⚠️ No tienes permisos de administrador', true);
+        }
         
         setTimeout(() => {
             if (typeof window.navigateTo === 'function') {
@@ -161,7 +280,23 @@ async function handleLogin(e) {
         
     } catch (error) {
         console.error('Error en login:', error);
-        showNotification(`❌ ${error.message}`, true);
+        
+        let errorMessage = error.message;
+        
+        // Mejorar mensajes de error para el usuario
+        if (errorMessage.includes('auth/user-not-found')) {
+            errorMessage = 'No existe una cuenta con este correo electrónico';
+        } else if (errorMessage.includes('auth/wrong-password')) {
+            errorMessage = 'Contraseña incorrecta';
+        } else if (errorMessage.includes('Cuenta bloqueada') || errorMessage.includes('bloqueada')) {
+            errorMessage = error.message;
+        } else if (errorMessage.includes('inactiva') || errorMessage.includes('suspendida')) {
+            errorMessage = error.message;
+        } else if (errorMessage.includes('No tiene permisos de administrador')) {
+            errorMessage = 'Este correo no tiene permisos de administrador';
+        }
+        
+        showNotification(`❌ ${errorMessage}`, true);
     } finally {
         isLoading = false;
         if (submitBtn) {
@@ -177,6 +312,9 @@ async function handleLogin(e) {
 function handleForgotPassword(e) {
     e.preventDefault();
     showNotification('📧 Se ha enviado un enlace de recuperación a tu correo');
+    
+    // Aquí puedes agregar la lógica real de recuperación de contraseña
+    // Por ejemplo, abrir un modal o redirigir a una página de recuperación
 }
 
 /**
@@ -207,6 +345,55 @@ function loadSavedEmail() {
 }
 
 /**
+ * Verifica si ya hay una sesión activa y redirige automáticamente
+ */
+async function checkExistingSession() {
+    // Verificar si hay sesión de admin
+    const adminSession = localStorage.getItem('outlet_admin');
+    const userSession = localStorage.getItem('outlet_user');
+    
+    if (adminSession) {
+        try {
+            // Verificar si la sesión de admin sigue siendo válida
+            const currentAdmin = await AdminService.getCurrentAdmin(true);
+            if (currentAdmin && currentAdmin.isActive()) {
+                console.log('🔄 Sesión de administrador encontrada, redirigiendo...');
+                const redirectUrl = sessionStorage.getItem('redirectAfterLogin') || '/admin/dashboard';
+                sessionStorage.removeItem('redirectAfterLogin');
+                
+                setTimeout(() => {
+                    if (typeof window.navigateTo === 'function') {
+                        window.navigateTo(redirectUrl);
+                    } else {
+                        window.location.href = redirectUrl;
+                    }
+                }, 500);
+                return true;
+            }
+        } catch (error) {
+            console.error('Error verificando sesión de admin:', error);
+        }
+    }
+    
+    if (userSession && !adminSession) {
+        console.log('🔄 Sesión de usuario encontrada, redirigiendo...');
+        const redirectUrl = sessionStorage.getItem('redirectAfterLogin') || '/';
+        sessionStorage.removeItem('redirectAfterLogin');
+        
+        setTimeout(() => {
+            if (typeof window.navigateTo === 'function') {
+                window.navigateTo(redirectUrl);
+            } else {
+                window.location.href = redirectUrl;
+            }
+        }, 500);
+        return true;
+    }
+    
+    return false;
+}
+
+/**
  * Inicializa eventos del formulario
  */
 function initFormEvents() {
@@ -218,23 +405,42 @@ function initFormEvents() {
     if (loginForm) loginForm.addEventListener('submit', handleLogin);
     if (forgotBtn) forgotBtn.addEventListener('click', handleForgotPassword);
     if (signupBtn) signupBtn.addEventListener('click', handleSignup);
-    if (googleLoginBtn) googleLoginBtn.addEventListener('click', handleGoogleLogin); // 🆕
+    if (googleLoginBtn) googleLoginBtn.addEventListener('click', handleGoogleLogin);
 }
 
 /**
  * Controller principal
  */
 export async function loginController() {
-    console.log('🔐 Login Controller - Página de inicio de sesión');
+    console.log('🔐 Login Controller - Página de inicio de sesión (Admin + User)');
+    
+    // Inicializar sistema de administradores (crea admin por defecto si no existe)
+    try {
+        await AdminService.initializeSystem();
+        console.log('✅ Sistema de administradores inicializado');
+    } catch (error) {
+        console.error('❌ Error inicializando sistema de admins:', error);
+    }
     
     // Cargar estilos específicos
     loadStyles();
+    
+    // Verificar si ya hay una sesión activa
+    const hasRedirected = await checkExistingSession();
+    if (hasRedirected) return;
     
     // Cargar email guardado
     loadSavedEmail();
     
     // Inicializar eventos del formulario
     initFormEvents();
+    
+    // Guardar la URL que el usuario intentaba acceder (si viene de una página protegida)
+    const urlParams = new URLSearchParams(window.location.search);
+    const redirect = urlParams.get('redirect');
+    if (redirect) {
+        sessionStorage.setItem('redirectAfterLogin', redirect);
+    }
     
     console.log('✅ Login page cargada correctamente');
 }

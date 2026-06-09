@@ -20,6 +20,7 @@ import { productsController } from '../modules/visitor/products/productsControll
 
 
 
+
 //         ---------   customer   ---------
 //  importar controllers de customer de edición de perfil
 
@@ -29,6 +30,8 @@ import { userProfileEditController } from '../modules/customer/editUser/editUser
 
 //         ---------   Admin   ---------
 //  importar controllers de administración de productos
+
+import { createAccountAdminController} from '../modules/admin/createAccount/createAccountAdminController.js';
 
 import { productCreateController } from '../modules/admin/products/create/createProductsController.js';
 import { productListController } from '../modules/admin/products/productsListController.js';
@@ -101,7 +104,10 @@ export const routes = {
         view: "/modules/admin/products/edit/editProducts.html",
         controller: editProductController
     },
-
+        "/createAccountAdmin": {
+        view: "/modules/admin/createAccount/createAccountAdmin.html",
+        controller: createAccountAdminController
+    },
 
        /* ========================================
          Rutas de customer 
