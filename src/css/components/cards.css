@@ -1,276 +1,1179 @@
 /* ========================================
-   cards.css - Estilos para tarjetas
+   CARDS COMPONENT - OUTLET LUXURY
+   Componente de tarjetas reutilizable - FULL RESPONSIVE
    ======================================== */
 
-/* Tarjeta base */
-.rsi-card {
-    background: var(--rsi-white);
-    border-radius: var(--rsi-radius-lg);
+/* ====== BASE CARD ====== */
+.outlet-card {
+    background: var(--outlet-bg-card);
+    border-radius: var(--outlet-radius-xl);
     overflow: hidden;
-    transition: all var(--rsi-transition-base);
+    transition: var(--outlet-transition-base);
     position: relative;
 }
 
-.rsi-card-shadow {
-    box-shadow: var(--rsi-shadow-md);
+/* Variantes de sombra */
+.outlet-card-shadow {
+    box-shadow: var(--outlet-shadow-md);
 }
 
-.rsi-card-shadow:hover {
-    transform: translateY(-8px);
-    box-shadow: var(--rsi-shadow-hover);
+.outlet-card-shadow:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--outlet-shadow-xl);
 }
 
-.rsi-card-border {
-    border: 1px solid var(--rsi-gray-200);
+.outlet-card-border {
+    border: 1px solid var(--outlet-border-soft);
 }
 
-.rsi-card-border:hover {
-    border-color: var(--rsi-primary-light);
+.outlet-card-border:hover {
+    border-color: var(--outlet-gold);
 }
 
-/* Tarjeta con hover elegante */
-.rsi-card-elegant {
-    background: var(--rsi-white);
-    border-radius: var(--rsi-radius-lg);
-    padding: var(--rsi-spacing-xl);
-    text-align: center;
-    transition: all var(--rsi-transition-base);
+/* ====== CARD LUXURY (con línea dorada hover) ====== */
+.outlet-card-luxury {
+    background: var(--outlet-bg-card);
+    border-radius: var(--outlet-radius-xl);
+    padding: 24px;
+    transition: var(--outlet-transition-base);
     position: relative;
     overflow: hidden;
+    border: 1px solid var(--outlet-border-soft);
 }
 
-.rsi-card-elegant::before {
+.outlet-card-luxury::before {
     content: '';
     position: absolute;
     top: 0;
-    left: -100%;
-    width: 100%;
-    height: 4px;
-    background: linear-gradient(90deg, var(--rsi-primary), var(--rsi-accent));
-    transition: left var(--rsi-transition-base);
-}
-
-.rsi-card-elegant:hover::before {
     left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--outlet-gold-gradient-horizontal);
+    opacity: 0;
+    transition: var(--outlet-transition-base);
 }
 
-.rsi-card-elegant:hover {
-    transform: translateY(-10px);
-    box-shadow: var(--rsi-shadow-hover);
+.outlet-card-luxury:hover::before {
+    opacity: 1;
 }
 
-/* Tarjeta de servicio */
-.rsi-service-card {
-    background: var(--rsi-white);
-    border-radius: var(--rsi-radius-lg);
-    padding: var(--rsi-spacing-xl);
-    text-align: center;
-    transition: all var(--rsi-transition-base);
-    box-shadow: var(--rsi-shadow-md);
+.outlet-card-luxury:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--outlet-shadow-lg);
 }
 
-.rsi-service-card:hover {
-    transform: translateY(-10px);
-    box-shadow: var(--rsi-shadow-xl);
+/* ====== STAT CARD (para estadísticas/dashboard) - RESPONSIVE ====== */
+.outlet-stat-card {
+    background: var(--outlet-bg-card);
+    padding: 20px;
+    border-radius: var(--outlet-radius-xl);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: var(--outlet-transition-base);
+    border: 1px solid var(--outlet-border-soft);
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-.rsi-service-icon {
-    width: 80px;
-    height: 80px;
-    background: linear-gradient(135deg, var(--rsi-primary), var(--rsi-accent));
-    border-radius: var(--rsi-radius-full);
+.outlet-stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--outlet-gold-gradient-horizontal);
+    opacity: 0;
+    transition: var(--outlet-transition-base);
+}
+
+.outlet-stat-card:hover::before {
+    opacity: 1;
+}
+
+.outlet-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--outlet-shadow-md);
+}
+
+.outlet-stat-icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(221, 171, 59, 0.08);
+    border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto var(--rsi-spacing-lg);
+    flex-shrink: 0;
 }
 
-.rsi-service-icon i {
-    font-size: 2.5rem;
-    color: var(--rsi-white);
+.outlet-stat-icon i {
+    font-size: 24px;
+    color: var(--outlet-gold);
 }
 
-/* Tarjeta de producto */
-.rsi-product-card {
-    background: var(--rsi-white);
-    border-radius: var(--rsi-radius-lg);
+.outlet-stat-info {
+    flex: 1;
+    min-width: 0; /* Previene desbordamiento */
+}
+
+.outlet-stat-info h3 {
+    font-size: 28px;
+    font-weight: 600;
+    font-family: var(--outlet-font-primary);
+    margin: 0 0 4px 0;
+    color: var(--outlet-text-primary);
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+.outlet-stat-info p {
+    color: var(--outlet-text-secondary);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    margin: 0;
+}
+
+/* ====== PRODUCT CARD - RESPONSIVE ====== */
+.outlet-product-card {
+    background: var(--outlet-bg-card);
+    border-radius: var(--outlet-radius-xl);
     overflow: hidden;
-    transition: all var(--rsi-transition-base);
-    box-shadow: var(--rsi-shadow-md);
+    transition: var(--outlet-transition-base);
+    border: 1px solid var(--outlet-border-soft);
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-.rsi-product-card:hover {
-    transform: translateY(-10px);
-    box-shadow: var(--rsi-shadow-xl);
+.outlet-product-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--outlet-shadow-xl);
+    border-color: var(--outlet-gold);
 }
 
-.rsi-product-image {
+.outlet-product-image {
     position: relative;
     overflow: hidden;
-    height: 250px;
+    height: 260px;
+    flex-shrink: 0;
 }
 
-.rsi-product-image img {
+.outlet-product-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform var(--rsi-transition-slow);
+    transition: transform var(--outlet-transition-slow);
 }
 
-.rsi-product-card:hover .rsi-product-image img {
-    transform: scale(1.1);
+.outlet-product-card:hover .outlet-product-image img {
+    transform: scale(1.08);
 }
 
-.rsi-product-badge {
+.outlet-product-badge {
     position: absolute;
-    top: var(--rsi-spacing-md);
-    right: var(--rsi-spacing-md);
-    background: var(--rsi-danger);
-    color: var(--rsi-white);
+    top: 12px;
+    right: 12px;
+    background: var(--outlet-gold);
+    color: var(--outlet-black);
     padding: 4px 12px;
-    border-radius: var(--rsi-radius-full);
-    font-size: 0.8rem;
+    border-radius: var(--outlet-radius-full);
+    font-size: 11px;
     font-weight: 600;
+    letter-spacing: 0.5px;
+    z-index: 1;
 }
 
-.rsi-product-info {
-    padding: var(--rsi-spacing-lg);
+.outlet-product-badge-sale {
+    background: var(--outlet-danger);
+    color: white;
 }
 
-.rsi-product-title {
-    font-size: 1.2rem;
+.outlet-product-info {
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.outlet-product-title {
+    font-size: 16px;
     font-weight: 600;
-    margin-bottom: var(--rsi-spacing-sm);
-    color: var(--rsi-primary);
+    font-family: var(--outlet-font-primary);
+    margin-bottom: 8px;
+    color: var(--outlet-text-primary);
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
-.rsi-product-price {
-    font-size: 1.5rem;
+.outlet-product-price {
+    font-size: 20px;
     font-weight: 700;
-    color: var(--rsi-accent);
-    margin: var(--rsi-spacing-sm) 0;
+    color: var(--outlet-gold);
+    margin: 8px 0;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
-/* Tarjeta de equipo */
-.rsi-team-card {
-    background: var(--rsi-white);
-    border-radius: var(--rsi-radius-lg);
+.outlet-product-price old {
+    font-size: 14px;
+    color: var(--outlet-text-secondary);
+    text-decoration: line-through;
+    font-weight: 400;
+}
+
+.outlet-product-stock {
+    font-size: 12px;
+    color: var(--outlet-text-secondary);
+    margin-top: 8px;
+}
+
+.outlet-product-stock span {
+    color: var(--outlet-success);
+    font-weight: 600;
+}
+
+/* ====== SERVICE CARD - RESPONSIVE ====== */
+.outlet-service-card {
+    background: var(--outlet-bg-card);
+    border-radius: var(--outlet-radius-xl);
+    padding: 32px 24px;
+    text-align: center;
+    transition: var(--outlet-transition-base);
+    border: 1px solid var(--outlet-border-soft);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.outlet-service-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--outlet-shadow-lg);
+    border-color: var(--outlet-gold);
+}
+
+.outlet-service-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, rgba(221, 171, 59, 0.12), rgba(221, 171, 59, 0.05));
+    border-radius: var(--outlet-radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    transition: var(--outlet-transition-base);
+    flex-shrink: 0;
+}
+
+.outlet-service-card:hover .outlet-service-icon {
+    background: var(--outlet-gold-gradient);
+}
+
+.outlet-service-icon i {
+    font-size: 32px;
+    color: var(--outlet-gold);
+    transition: var(--outlet-transition-base);
+}
+
+.outlet-service-card:hover .outlet-service-icon i {
+    color: var(--outlet-black);
+}
+
+.outlet-service-title {
+    font-size: 18px;
+    font-weight: 600;
+    font-family: var(--outlet-font-primary);
+    color: var(--outlet-text-primary);
+    margin-bottom: 12px;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+.outlet-service-description {
+    font-size: 13px;
+    color: var(--outlet-text-secondary);
+    line-height: 1.6;
+}
+
+/* ====== TEAM CARD - RESPONSIVE ====== */
+.outlet-team-card {
+    background: var(--outlet-bg-card);
+    border-radius: var(--outlet-radius-xl);
     overflow: hidden;
     text-align: center;
-    box-shadow: var(--rsi-shadow-md);
-    transition: all var(--rsi-transition-base);
-}
-
-.rsi-team-card:hover {
-    transform: translateY(-10px);
-}
-
-.rsi-team-image {
+    border: 1px solid var(--outlet-border-soft);
+    transition: var(--outlet-transition-base);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
     width: 100%;
-    height: 300px;
-    overflow: hidden;
+    box-sizing: border-box;
 }
 
-.rsi-team-image img {
+.outlet-team-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--outlet-shadow-xl);
+    border-color: var(--outlet-gold);
+}
+
+.outlet-team-image {
+    width: 100%;
+    height: 280px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.outlet-team-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform var(--rsi-transition-slow);
+    transition: transform var(--outlet-transition-slow);
 }
 
-.rsi-team-card:hover .rsi-team-image img {
+.outlet-team-card:hover .outlet-team-image img {
     transform: scale(1.05);
 }
 
-.rsi-team-info {
-    padding: var(--rsi-spacing-lg);
+.outlet-team-info {
+    padding: 20px;
+    flex: 1;
 }
 
-.rsi-team-name {
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: var(--rsi-primary);
-    margin-bottom: var(--rsi-spacing-xs);
+.outlet-team-name {
+    font-size: 18px;
+    font-weight: 600;
+    font-family: var(--outlet-font-primary);
+    color: var(--outlet-text-primary);
+    margin-bottom: 4px;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
-.rsi-team-role {
-    color: var(--rsi-accent);
+.outlet-team-role {
+    font-size: 12px;
+    color: var(--outlet-gold);
     font-weight: 500;
-    margin-bottom: var(--rsi-spacing-md);
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
 }
 
-/* Tarjeta de testimonio */
-.rsi-testimonial-card {
-    background: var(--rsi-white);
-    border-radius: var(--rsi-radius-lg);
-    padding: var(--rsi-spacing-xl);
-    box-shadow: var(--rsi-shadow-md);
+.outlet-team-social {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+
+.outlet-team-social a {
+    width: 32px;
+    height: 32px;
+    background: rgba(221, 171, 59, 0.08);
+    border-radius: var(--outlet-radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--outlet-transition-base);
+    color: var(--outlet-text-secondary);
+}
+
+.outlet-team-social a:hover {
+    background: var(--outlet-gold);
+    color: var(--outlet-black);
+    transform: translateY(-2px);
+}
+
+/* ====== TESTIMONIAL CARD - RESPONSIVE ====== */
+.outlet-testimonial-card {
+    background: var(--outlet-bg-card);
+    border-radius: var(--outlet-radius-xl);
+    padding: 32px;
+    border: 1px solid var(--outlet-border-soft);
     position: relative;
+    transition: var(--outlet-transition-base);
+    height: 100%;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-.rsi-testimonial-card::before {
+.outlet-testimonial-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--outlet-shadow-lg);
+}
+
+.outlet-testimonial-card::before {
     content: '"';
     position: absolute;
     top: 20px;
-    left: 20px;
-    font-size: 4rem;
-    color: var(--rsi-gray-200);
+    left: 24px;
+    font-size: 64px;
+    color: var(--outlet-gold);
+    opacity: 0.15;
     font-family: serif;
+    line-height: 1;
 }
 
-.rsi-testimonial-text {
-    font-size: 1rem;
+.outlet-testimonial-text {
+    font-size: 14px;
     line-height: 1.7;
-    color: var(--rsi-gray-700);
-    margin-bottom: var(--rsi-spacing-lg);
+    color: var(--outlet-text-primary);
+    margin-bottom: 24px;
     font-style: italic;
+    position: relative;
+    z-index: 1;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
-.rsi-testimonial-author {
+.outlet-testimonial-author {
     display: flex;
     align-items: center;
-    gap: var(--rsi-spacing-md);
+    gap: 12px;
+    border-top: 1px solid var(--outlet-border-soft);
+    padding-top: 20px;
+    flex-wrap: wrap;
 }
 
-.rsi-testimonial-avatar {
-    width: 50px;
-    height: 50px;
-    border-radius: var(--rsi-radius-full);
+.outlet-testimonial-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--outlet-radius-full);
     object-fit: cover;
+    border: 2px solid var(--outlet-gold);
+    flex-shrink: 0;
 }
 
-.rsi-testimonial-name {
-    font-weight: 700;
-    color: var(--rsi-primary);
+.outlet-testimonial-info {
+    flex: 1;
+    min-width: 0;
 }
 
-/* Tarjeta stats */
-.rsi-stat-card {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    padding: var(--rsi-spacing-xl);
-    border-radius: var(--rsi-radius-lg);
+.outlet-testimonial-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--outlet-text-primary);
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+.outlet-testimonial-role {
+    font-size: 11px;
+    color: var(--outlet-text-secondary);
+}
+
+/* ====== FEATURE CARD - RESPONSIVE ====== */
+.outlet-feature-card {
+    background: var(--outlet-bg-card);
+    border-radius: var(--outlet-radius-xl);
+    padding: 24px;
     text-align: center;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all var(--rsi-transition-base);
+    transition: var(--outlet-transition-base);
+    border: 1px solid var(--outlet-border-soft);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-.rsi-stat-card:hover {
-    transform: translateY(-5px);
-    background: rgba(255, 255, 255, 0.15);
+.outlet-feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--outlet-shadow-md);
+    border-color: var(--outlet-gold);
 }
 
-.rsi-stat-number {
-    font-size: 2.5rem;
-    font-weight: 700;
-    display: block;
-    margin-bottom: var(--rsi-spacing-sm);
+.outlet-feature-icon {
+    font-size: 40px;
+    color: var(--outlet-gold);
+    margin-bottom: 16px;
+    flex-shrink: 0;
 }
 
-/* Grid de tarjetas */
-.rsi-card-grid {
+.outlet-feature-title {
+    font-size: 16px;
+    font-weight: 600;
+    font-family: var(--outlet-font-primary);
+    color: var(--outlet-text-primary);
+    margin-bottom: 8px;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+.outlet-feature-text {
+    font-size: 13px;
+    color: var(--outlet-text-secondary);
+    line-height: 1.6;
+}
+
+/* ====== CARD GRID SYSTEM - RESPONSIVE ====== */
+.outlet-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+}
+
+.outlet-card-grid-2 {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: var(--rsi-spacing-xl);
-    margin-top: var(--rsi-spacing-2xl);
+    gap: 24px;
+}
+
+.outlet-card-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 30px;
+}
+
+.outlet-card-grid-4 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 24px;
+}
+
+/* ====== VARIANTES ADICIONALES ====== */
+.outlet-card-hover-gold:hover {
+    border-color: var(--outlet-gold);
+    box-shadow: var(--outlet-shadow-gold);
+}
+
+.outlet-card-no-padding {
+    padding: 0;
+}
+
+.outlet-card-centered {
+    text-align: center;
+}
+
+.outlet-card-glass {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(221, 171, 59, 0.2);
+}
+
+/* ====== RESPONSIVE BREAKPOINTS ====== */
+
+/* Tablets (pantallas medianas) */
+@media (max-width: 1024px) {
+    .outlet-card-grid,
+    .outlet-card-grid-2,
+    .outlet-card-grid-3,
+    .outlet-card-grid-4 {
+        gap: 20px;
+    }
+    
+    .outlet-product-image {
+        height: 220px;
+    }
+    
+    .outlet-team-image {
+        height: 240px;
+    }
+    
+    .outlet-service-card {
+        padding: 28px 20px;
+    }
+    
+    .outlet-testimonial-card {
+        padding: 28px;
+    }
+}
+
+/* Tablets pequeñas (pantallas medianas-pequeñas) */
+@media (max-width: 768px) {
+    .outlet-card-grid,
+    .outlet-card-grid-2,
+    .outlet-card-grid-3,
+    .outlet-card-grid-4 {
+        gap: 16px;
+    }
+    
+    /* Stat Card */
+    .outlet-stat-card {
+        padding: 16px;
+        gap: 12px;
+    }
+    
+    .outlet-stat-icon {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .outlet-stat-icon i {
+        font-size: 20px;
+    }
+    
+    .outlet-stat-info h3 {
+        font-size: 24px;
+    }
+    
+    .outlet-stat-info p {
+        font-size: 11px;
+    }
+    
+    /* Product Card */
+    .outlet-product-image {
+        height: 200px;
+    }
+    
+    .outlet-product-info {
+        padding: 16px;
+    }
+    
+    .outlet-product-title {
+        font-size: 15px;
+    }
+    
+    .outlet-product-price {
+        font-size: 18px;
+    }
+    
+    /* Service Card */
+    .outlet-service-card {
+        padding: 24px 16px;
+    }
+    
+    .outlet-service-icon {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .outlet-service-icon i {
+        font-size: 28px;
+    }
+    
+    .outlet-service-title {
+        font-size: 17px;
+    }
+    
+    .outlet-service-description {
+        font-size: 12px;
+    }
+    
+    /* Team Card */
+    .outlet-team-image {
+        height: 220px;
+    }
+    
+    .outlet-team-info {
+        padding: 16px;
+    }
+    
+    .outlet-team-name {
+        font-size: 17px;
+    }
+    
+    /* Testimonial Card */
+    .outlet-testimonial-card {
+        padding: 24px;
+    }
+    
+    .outlet-testimonial-card::before {
+        font-size: 50px;
+        top: 15px;
+        left: 20px;
+    }
+    
+    .outlet-testimonial-text {
+        font-size: 13px;
+    }
+    
+    /* Feature Card */
+    .outlet-feature-card {
+        padding: 20px;
+    }
+    
+    .outlet-feature-icon {
+        font-size: 36px;
+    }
+    
+    .outlet-feature-title {
+        font-size: 15px;
+    }
+    
+    .outlet-feature-text {
+        font-size: 12px;
+    }
+}
+
+/* Móviles grandes */
+@media (max-width: 600px) {
+    .outlet-card-grid,
+    .outlet-card-grid-2,
+    .outlet-card-grid-3,
+    .outlet-card-grid-4 {
+        gap: 14px;
+    }
+    
+    /* Stat Card */
+    .outlet-stat-card {
+        padding: 14px;
+        gap: 12px;
+    }
+    
+    .outlet-stat-icon {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .outlet-stat-icon i {
+        font-size: 18px;
+    }
+    
+    .outlet-stat-info h3 {
+        font-size: 22px;
+    }
+    
+    /* Product Card */
+    .outlet-product-image {
+        height: 180px;
+    }
+    
+    .outlet-product-info {
+        padding: 14px;
+    }
+    
+    .outlet-product-title {
+        font-size: 14px;
+    }
+    
+    .outlet-product-price {
+        font-size: 17px;
+    }
+    
+    /* Service Card */
+    .outlet-service-icon {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .outlet-service-icon i {
+        font-size: 24px;
+    }
+    
+    .outlet-service-title {
+        font-size: 16px;
+    }
+    
+    /* Team Card */
+    .outlet-team-image {
+        height: 200px;
+    }
+    
+    /* Testimonial Card */
+    .outlet-testimonial-card {
+        padding: 20px;
+    }
+    
+    .outlet-testimonial-card::before {
+        font-size: 40px;
+        top: 12px;
+        left: 16px;
+    }
+    
+    .outlet-testimonial-text {
+        font-size: 12px;
+        margin-bottom: 20px;
+    }
+    
+    .outlet-testimonial-avatar {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+/* Móviles pequeños - IMPORTANTE: Aquí se soluciona el problema de desbordamiento */
+@media (max-width: 480px) {
+    .outlet-card-grid,
+    .outlet-card-grid-2,
+    .outlet-card-grid-3,
+    .outlet-card-grid-4 {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    /* Stat Card - Se vuelve más compacta */
+    .outlet-stat-card {
+        padding: 12px;
+        gap: 10px;
+    }
+    
+    .outlet-stat-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 12px;
+    }
+    
+    .outlet-stat-icon i {
+        font-size: 16px;
+    }
+    
+    .outlet-stat-info h3 {
+        font-size: 20px;
+        margin-bottom: 2px;
+    }
+    
+    .outlet-stat-info p {
+        font-size: 10px;
+    }
+    
+    /* Product Card */
+    .outlet-product-image {
+        height: 200px;
+    }
+    
+    .outlet-product-info {
+        padding: 12px;
+    }
+    
+    .outlet-product-title {
+        font-size: 14px;
+        margin-bottom: 4px;
+    }
+    
+    .outlet-product-price {
+        font-size: 16px;
+        margin: 4px 0;
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    
+    .outlet-product-stock {
+        font-size: 11px;
+        margin-top: 4px;
+    }
+    
+    /* Service Card */
+    .outlet-service-card {
+        padding: 20px 16px;
+    }
+    
+    .outlet-service-icon {
+        width: 50px;
+        height: 50px;
+        margin-bottom: 12px;
+    }
+    
+    .outlet-service-icon i {
+        font-size: 22px;
+    }
+    
+    .outlet-service-title {
+        font-size: 15px;
+        margin-bottom: 8px;
+    }
+    
+    .outlet-service-description {
+        font-size: 11px;
+    }
+    
+    /* Team Card */
+    .outlet-team-image {
+        height: 200px;
+    }
+    
+    .outlet-team-info {
+        padding: 12px;
+    }
+    
+    .outlet-team-name {
+        font-size: 16px;
+    }
+    
+    .outlet-team-role {
+        font-size: 11px;
+    }
+    
+    .outlet-team-social a {
+        width: 28px;
+        height: 28px;
+    }
+    
+    /* Testimonial Card */
+    .outlet-testimonial-card {
+        padding: 16px;
+    }
+    
+    .outlet-testimonial-card::before {
+        font-size: 32px;
+        top: 8px;
+        left: 12px;
+    }
+    
+    .outlet-testimonial-text {
+        font-size: 11px;
+        margin-bottom: 16px;
+    }
+    
+    .outlet-testimonial-author {
+        gap: 8px;
+        padding-top: 12px;
+    }
+    
+    .outlet-testimonial-avatar {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .outlet-testimonial-name {
+        font-size: 12px;
+    }
+    
+    .outlet-testimonial-role {
+        font-size: 10px;
+    }
+    
+    /* Feature Card */
+    .outlet-feature-card {
+        padding: 16px;
+    }
+    
+    .outlet-feature-icon {
+        font-size: 28px;
+        margin-bottom: 12px;
+    }
+    
+    .outlet-feature-title {
+        font-size: 14px;
+    }
+    
+    .outlet-feature-text {
+        font-size: 11px;
+    }
+}
+
+/* Móviles muy pequeños - EXTRA IMPORTANTE */
+@media (max-width: 380px) {
+    /* Stat Card - Máxima compactación */
+    .outlet-stat-card {
+        padding: 10px;
+        gap: 8px;
+    }
+    
+    .outlet-stat-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 10px;
+    }
+    
+    .outlet-stat-icon i {
+        font-size: 14px;
+    }
+    
+    .outlet-stat-info h3 {
+        font-size: 18px;
+    }
+    
+    .outlet-stat-info p {
+        font-size: 9px;
+    }
+    
+    /* Product Card */
+    .outlet-product-image {
+        height: 160px;
+    }
+    
+    .outlet-product-info {
+        padding: 10px;
+    }
+    
+    .outlet-product-title {
+        font-size: 13px;
+    }
+    
+    .outlet-product-price {
+        font-size: 15px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+    }
+    
+    .outlet-product-price old {
+        font-size: 12px;
+    }
+    
+    .outlet-product-badge {
+        top: 8px;
+        right: 8px;
+        padding: 2px 8px;
+        font-size: 9px;
+    }
+    
+    /* Service Card */
+    .outlet-service-icon {
+        width: 45px;
+        height: 45px;
+    }
+    
+    .outlet-service-icon i {
+        font-size: 20px;
+    }
+    
+    .outlet-service-title {
+        font-size: 14px;
+    }
+    
+    /* Team Card */
+    .outlet-team-image {
+        height: 160px;
+    }
+    
+    .outlet-team-info {
+        padding: 10px;
+    }
+    
+    .outlet-team-name {
+        font-size: 15px;
+    }
+    
+    .outlet-team-role {
+        font-size: 10px;
+    }
+    
+    /* Testimonial Card */
+    .outlet-testimonial-card {
+        padding: 12px;
+    }
+    
+    .outlet-testimonial-text {
+        font-size: 10px;
+        line-height: 1.5;
+    }
+    
+    .outlet-testimonial-author {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .outlet-testimonial-avatar {
+        margin: 0 auto;
+    }
+    
+    /* Feature Card */
+    .outlet-feature-card {
+        padding: 12px;
+    }
+    
+    .outlet-feature-icon {
+        font-size: 24px;
+    }
+    
+    .outlet-feature-title {
+        font-size: 13px;
+    }
+}
+
+/* Móviles extra pequeños (iPhone SE, etc) */
+@media (max-width: 320px) {
+    /* Stat Card */
+    .outlet-stat-icon {
+        width: 24px;
+        height: 24px;
+        border-radius: 8px;
+    }
+    
+    .outlet-stat-icon i {
+        font-size: 12px;
+    }
+    
+    .outlet-stat-info h3 {
+        font-size: 16px;
+    }
+    
+    /* Product Card */
+    .outlet-product-image {
+        height: 140px;
+    }
+    
+    .outlet-product-title {
+        font-size: 12px;
+    }
+    
+    .outlet-product-price {
+        font-size: 14px;
+    }
+    
+    /* Service Card */
+    .outlet-service-icon {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .outlet-service-icon i {
+        font-size: 18px;
+    }
+    
+    .outlet-service-title {
+        font-size: 13px;
+    }
+    
+    .outlet-service-description {
+        font-size: 10px;
+    }
+}
+
+/* Landscape en móviles */
+@media (max-height: 500px) and (orientation: landscape) {
+    .outlet-product-image {
+        height: 150px;
+    }
+    
+    .outlet-team-image {
+        height: 160px;
+    }
+    
+    .outlet-service-card {
+        padding: 20px;
+    }
+    
+    .outlet-service-icon {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .outlet-service-icon i {
+        font-size: 22px;
+    }
+    
+    .outlet-testimonial-card {
+        padding: 16px;
+    }
+}
+
+/* Pantallas muy grandes (4K+) */
+@media (min-width: 1920px) {
+    .outlet-card-grid,
+    .outlet-card-grid-2,
+    .outlet-card-grid-3,
+    .outlet-card-grid-4 {
+        gap: 32px;
+    }
+    
+    .outlet-product-image {
+        height: 300px;
+    }
+    
+    .outlet-team-image {
+        height: 320px;
+    }
+    
+    .outlet-service-card {
+        padding: 40px 32px;
+    }
+    
+    .outlet-testimonial-card {
+        padding: 40px;
+    }
 }

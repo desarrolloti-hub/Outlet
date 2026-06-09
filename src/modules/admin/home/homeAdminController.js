@@ -114,7 +114,7 @@ function showAdminNotification(message, isError = false) {
 }
 
 /**
- * Renderizar tabla de productos
+ * Renderizar tabla de productos con soporte para tarjetas responsive
  */
 function renderProductsTable() {
     const tbody = document.getElementById('productsTable');
@@ -134,16 +134,16 @@ function renderProductsTable() {
 
     tbody.innerHTML = adminProducts.map(product => `
         <tr data-id="${product.id}">
-            <td><img src="${product.image}" class="product-image" alt="${product.name}" onerror="this.src='https://picsum.photos/id/20/100/100'"></td>
-            <td><strong>${escapeHtml(product.name)}</strong></td>
-            <td>${formatMoney(product.price)}</td>
-            <td>${product.stock}</td>
-            <td>
+            <td data-label="Imagen"><img src="${product.image}" class="product-image" alt="${product.name}" onerror="this.src='https://picsum.photos/id/20/100/100'"></td>
+            <td data-label="Producto"><strong>${escapeHtml(product.name)}</strong></td>
+            <td data-label="Precio">${formatMoney(product.price)}</td>
+            <td data-label="Stock">${product.stock}</td>
+            <td data-label="Estado">
                 <span class="status ${product.status === 'Activo' ? 'status-active' : 'status-inactive'}">
                     ${product.status}
                 </span>
             </td>
-            <td>
+            <td data-label="Acciones">
                 <button class="admin-action-btn edit" data-id="${product.id}" data-action="edit" title="Editar">
                     <i class="fa-regular fa-pen-to-square"></i>
                 </button>

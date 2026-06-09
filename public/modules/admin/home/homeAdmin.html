@@ -1,9 +1,14 @@
 <!-- ========================================
    ADMIN PANEL - OUTLET (SPA)
-   Panel administrativo
+   Panel administrativo - Completamente Responsive
    ======================================== -->
 
 <main class="admin-dashboard">
+    <!-- Botón menú móvil -->
+    <button class="mobile-menu-btn" id="mobileMenuBtn">
+        <i class="fas fa-bars"></i>
+    </button>
+
     <!-- CONTENIDO PRINCIPAL -->
     <div class="admin-main-content">
         <header class="admin-topbar">
@@ -19,35 +24,54 @@
             </div>
         </header>
 
-        <!-- CARDS ESTADÍSTICAS -->
-        <section class="admin-cards">
-            <div class="admin-card">
-                <i class="fa-solid fa-box"></i>
-                <h3 id="productsCount">0</h3>
-                <p>Productos</p>
+        <!-- CARDS ESTADÍSTICAS RESPONSIVE -->
+        <div class="admin-cards">
+            <div class="outlet-stat-card">
+                <div class="outlet-stat-icon">
+                    <i class="fa-solid fa-box"></i>
+                </div>
+                <div class="outlet-stat-info">
+                    <h3 id="productsCount">0</h3>
+                    <p>Productos</p>
+                </div>
             </div>
-            <div class="admin-card">
-                <i class="fa-solid fa-users"></i>
-                <h3 id="usersCount">0</h3>
-                <p>Usuarios</p>
+            <div class="outlet-stat-card">
+                <div class="outlet-stat-icon">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+                <div class="outlet-stat-info">
+                    <h3 id="usersCount">0</h3>
+                    <p>Usuarios</p>
+                </div>
             </div>
-            <div class="admin-card">
-                <i class="fa-solid fa-cart-shopping"></i>
-                <h3 id="ordersCount">0</h3>
-                <p>Pedidos</p>
+            <div class="outlet-stat-card">
+                <div class="outlet-stat-icon">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                </div>
+                <div class="outlet-stat-info">
+                    <h3 id="ordersCount">0</h3>
+                    <p>Pedidos</p>
+                </div>
             </div>
-            <div class="admin-card">
-                <i class="fa-solid fa-dollar-sign"></i>
-                <h3 id="salesCount">$0</h3>
-                <p>Ventas</p>
+            <div class="outlet-stat-card">
+                <div class="outlet-stat-icon">
+                    <i class="fa-solid fa-dollar-sign"></i>
+                </div>
+                <div class="outlet-stat-info">
+                    <h3 id="salesCount">$0</h3>
+                    <p>Ventas</p>
+                </div>
             </div>
-        </section>
+        </div>
 
-        <!-- TABLA DE PRODUCTOS -->
+        <!-- TABLA DE PRODUCTOS RESPONSIVE -->
         <section class="admin-table-section">
             <div class="admin-table-header">
                 <h2>Últimos productos</h2>
-                <button id="addProductBtn" class="admin-add-btn">+ Agregar producto</button>
+                <button id="addProductBtn" class="admin-add-btn">
+                    <i class="fa-solid fa-plus"></i>
+                    Agregar producto
+                </button>
             </div>
 
             <div class="admin-table-wrapper">
