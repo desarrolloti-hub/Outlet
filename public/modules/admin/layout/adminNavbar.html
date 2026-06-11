@@ -22,11 +22,6 @@
         </div>
     </div>
     
-    <!-- Botón tema oscuro (opcional en admin) -->
-    <button class="admin-theme-toggle" id="adminThemeToggleBtn" title="Cambiar modo oscuro">
-        <i class="fas fa-moon"></i>
-    </button>
-    
     <!-- Enlaces de navegación -->
     <ul class="admin-nav-links">
         <li>
@@ -67,8 +62,13 @@
         </li>
     </ul>
     
-    <!-- Footer del navbar -->
+    <!-- Footer del navbar (siempre abajo) -->
     <div class="admin-nav-footer">
+        <button class="admin-theme-toggle" id="adminThemeToggleBtn" title="Cambiar modo oscuro">
+            <i class="fas fa-moon"></i>
+            <span>Tema</span>
+        </button>
+        
         <a href="#" id="adminLogoutBtn" class="admin-logout-btn">
             <i class="fas fa-sign-out-alt"></i>
             <span>Cerrar Sesión</span>
@@ -77,141 +77,469 @@
 </nav>
 
 <style>
-/* Estilos responsive compactos para el navbar */
-@media (max-width: 1024px) {
-    .OUTLET-admin-nav {
-        width: 72px !important;
-        min-width: 72px !important;
-        padding: 16px 8px !important;
-    }
-    
-    .admin-logo-text,
-    .admin-user-details,
-    .admin-nav-links span,
-    .admin-logout-btn span,
-    .admin-theme-toggle span {
-        display: none !important;
-    }
-    
-    .admin-nav-header {
-        justify-content: center !important;
-        margin-bottom: 16px !important;
-    }
-    
-    .admin-logo-img {
-        max-width: 36px !important;
-    }
-    
-    .admin-collapse-btn {
-        display: none !important;
-    }
-    
-    .admin-user-info {
-        justify-content: center !important;
-        padding: 12px 0 !important;
-        margin-bottom: 16px !important;
-    }
-    
-    .admin-avatar {
-        width: 40px !important;
-        height: 40px !important;
-    }
-    
-    .admin-nav-links li a {
-        justify-content: center !important;
-        padding: 10px !important;
-    }
-    
-    .admin-nav-links li a i {
-        margin-right: 0 !important;
-        font-size: 18px !important;
-    }
-    
-    .admin-logout-btn {
-        justify-content: center !important;
-        padding: 10px !important;
-    }
-    
-    .admin-logout-btn i {
-        margin-right: 0 !important;
-        font-size: 18px !important;
-    }
-    
-    .admin-theme-toggle {
-        justify-content: center !important;
-        padding: 8px !important;
-        margin: 8px auto !important;
-    }
+/* ========================================
+   ADMIN NAVBAR - SIN SCROLL, SIN ESPACIOS MUERTOS
+   ======================================== */
+
+/* Reset y estructura base */
+.OUTLET-admin-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 280px;
+    min-width: 280px;
+    height: 100vh;           /* Altura completa de la ventana */
+    max-height: 100vh;       /* Limitar altura máxima */
+    background: #ffffff;     /* Fondo blanco puro en modo claro */
+    border-right: 1px solid var(--outlet-border-color, #d2c5b0);
+    display: flex;
+    flex-direction: column;
+    padding: 20px 16px;
+    z-index: var(--outlet-z-fixed, 1030);
+    overflow-y: auto;        /* Scroll solo si es absolutamente necesario */
+    overflow-x: hidden;
+    transition: all var(--outlet-transition-base, 0.3s ease);
 }
 
+/* Ocultar scrollbar pero mantener funcionalidad (opcional) */
+.OUTLET-admin-nav::-webkit-scrollbar {
+    width: 4px;
+}
+
+.OUTLET-admin-nav::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.OUTLET-admin-nav::-webkit-scrollbar-thumb {
+    background: var(--outlet-border-color, #d2c5b0);
+    border-radius: 4px;
+}
+
+/* Modo oscuro */
+body.dark-mode .OUTLET-admin-nav {
+    background: #0a1c2f;    /* Fondo oscuro consistente */
+    border-right-color: var(--outlet-border-color, #2a4a6e);
+}
+
+/* Header - más compacto */
+.admin-nav-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--outlet-border-soft, #e2d9cc);
+    flex-shrink: 0;          /* Evita que se encoja */
+}
+
+.admin-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.admin-logo-img {
+    height: 28px;
+    width: auto;
+    object-fit: contain;
+}
+
+.admin-logo-text {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--outlet-text-primary, #1f1b13);
+}
+
+body.dark-mode .admin-logo-text {
+    color: var(--outlet-text-primary, #d6e5f7);
+}
+
+.admin-collapse-btn {
+    background: transparent;
+    border: 1px solid var(--outlet-border-color, #d2c5b0);
+    border-radius: var(--outlet-radius-full, 9999px);
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--outlet-text-secondary, #4f4635);
+    transition: all var(--outlet-transition-fast, 0.2s ease);
+    flex-shrink: 0;
+}
+
+.admin-collapse-btn:hover {
+    background: var(--outlet-gold, #ddab3b);
+    color: #1a1a1a;
+    border-color: var(--outlet-gold, #ddab3b);
+}
+
+/* Información del usuario - más compacta */
+.admin-user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--outlet-bg-container-low, #fcf2e5);
+    border-radius: var(--outlet-radius-md, 8px);
+    margin-bottom: 20px;
+    flex-shrink: 0;
+}
+
+body.dark-mode .admin-user-info {
+    background: var(--outlet-bg-container-low, #0f243d);
+}
+
+.admin-avatar {
+    width: 40px;
+    height: 40px;
+    background: var(--outlet-gold-gradient, linear-gradient(135deg, #c9a03d, #f2d06b, #fff2a8, #e8c44c, #d4af37));
+    border-radius: var(--outlet-radius-full, 9999px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.admin-avatar i {
+    font-size: 20px;
+    color: #1a1a1a;
+}
+
+.admin-user-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;            /* Permite que el texto se trunque */
+    overflow: hidden;
+}
+
+.admin-user-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--outlet-text-primary, #1f1b13);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+body.dark-mode .admin-user-name {
+    color: var(--outlet-text-primary, #d6e5f7);
+}
+
+.admin-user-email {
+    font-size: 10px;
+    color: var(--outlet-text-secondary, #4f4635);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+body.dark-mode .admin-user-email {
+    color: var(--outlet-text-secondary, #b0c4de);
+}
+
+/* Enlaces de navegación - ocupan el espacio disponible */
+.admin-nav-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex: 1;                 /* Ocupa todo el espacio disponible */
+    overflow-y: auto;        /* Scroll solo en los enlaces si es necesario */
+    overflow-x: hidden;
+}
+
+/* Scroll suave solo en enlaces */
+.admin-nav-links::-webkit-scrollbar {
+    width: 3px;
+}
+
+.admin-nav-links::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.admin-nav-links::-webkit-scrollbar-thumb {
+    background: var(--outlet-gold, #ddab3b);
+    border-radius: 3px;
+}
+
+.admin-nav-links li {
+    margin-bottom: 4px;
+}
+
+.admin-nav-links li a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: var(--outlet-radius-md, 8px);
+    text-decoration: none;
+    color: var(--outlet-text-secondary, #4f4635);
+    transition: all var(--outlet-transition-fast, 0.2s ease);
+}
+
+.admin-nav-links li a i {
+    width: 20px;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.admin-nav-links li a span {
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.admin-nav-links li a:hover {
+    background: rgba(221, 171, 59, 0.1);
+    color: var(--outlet-gold, #ddab3b);
+}
+
+.admin-nav-links li a.active {
+    background: var(--outlet-gold-gradient, linear-gradient(135deg, #c9a03d, #f2d06b, #fff2a8, #e8c44c, #d4af37));
+    color: #1a1a1a;
+}
+
+/* Footer del navbar - fijo abajo */
+.admin-nav-footer {
+    margin-top: auto;        /* Empuja hacia abajo */
+    padding-top: 16px;
+    border-top: 1px solid var(--outlet-border-soft, #e2d9cc);
+    flex-shrink: 0;          /* No se encoge */
+}
+
+.admin-theme-toggle {
+    background: transparent;
+    border: 1px solid var(--outlet-border-color, #d2c5b0);
+    border-radius: var(--outlet-radius-md, 8px);
+    padding: 8px 12px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    margin-bottom: 12px;
+    color: var(--outlet-text-secondary, #4f4635);
+    transition: all var(--outlet-transition-fast, 0.2s ease);
+}
+
+.admin-theme-toggle:hover {
+    background: var(--outlet-gold, #ddab3b);
+    color: #1a1a1a;
+    border-color: var(--outlet-gold, #ddab3b);
+}
+
+.admin-theme-toggle i {
+    font-size: 14px;
+}
+
+.admin-theme-toggle span {
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.admin-logout-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: var(--outlet-radius-md, 8px);
+    text-decoration: none;
+    color: var(--outlet-danger, #ba1a1a);
+    transition: all var(--outlet-transition-fast, 0.2s ease);
+}
+
+.admin-logout-btn i {
+    width: 20px;
+    font-size: 16px;
+}
+
+.admin-logout-btn span {
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.admin-logout-btn:hover {
+    background: rgba(186, 26, 26, 0.1);
+    color: var(--outlet-danger, #ba1a1a);
+}
+
+/* ========== ESTADO COLAPSADO ========== */
+.OUTLET-admin-nav.collapsed {
+    width: 80px;
+    min-width: 80px;
+}
+
+.OUTLET-admin-nav.collapsed .admin-logo-text,
+.OUTLET-admin-nav.collapsed .admin-user-details,
+.OUTLET-admin-nav.collapsed .admin-nav-links span,
+.OUTLET-admin-nav.collapsed .admin-theme-toggle span,
+.OUTLET-admin-nav.collapsed .admin-logout-btn span {
+    display: none;
+}
+
+.OUTLET-admin-nav.collapsed .admin-nav-links li a {
+    justify-content: center;
+    padding: 10px;
+}
+
+.OUTLET-admin-nav.collapsed .admin-nav-links li a i {
+    margin-right: 0;
+    font-size: 18px;
+}
+
+.OUTLET-admin-nav.collapsed .admin-logout-btn {
+    justify-content: center;
+}
+
+.OUTLET-admin-nav.collapsed .admin-logout-btn i {
+    margin-right: 0;
+}
+
+.OUTLET-admin-nav.collapsed .admin-user-info {
+    justify-content: center;
+}
+
+.OUTLET-admin-nav.collapsed .admin-avatar {
+    margin: 0 auto;
+}
+
+.OUTLET-admin-nav.collapsed .admin-theme-toggle {
+    justify-content: center;
+    padding: 8px;
+}
+
+/* ========== RESPONSIVE MÓVIL ========== */
 @media (max-width: 768px) {
     .OUTLET-admin-nav {
         transform: translateX(-100%);
-        transition: transform 0.25s ease;
-        width: 240px !important;
-        min-width: 240px !important;
-        position: fixed;
-        z-index: 1000;
-        height: 100vh;
-        overflow-y: auto;
+        width: 260px !important;
+        min-width: 260px !important;
+        z-index: 1050;
     }
     
     .OUTLET-admin-nav.open {
         transform: translateX(0);
     }
     
-    .admin-logo-text,
-    .admin-user-details,
-    .admin-nav-links span,
-    .admin-logout-btn span {
-        display: flex !important;
+    .OUTLET-admin-nav.collapsed {
+        width: 260px !important;
+        min-width: 260px !important;
     }
     
-    .admin-nav-links li a {
-        justify-content: flex-start !important;
-        padding: 10px 16px !important;
+    .OUTLET-admin-nav.collapsed .admin-logo-text,
+    .OUTLET-admin-nav.collapsed .admin-user-details,
+    .OUTLET-admin-nav.collapsed .admin-nav-links span,
+    .OUTLET-admin-nav.collapsed .admin-theme-toggle span,
+    .OUTLET-admin-nav.collapsed .admin-logout-btn span {
+        display: inline-block;
     }
     
-    .admin-nav-links li a i {
-        margin-right: 12px !important;
-        font-size: 18px !important;
+    .OUTLET-admin-nav.collapsed .admin-nav-links li a {
+        justify-content: flex-start;
+        padding: 10px 12px;
     }
     
-    .admin-logout-btn {
-        justify-content: flex-start !important;
-        padding: 10px 16px !important;
+    .OUTLET-admin-nav.collapsed .admin-nav-links li a i {
+        margin-right: 12px;
+        font-size: 16px;
     }
     
-    .admin-logout-btn i {
-        margin-right: 12px !important;
+    .OUTLET-admin-nav.collapsed .admin-user-info {
+        justify-content: flex-start;
+    }
+    
+    .OUTLET-admin-nav.collapsed .admin-avatar {
+        margin: 0;
+    }
+    
+    .OUTLET-admin-nav.collapsed .admin-theme-toggle {
+        justify-content: center;
     }
 }
 
-.mobile-menu-btn {
+/* Botón móvil para abrir menú */
+.admin-mobile-toggle {
     display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1040;
+    background: var(--outlet-gold, #ddab3b);
+    border: none;
+    width: 48px;
+    height: 48px;
+    border-radius: var(--outlet-radius-full, 9999px);
+    cursor: pointer;
+    box-shadow: var(--outlet-shadow-md, 0 5px 15px rgba(0, 0, 0, 0.08));
+    align-items: center;
+    justify-content: center;
 }
 
 @media (max-width: 768px) {
-    .mobile-menu-btn {
+    .admin-mobile-toggle {
         display: flex;
-        position: fixed;
-        bottom: 16px;
-        right: 16px;
-        z-index: 999;
-        background: var(--outlet-gold, #ddab3b);
-        border: none;
-        width: 44px;
-        height: 44px;
-        border-radius: 50%;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
     
-    .mobile-menu-btn i {
+    .admin-mobile-toggle i {
         font-size: 20px;
-        color: #000;
+        color: #1a1a1a;
     }
 }
 </style>
+
+<!-- Botón móvil para abrir menú -->
+<button class="admin-mobile-toggle" id="adminMobileToggleBtn">
+    <i class="fas fa-bars"></i>
+</button>
+
+<script>
+    (function() {
+        const adminNav = document.querySelector('.OUTLET-admin-nav');
+        const mobileToggle = document.getElementById('adminMobileToggleBtn');
+        const collapseBtn = document.getElementById('adminCollapseBtn');
+        
+        // Toggle móvil
+        if (mobileToggle && adminNav) {
+            mobileToggle.addEventListener('click', () => {
+                adminNav.classList.toggle('open');
+            });
+            
+            // Cerrar al hacer clic fuera en móvil
+            document.addEventListener('click', (e) => {
+                if (window.innerWidth <= 768) {
+                    if (adminNav && !adminNav.contains(e.target) && !mobileToggle.contains(e.target)) {
+                        adminNav.classList.remove('open');
+                    }
+                }
+            });
+        }
+        
+        // Colapsar/expandir en desktop
+        if (collapseBtn && adminNav) {
+            collapseBtn.addEventListener('click', () => {
+                adminNav.classList.toggle('collapsed');
+            });
+        }
+        
+        // Evitar que el body tenga scroll cuando el navbar está abierto en móvil
+        if (adminNav) {
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.attributeName === 'class') {
+                        if (adminNav.classList.contains('open')) {
+                            document.body.style.overflow = 'hidden';
+                        } else {
+                            document.body.style.overflow = '';
+                        }
+                    }
+                });
+            });
+            observer.observe(adminNav, { attributes: true });
+        }
+    })();
+</script>

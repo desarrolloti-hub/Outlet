@@ -19,8 +19,6 @@ import { adminController } from '../modules/admin/home/homeAdminController.js';
 import { productsController } from '../modules/visitor/products/productsController.js';
 
 
-
-
 //         ---------   customer   ---------
 //  importar controllers de customer de edición de perfil
 

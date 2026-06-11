@@ -9,7 +9,7 @@ import { CacheService, STORES } from '/services/cacheService.js';
 
 // Roles disponibles
 export const ROLES = {
-    ADMIN: 'admin',
+    ADMIN: 'admin',    
     VISITOR: 'visitor',
     GUEST: 'guest'
 };

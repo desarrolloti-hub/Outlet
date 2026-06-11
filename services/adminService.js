@@ -13,6 +13,23 @@ export const ROLES = {
     SUPER_ADMIN: 'super_admin'
 };
 
+// 📦 Estructura JSON que se guarda en localStorage (outlet_admin)
+/*
+{
+    "id": "uuid-del-admin",
+    "nombre": "Juan",
+    "apellidoPa": "Pérez",
+    "apellidoMa": "García",
+    "nombreCompleto": "Juan Pérez García",
+    "email": "juan@outletval.com",
+    "rol": "admin",
+    "estado": "activo",
+    "iniciales": "JP",
+    "fechaSesion": "2026-06-10T15:30:00.000Z",
+    "permisos": ["admin.view", "products.edit"]
+}
+*/
+
 export const AdminService = {
     /**
      * Registrar nuevo administrador (solo para super_admin)
@@ -92,7 +109,11 @@ export const AdminService = {
             
             if (result.adminData) {
                 await AdminRepository.updateFailedAttempts(email, false);
-                this._saveSession(new Admin(result.adminData).datosResumidos);
+                
+                // ✅ Guardar sesión con estructura JSON completa
+                const adminObj = new Admin(result.adminData);
+                const sessionData = this._buildSessionData(adminObj);
+                this._saveSession(sessionData);
                 this._dispatchAuthChange(result.adminData);
             }
             
@@ -100,11 +121,57 @@ export const AdminService = {
         } else {
             const result = await AdminRepository.loginWithGoogle();
             if (result.adminData) {
-                this._saveSession(new Admin(result.adminData).datosResumidos);
+                const adminObj = new Admin(result.adminData);
+                const sessionData = this._buildSessionData(adminObj);
+                this._saveSession(sessionData);
                 this._dispatchAuthChange(result.adminData);
             }
             return result;
         }
+    },
+
+    /**
+     * Construye el objeto JSON para localStorage
+     * 📦 Estructura estándar de sesión
+     */
+    _buildSessionData(admin) {
+        return {
+            id: admin.id,
+            nombre: admin.nombre,
+            apellidoPa: admin.apellidoPa || '',
+            apellidoMa: admin.apellidoMa || '',
+            nombreCompleto: admin.nombreCompleto,
+            email: admin.email,
+            rol: admin.rol,
+            estado: admin.estado,
+            iniciales: admin.iniciales,
+            fechaSesion: new Date().toISOString(),
+            permisos: admin.permisos || this._getDefaultPermisosByRol(admin.rol),
+            avatar: admin.avatar || null,
+            ultimoAcceso: new Date().toISOString(),
+            version: '1.0'
+        };
+    },
+
+    /**
+     * Permisos por defecto según rol
+     */
+    _getDefaultPermisosByRol(rol) {
+        const permisosMap = {
+            [ROLES.SUPER_ADMIN]: ['*'],
+            [ROLES.ADMIN]: [
+                'admin.view', 'admin.edit',
+                'products.view', 'products.edit', 'products.create',
+                'orders.view', 'orders.edit',
+                'reports.view'
+            ],
+            [ROLES.EDITOR]: [
+                'products.view', 'products.edit',
+                'orders.view',
+                'reports.view'
+            ]
+        };
+        return permisosMap[rol] || ['basic.view'];
     },
 
     /**
@@ -138,7 +205,8 @@ export const AdminService = {
         
         if (adminData) {
             const admin = new Admin(adminData);
-            this._saveSession(admin.datosResumidos);
+            const sessionData = this._buildSessionData(admin);
+            this._saveSession(sessionData);
             return admin;
         }
         
@@ -195,7 +263,8 @@ export const AdminService = {
         
         if (adminId === currentAdmin.id) {
             const updatedAdmin = new Admin(updated);
-            this._saveSession(updatedAdmin.datosResumidos);
+            const sessionData = this._buildSessionData(updatedAdmin);
+            this._saveSession(sessionData);
             this._dispatchAuthChange(updatedAdmin);
         }
         
@@ -282,6 +351,51 @@ export const AdminService = {
     },
 
     /**
+     * Verificar permiso síncrono (usando session)
+     */
+    hasPermissionSync(permission) {
+        const session = this._getSession();
+        if (!session) return false;
+        
+        if (session.rol === ROLES.SUPER_ADMIN) return true;
+        
+        if (session.permisos && Array.isArray(session.permisos)) {
+            if (session.permisos.includes('*')) return true;
+            return session.permisos.includes(permission);
+        }
+        
+        return false;
+    },
+
+    /**
+     * Obtener sesión actual (JSON de localStorage)
+     * 📦 Retorna el objeto JSON guardado
+     */
+    getCurrentSession() {
+        return this._getSession();
+    },
+
+    /**
+     * ✅ MÉTODO PÚBLICO getSession()
+     * Este es el método que estaba faltando y causaba el error
+     * Es la versión pública para acceder a la sesión desde otros servicios
+     */
+    getSession() {
+        return this._getSession();
+    },
+
+    /**
+     * Actualizar timestamp de último acceso
+     */
+    updateLastAccess() {
+        const session = this._getSession();
+        if (session) {
+            session.ultimoAcceso = new Date().toISOString();
+            this._saveSession(session);
+        }
+    },
+
+    /**
      * Inicializar sistema de administradores
      */
     async initializeSystem() {
@@ -295,17 +409,51 @@ export const AdminService = {
         return re.test(email);
     },
 
+    /**
+     * Guarda la sesión en localStorage
+     * 📦 Formato JSON estándar
+     */
     _saveSession(adminData) {
-        localStorage.setItem('outlet_admin', JSON.stringify(adminData));
+        if (!adminData || typeof adminData !== 'object') {
+            console.error('❌ Intento de guardar sesión inválida');
+            return;
+        }
+        
+        const validSession = {
+            id: adminData.id || null,
+            nombre: adminData.nombre || '',
+            apellidoPa: adminData.apellidoPa || '',
+            apellidoMa: adminData.apellidoMa || '',
+            nombreCompleto: adminData.nombreCompleto || `${adminData.nombre || ''} ${adminData.apellidoPa || ''}`.trim(),
+            email: adminData.email || '',
+            rol: adminData.rol || ROLES.ADMIN,
+            estado: adminData.estado || 'activo',
+            iniciales: adminData.iniciales || (adminData.nombre ? adminData.nombre[0] : 'A'),
+            fechaSesion: adminData.fechaSesion || new Date().toISOString(),
+            permisos: adminData.permisos || this._getDefaultPermisosByRol(adminData.rol || ROLES.ADMIN),
+            ultimoAcceso: new Date().toISOString(),
+            version: '1.0'
+        };
+        
+        localStorage.setItem('outlet_admin', JSON.stringify(validSession));
+        console.log('✅ Sesión de admin guardada:', validSession.id);
     },
 
     _getSession() {
         const session = localStorage.getItem('outlet_admin');
-        return session ? JSON.parse(session) : null;
+        if (!session) return null;
+        
+        try {
+            return JSON.parse(session);
+        } catch (error) {
+            console.error('❌ Error parseando sesión:', error);
+            return null;
+        }
     },
 
     _clearSession() {
         localStorage.removeItem('outlet_admin');
+        console.log('🗑️ Sesión de admin eliminada');
     },
 
     _dispatchAuthChange(adminData) {
@@ -314,4 +462,4 @@ export const AdminService = {
         });
         window.dispatchEvent(event);
     }
-};   
+};
