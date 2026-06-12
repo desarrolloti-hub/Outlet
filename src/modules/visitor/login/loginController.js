@@ -69,7 +69,7 @@ function getUserRoleFromLogin(result) {
  */
 function getRedirectUrlByRole(role, defaultUrl = '/') {
     const redirectMap = {
-        'admin': '/admin/dashboard',
+        'admin': '/homeAdmin',
         'super_admin': '/admin/dashboard',
         'editor': '/admin/dashboard',
         'user': '/',
@@ -362,7 +362,7 @@ async function checkExistingSession() {
             const currentAdmin = await AdminService.getCurrentAdmin(true);
             if (currentAdmin && currentAdmin.isActive()) {
                 console.log('🔄 Sesión de administrador válida, redirigiendo...');
-                const redirectUrl = sessionStorage.getItem('redirectAfterLogin') || '/admin/dashboard';
+                const redirectUrl = sessionStorage.getItem('redirectAfterLogin') || '/homeAdmin';
                 sessionStorage.removeItem('redirectAfterLogin');
                 
                 setTimeout(() => {

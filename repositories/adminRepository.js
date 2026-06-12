@@ -37,6 +37,7 @@ export const AdminRepository = {
         try {
             const adminRef = doc(db, ADMINS_COLLECTION, adminData.id);
             await setDoc(adminRef, adminData);
+            console.log('✅ Admin guardado en Firestore:', { id: adminData.id, rol: adminData.rol });
             return { id: adminData.id, ...adminData };
         } catch (error) {
             console.error('Error guardando administrador:', error);
@@ -53,7 +54,9 @@ export const AdminRepository = {
             const docSnap = await getDoc(adminRef);
             
             if (docSnap.exists()) {
-                return { id: docSnap.id, ...docSnap.data() };
+                const data = { id: docSnap.id, ...docSnap.data() };
+                console.log('📖 Admin obtenido por ID:', { id: data.id, rol: data.rol });
+                return data;
             }
             return null;
         } catch (error) {
@@ -76,7 +79,9 @@ export const AdminRepository = {
             
             if (!querySnapshot.empty) {
                 const doc = querySnapshot.docs[0];
-                return { id: doc.id, ...doc.data() };
+                const data = { id: doc.id, ...doc.data() };
+                console.log('📖 Admin obtenido por email:', { email: data.email, rol: data.rol });
+                return data;
             }
             return null;
         } catch (error) {
@@ -100,6 +105,7 @@ export const AdminRepository = {
             querySnapshot.forEach(doc => {
                 admins.push({ id: doc.id, ...doc.data() });
             });
+            console.log(`📋 Total admins obtenidos: ${admins.length}`);
             return admins;
         } catch (error) {
             console.error('Error obteniendo administradores:', error);
@@ -119,6 +125,7 @@ export const AdminRepository = {
             });
             
             const updated = await this.getById(adminId);
+            console.log('✏️ Admin actualizado:', { id: adminId, rol: updated?.rol });
             return updated;
         } catch (error) {
             console.error('Error actualizando administrador:', error);
@@ -133,6 +140,7 @@ export const AdminRepository = {
         try {
             const adminRef = doc(db, ADMINS_COLLECTION, adminId);
             await deleteDoc(adminRef);
+            console.log('🗑️ Admin eliminado:', adminId);
             return true;
         } catch (error) {
             console.error('Error eliminando administrador:', error);
@@ -145,10 +153,10 @@ export const AdminRepository = {
      */
     async registerWithEmail(email, password, adminData) {
         try {
-            console.log('📝 1. Creando admin en Auth...');
+            console.log('📝 1. Creando admin en Auth con rol:', adminData.rol);
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const firebaseUser = userCredential.user;
-            console.log('✅ Admin creado:', firebaseUser.uid);
+            console.log('✅ Admin creado en Auth:', firebaseUser.uid);
             
             const nombreCompleto = [
                 adminData.nombre || '',
@@ -167,7 +175,7 @@ export const AdminRepository = {
                 apellidoPa: adminData.apellidoPa || '',
                 apellidoMa: adminData.apellidoMa || '',
                 email: firebaseUser.email,
-                rol: adminData.rol || 'admin',
+                rol: adminData.rol || 'admin', // ✅ Usar el rol del adminData
                 estado: adminData.estado || 'activo',
                 permisos: adminData.permisos || null,
                 provider: 'email',
@@ -179,7 +187,7 @@ export const AdminRepository = {
                 activo: true
             };
             
-            console.log('📝 3. Guardando en Firestore...');
+            console.log('📝 3. Guardando en Firestore con rol:', adminToSave.rol);
             await this.save(adminToSave);
             console.log('✅ Admin guardado exitosamente');
             
@@ -198,6 +206,7 @@ export const AdminRepository = {
      */
     async loginWithEmail(email, password) {
         try {
+            console.log('🔐 Intentando login con email:', email);
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const firebaseUser = userCredential.user;
             
@@ -206,6 +215,8 @@ export const AdminRepository = {
             if (!adminData) {
                 throw new Error('No tiene permisos de administrador');
             }
+            
+            console.log('✅ Admin autenticado:', { id: firebaseUser.uid, rol: adminData.rol });
             
             await this.update(firebaseUser.uid, {
                 ultimoAcceso: new Date().toISOString()
@@ -236,6 +247,8 @@ export const AdminRepository = {
                 throw new Error('No tiene permisos de administrador. Contacte al soporte.');
             }
             
+            console.log('✅ Admin autenticado con Google:', { id: firebaseUser.uid, rol: adminData.rol });
+            
             await this.update(firebaseUser.uid, {
                 ultimoAcceso: new Date().toISOString()
             });
@@ -258,6 +271,7 @@ export const AdminRepository = {
     async logout() {
         try {
             await signOut(auth);
+            console.log('👋 Sesión cerrada');
             return true;
         } catch (error) {
             console.error('Error en logout:', error);
@@ -307,13 +321,15 @@ export const AdminRepository = {
         const admins = await this.getAll();
         
         if (admins.length === 0) {
+            console.log('⚠️ No hay admins, creando admin por defecto...');
+            
             const defaultAdmin = {
                 id: 'default-admin-001',
                 email: 'admin@outlet.com',
                 nombre: 'Administrador',
                 apellidoPa: 'Principal',
                 apellidoMa: '',
-                rol: 'super_admin',
+                rol: 'admin', // ✅ Rol 'admin'
                 estado: 'activo',
                 provider: 'email',
                 emailVerified: true,
@@ -325,7 +341,7 @@ export const AdminRepository = {
             };
             
             await this.save(defaultAdmin);
-            console.log('✅ Admin por defecto creado');
+            console.log('✅ Admin por defecto creado con rol: admin');
         }
     },
 

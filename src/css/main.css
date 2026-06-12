@@ -52,6 +52,11 @@
 
 @import url('./pages/admin/createAccount/createAccountAdmin.css');
 
+@import url('./pages/admin/categories/create/createCategories.css');
+
+@import url('./pages/admin/categories/read/readCategories.css');
+
+@import url('./pages/admin/categories/update/updateCategories.css');
 
 
 /* Utils */

@@ -1,0 +1,132 @@
+<!-- ========================================
+   UPDATE CATEGORY - OUTLET ADMIN
+   Página para editar categorías existentes
+   ======================================== -->
+
+<main class="updatecategory-container">
+    <!-- Header -->
+    <div class="updatecategory-header">
+        <div>
+            <h1 class="updatecategory-title">Editar Categoría</h1>
+            <p class="updatecategory-subtitle">Actualiza la información de la categoría seleccionada</p>
+        </div>
+        <button class="updatecategory-btn-outline" id="backBtn">
+            <i class="material-symbols-outlined">arrow_back</i>
+            <span>Volver al listado</span>
+        </button>
+    </div>
+
+    <!-- Formulario de edición -->
+    <div class="updatecategory-form-container">
+        <div class="updatecategory-form-card">
+            <div class="updatecategory-form-header">
+                <div class="updatecategory-form-icon">
+                    <i class="material-symbols-outlined">edit_note</i>
+                </div>
+                <h2>Información de la Categoría</h2>
+                <p>Complete los campos para actualizar la categoría</p>
+            </div>
+
+            <form id="updateCategoryForm">
+                <!-- ID oculto -->
+                <input type="hidden" id="categoryId">
+                
+                <!-- Selector de categoría a editar -->
+                <div class="updatecategory-form-group">
+                    <label>Seleccionar Categoría <span class="required">*</span></label>
+                    <select id="categorySelector" class="updatecategory-selector">
+                        <option value="">-- Seleccione una categoría --</option>
+                    </select>
+                    <small>Seleccione la categoría que desea editar</small>
+                </div>
+
+                <div class="updatecategory-divider"></div>
+
+                <!-- Campos del formulario (inicialmente deshabilitados hasta seleccionar) -->
+                <fieldset id="formFields" disabled>
+                    <div class="updatecategory-form-group">
+                        <label>Nombre de la Categoría <span class="required">*</span></label>
+                        <input type="text" id="categoryName" placeholder="Ej: Ropa, Calzado, Accesorios...">
+                        <span class="updatecategory-input-line"></span>
+                    </div>
+                    
+                    <div class="updatecategory-form-group">
+                        <label>Slug / URL</label>
+                        <input type="text" id="categorySlug" placeholder="Se genera automáticamente">
+                        <small>Identificador único para URLs - se auto-genera desde el nombre</small>
+                    </div>
+                    
+                    <div class="updatecategory-form-group">
+                        <label>Descripción</label>
+                        <textarea id="categoryDescription" rows="4" placeholder="Descripción detallada de la categoría..."></textarea>
+                        <span class="updatecategory-input-line"></span>
+                    </div>
+                    
+                    <div class="updatecategory-form-row">
+                        <div class="updatecategory-form-group">
+                            <label>Icono (Material Icon)</label>
+                            <input type="text" id="categoryIcon" placeholder="Ej: checkroom, shoe, backpack...">
+                            <small>Nombre del icono de Material Symbols</small>
+                        </div>
+                        
+                        <div class="updatecategory-form-group">
+                            <label>Orden de Visualización</label>
+                            <input type="number" id="categoryOrder" value="0" min="0" step="1">
+                            <small>Número más bajo = aparece primero</small>
+                        </div>
+                    </div>
+                    
+                    <div class="updatecategory-form-row">
+                        <div class="updatecategory-form-group">
+                            <label>Estado</label>
+                            <select id="categoryStatus">
+                                <option value="active">Activo</option>
+                                <option value="inactive">Inactivo</option>
+                            </select>
+                        </div>
+                        
+                        <div class="updatecategory-form-group">
+                            <label>Fecha de Creación</label>
+                            <input type="text" id="categoryCreatedAt" readonly disabled>
+                            <small>Fecha en que se creó la categoría</small>
+                        </div>
+                    </div>
+                </fieldset>
+                
+                <!-- Botones de acción -->
+                <div class="updatecategory-actions" id="actionButtons" style="display: none;">
+                    <button type="button" class="updatecategory-btn-secondary" id="cancelBtn">
+                        <i class="material-symbols-outlined">close</i>
+                        Cancelar
+                    </button>
+                    <button type="submit" class="updatecategory-btn-primary" id="saveBtn">
+                        <i class="material-symbols-outlined">save</i>
+                        Actualizar Categoría
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Panel de vista previa de subcategorías (opcional) -->
+        <div class="updatecategory-preview-card" id="previewCard" style="display: none;">
+            <div class="updatecategory-preview-header">
+                <div class="updatecategory-preview-icon">
+                    <i class="material-symbols-outlined">subdirectory_arrow_right</i>
+                </div>
+                <h3>Subcategorías</h3>
+            </div>
+            <div class="updatecategory-preview-content">
+                <div class="updatecategory-subcategories-list" id="subcategoriesPreview">
+                    <p class="updatecategory-empty">Seleccione una categoría para ver sus subcategorías</p>
+                </div>
+            </div>
+            <div class="updatecategory-preview-note">
+                <i class="material-symbols-outlined">info</i>
+                <small>Las subcategorías se gestionan desde el listado principal</small>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Toast Notification -->
+<div id="updateToast" class="updatecategory-toast" style="display: none;"></div>

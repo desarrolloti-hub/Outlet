@@ -31,9 +31,22 @@ import { userProfileEditController } from '../modules/customer/editUser/editUser
 
 import { createAccountAdminController} from '../modules/admin/createAccount/createAccountAdminController.js';
 
+import {readCategoriesController} from '../modules/admin/categories/read/readCategoriesController.js';
+
+
+
+
+
+
+
+
+
 import { productCreateController } from '../modules/admin/products/create/createProductsController.js';
 import { productListController } from '../modules/admin/products/productsListController.js';
 import { editProductController }from '../modules/admin/products/edit/editProductController.js';
+import {categoriesCreateController } from '../modules/admin/categories/create/createCategoriesController.js';
+
+import { updateCategoryController } from '../modules/admin/categories/update/updateCategoriesController.js';
 
 export const routes = {
     "/": {
@@ -84,8 +97,18 @@ export const routes = {
         view: "/modules/admin/home/homeAdmin.html",
         controller: adminController
     },
-
-
+    "/createCategories": {
+        view: "/modules/admin/categories/create/createCategories.html",
+        controller: categoriesCreateController
+    },
+    "/readCategories": {
+    view: "/modules/admin/categories/read/readCategories.html",
+    controller: readCategoriesController 
+    },
+    "/updateCategories": {
+        view: "/modules/admin/categories/update/updateCategories.html",
+        controller: updateCategoryController
+    },
 
     /* ========================================
          Rutas de administración de productos

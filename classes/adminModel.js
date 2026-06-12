@@ -10,17 +10,41 @@ export class Admin {
         this.nombre = data.nombre || '';
         this.apellidoPa = data.apellidoPa || '';
         this.apellidoMa = data.apellidoMa || '';
-        this.rol = data.rol || 'admin'; // admin, super_admin, editor
-        this.estado = data.estado || 'activo'; // activo, inactivo, suspendido
+        
+        // ✅ Asegurar rol correcto
+        // Valores válidos: 'admin', 'super_admin', 'editor'
+        // Por defecto: 'admin'
+        this.rol = this._validateRol(data.rol);
+        
+        this.estado = data.estado || 'activo';
         this.permisos = data.permisos || this._getDefaultPermissions();
         this.ultimoAcceso = data.ultimoAcceso || null;
         this.fechaCreacion = data.fechaCreacion || new Date().toISOString();
         this.fechaActualizacion = data.fechaActualizacion || new Date().toISOString();
         this.intentosFallidos = data.intentosFallidos || 0;
         this.bloqueadoHasta = data.bloqueadoHasta || null;
-        this.provider = data.provider || 'email'; // email, google
+        this.provider = data.provider || 'email';
         this.emailVerified = data.emailVerified || false;
         this.activo = data.activo !== undefined ? data.activo : true;
+        
+        console.log('🏷️ [AdminModel] Admin creado:', {
+            id: this.id,
+            nombre: this.nombre,
+            rol: this.rol
+        });
+    }
+
+    /**
+     * Validar y asignar rol correcto
+     */
+    _validateRol(rol) {
+        const rolesValidos = ['admin', 'super_admin', 'editor'];
+        
+        if (!rol || !rolesValidos.includes(rol)) {
+            return 'admin'; // ✅ Por defecto 'admin'
+        }
+        
+        return rol;
     }
 
     /**

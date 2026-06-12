@@ -1,9 +1,10 @@
 /* ========================================
-   ADMIN NAVBAR CONTROLLER - OUTLET
+   ADMIN NAVBAR CONTROLLER - OUTLET LUXURY EDITION
    Controlador del navbar VERTICAL para administrador
+   Versión mejorada - No fuerza colores oscuros
    ======================================== */
 
-import ThemeService from '../../shared/layout/themeService.js';  // ✅ Correcto
+import ThemeService from '../../shared/layout/themeService.js';
 
 // Estado privado
 let state = {
@@ -16,7 +17,6 @@ let elements = {};
 
 /**
  * Inicializa el controlador del navbar de administrador
- * 👉 ESTA ES LA FUNCIÓN CORRECTA PARA ADMIN
  */
 export function initAdminNavbarController() {
     cacheElements();
@@ -30,8 +30,9 @@ export function initAdminNavbarController() {
     applyStoredTheme();
     restoreCollapsedState();
     setActiveLink();
+    loadUserInfo();
     
-    console.log('✅ Admin Navbar Controller (vertical) inicializado');
+    console.log('✅ Admin Navbar Controller (vertical - luxury edition) inicializado');
 }
 
 /**
@@ -64,7 +65,7 @@ function bindEvents() {
         elements.logoutBtn.addEventListener('click', handleLogout);
     }
     
-    // Modo oscuro (si existe en admin)
+    // Modo oscuro
     if (elements.themeBtn) {
         elements.themeBtn.addEventListener('click', toggleTheme);
     }
@@ -73,9 +74,6 @@ function bindEvents() {
     document.addEventListener('route:changed', () => {
         setActiveLink();
     });
-    
-    // Cargar información del usuario
-    loadUserInfo();
 }
 
 /**
@@ -95,6 +93,9 @@ function toggleCollapse() {
             icon.className = state.isCollapsed ? 'fas fa-chevron-right' : 'fas fa-chevron-left';
         }
     }
+    
+    // Disparar evento para ajustar el main
+    window.dispatchEvent(new CustomEvent('admin:nav:toggle', { detail: { collapsed: state.isCollapsed } }));
 }
 
 /**
@@ -162,11 +163,10 @@ async function handleLogout(e) {
         try {
             const { AuthService } = await import('/services/authService.js');
             await AuthService.logout();
-            // El layoutLoader recargará automáticamente
         } catch (error) {
             console.error('Error en logout:', error);
-            // Fallback: limpiar localStorage manualmente
             localStorage.removeItem('outlet_user');
+            localStorage.removeItem('outlet_admin_auth');
             window.location.href = '/';
         }
     }
@@ -179,6 +179,9 @@ function toggleTheme() {
     const isDark = ThemeService.toggle();
     state.isDarkMode = isDark;
     updateThemeButtonIcon(isDark);
+    
+    // Disparar evento para que otros componentes se actualicen
+    window.dispatchEvent(new CustomEvent('theme:changed', { detail: { isDark } }));
 }
 
 function updateThemeButtonIcon(isDark) {
@@ -193,4 +196,21 @@ function applyStoredTheme() {
     const isDark = ThemeService.isDarkMode();
     state.isDarkMode = isDark;
     updateThemeButtonIcon(isDark);
+}
+
+// Exponer funciones útiles para otros módulos
+export function getAdminNavState() {
+    return { ...state };
+}
+
+export function collapseAdminNav() {
+    if (!state.isCollapsed) {
+        toggleCollapse();
+    }
+}
+
+export function expandAdminNav() {
+    if (state.isCollapsed) {
+        toggleCollapse();
+    }
 }

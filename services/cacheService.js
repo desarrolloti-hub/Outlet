@@ -3,12 +3,14 @@
    ======================================== */
 
 const DB_NAME = 'OutletVal_Cache';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 export const STORES = {
     USERS: 'users',
     PRODUCTS: 'products',
-    ORDERS: 'orders'
+    ORDERS: 'orders',
+    CATEGORIES: 'categories',
+      // Añadir esto
 };
 
 let db = null;

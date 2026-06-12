@@ -1,0 +1,150 @@
+<!-- ========================================
+   READ CATEGORIES - OUTLET ADMIN
+   Página para listar y gestionar categorías
+   ======================================== -->
+
+<main class="categorieslist-container">
+    <!-- Header -->
+    <div class="categorieslist-header">
+        <div>
+            <h1 class="categorieslist-title">Gestión de Categorías</h1>
+            <p class="categorieslist-subtitle">Administra las categorías y subcategorías de productos</p>
+        </div>
+        <button class="categorieslist-btn-add" id="addCategoryBtn">
+            <i class="material-symbols-outlined">add</i>
+            <span>Nueva Categoría</span>
+        </button>
+    </div>
+
+    <!-- Tabla de categorías -->
+    <div class="categorieslist-table-container">
+        <div class="categorieslist-table-wrapper">
+            <table class="categorieslist-table">
+                <thead>
+                    <tr>
+                        <th>Icono</th>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Slug</th>
+                        <th>Subcategorías</th>
+                        <th>Orden</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="categoriesTableBody">
+                    <tr>
+                        <td colspan="8" class="categorieslist-loading">
+                            <div class="categorieslist-spinner"></div>
+                            <span>Cargando categorías...</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<!-- Modal para crear/editar categoría -->
+<div class="categorieslist-modal" id="categoryModal" style="display: none;">
+    <div class="categorieslist-modal-content">
+        <div class="categorieslist-modal-header">
+            <h3 id="modalTitle">Nueva Categoría</h3>
+            <button class="categorieslist-modal-close" id="closeModalBtn">&times;</button>
+        </div>
+        
+        <form id="categoryForm">
+            <input type="hidden" id="categoryId">
+            
+            <div class="categorieslist-form-group">
+                <label>Nombre de la Categoría <span class="required">*</span></label>
+                <input type="text" id="categoryName" placeholder="Ej: Ropa, Calzado, Accesorios..." required>
+            </div>
+            
+            <div class="categorieslist-form-group">
+                <label>Slug / URL</label>
+                <input type="text" id="categorySlug" placeholder="Se genera automáticamente">
+                <small>Identificador único para URLs</small>
+            </div>
+            
+            <div class="categorieslist-form-group">
+                <label>Descripción</label>
+                <textarea id="categoryDescription" rows="3" placeholder="Descripción de la categoría..."></textarea>
+            </div>
+            
+            <div class="categorieslist-form-row">
+                <div class="categorieslist-form-group">
+                    <label>Icono (Material Icon)</label>
+                    <input type="text" id="categoryIcon" placeholder="Ej: checkroom, shoe, backpack...">
+                    <small>Nombre del icono de Material Symbols</small>
+                </div>
+                
+                <div class="categorieslist-form-group">
+                    <label>Orden de Visualización</label>
+                    <input type="number" id="categoryOrder" value="0" min="0">
+                    <small>Número más bajo = aparece primero</small>
+                </div>
+            </div>
+            
+            <div class="categorieslist-form-group">
+                <label>Estado</label>
+                <select id="categoryStatus">
+                    <option value="active">Activo</option>
+                    <option value="inactive">Inactivo</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="categorieslist-btn-submit">
+                <i class="material-symbols-outlined">save</i>
+                <span>Guardar Categoría</span>
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal para gestionar subcategorías -->
+<div class="categorieslist-modal" id="subcategoryModal" style="display: none;">
+    <div class="categorieslist-modal-content">
+        <div class="categorieslist-modal-header">
+            <h3 id="submodalTitle">Gestionar Subcategorías</h3>
+            <button class="categorieslist-modal-close" id="closeSubmodalBtn">&times;</button>
+        </div>
+        
+        <div class="categorieslist-subcategory-info" id="subcategoryCategoryInfo">
+            <p>Categoría: <strong id="currentCategoryName"></strong></p>
+        </div>
+        
+        <div class="categorieslist-subcategory-add">
+            <input type="text" id="newSubcategoryName" placeholder="Nombre de la subcategoría..." class="categorieslist-subcategory-input">
+            <button type="button" class="categorieslist-btn-subcategory-add" id="addSubcategoryBtn">
+                <i class="material-symbols-outlined">add</i>
+                Añadir
+            </button>
+        </div>
+        
+        <div class="categorieslist-subcategory-list" id="subcategoriesList">
+            <div class="categorieslist-empty">No hay subcategorías</div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación para eliminar -->
+<div class="categorieslist-modal" id="deleteModal" style="display: none;">
+    <div class="categorieslist-modal-content">
+        <div class="categorieslist-modal-header">
+            <h3>Confirmar eliminación</h3>
+            <button class="categorieslist-modal-close" id="closeDeleteModalBtn">&times;</button>
+        </div>
+        <div class="categorieslist-modal-body">
+            <p>¿Estás seguro de que deseas eliminar <strong id="deleteItemName"></strong>?</p>
+            <p class="categorieslist-modal-warning">Esta acción no se puede deshacer.</p>
+        </div>
+        <div class="categorieslist-modal-footer">
+            <button class="categorieslist-btn-cancel" id="cancelDeleteBtn">Cancelar</button>
+            <button class="categorieslist-btn-danger" id="confirmDeleteBtn">Eliminar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="categoriesToast" class="categorieslist-toast" style="display: none;"></div>

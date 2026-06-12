@@ -1,0 +1,144 @@
+<!-- ========================================
+   VISTA DE CREAR CATEGORÍAS - OUTLET ADMIN
+   Página para gestionar categorías de productos
+   ======================================== -->
+
+<main class="outlet-categories-container">
+    <!-- Header -->
+    <div class="outlet-categories-header">
+        <div>
+            <h1 class="outlet-text-gold">Gestión de Categorías</h1>
+            <p class="outlet-header-desc">Administra las categorías y subcategorías disponibles para los productos</p>
+        </div>
+        <button class="outlet-btn-outline" id="backBtn">
+            <span class="material-symbols-outlined">arrow_back</span>
+            Volver
+        </button>
+    </div>
+
+    <!-- Grid principal: lista de categorías + formulario -->
+    <div class="outlet-categories-grid">
+
+        <!-- Panel derecho: Formulario para crear/editar categorías -->
+        <div class="outlet-categories-panel">
+            <div class="outlet-form-section">
+                <div class="outlet-section-title">
+                    <span class="material-symbols-outlined outlet-section-icon">
+                        <span id="formIcon">add_circle</span>
+                    </span>
+                    <h2 id="formTitle">Crear Nueva Categoría</h2>
+                </div>
+
+                <!-- Formulario -->
+                <div class="outlet-form-grid">
+                    <!-- ID oculto para edición -->
+                    <input type="hidden" id="categoryId">
+                    
+                    <!-- Nombre de la categoría -->
+                    <div class="outlet-input-group outlet-full-width">
+                        <label>Nombre de la Categoría <span class="outlet-required">*</span></label>
+                        <input type="text" placeholder="Ej: Ropa, Calzado, Accesorios..." id="categoryName">
+                        <span class="outlet-input-line"></span>
+                        <small>Nombre único para identificar la categoría</small>
+                    </div>
+
+                    <!-- Slug (autogenerado) -->
+                    <div class="outlet-input-group outlet-full-width">
+                        <label>Slug / URL</label>
+                        <input type="text" placeholder="Se genera automáticamente" id="categorySlug" readonly>
+                        <span class="outlet-input-line"></span>
+                        <small>Identificador para URLs - se genera automáticamente</small>
+                    </div>
+
+                    <!-- Descripción -->
+                    <div class="outlet-input-group outlet-full-width">
+                        <label>Descripción</label>
+                        <textarea rows="3" placeholder="Descripción de la categoría..." id="categoryDescription"></textarea>
+                        <span class="outlet-input-line"></span>
+                    </div>
+
+                    <!-- Orden -->
+                    <div class="outlet-input-group">
+                        <label>Orden de Visualización</label>
+                        <input type="number" step="1" min="0" placeholder="0" id="categoryOrder" value="0">
+                        <span class="outlet-input-line"></span>
+                        <small>Número más bajo = aparece primero</small>
+                    </div>
+
+                    <!-- Estado (Activo/Inactivo) -->
+                    <div class="outlet-input-group">
+                        <label>Estado</label>
+                        <select id="categoryStatus">
+                            <option value="active">Activo</option>
+                            <option value="inactive">Inactivo</option>
+                        </select>
+                        <span class="outlet-input-line"></span>
+                    </div>
+
+                    <!-- Icono (opcional) -->
+                    <div class="outlet-input-group">
+                        <label>Icono (Material Icon)</label>
+                        <input type="text" placeholder="Ej: checkroom, shoe, backpack..." id="categoryIcon">
+                        <span class="outlet-input-line"></span>
+                        <small>Nombre del icono de Material Symbols</small>
+                    </div>
+                </div>
+
+                <!-- Botones de acción -->
+                <div class="outlet-categories-actions">
+                    <button type="button" class="outlet-btn-outline" id="cancelBtn" style="display: none;">
+                        <span class="material-symbols-outlined">close</span>
+                        Cancelar
+                    </button>
+                    <button type="button" class="outlet-btn-primary" id="saveCategoryBtn">
+                        <span class="material-symbols-outlined">save</span>
+                        Guardar categoría
+                    </button>
+                </div>
+            </div>
+
+            <!-- Subcategorías (se muestra al seleccionar una categoría) -->
+            <div class="outlet-form-section" id="subcategoriesSection" style="display: none;">
+                <div class="outlet-section-title">
+                    <span class="material-symbols-outlined outlet-section-icon">subdirectory_arrow_right</span>
+                    <h2>Subcategorías</h2>
+                </div>
+
+                <!-- Formulario para añadir subcategoría -->
+                <div class="outlet-subcategory-form">
+                    <div class="outlet-input-group" style="flex: 1;">
+                        <input type="text" placeholder="Nombre de la subcategoría..." id="subcategoryName">
+                        <span class="outlet-input-line"></span>
+                    </div>
+                    <button type="button" class="outlet-btn-primary" id="addSubcategoryBtn">
+                        <span class="material-symbols-outlined">add</span>
+                        Añadir
+                    </button>
+                </div>
+
+                <!-- Lista de subcategorías -->
+                <div class="outlet-subcategories-list" id="subcategoriesList">
+                    <div class="outlet-empty-message">Selecciona una categoría para ver sus subcategorías</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Modal de confirmación para eliminar -->
+<div class="outlet-modal" id="deleteModal" style="display: none;">
+    <div class="outlet-modal-content">
+        <div class="outlet-modal-header">
+            <h3>Confirmar eliminación</h3>
+            <button class="outlet-modal-close" id="closeModalBtn">&times;</button>
+        </div>
+        <div class="outlet-modal-body">
+            <p>¿Estás seguro de que deseas eliminar <strong id="deleteItemName"></strong>?</p>
+            <p class="outlet-modal-warning">Esta acción no se puede deshacer.</p>
+        </div>
+        <div class="outlet-modal-footer">
+            <button class="outlet-btn-outline" id="cancelDeleteBtn">Cancelar</button>
+            <button class="outlet-btn-danger" id="confirmDeleteBtn">Eliminar</button>
+        </div>
+    </div>
+</div>

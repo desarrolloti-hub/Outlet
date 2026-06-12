@@ -13,23 +13,6 @@ export const ROLES = {
     SUPER_ADMIN: 'super_admin'
 };
 
-// 📦 Estructura JSON que se guarda en localStorage (outlet_admin)
-/*
-{
-    "id": "uuid-del-admin",
-    "nombre": "Juan",
-    "apellidoPa": "Pérez",
-    "apellidoMa": "García",
-    "nombreCompleto": "Juan Pérez García",
-    "email": "juan@outletval.com",
-    "rol": "admin",
-    "estado": "activo",
-    "iniciales": "JP",
-    "fechaSesion": "2026-06-10T15:30:00.000Z",
-    "permisos": ["admin.view", "products.edit"]
-}
-*/
-
 export const AdminService = {
     /**
      * Registrar nuevo administrador (solo para super_admin)
@@ -56,12 +39,26 @@ export const AdminService = {
             throw new Error('Ya existe un administrador con este email');
         }
         
+        // ✅ Forzar rol 'admin' al crear (a menos que sea super_admin explícitamente)
+        let rolAsignado = ROLES.ADMIN; // Por defecto 'admin'
+        
+        // Si el currentAdminRole es super_admin y viene especificado otro rol, respetarlo
+        if (adminData.rol === ROLES.SUPER_ADMIN && currentAdminRole === ROLES.SUPER_ADMIN) {
+            rolAsignado = ROLES.SUPER_ADMIN;
+        } else if (adminData.rol === ROLES.EDITOR && currentAdminRole === ROLES.SUPER_ADMIN) {
+            rolAsignado = ROLES.EDITOR;
+        } else {
+            rolAsignado = ROLES.ADMIN; // ✅ Siempre 'admin' por defecto
+        }
+        
+        console.log('📝 Creando admin con rol:', rolAsignado);
+        
         const admin = new Admin({
             nombre: adminData.nombre.trim(),
             apellidoPa: adminData.apellidoPa?.trim() || '',
             apellidoMa: adminData.apellidoMa?.trim() || '',
             email: adminData.email.toLowerCase().trim(),
-            rol: adminData.rol || ROLES.ADMIN,
+            rol: rolAsignado,
             estado: adminData.estado || 'activo',
             permisos: adminData.permisos || null
         });
@@ -115,6 +112,11 @@ export const AdminService = {
                 const sessionData = this._buildSessionData(adminObj);
                 this._saveSession(sessionData);
                 this._dispatchAuthChange(result.adminData);
+                
+                // ✅ Verificar que se guardó correctamente
+                const savedSession = this._getSession();
+                console.log('✅ Sesión guardada en localStorage:', savedSession);
+                console.log('📦 Rol guardado en sesión:', savedSession?.rol);
             }
             
             return result;
@@ -135,6 +137,12 @@ export const AdminService = {
      * 📦 Estructura estándar de sesión
      */
     _buildSessionData(admin) {
+        console.log('🏗️ Construyendo sesión para admin:', {
+            id: admin.id,
+            nombre: admin.nombre,
+            rol: admin.rol
+        });
+        
         return {
             id: admin.id,
             nombre: admin.nombre,
@@ -142,7 +150,7 @@ export const AdminService = {
             apellidoMa: admin.apellidoMa || '',
             nombreCompleto: admin.nombreCompleto,
             email: admin.email,
-            rol: admin.rol,
+            rol: admin.rol, // ✅ Aquí debe venir 'admin'
             estado: admin.estado,
             iniciales: admin.iniciales,
             fechaSesion: new Date().toISOString(),
@@ -197,6 +205,7 @@ export const AdminService = {
         if (!forceRefresh) {
             const session = this._getSession();
             if (session && session.id === authUser.uid) {
+                console.log('📦 Usando sesión cacheada, rol:', session.rol);
                 return new Admin(session);
             }
         }
@@ -207,6 +216,7 @@ export const AdminService = {
             const admin = new Admin(adminData);
             const sessionData = this._buildSessionData(admin);
             this._saveSession(sessionData);
+            console.log('📦 Admin actualizado desde DB, rol:', admin.rol);
             return admin;
         }
         
@@ -377,8 +387,7 @@ export const AdminService = {
 
     /**
      * ✅ MÉTODO PÚBLICO getSession()
-     * Este es el método que estaba faltando y causaba el error
-     * Es la versión pública para acceder a la sesión desde otros servicios
+     * Versión pública para acceder a la sesión desde otros servicios
      */
     getSession() {
         return this._getSession();
@@ -400,6 +409,32 @@ export const AdminService = {
      */
     async initializeSystem() {
         await AdminRepository.initializeDefaultAdmin();
+    },
+
+    /**
+     * DIAGNÓSTICO: Verificar estado de localStorage
+     */
+    diagnosticarLocalStorage() {
+        const adminSession = localStorage.getItem('outlet_admin');
+        
+        console.log('🔍 DIAGNÓSTICO localStorage:');
+        console.log('  - outlet_admin:', adminSession ? '✅ EXISTE' : '❌ NO EXISTE');
+        
+        if (adminSession) {
+            try {
+                const parsed = JSON.parse(adminSession);
+                console.log('  - Contenido outlet_admin:', parsed);
+                console.log('  - Rol en sesión:', parsed.rol);
+                console.log('  - ¿Es admin?', parsed.rol === 'admin' || parsed.rol === 'super_admin');
+            } catch (e) {
+                console.error('  - Error parseando outlet_admin:', e);
+            }
+        }
+        
+        return {
+            hasAdminSession: !!adminSession,
+            adminSession: adminSession ? JSON.parse(adminSession) : null
+        };
     },
 
     // ========== MÉTODOS PRIVADOS ==========
@@ -426,7 +461,7 @@ export const AdminService = {
             apellidoMa: adminData.apellidoMa || '',
             nombreCompleto: adminData.nombreCompleto || `${adminData.nombre || ''} ${adminData.apellidoPa || ''}`.trim(),
             email: adminData.email || '',
-            rol: adminData.rol || ROLES.ADMIN,
+            rol: adminData.rol || ROLES.ADMIN, // ✅ Por defecto 'admin'
             estado: adminData.estado || 'activo',
             iniciales: adminData.iniciales || (adminData.nombre ? adminData.nombre[0] : 'A'),
             fechaSesion: adminData.fechaSesion || new Date().toISOString(),
@@ -436,7 +471,7 @@ export const AdminService = {
         };
         
         localStorage.setItem('outlet_admin', JSON.stringify(validSession));
-        console.log('✅ Sesión de admin guardada:', validSession.id);
+        console.log('✅ Sesión de admin guardada:', { id: validSession.id, rol: validSession.rol });
     },
 
     _getSession() {
@@ -444,7 +479,9 @@ export const AdminService = {
         if (!session) return null;
         
         try {
-            return JSON.parse(session);
+            const parsed = JSON.parse(session);
+            console.log('📖 Sesión recuperada, rol:', parsed.rol);
+            return parsed;
         } catch (error) {
             console.error('❌ Error parseando sesión:', error);
             return null;
