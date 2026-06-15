@@ -250,7 +250,6 @@
     align-items: center;
     gap: 14px;
     padding: 10px 12px;
-    color: var(--outlet-text-secondary, #4f4635);
     text-decoration: none;
     border-radius: var(--outlet-radius-md, 8px);
     transition: all 0.25s ease;
