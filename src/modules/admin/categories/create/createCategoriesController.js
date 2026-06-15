@@ -619,6 +619,7 @@ export async function categoriesCreateController() {
     syncDarkMode();
     initEventListeners();
     
+    
     // Cargar categorías desde el servicio
     await loadCategories();
     
