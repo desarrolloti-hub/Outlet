@@ -6,6 +6,7 @@
 import { loadLayout, initLayoutWatcher } from './modules/shared/layout/layoutLoader.js';
 import { initRouter } from './router/router.js';
 import { AuthService, ROLES } from '../services/authService.js';
+import ThemeService from './modules/shared/layout/themeService.js'; // <-- IMPORTAR THEME SERVICE
 
 function loadExternalScripts() {
     return new Promise((resolve) => {
@@ -58,15 +59,25 @@ async function initLayoutControllers(role) {
         [ROLES.VISITOR]: {
             navbar: () => import('./modules/visitor/layout/navbarController.js').then(m => m.initNavbarController?.()),
             footer: () => import('./modules/visitor/layout/footerController.js').then(m => m.initFooterController?.())
-        },
-   
+        }
     };
 
-    const controllers = controllersMap[role] || controllersMap[ROLES.GUEST];
+    // Si el rol no existe en el mapa, usar VISITOR por defecto
+    let controllers = controllersMap[role];
+    
+    if (!controllers) {
+        console.warn(`⚠️ Rol "${role}" no tiene controladores definidos, usando VISITOR por defecto`);
+        controllers = controllersMap[ROLES.VISITOR];
+    }
+    
+    if (!controllers) {
+        console.error('❌ No hay controladores disponibles');
+        return;
+    }
 
     await Promise.all([
-        controllers.navbar(),
-        controllers.footer()
+        controllers.navbar ? controllers.navbar() : Promise.resolve(),
+        controllers.footer ? controllers.footer() : Promise.resolve()
     ]);
 
     console.log('✅ Controladores inicializados para rol:', role);
@@ -87,6 +98,10 @@ function setupLayoutReadyListener() {
 async function initApp() {
     try {
         console.log('🚀 Inicializando aplicación...');
+
+        // 🔥 IMPORTANTE: Inicializar tema ANTES de cargar cualquier otra cosa
+        ThemeService.init();
+        console.log('🎨 Tema inicializado:', ThemeService.isDarkMode() ? 'dark' : 'light');
 
         await loadExternalScripts();
         console.log('✅ Scripts externos cargados');

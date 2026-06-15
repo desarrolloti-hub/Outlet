@@ -1,32 +1,18 @@
 /* ========================================
    AUTH SERVICE - Solo gestión de autenticación
    NO sabe nada de layouts, NO redirige
+   Soporta Administradores y Clientes
    ======================================== */
 
-import { UserService, ROLES as UserROLES } from './userService.js';
+import { CustomerService, ROLES as CustomerROLES } from './customerService.js';
 import { AdminService, ROLES as AdminROLES } from './adminService.js';
 
 // Exportar roles combinados
 export const ROLES = {
-    ...UserROLES,
-    ...AdminROLES
+    ...CustomerROLES,
+    ...AdminROLES,
+    GUEST: 'guest'
 };
-
-// 📦 Estructura JSON de sesión de usuario (outlet_user)
-/*
-{
-    "id": "uuid-usuario",
-    "nombre": "María",
-    "apellido": "González",
-    "nombreCompleto": "María González",
-    "email": "maria@outletval.com",
-    "rol": "user",
-    "storeId": "store-123",
-    "plan": "basic",
-    "iniciales": "MG",
-    "fechaSesion": "2026-06-10T15:30:00.000Z"
-}
-*/
 
 export const AuthService = {
     /**
@@ -34,60 +20,70 @@ export const AuthService = {
      */
     onAuthStateChange(callback) {
         // Verificar sesiones existentes
-        const adminSession = AdminService.getSession();
-        const userSession = UserService.getSession();
-        const sessionData = adminSession || userSession;
+        const adminSession = AdminService.getSession ? AdminService.getSession() : AdminService.getCurrentSession?.();
+        const customerSession = CustomerService.getCurrentSession ? CustomerService.getCurrentSession() : null;
+        const sessionData = adminSession || customerSession;
         callback(sessionData);
         
         // Escuchar cambios de admin
         const adminHandler = (e) => callback(e.detail);
         window.addEventListener('admin:authStateChanged', adminHandler);
         
-        // Escuchar cambios de usuario
-        const userHandler = (e) => callback(e.detail);
-        window.addEventListener('auth:stateChanged', userHandler);
+        // Escuchar cambios de cliente
+        const customerHandler = (e) => callback(e.detail);
+        window.addEventListener('customer:authStateChanged', customerHandler);
         
         // Retornar función para limpiar listeners
         return () => {
             window.removeEventListener('admin:authStateChanged', adminHandler);
-            window.removeEventListener('auth:stateChanged', userHandler);
+            window.removeEventListener('customer:authStateChanged', customerHandler);
         };
     },
     
     /**
      * Obtener rol del usuario actual (síncrono)
+     * Retorna: 'admin', 'customer', o 'guest'
      */
     getUserRoleSync() {
-        const adminSession = AdminService.getSession();
+        // Usar getCurrentSession() en lugar de getSession()
+        const adminSession = AdminService.getCurrentSession ? AdminService.getCurrentSession() : null;
         if (adminSession) return 'admin';
         
-        const userSession = UserService.getSession();
-        if (userSession) return UserService.getSyncRole();
+        const customerSession = CustomerService.getCurrentSession ? CustomerService.getCurrentSession() : null;
+        if (customerSession) return 'customer';
         
         return 'guest';
     },
     
     /**
-     * Verificar si está autenticado
+     * Verificar si está autenticado (admin o customer)
      */
     isAuthenticated() {
-        return AdminService.isAuthenticated() || UserService.isAuthenticated();
+        return (AdminService.isAuthenticated && AdminService.isAuthenticated()) || 
+               (CustomerService.isAuthenticated && CustomerService.isAuthenticated());
     },
     
     /**
      * Verificar si es admin (síncrono)
      */
     isAdminSync() {
-        const adminSession = AdminService.getSession();
+        const adminSession = AdminService.getCurrentSession ? AdminService.getCurrentSession() : null;
         return !!adminSession;
     },
     
     /**
-     * Obtener usuario actual (admin o user)
-     * 📦 Retorna el objeto JSON de sesión
+     * Verificar si es cliente (síncrono)
+     */
+    isCustomerSync() {
+        const customerSession = CustomerService.getCurrentSession ? CustomerService.getCurrentSession() : null;
+        return !!customerSession;
+    },
+    
+    /**
+     * Obtener usuario actual (admin o customer)
      */
     getCurrentUser() {
-        const adminSession = AdminService.getSession();
+        const adminSession = AdminService.getCurrentSession ? AdminService.getCurrentSession() : null;
         if (adminSession) {
             return {
                 type: 'admin',
@@ -95,11 +91,11 @@ export const AuthService = {
             };
         }
         
-        const userSession = UserService.getSession();
-        if (userSession) {
+        const customerSession = CustomerService.getCurrentSession ? CustomerService.getCurrentSession() : null;
+        if (customerSession) {
             return {
-                type: 'user',
-                ...userSession
+                type: 'customer',
+                ...customerSession
             };
         }
         
@@ -117,12 +113,11 @@ export const AuthService = {
      * Cerrar sesión (ambos tipos)
      */
     async logout() {
-        // Verificar qué tipo de sesión está activa
-        if (AdminService.isAuthenticated()) {
+        if (AdminService.isAuthenticated && AdminService.isAuthenticated()) {
             return await AdminService.logout();
         }
-        if (UserService.isAuthenticated()) {
-            return await UserService.logout();
+        if (CustomerService.isAuthenticated && CustomerService.isAuthenticated()) {
+            return await CustomerService.logout();
         }
         return false;
     },
@@ -141,15 +136,15 @@ export const AuthService = {
                 userType = 'admin';
             }
         } catch (adminError) {
-            // Si no es admin, intentar como usuario
-            console.log('No es admin, intentando como usuario...');
+            // Si no es admin, intentar como cliente
+            console.log('No es admin, intentando como cliente...');
             try {
-                result = await UserService.login(email, password, isGoogle);
-                if (result && result.userData) {
-                    userType = 'user';
+                result = await CustomerService.login(email, password, isGoogle);
+                if (result && result.customerData) {
+                    userType = 'customer';
                 }
-            } catch (userError) {
-                throw userError;
+            } catch (customerError) {
+                throw customerError;
             }
         }
         
@@ -165,18 +160,18 @@ export const AuthService = {
     },
     
     /**
-     * Registrar usuario
+     * Registrar cliente
      */
-    async register(userData, password) {
-        return await UserService.register(userData, password);
+    async register(customerData, password) {
+        return await CustomerService.register(customerData, password);
     },
     
     /**
      * Actualizar último acceso
      */
     updateLastAccess() {
-        if (AdminService.isAuthenticated()) {
-            AdminService.updateLastAccess();
+        if (AdminService.isAuthenticated && AdminService.isAuthenticated()) {
+            if (AdminService.updateLastAccess) AdminService.updateLastAccess();
         }
     },
     
@@ -192,19 +187,44 @@ export const AuthService = {
             userId: currentUser.id,
             email: currentUser.email,
             name: currentUser.nombreCompleto || currentUser.nombre,
-            role: currentUser.type === 'admin' ? 'admin' : (currentUser.rol || 'user'),
+            role: currentUser.type === 'admin' ? 'admin' : (currentUser.rol || 'customer'),
             initials: currentUser.iniciales,
             sessionStart: currentUser.fechaSesion,
             lastAccess: currentUser.ultimoAcceso || currentUser.fechaSesion,
-            // Datos específicos según tipo
             ...(currentUser.type === 'admin' && {
                 permissions: currentUser.permisos || [],
                 estado: currentUser.estado
             }),
-            ...(currentUser.type === 'user' && {
-                storeId: currentUser.storeId,
-                plan: currentUser.plan
+            ...(currentUser.type === 'customer' && {
+                provider: currentUser.provider,
+                estado: currentUser.estado
             })
         };
+    },
+    
+    /**
+     * Obtener el servicio específico según el tipo de usuario actual
+     */
+    getCurrentService() {
+        if (this.isAdminSync()) {
+            return AdminService;
+        }
+        if (this.isCustomerSync()) {
+            return CustomerService;
+        }
+        return null;
+    },
+    
+    /**
+     * Obtener el modelo del usuario actual
+     */
+    async getCurrentUserModel(forceRefresh = false) {
+        if (this.isAdminSync()) {
+            return await AdminService.getCurrentAdmin(forceRefresh);
+        }
+        if (this.isCustomerSync()) {
+            return await CustomerService.getCurrentCustomer(forceRefresh);
+        }
+        return null;
     }
 };

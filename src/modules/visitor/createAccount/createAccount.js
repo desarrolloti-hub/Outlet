@@ -1,10 +1,9 @@
 /* ========================================
    CREATE ACCOUNT CONTROLLER - OUTLET VAL
-   Registro de usuarios con Firebase
+   Registro de clientes (customers) con Firebase
    ======================================== */
 
-import { UserService } from '/services/userService.js';
-import { AuthService } from '/services/authService.js';
+import { CustomerService } from '/services/customerService.js';
 
 // Estado del controlador
 let isLoading = false;
@@ -175,7 +174,7 @@ function validateForm() {
 }
 
 /**
- * 🆕 Manejar registro con Google
+ * Manejar registro con Google
  */
 async function handleGoogleRegister() {
     if (isLoading) return;
@@ -192,8 +191,8 @@ async function handleGoogleRegister() {
     }
     
     try {
-        // Usar el login con Google del UserService
-        const result = await UserService.login(null, null, true);
+        // Usar el login con Google del CustomerService
+        const result = await CustomerService.login(null, null, true);
         
         showNotification('✅ ¡Cuenta creada con Google exitosamente!');
         
@@ -234,7 +233,7 @@ async function handleRegister(e) {
     
     const { nombre, apellidoPa, apellidoMa } = splitFullName(fullname);
     
-    const userData = {
+    const customerData = {
         nombre: nombre,
         apellidoPa: apellidoPa,
         apellidoMa: apellidoMa,
@@ -269,7 +268,7 @@ async function handleRegister(e) {
     }
     
     try {
-        const result = await UserService.register(userData, password);
+        const result = await CustomerService.register(customerData, password);
         
         showNotification('✅ ¡Cuenta creada exitosamente! Revisa tu correo para verificar tu cuenta.');
         
@@ -354,7 +353,7 @@ function initRealtimeValidation() {
  * Controlador principal
  */
 export async function createAccountController() {
-    console.log('📝 Create Account Controller - Registro con Firebase');
+    console.log('📝 Create Account Controller - Registro de clientes con Firebase');
     
     loadStyles();
     initRealtimeValidation();
@@ -367,7 +366,7 @@ export async function createAccountController() {
     if (registerForm) registerForm.addEventListener('submit', handleRegister);
     if (loginBtn) loginBtn.addEventListener('click', handleLoginRedirect);
     if (termsLink) termsLink.addEventListener('click', handleTerms);
-    if (googleRegisterBtn) googleRegisterBtn.addEventListener('click', handleGoogleRegister); // 🆕
+    if (googleRegisterBtn) googleRegisterBtn.addEventListener('click', handleGoogleRegister);
     
-    console.log('✅ Create Account page loaded with Firebase');
+    console.log('✅ Create Account page loaded with CustomerService');
 }

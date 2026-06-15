@@ -353,24 +353,43 @@ function updateWishlistCount() {
     }
 }
 
+// ========== FUNCIONES DE TEMA (CORREGIDAS - SIN DUPLICADOS) ==========
+
 function toggleTheme() {
+    if (!ThemeService || typeof ThemeService.toggle !== 'function') {
+        console.error('❌ ThemeService no disponible');
+        return;
+    }
+    
     const isDark = ThemeService.toggle();
     state.isDarkMode = isDark;
     updateThemeButtonIcon(isDark);
+    
+    console.log('🌓 Tema cambiado a:', isDark ? 'oscuro' : 'claro');
 }
 
 function updateThemeButtonIcon(isDark) {
     if (!elements.themeBtn) return;
-    const icon = elements.themeBtn.querySelector('i');
-    if (icon) {
-        icon.className = `fas ${isDark ? 'fa-sun' : 'fa-moon'}`;
-    }
+    
+    // Limpiar y crear nuevo ícono
+    elements.themeBtn.innerHTML = '';
+    const icon = document.createElement('i');
+    icon.className = `fas ${isDark ? 'fa-sun' : 'fa-moon'}`;
+    icon.style.fontSize = '18px';
+    elements.themeBtn.appendChild(icon);
 }
 
 function applyStoredTheme() {
+    if (!ThemeService || typeof ThemeService.isDarkMode !== 'function') {
+        console.warn('⚠️ ThemeService no disponible para aplicar tema');
+        return;
+    }
+    
     const isDark = ThemeService.isDarkMode();
     state.isDarkMode = isDark;
     updateThemeButtonIcon(isDark);
+    
+    console.log('🎨 Tema aplicado:', isDark ? 'oscuro' : 'claro');
 }
 
 export function setActiveLink() {

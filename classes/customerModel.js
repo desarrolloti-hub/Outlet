@@ -1,19 +1,22 @@
 /* ========================================
-   USER MODEL - Outlet Val
-   Estructura de datos del usuario
+   CUSTOMER MODEL - Outlet Val
+   Modelo de datos para clientes (customers)
    ======================================== */
 
-export class User {
+export class Customer {
     constructor(data = {}) {
         // Datos básicos
         this.id = data.id || null;
         this.nombre = data.nombre || '';
-        this.apellidoPa = data.apellidoPa || '';      // Apellido paterno
-        this.apellidoMa = data.apellidoMa || '';      // Apellido materno
+        this.apellidoPa = data.apellidoPa || '';
+        this.apellidoMa = data.apellidoMa || '';
         this.email = data.email || '';
         
+        // Rol fijo: 'customer'
+        this.rol = 'customer';
+        
         // Autenticación
-        this.provider = data.provider || 'email';      // 'email' o 'google'
+        this.provider = data.provider || 'email';
         this.emailVerified = data.emailVerified || false;
         
         // Dirección de envío
@@ -32,30 +35,33 @@ export class User {
             referencias: ''
         };
         
-        // Metadata
-        this.fechaRegistro = data.fechaRegistro || new Date().toISOString();
-        this.fechaActualizacion = data.fechaActualizacion || null;
-        this.ultimoLogin = data.ultimoLogin || null;
-        this.activo = data.activo !== undefined ? data.activo : true;
-        
         // Preferencias
         this.preferencias = data.preferencias || {
             newsletter: false,
             notificaciones: true
         };
+        
+        // Estado
+        this.estado = data.estado || 'activo';
+        
+        // Metadata
+        this.fechaRegistro = data.fechaRegistro || new Date().toISOString();
+        this.fechaActualizacion = data.fechaActualizacion || new Date().toISOString();
+        this.ultimoLogin = data.ultimoLogin || null;
+        this.activo = data.activo !== undefined ? data.activo : true;
     }
     
     // Getter: Nombre completo
     get nombreCompleto() {
         const partes = [this.nombre, this.apellidoPa, this.apellidoMa].filter(p => p);
-        return partes.join(' ') || 'Usuario';
+        return partes.join(' ') || 'Cliente';
     }
     
     // Getter: Iniciales para avatar
     get iniciales() {
         const primera = this.nombre ? this.nombre.charAt(0) : '';
         const segunda = this.apellidoPa ? this.apellidoPa.charAt(0) : '';
-        return (primera + segunda).toUpperCase() || 'U';
+        return (primera + segunda).toUpperCase() || 'C';
     }
     
     // Getter: Dirección formateada para mostrar
@@ -113,8 +119,15 @@ export class User {
             email: this.email,
             nombreCompleto: this.nombreCompleto,
             iniciales: this.iniciales,
-            provider: this.provider
+            rol: this.rol,
+            provider: this.provider,
+            estado: this.estado
         };
+    }
+    
+    // Método: Verificar si está activo
+    isActive() {
+        return this.activo && this.estado === 'activo';
     }
     
     // Método: Actualizar dirección
@@ -125,6 +138,22 @@ export class User {
         };
         this.fechaActualizacion = new Date().toISOString();
         return this;
+    }
+    
+    // Método: Actualizar preferencias
+    actualizarPreferencias(nuevasPreferencias) {
+        this.preferencias = {
+            ...this.preferencias,
+            ...nuevasPreferencias
+        };
+        this.fechaActualizacion = new Date().toISOString();
+        return this;
+    }
+    
+    // Método: Actualizar último login
+    updateUltimoLogin() {
+        this.ultimoLogin = new Date().toISOString();
+        this.fechaActualizacion = new Date().toISOString();
     }
     
     // Método: Validar datos requeridos para compra
@@ -161,5 +190,46 @@ export class User {
             valido: errores.length === 0,
             errores
         };
+    }
+    
+    // Método: Validar datos del customer
+    validate() {
+        const errors = [];
+        
+        if (!this.email || !this.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+            errors.push('Email inválido');
+        }
+        
+        if (!this.nombre || this.nombre.trim().length < 2) {
+            errors.push('Nombre debe tener al menos 2 caracteres');
+        }
+        
+        if (this.rol !== 'customer') {
+            errors.push('Rol inválido para customer');
+        }
+        
+        if (!['activo', 'inactivo', 'suspendido'].includes(this.estado)) {
+            errors.push('Estado inválido');
+        }
+        
+        return errors;
+    }
+    
+    // Método estático: Crear Customer desde datos de Firebase Auth
+    static fromFirebaseUser(firebaseUser, additionalData = {}) {
+        return new Customer({
+            id: firebaseUser.uid,
+            email: firebaseUser.email,
+            nombre: additionalData.nombre || firebaseUser.displayName?.split(' ')[0] || '',
+            apellidoPa: additionalData.apellidoPa || firebaseUser.displayName?.split(' ')[1] || '',
+            apellidoMa: additionalData.apellidoMa || '',
+            provider: additionalData.provider || 'email',
+            emailVerified: firebaseUser.emailVerified || false,
+            direccion: additionalData.direccion || {},
+            preferencias: additionalData.preferencias || {},
+            estado: additionalData.estado || 'activo',
+            fechaRegistro: firebaseUser.metadata?.creationTime || new Date().toISOString(),
+            ultimoLogin: firebaseUser.metadata?.lastSignInTime || null
+        });
     }
 }

@@ -165,10 +165,15 @@ async function handleLogout(e) {
             await AuthService.logout();
         } catch (error) {
             console.error('Error en logout:', error);
-            localStorage.removeItem('outlet_user');
-            localStorage.removeItem('outlet_admin_auth');
-            window.location.href = '/';
         }
+        
+        // Limpieza FORZADA siempre (funcione o no el servicio)
+        localStorage.removeItem('outlet_admin');
+        localStorage.removeItem('outlet_user');
+        sessionStorage.clear();
+        
+        // Redirigir al visitante
+        window.location.href = '/';
     }
 }
 

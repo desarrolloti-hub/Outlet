@@ -1,10 +1,10 @@
 /* ========================================
    LOGIN CONTROLLER - OUTLET
    Controlador para página de inicio de sesión
-   Soporta login de Administradores y Usuarios normales
+   Soporta login de Administradores y Clientes
    ======================================== */
 
-import { UserService } from '/services/userService.js';
+import { CustomerService } from '/services/customerService.js';
 import { AdminService } from '/services/adminService.js';
 import { AuthService } from '/services/authService.js';
 
@@ -60,7 +60,7 @@ function isValidEmail(email) {
  */
 function getUserRoleFromLogin(result) {
     if (result.adminData) return 'admin';
-    if (result.userData) return 'user';
+    if (result.customerData) return 'customer';
     return 'unknown';
 }
 
@@ -72,7 +72,7 @@ function getRedirectUrlByRole(role, defaultUrl = '/') {
         'admin': '/homeAdmin',
         'super_admin': '/admin/dashboard',
         'editor': '/admin/dashboard',
-        'user': '/',
+        'customer': '/',
         'unknown': defaultUrl
     };
     
@@ -80,7 +80,7 @@ function getRedirectUrlByRole(role, defaultUrl = '/') {
 }
 
 /**
- * Maneja el login con Google (soporta Admin y User)
+ * Maneja el login con Google (soporta Admin y Customer)
  */
 async function handleGoogleLogin() {
     if (isLoading) return;
@@ -108,25 +108,23 @@ async function handleGoogleLogin() {
             loginSuccess = true;
             console.log('✅ Login exitoso como ADMINISTRADOR con Google');
             
-            // 📦 Verificar que la sesión se guardó correctamente
             const session = AdminService.getCurrentSession();
             console.log('📦 Sesión de admin guardada:', session);
             showNotification('✅ ¡Bienvenido Administrador!');
         } catch (adminError) {
-            console.log('⚠️ No es administrador, intentando como usuario normal...');
+            console.log('⚠️ No es administrador, intentando como cliente...');
             try {
-                result = await UserService.login(null, null, true);
-                userRole = 'user';
+                result = await CustomerService.login(null, null, true);
+                userRole = 'customer';
                 loginSuccess = true;
-                console.log('✅ Login exitoso como USUARIO con Google');
+                console.log('✅ Login exitoso como CLIENTE con Google');
                 
-                // 📦 Verificar sesión de usuario
-                const session = UserService.getSession();
-                console.log('📦 Sesión de usuario guardada:', session);
+                const session = CustomerService.getCurrentSession();
+                console.log('📦 Sesión de cliente guardada:', session);
                 showNotification('✅ ¡Bienvenido! Sesión iniciada con Google');
-            } catch (userError) {
-                console.error('❌ Error en ambos intentos de login con Google:', userError);
-                throw userError;
+            } catch (customerError) {
+                console.error('❌ Error en ambos intentos de login con Google:', customerError);
+                throw customerError;
             }
         }
         
@@ -227,30 +225,28 @@ async function handleLogin(e) {
             loginSuccess = true;
             console.log('✅ Login exitoso como ADMINISTRADOR');
             
-            // 📦 Mostrar estructura de sesión guardada
             const session = AdminService.getCurrentSession();
             console.log('📦 Contenido de outlet_admin:', session);
             console.log('📦 Estructura JSON guardada:', JSON.stringify(session, null, 2));
             
             showNotification('✅ ¡Bienvenido Administrador!');
         } catch (adminError) {
-            console.log('⚠️ No es administrador, intentando como usuario normal...');
+            console.log('⚠️ No es administrador, intentando como cliente...');
             console.log('Error de admin:', adminError.message);
             
             try {
-                result = await UserService.login(email, password);
-                userRole = 'user';
+                result = await CustomerService.login(email, password);
+                userRole = 'customer';
                 loginSuccess = true;
-                console.log('✅ Login exitoso como USUARIO');
+                console.log('✅ Login exitoso como CLIENTE');
                 
-                // 📦 Mostrar sesión de usuario
-                const session = UserService.getSession();
-                console.log('📦 Contenido de outlet_user:', session);
+                const session = CustomerService.getCurrentSession();
+                console.log('📦 Contenido de outlet_customer:', session);
                 
                 showNotification('✅ ¡Bienvenido de vuelta!');
-            } catch (userError) {
-                console.error('❌ Error en ambos intentos:', userError);
-                throw userError;
+            } catch (customerError) {
+                console.error('❌ Error en ambos intentos:', customerError);
+                throw customerError;
             }
         }
         
@@ -262,7 +258,9 @@ async function handleLogin(e) {
         if (userRole === 'admin' && result.adminData) {
             sessionStorage.setItem('isAdmin', 'true');
             sessionStorage.setItem('adminRole', result.adminData.rol);
-        } else if (userRole === 'user' && result.userData) {
+            sessionStorage.removeItem('isCustomer');
+        } else if (userRole === 'customer' && result.customerData) {
+            sessionStorage.setItem('isCustomer', 'true');
             sessionStorage.removeItem('isAdmin');
             sessionStorage.removeItem('adminRole');
         }
@@ -300,6 +298,8 @@ async function handleLogin(e) {
             errorMessage = error.message;
         } else if (errorMessage.includes('No tiene permisos de administrador')) {
             errorMessage = 'Este correo no tiene permisos de administrador';
+        } else if (errorMessage.includes('No existe una cuenta con este correo')) {
+            errorMessage = 'No existe una cuenta con este correo electrónico';
         }
         
         showNotification(`❌ ${errorMessage}`, true);
@@ -379,27 +379,30 @@ async function checkExistingSession() {
         }
     }
     
-    // Verificar sesión de usuario
-    const userSession = localStorage.getItem('outlet_user');
-    if (userSession && !adminSession) {
+    // Verificar sesión de cliente
+    const customerSession = localStorage.getItem('outlet_customer');
+    if (customerSession && !adminSession) {
         try {
-            const sessionData = JSON.parse(userSession);
-            console.log('📦 Sesión de usuario encontrada:', sessionData);
+            const sessionData = JSON.parse(customerSession);
+            console.log('📦 Sesión de cliente encontrada:', sessionData);
             
-            console.log('🔄 Sesión de usuario encontrada, redirigiendo...');
-            const redirectUrl = sessionStorage.getItem('redirectAfterLogin') || '/';
-            sessionStorage.removeItem('redirectAfterLogin');
-            
-            setTimeout(() => {
-                if (typeof window.navigateTo === 'function') {
-                    window.navigateTo(redirectUrl);
-                } else {
-                    window.location.href = redirectUrl;
-                }
-            }, 500);
-            return true;
+            const currentCustomer = await CustomerService.getCurrentCustomer(true);
+            if (currentCustomer && currentCustomer.isActive()) {
+                console.log('🔄 Sesión de cliente válida, redirigiendo...');
+                const redirectUrl = sessionStorage.getItem('redirectAfterLogin') || '/';
+                sessionStorage.removeItem('redirectAfterLogin');
+                
+                setTimeout(() => {
+                    if (typeof window.navigateTo === 'function') {
+                        window.navigateTo(redirectUrl);
+                    } else {
+                        window.location.href = redirectUrl;
+                    }
+                }, 500);
+                return true;
+            }
         } catch (error) {
-            console.error('Error parseando sesión de usuario:', error);
+            console.error('Error verificando sesión de cliente:', error);
         }
     }
     
@@ -425,7 +428,7 @@ function initFormEvents() {
  * Controller principal
  */
 export async function loginController() {
-    console.log('🔐 Login Controller - Página de inicio de sesión (Admin + User)');
+    console.log('🔐 Login Controller - Página de inicio de sesión (Admin + Customer)');
     
     // Inicializar sistema de administradores
     try {
