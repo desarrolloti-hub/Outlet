@@ -414,6 +414,112 @@
     font-style: italic;
 }
 
+/* Formulario - estilos adicionales */
+.outlet-form-section {
+    background: var(--outlet-bg-card);
+    border-radius: 12px;
+    padding: var(--outlet-spacing-xl);
+    margin-bottom: var(--outlet-spacing-lg);
+    box-shadow: var(--outlet-shadow-sm);
+}
+
+.outlet-section-title {
+    display: flex;
+    align-items: center;
+    gap: var(--outlet-spacing-sm);
+    margin-bottom: var(--outlet-spacing-lg);
+    padding-bottom: var(--outlet-spacing-sm);
+    border-bottom: 2px solid var(--outlet-gold);
+}
+
+.outlet-section-title h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.outlet-section-icon {
+    color: var(--outlet-gold);
+    font-size: 24px;
+}
+
+.outlet-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--outlet-spacing-md);
+}
+
+.outlet-full-width {
+    grid-column: span 2;
+}
+
+.outlet-input-group {
+    position: relative;
+    margin-bottom: var(--outlet-spacing-md);
+}
+
+.outlet-input-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: var(--outlet-spacing-xs);
+    color: var(--outlet-text-secondary);
+}
+
+.outlet-required {
+    color: var(--outlet-danger);
+}
+
+.outlet-input-group input,
+.outlet-input-group select,
+.outlet-input-group textarea {
+    width: 100%;
+    padding: 10px 0;
+    font-size: 14px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--outlet-border-medium);
+    color: var(--outlet-text-primary);
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.outlet-input-group input:focus,
+.outlet-input-group select:focus,
+.outlet-input-group textarea:focus {
+    border-bottom-color: var(--outlet-gold);
+}
+
+.outlet-input-group textarea {
+    resize: vertical;
+    min-height: 60px;
+}
+
+.outlet-input-line {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--outlet-gold);
+    transition: width 0.3s ease;
+}
+
+.outlet-input-group input:focus ~ .outlet-input-line,
+.outlet-input-group select:focus ~ .outlet-input-line,
+.outlet-input-group textarea:focus ~ .outlet-input-line {
+    width: 100%;
+}
+
+.outlet-input-group small {
+    display: block;
+    font-size: 10px;
+    color: var(--outlet-text-muted);
+    margin-top: 4px;
+}
+
 /* Responsive adicional */
 @media (max-width: 480px) {
     .outlet-category-name {
@@ -427,7 +533,20 @@
     .outlet-subcategory-item {
         padding: var(--outlet-spacing-xs) var(--outlet-spacing-sm);
     }
+
+    .outlet-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .outlet-full-width {
+        grid-column: span 1;
+    }
+
+    .outlet-form-section {
+        padding: var(--outlet-spacing-md);
+    }
 }
+
 /* ========================================
    INTEGRACIÓN CON NAVBAR LATERAL - VERSIÓN OPTIMIZADA
    ======================================== */
@@ -594,6 +713,7 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-categories-container {
 .outlet-categories-container {
     transition: margin-left 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
 }
+
 /* ========================================
    MENÚ HAMBURGUESA - ESTILOS GLOBALES
    ======================================== */

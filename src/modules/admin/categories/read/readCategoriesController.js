@@ -111,6 +111,15 @@ function generarSlug(texto) {
         .replace(/^-+|-+$/g, '');
 }
 
+function generarIdDesdeNombre(texto) {
+    return texto
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '');
+}
+
 function showModal(modal) {
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
@@ -146,7 +155,7 @@ function renderTable() {
                     <i class="material-symbols-outlined">${cat.icon || 'category'}</i>
                 </div>
             </td>
-            <td>${cat.id}</td>
+            <td><code style="font-size: 12px;">${escapeHtml(cat.id)}</code></td>
             <td><strong>${escapeHtml(cat.name)}</strong></td>
             <td><code style="font-size: 12px;">${cat.slug}</code></td>
             <td>
@@ -182,7 +191,7 @@ function renderTable() {
     // Event listeners para botones de la tabla
     document.querySelectorAll('.categorieslist-btn-subcategories').forEach(btn => {
         btn.addEventListener('click', () => {
-            const id = parseInt(btn.dataset.id);
+            const id = btn.dataset.id;
             const name = btn.dataset.name;
             openSubcategoryModal(id, name);
         });
@@ -190,14 +199,14 @@ function renderTable() {
     
     document.querySelectorAll('.categorieslist-btn-edit').forEach(btn => {
         btn.addEventListener('click', () => {
-            const id = parseInt(btn.dataset.id);
+            const id = btn.dataset.id;
             editCategory(id);
         });
     });
     
     document.querySelectorAll('.categorieslist-btn-delete').forEach(btn => {
         btn.addEventListener('click', () => {
-            const id = parseInt(btn.dataset.id);
+            const id = btn.dataset.id;
             const name = btn.dataset.name;
             showDeleteModal('category', id, name);
         });
@@ -232,7 +241,7 @@ function renderSubcategoriesPreview(subcategories, categoryId) {
 document.addEventListener('click', (e) => {
     const tag = e.target.closest('.categorieslist-subcategory-tag');
     if (tag && !tag.classList.contains('more')) {
-        const catId = parseInt(tag.dataset.catId);
+        const catId = tag.dataset.catId;
         const subName = tag.dataset.subName;
         const category = categories.find(c => c.id === catId);
         if (category) {
@@ -249,7 +258,7 @@ document.addEventListener('click', (e) => {
             }, 200);
         }
     } else if (tag && tag.classList.contains('more')) {
-        const catId = parseInt(tag.dataset.catId);
+        const catId = tag.dataset.catId;
         const category = categories.find(c => c.id === catId);
         if (category) {
             openSubcategoryModal(catId, category.name);
@@ -323,6 +332,28 @@ async function saveCategory(event) {
         return;
     }
     
+    const categoryId = elements.categoryId.value;
+    const isEditing = !!categoryId;
+    
+    // Validar ID para nueva categoría
+    if (!isEditing) {
+        let generatedId = generarIdDesdeNombre(name);
+        if (!generatedId) {
+            mostrarToast('No se pudo generar un ID válido desde el nombre', 'error');
+            return;
+        }
+        
+        // Verificar si el ID ya existe
+        const existingCategory = categories.find(c => c.id === generatedId);
+        if (existingCategory) {
+            mostrarToast(`Ya existe una categoría con el ID "${generatedId}". Por favor, usa un nombre diferente.`, 'error');
+            return;
+        }
+        
+        // Asignar el ID generado
+        elements.categoryId.value = generatedId;
+    }
+    
     const categoryData = {
         name: name,
         slug: elements.categorySlug.value.trim() || generarSlug(name),
@@ -332,16 +363,19 @@ async function saveCategory(event) {
         status: elements.categoryStatus.value
     };
     
-    const categoryId = elements.categoryId.value;
+    // Para nueva categoría, incluir el ID
+    if (!isEditing) {
+        categoryData.id = elements.categoryId.value;
+    }
     
     try {
         let savedCategory;
-        if (categoryId) {
-            savedCategory = await CategoryService.update(parseInt(categoryId), categoryData);
+        if (isEditing) {
+            savedCategory = await CategoryService.update(categoryId, categoryData);
             mostrarToast(`Categoría "${savedCategory.name}" actualizada`, 'success');
         } else {
             savedCategory = await CategoryService.create(categoryData);
-            mostrarToast(`Categoría "${savedCategory.name}" creada`, 'success');
+            mostrarToast(`Categoría "${savedCategory.name}" creada con ID: ${savedCategory.id}`, 'success');
         }
         
         await loadCategories();
@@ -460,10 +494,14 @@ async function editSubcategory(index, oldName) {
     const trimmedName = newName.trim();
     if (!trimmedName) return;
     
+    // Obtener el ID de la subcategoría
+    const subcategoryId = currentCategoryForSub.subcategories[index]?.id;
+    if (!subcategoryId) return;
+    
     try {
         const updatedCategory = await CategoryService.updateSubcategory(
             currentCategoryForSub.id,
-            index,
+            subcategoryId,
             trimmedName
         );
         
@@ -483,13 +521,13 @@ async function editSubcategory(index, oldName) {
     }
 }
 
-async function deleteSubcategory(index) {
+async function deleteSubcategory(subcategoryId) {
     if (!currentCategoryForSub) return;
     
-    const subName = currentCategoryForSub.subcategories[index]?.name;
+    const subName = currentCategoryForSub.subcategories.find(sub => sub.id === subcategoryId)?.name;
     
     try {
-        const updatedCategory = await CategoryService.deleteSubcategory(currentCategoryForSub.id, index);
+        const updatedCategory = await CategoryService.deleteSubcategory(currentCategoryForSub.id, subcategoryId);
         
         const catIndex = categories.findIndex(c => c.id === updatedCategory.id);
         if (catIndex !== -1) {

@@ -17,10 +17,25 @@ export const CategoryService = {
             throw new Error('El nombre de la categoría debe tener al menos 2 caracteres');
         }
         
+        // Validar ID
+        if (!categoryData.id || categoryData.id.trim() === '') {
+            throw new Error('El ID de la categoría es requerido');
+        }
+        
+        if (!Category.validateIdFormat(categoryData.id)) {
+            throw new Error('El ID solo puede contener letras minúsculas, números, guiones bajos (_) y guiones (-)');
+        }
+        
         // Generar slug si no viene
         const category = new Category(categoryData);
         if (!categoryData.slug) {
             category.slug = category.generateSlug(categoryData.name);
+        }
+        
+        // Verificar que el ID no exista ya
+        const existingById = await CategoryRepository.getById(category.id);
+        if (existingById) {
+            throw new Error(`Ya existe una categoría con el ID "${category.id}"`);
         }
         
         // Verificar que el nombre no exista ya
@@ -42,7 +57,6 @@ export const CategoryService = {
         }
         
         // ========== CREAR MODELO ==========
-        category.id = `${category.slug}_${Date.now()}`;
         category.createdBy = adminUserId;
         category.subcategories = []; // Inicializar array vacío
         
@@ -134,6 +148,11 @@ export const CategoryService = {
         
         if (!currentCategory) {
             throw new Error('Categoría no encontrada');
+        }
+        
+        // No permitir cambiar el ID
+        if (updateData.id && updateData.id !== categoryId) {
+            throw new Error('No se puede cambiar el ID de la categoría');
         }
         
         // Validar nombre si se está actualizando

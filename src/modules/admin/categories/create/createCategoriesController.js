@@ -32,7 +32,8 @@ function cacheElements() {
         searchInput: document.getElementById('searchCategory'),
         
         // Formulario de categorías
-        categoryId: document.getElementById('categoryId'),
+        categoryIdInput: document.getElementById('categoryIdInput'),
+        categoryIdHidden: document.getElementById('categoryIdHidden'),
         categoryName: document.getElementById('categoryName'),
         categorySlug: document.getElementById('categorySlug'),
         categoryDescription: document.getElementById('categoryDescription'),
@@ -89,19 +90,52 @@ function generarSlug(texto) {
         .replace(/^-+|-+$/g, '');
 }
 
+function generarIdDesdeNombre(texto) {
+    return texto
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '');
+}
+
+// Validar formato del ID
+function validarIdFormato(id) {
+    if (!id || id.trim() === '') return false;
+    const regex = /^[a-z0-9_\-]+$/;
+    return regex.test(id);
+}
+
 // Auto-generar slug cuando se escribe el nombre
 function setupSlugGeneration() {
     if (elements.categoryName) {
         elements.categoryName.addEventListener('input', () => {
             const name = elements.categoryName.value;
-            if (name && !isEditing) {
-                elements.categorySlug.value = generarSlug(name);
-            } else if (name && isEditing) {
-                // En modo edición, preguntar si quiere auto-generar
-                const confirmAuto = confirm('¿Deseas auto-generar el slug basado en el nuevo nombre?');
-                if (confirmAuto) {
+            if (name) {
+                // Solo auto-generar slug si no está en modo edición o si el slug está vacío
+                if (!isEditing || elements.categorySlug.value === '') {
                     elements.categorySlug.value = generarSlug(name);
                 }
+                
+                // Auto-generar ID solo si no está en modo edición y el campo ID está vacío o es el autogenerado anterior
+                if (!isEditing && (elements.categoryIdInput.value === '' || elements.categoryIdInput.value === generarIdDesdeNombre(elements.categoryName.dataset.lastGeneratedName || ''))) {
+                    const generatedId = generarIdDesdeNombre(name);
+                    elements.categoryIdInput.value = generatedId;
+                    elements.categoryIdInput.dataset.lastGeneratedName = name;
+                }
+            }
+        });
+    }
+    
+    // Validar formato del ID en tiempo real
+    if (elements.categoryIdInput) {
+        elements.categoryIdInput.addEventListener('input', () => {
+            const idValue = elements.categoryIdInput.value;
+            if (idValue && !validarIdFormato(idValue)) {
+                elements.categoryIdInput.style.borderBottomColor = 'var(--outlet-danger)';
+                mostrarToast('El ID solo puede contener letras minúsculas, números, guiones bajos (_) y guiones (-)', 'error');
+            } else {
+                elements.categoryIdInput.style.borderBottomColor = '';
             }
         });
     }
@@ -119,7 +153,8 @@ function renderCategories() {
         const term = searchTerm.toLowerCase();
         filteredCategories = categories.filter(cat => 
             cat.name.toLowerCase().includes(term) ||
-            (cat.description && cat.description.toLowerCase().includes(term))
+            (cat.description && cat.description.toLowerCase().includes(term)) ||
+            (cat.id && cat.id.toLowerCase().includes(term))
         );
     }
     
@@ -142,6 +177,7 @@ function renderCategories() {
                         ${cat.status === 'active' ? 'Activo' : 'Inactivo'}
                     </span>
                 </div>
+                <div class="outlet-category-desc">ID: ${escapeHtml(cat.id)}</div>
                 ${cat.description ? `<div class="outlet-category-desc">${escapeHtml(cat.description)}</div>` : ''}
                 <div class="outlet-category-desc">Orden: ${cat.order} | Slug: ${cat.slug}</div>
             </div>
@@ -286,13 +322,18 @@ function selectCategory(id) {
 
 function resetForm() {
     isEditing = false;
-    elements.categoryId.value = '';
+    elements.categoryIdInput.value = '';
+    elements.categoryIdHidden.value = '';
     elements.categoryName.value = '';
     elements.categorySlug.value = '';
     elements.categoryDescription.value = '';
     elements.categoryOrder.value = '0';
     elements.categoryStatus.value = 'active';
     elements.categoryIcon.value = '';
+    
+    // Habilitar campo ID para nueva creación
+    elements.categoryIdInput.disabled = false;
+    elements.categoryIdInput.style.backgroundColor = '';
     
     elements.formTitle.textContent = 'Crear Nueva Categoría';
     if (elements.formIcon) {
@@ -309,13 +350,18 @@ function editCategory(id) {
     if (!category) return;
     
     isEditing = true;
-    elements.categoryId.value = category.id;
+    elements.categoryIdInput.value = category.id;
+    elements.categoryIdHidden.value = category.id;
     elements.categoryName.value = category.name;
     elements.categorySlug.value = category.slug;
     elements.categoryDescription.value = category.description || '';
     elements.categoryOrder.value = category.order || 0;
     elements.categoryStatus.value = category.status || 'active';
     elements.categoryIcon.value = category.icon || '';
+    
+    // Deshabilitar campo ID en modo edición
+    elements.categoryIdInput.disabled = true;
+    elements.categoryIdInput.style.backgroundColor = 'var(--outlet-bg-disabled, #f5f5f5)';
     
     elements.formTitle.textContent = 'Editar Categoría';
     if (elements.formIcon) {
@@ -340,7 +386,36 @@ async function saveCategory() {
         return;
     }
     
+    let categoryId = elements.categoryIdInput.value.trim();
+    
+    if (!isEditing) {
+        // Para nueva categoría, el ID es obligatorio
+        if (!categoryId) {
+            mostrarToast('El ID de la categoría es obligatorio', 'error');
+            elements.categoryIdInput.focus();
+            return;
+        }
+        
+        // Validar formato del ID
+        if (!validarIdFormato(categoryId)) {
+            mostrarToast('El ID solo puede contener letras minúsculas, números, guiones bajos (_) y guiones (-)', 'error');
+            elements.categoryIdInput.focus();
+            return;
+        }
+        
+        // Verificar que el ID no exista ya
+        const existingCategory = categories.find(c => c.id === categoryId);
+        if (existingCategory) {
+            mostrarToast(`Ya existe una categoría con el ID "${categoryId}"`, 'error');
+            elements.categoryIdInput.focus();
+            return;
+        }
+    } else {
+        categoryId = elements.categoryIdHidden.value;
+    }
+    
     const categoryData = {
+        id: categoryId,
         name: name,
         slug: elements.categorySlug.value.trim() || generarSlug(name),
         description: elements.categoryDescription.value.trim(),
@@ -359,12 +434,12 @@ async function saveCategory() {
         let savedCategory;
         
         if (isEditing) {
-            const id = elements.categoryId.value;
+            const id = elements.categoryIdHidden.value;
             savedCategory = await CategoryService.update(id, categoryData);
             mostrarToast(`Categoría "${savedCategory.name}" actualizada`, 'success');
         } else {
             savedCategory = await CategoryService.create(categoryData);
-            mostrarToast(`Categoría "${savedCategory.name}" creada`, 'success');
+            mostrarToast(`Categoría "${savedCategory.name}" creada con ID: ${savedCategory.id}`, 'success');
         }
         
         // Recargar categorías
@@ -586,7 +661,7 @@ function initEventListeners() {
         }
     });
     
-    // Auto-generar slug
+    // Auto-generar slug e ID
     setupSlugGeneration();
 }
 
@@ -618,7 +693,6 @@ export async function categoriesCreateController() {
     cacheElements();
     syncDarkMode();
     initEventListeners();
-    
     
     // Cargar categorías desde el servicio
     await loadCategories();

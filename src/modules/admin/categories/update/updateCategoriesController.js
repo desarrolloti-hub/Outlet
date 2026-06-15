@@ -148,7 +148,7 @@ function populateCategorySelector() {
 // Cargar datos de la categoría seleccionada
 // ========================================
 function onCategorySelect() {
-    const selectedId = parseInt(elements.categorySelector.value);
+    const selectedId = elements.categorySelector.value;
     
     if (!selectedId) {
         // Limpiar formulario y deshabilitar

@@ -137,9 +137,22 @@ export class Category {
             .replace(/^-+|-+$/g, '');
     }
     
+    // Validar formato del ID
+    static validateIdFormat(id) {
+        if (!id || id.trim() === '') return false;
+        const regex = /^[a-z0-9_\-]+$/;
+        return regex.test(id);
+    }
+    
     // Validar categoría completa
     validate() {
         const errors = [];
+        
+        if (!this.id || this.id.trim() === '') {
+            errors.push('El ID de la categoría es requerido');
+        } else if (!Category.validateIdFormat(this.id)) {
+            errors.push('El ID solo puede contener letras minúsculas, números, guiones bajos (_) y guiones (-)');
+        }
         
         if (!this.name || this.name.trim().length < 2) {
             errors.push('El nombre de la categoría debe tener al menos 2 caracteres');

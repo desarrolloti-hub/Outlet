@@ -19,6 +19,17 @@
     <!-- Grid principal: lista de categorías + formulario -->
     <div class="outlet-categories-grid">
 
+        <!-- Panel izquierdo: Lista de categorías -->
+        <div class="outlet-categories-panel">
+            <div class="outlet-search-box">
+                <span class="material-symbols-outlined">search</span>
+                <input type="text" class="outlet-search-input" id="searchCategory" placeholder="Buscar categorías...">
+            </div>
+            <div class="outlet-categories-list" id="categoriesList">
+                <div class="outlet-loading">Cargando categorías...</div>
+            </div>
+        </div>
+
         <!-- Panel derecho: Formulario para crear/editar categorías -->
         <div class="outlet-categories-panel">
             <div class="outlet-form-section">
@@ -31,8 +42,16 @@
 
                 <!-- Formulario -->
                 <div class="outlet-form-grid">
-                    <!-- ID oculto para edición -->
-                    <input type="hidden" id="categoryId">
+                    <!-- ID de la categoría (visible y editable) -->
+                    <div class="outlet-input-group outlet-full-width">
+                        <label>ID de la Categoría <span class="outlet-required">*</span></label>
+                        <input type="text" placeholder="Ej: ropa, calzado, accesorios..." id="categoryIdInput">
+                        <span class="outlet-input-line"></span>
+                        <small>Identificador único para la categoría (solo letras minúsculas, números y guiones)</small>
+                    </div>
+                    
+                    <!-- ID oculto para referencia interna -->
+                    <input type="hidden" id="categoryIdHidden">
                     
                     <!-- Nombre de la categoría -->
                     <div class="outlet-input-group outlet-full-width">
@@ -45,9 +64,9 @@
                     <!-- Slug (autogenerado) -->
                     <div class="outlet-input-group outlet-full-width">
                         <label>Slug / URL</label>
-                        <input type="text" placeholder="Se genera automáticamente" id="categorySlug" readonly>
+                        <input type="text" placeholder="Se genera automáticamente" id="categorySlug">
                         <span class="outlet-input-line"></span>
-                        <small>Identificador para URLs - se genera automáticamente</small>
+                        <small>Identificador para URLs - se genera automáticamente (puedes editarlo)</small>
                     </div>
 
                     <!-- Descripción -->

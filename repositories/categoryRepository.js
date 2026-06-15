@@ -26,8 +26,12 @@ export const CategoryRepository = {
      */
     async save(categoryData) {
         try {
-            // Generar ID si no existe
-            const id = categoryData.id || `${categoryData.slug}_${Date.now()}`;
+            // El ID debe venir en categoryData
+            const id = categoryData.id;
+            if (!id) {
+                throw new Error('El ID de la categoría es requerido para guardar');
+            }
+            
             const categoryRef = doc(db, CATEGORIES_COLLECTION, id);
             
             const dataToSave = {
