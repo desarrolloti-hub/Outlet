@@ -1,6 +1,5 @@
 /* ========================================
    ADMIN NAVBAR - OUTLET LUXURY EDITION
-   Navbar vertical elegante que respeta tus variables CSS
    ======================================== */
 
 .OUTLET-admin-nav {
@@ -10,16 +9,16 @@
     bottom: 0;
     width: 280px;
     background: var(--outlet-bg-surface, #ffffff);
-    backdrop-filter: blur(0px);
     border-right: 1px solid var(--outlet-border-soft, rgba(221, 171, 59, 0.12));
     display: flex;
     flex-direction: column;
-    z-index: var(--outlet-z-fixed, 1030);
-    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1030;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: var(--outlet-shadow-md, 0 5px 15px rgba(0, 0, 0, 0.08));
+    overflow-y: auto;
 }
 
-/* Modo colapsado */
+/* ========== MODO COLAPSADO (ESCRITORIO) ========== */
 .OUTLET-admin-nav.collapsed {
     width: 80px;
 }
@@ -51,7 +50,23 @@
     height: 44px;
 }
 
-/* ========== HEADER DEL NAVBAR ========== */
+.OUTLET-admin-nav.collapsed .admin-theme-toggle span,
+.OUTLET-admin-nav.collapsed .admin-logout-btn span {
+    display: none;
+}
+
+.OUTLET-admin-nav.collapsed .admin-theme-toggle {
+    justify-content: center;
+    padding: 10px;
+    width: calc(100% - 20px);
+    margin: 8px 10px 16px 10px;
+}
+
+.OUTLET-admin-nav.collapsed .admin-logout-btn {
+    justify-content: center;
+}
+
+/* ========== HEADER ========== */
 .admin-nav-header {
     display: flex;
     justify-content: space-between;
@@ -101,10 +116,9 @@
     background: rgba(221, 171, 59, 0.1);
     border-color: var(--outlet-gold, #ddab3b);
     color: var(--outlet-gold, #ddab3b);
-    transform: translateX(2px);
 }
 
-/* ========== INFO DEL USUARIO ========== */
+/* ========== USUARIO ========== */
 .admin-user-info {
     display: flex;
     align-items: center;
@@ -123,11 +137,14 @@
     align-items: center;
     justify-content: center;
     border: 1px solid var(--outlet-border-soft, rgba(221, 171, 59, 0.2));
+    overflow: hidden;
+    flex-shrink: 0;
 }
 
-.admin-avatar i {
-    font-size: 22px;
-    color: var(--outlet-gold, #ddab3b);
+.admin-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .admin-user-details {
@@ -154,48 +171,7 @@
     text-overflow: ellipsis;
 }
 
-/* ========== BOTÓN TEMA OSCURO ========== */
-.admin-theme-toggle {
-    margin: 8px 20px 16px 20px;
-    background: transparent;
-    border: 1px solid var(--outlet-border-soft, rgba(221, 171, 59, 0.2));
-    color: var(--outlet-text-secondary, #4f4635);
-    padding: 10px;
-    border-radius: var(--outlet-radius-md, 8px);
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    font-size: 13px;
-}
-
-.admin-theme-toggle i {
-    font-size: 16px;
-}
-
-.admin-theme-toggle span {
-    font-size: 12px;
-    font-weight: 500;
-}
-
-.admin-theme-toggle:hover {
-    background: rgba(221, 171, 59, 0.1);
-    border-color: var(--outlet-gold, #ddab3b);
-    color: var(--outlet-gold, #ddab3b);
-}
-
-.OUTLET-admin-nav.collapsed .admin-theme-toggle span {
-    display: none;
-}
-
-.OUTLET-admin-nav.collapsed .admin-theme-toggle {
-    justify-content: center;
-    padding: 10px;
-}
-
-/* ========== ENLACES DE NAVEGACIÓN ========== */
+/* ========== ENLACES ========== */
 .admin-nav-links {
     flex: 1;
     list-style: none;
@@ -204,6 +180,7 @@
     display: flex;
     flex-direction: column;
     gap: 4px;
+    overflow-y: auto;
 }
 
 .admin-nav-links li a {
@@ -224,6 +201,7 @@
     width: 22px;
     font-size: 16px;
     text-align: center;
+    flex-shrink: 0;
 }
 
 .admin-nav-links li a:hover {
@@ -238,11 +216,36 @@
     border-right: 2px solid var(--outlet-gold, #ddab3b);
 }
 
-/* ========== FOOTER DEL NAVBAR ========== */
+/* ========== FOOTER ========== */
 .admin-nav-footer {
     padding: 16px 20px 24px 20px;
     border-top: 1px solid var(--outlet-border-soft, rgba(221, 171, 59, 0.12));
     margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.admin-theme-toggle {
+    background: transparent;
+    border: 1px solid var(--outlet-border-soft, rgba(221, 171, 59, 0.2));
+    color: var(--outlet-text-secondary, #4f4635);
+    padding: 10px;
+    border-radius: var(--outlet-radius-md, 8px);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 13px;
+    width: 100%;
+}
+
+.admin-theme-toggle:hover {
+    background: rgba(221, 171, 59, 0.1);
+    border-color: var(--outlet-gold, #ddab3b);
+    color: var(--outlet-gold, #ddab3b);
 }
 
 .admin-logout-btn {
@@ -255,11 +258,9 @@
     transition: all 0.25s ease;
     font-size: 13px;
     font-weight: 500;
-}
-
-.admin-logout-btn i {
-    width: 22px;
-    font-size: 16px;
+    color: var(--outlet-text-secondary, #4f4635);
+    width: 100%;
+    justify-content: center;
 }
 
 .admin-logout-btn:hover {
@@ -267,84 +268,152 @@
     color: #ef4444;
 }
 
-/* ========== AJUSTE DEL MAIN CONTENT ========== */
-body.role-admin main,
-body.role-admin .admin-dashboard,
-body.role-admin .main-content {
-    margin-left: 280px;
-    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+/* ========== BOTÓN HAMBURGUESA ========== */
+.admin-mobile-toggle {
+    display: none;
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: 1060;
+    background: var(--outlet-gold, #ddab3b);
+    color: #1a1a1a;
+    border: none;
+    border-radius: var(--outlet-radius-md, 8px);
+    padding: 10px 14px;
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: var(--outlet-shadow-lg, 0 10px 30px rgba(0, 0, 0, 0.12));
+    transition: all 0.3s ease;
 }
 
-body.role-admin .OUTLET-admin-nav.collapsed ~ main,
-body.role-admin .OUTLET-admin-nav.collapsed ~ .admin-dashboard,
-body.role-admin .OUTLET-admin-nav.collapsed ~ .main-content {
-    margin-left: 80px;
+.admin-mobile-toggle:hover {
+    transform: scale(1.05);
+    background: var(--outlet-gold-light, #f3bf4d);
 }
 
-/* ========== RESPONSIVE ========== */
-@media (max-width: 992px) {
-    .OUTLET-admin-nav {
-        width: 260px;
-    }
-    
-    .OUTLET-admin-nav.collapsed {
-        width: 70px;
-    }
-    
-    body.role-admin main,
-    body.role-admin .admin-dashboard,
-    body.role-admin .main-content {
-        margin-left: 260px;
-    }
-    
-    body.role-admin .OUTLET-admin-nav.collapsed ~ main,
-    body.role-admin .OUTLET-admin-nav.collapsed ~ .admin-dashboard,
-    body.role-admin .OUTLET-admin-nav.collapsed ~ .main-content {
-        margin-left: 70px;
-    }
+/* ========== OVERLAY ========== */
+.admin-nav-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1040;
+    backdrop-filter: blur(4px);
 }
 
+.admin-nav-overlay.active {
+    display: block;
+}
+
+/* ========== RESPONSIVE MÓVIL ========== */
 @media (max-width: 768px) {
+    .admin-mobile-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
     .OUTLET-admin-nav {
         transform: translateX(-100%);
         width: 280px;
-        transition: transform 0.3s ease;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         z-index: 1050;
+        box-shadow: var(--outlet-shadow-xl, 0 20px 60px rgba(0, 0, 0, 0.15));
     }
     
-    .OUTLET-admin-nav.mobile-open {
+    .OUTLET-admin-nav.open {
         transform: translateX(0);
+    }
+    
+    .OUTLET-admin-nav.collapsed {
+        width: 280px;
+    }
+    
+    .OUTLET-admin-nav.collapsed .admin-logo-text,
+    .OUTLET-admin-nav.collapsed .admin-user-details,
+    .OUTLET-admin-nav.collapsed .admin-nav-links span,
+    .OUTLET-admin-nav.collapsed .admin-nav-footer span {
+        display: block;
+    }
+    
+    .OUTLET-admin-nav.collapsed .admin-nav-links li a {
+        justify-content: flex-start;
+        padding: 12px 20px;
+    }
+    
+    .OUTLET-admin-nav.collapsed .admin-nav-links li a i {
+        margin: 0;
+        font-size: 16px;
+        width: 22px;
+    }
+    
+    .admin-collapse-btn {
+        display: none !important;
     }
     
     body.role-admin main,
     body.role-admin .admin-dashboard,
     body.role-admin .main-content {
         margin-left: 0 !important;
+        padding-top: 70px;
     }
     
-    /* Botón flotante para abrir menú en móvil */
+    .OUTLET-admin-nav.open ~ .admin-nav-overlay {
+        display: block;
+    }
+}
+
+/* ========== ESCRITORIO ========== */
+@media (min-width: 769px) {
     .admin-mobile-toggle {
-        position: fixed;
-        bottom: 20px;
-        left: 20px;
-        width: 48px;
-        height: 48px;
-        background: var(--outlet-gold, #ddab3b);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        z-index: 1060;
-        box-shadow: var(--outlet-shadow-lg, 0 10px 30px rgba(0, 0, 0, 0.12));
-        border: none;
-        color: #1a1a1a;
-        font-size: 20px;
-        transition: all 0.3s ease;
+        display: none !important;
     }
     
-    .admin-mobile-toggle:hover {
-        transform: scale(1.05);
-        background: var(--outlet-gold-light, #f3bf4d);
+    .admin-nav-overlay {
+        display: none !important;
     }
+    
+    .OUTLET-admin-nav {
+        transform: none !important;
+        position: fixed;
+        height: 100vh;
+        width: 280px;
+        z-index: 1030;
+        box-shadow: var(--outlet-shadow-md, 0 5px 15px rgba(0, 0, 0, 0.08));
+        overflow-y: auto;
+    }
+    
+    .OUTLET-admin-nav.collapsed {
+        width: 80px !important;
+    }
+    
+    body.role-admin main,
+    body.role-admin .admin-dashboard,
+    body.role-admin .main-content {
+        margin-left: 280px !important;
+        transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    body.role-admin .OUTLET-admin-nav.collapsed ~ main,
+    body.role-admin .OUTLET-admin-nav.collapsed ~ .admin-dashboard,
+    body.role-admin .OUTLET-admin-nav.collapsed ~ .main-content {
+        margin-left: 80px !important;
+    }
+}
+
+/* ========== SCROLLBAR ========== */
+.OUTLET-admin-nav::-webkit-scrollbar {
+    width: 4px;
+}
+
+.OUTLET-admin-nav::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.OUTLET-admin-nav::-webkit-scrollbar-thumb {
+    background: var(--outlet-gold, #ddab3b);
+    border-radius: 10px;
 }

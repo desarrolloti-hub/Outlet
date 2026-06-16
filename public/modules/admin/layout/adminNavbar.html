@@ -1,16 +1,16 @@
 <!-- modules/admin/layout/adminNavbar.html -->
-<nav class="OUTLET-admin-nav">
+<nav class="OUTLET-admin-nav" id="adminNav">
     <!-- Header del navbar -->
     <div class="admin-nav-header">
         <div class="admin-logo">
             <img src="/assets/iconos/outlet_lineado_blanco.png" alt="OUTLET Admin" class="admin-logo-img">
             <span class="admin-logo-text">Admin Panel</span>
         </div>
-        <button class="admin-collapse-btn" id="adminCollapseBtn" title="Colapsar menú">
+        <button id="adminCollapseBtn" class="admin-collapse-btn" title="Colapsar menú">
             <i class="fas fa-chevron-left"></i>
         </button>
     </div>
-    
+
     <!-- Información del usuario -->
     <div class="admin-user-info">
         <div class="admin-avatar">
@@ -21,7 +21,7 @@
             <span class="admin-user-email" id="adminUserEmail">admin@outlet.com</span>
         </div>
     </div>
-    
+
     <!-- Enlaces de navegación -->
     <ul class="admin-nav-links">
         <li>
@@ -61,14 +61,13 @@
             </a>
         </li>
     </ul>
-    
-    <!-- Footer del navbar (siempre abajo) -->
+
+    <!-- Footer del navbar -->
     <div class="admin-nav-footer">
         <button class="admin-theme-toggle btn-gold" id="adminThemeToggleBtn" title="Cambiar modo oscuro">
             <i class="fas fa-moon"></i>
             <span>Tema</span>
         </button>
-        
         <a href="#" id="adminLogoutBtn" class="admin-logout-btn btn-gold">
             <i class="fas fa-sign-out-alt"></i>
             <span>Cerrar Sesión</span>
@@ -76,49 +75,5 @@
     </div>
 </nav>
 
-<script>
-    (function() {
-        const adminNav = document.querySelector('.OUTLET-admin-nav');
-        const mobileToggle = document.getElementById('adminMobileToggleBtn');
-        const collapseBtn = document.getElementById('adminCollapseBtn');
-        
-        // Toggle móvil
-        if (mobileToggle && adminNav) {
-            mobileToggle.addEventListener('click', function() {
-                adminNav.classList.toggle('open');
-            });
-            
-            // Cerrar al hacer clic fuera en móvil
-            document.addEventListener('click', function(e) {
-                if (window.innerWidth <= 768) {
-                    if (adminNav && !adminNav.contains(e.target) && !mobileToggle.contains(e.target)) {
-                        adminNav.classList.remove('open');
-                    }
-                }
-            });
-        }
-        
-        // Colapsar/expandir en desktop
-        if (collapseBtn && adminNav) {
-            collapseBtn.addEventListener('click', function() {
-                adminNav.classList.toggle('collapsed');
-            });
-        }
-        
-        // Evitar que el body tenga scroll cuando el navbar está abierto en móvil
-        if (adminNav) {
-            const observer = new MutationObserver(function(mutations) {
-                mutations.forEach(function(mutation) {
-                    if (mutation.attributeName === 'class') {
-                        if (adminNav.classList.contains('open')) {
-                            document.body.style.overflow = 'hidden';
-                        } else {
-                            document.body.style.overflow = '';
-                        }
-                    }
-                });
-            });
-            observer.observe(adminNav, { attributes: true });
-        }
-    })();
-</script>
+<!-- Overlay para cerrar menú en móvil -->
+<div id="adminNavOverlay" class="admin-nav-overlay"></div>
