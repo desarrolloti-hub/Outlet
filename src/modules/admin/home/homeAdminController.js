@@ -363,49 +363,6 @@ function initAdminSidebar() {
 }
 
 /**
- * Agregar botón de menú móvil y funcionalidad
- */
-function initMobileMenu() {
-    if (document.querySelector('.mobile-menu-btn')) return;
-    
-    const mobileBtn = document.createElement('button');
-    mobileBtn.className = 'mobile-menu-btn';
-    mobileBtn.innerHTML = '<i class="fas fa-bars"></i>';
-    mobileBtn.setAttribute('aria-label', 'Abrir menú');
-    document.body.appendChild(mobileBtn);
-    
-    const sidebar = document.querySelector('.admin-sidebar');
-    
-    mobileBtn.addEventListener('click', () => {
-        if (sidebar) {
-            sidebar.classList.toggle('open');
-            const icon = mobileBtn.querySelector('i');
-            icon.className = sidebar.classList.contains('open') ? 'fas fa-times' : 'fas fa-bars';
-        }
-    });
-    
-    document.addEventListener('click', (e) => {
-        if (window.innerWidth <= 768 && sidebar && sidebar.classList.contains('open')) {
-            if (!sidebar.contains(e.target) && !mobileBtn.contains(e.target)) {
-                sidebar.classList.remove('open');
-                const icon = mobileBtn.querySelector('i');
-                icon.className = 'fas fa-bars';
-            }
-        }
-    });
-    
-    window.addEventListener('resize', () => {
-        if (window.innerWidth > 768 && sidebar) {
-            sidebar.classList.remove('open');
-            if (mobileBtn) {
-                const icon = mobileBtn.querySelector('i');
-                icon.className = 'fas fa-bars';
-            }
-        }
-    });
-}
-
-/**
  * Controlador principal
  */
 export async function adminController() {
@@ -440,7 +397,7 @@ export async function adminController() {
     }
     
     initAdminSidebar();
-    initMobileMenu();
+    // ❌ ELIMINADO: initMobileMenu();
     
     console.log('✅ Admin panel premium loaded successfully');
 }
