@@ -1,39 +1,38 @@
+
 /* ========================================
-   ADMIN FOOTER - OUTLET
-   Footer minimalista para panel de administración
-   Basado en variables globales --outlet-*
+   ADMIN FOOTER - ESTILOS UNIFICADOS
    ======================================== */
 
 .outlet-admin-footer {
-    margin-top: auto;
+    background: var(--outlet-bg-card, #ffffff);
+    border-top: 1px solid var(--outlet-border-color, #d2c5b0);
     width: 100%;
-    background: transparent;
+    margin-top: auto;
+    padding: 16px 24px;
+    transition: all var(--outlet-transition-base, 0.3s ease);
+}
+
+/* Modo oscuro */
+body.dark-mode .outlet-admin-footer {
+    background: var(--outlet-bg-card, #0f243d);
+    border-top-color: var(--outlet-border-color, #2a4a6e);
 }
 
 /* Línea dorada superior */
 .outlet-admin-footer-gold-line {
-    height: 1px;
-    background: linear-gradient(90deg, 
-        transparent 0%, 
-        var(--outlet-gold) 20%, 
-        var(--outlet-gold-light) 50%, 
-        var(--outlet-gold) 80%, 
-        transparent 100%);
-    margin-bottom: 20px;
-    opacity: 0.5;
+    height: 2px;
+    background: var(--outlet-gold-gradient-horizontal, linear-gradient(90deg, #c9a03d, #f2d06b, #fff2a8, #f2d06b, #c9a03d));
+    width: 100%;
+    margin-bottom: 16px;
 }
 
 /* Contenido principal */
 .outlet-admin-footer-content {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
     flex-wrap: wrap;
     gap: 16px;
-    padding: 16px 24px;
-    font-size: 12px;
-    color: var(--outlet-text-secondary);
-    border-top: 1px solid var(--outlet-border-soft);
 }
 
 /* Marca */
@@ -44,113 +43,130 @@
 }
 
 .outlet-admin-brand-name {
+    font-size: 14px;
     font-weight: 700;
     letter-spacing: 2px;
-    font-size: 13px;
-    color: var(--outlet-gold);
+    color: var(--outlet-text-primary, #1f1b13);
+}
+
+body.dark-mode .outlet-admin-brand-name {
+    color: var(--outlet-text-primary, #e0e0e0);
+
 }
 
 .outlet-admin-brand-tag {
     font-size: 9px;
     font-weight: 600;
     letter-spacing: 1px;
-    background: rgba(221, 171, 59, 0.15);
+    background: var(--outlet-gold-gradient, linear-gradient(135deg, #c9a03d, #f2d06b, #fff2a8, #e8c44c, #d4af37));
+    color: #1a1a1a;
     padding: 2px 8px;
-    border-radius: 4px;
-    color: var(--outlet-gold);
+    border-radius: var(--outlet-radius-sm, 4px);
+    text-transform: uppercase;
 }
 
 /* Copyright */
 .outlet-admin-footer-copyright {
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
     gap: 6px;
     font-size: 11px;
-    color: var(--outlet-text-variant);
+    color: var(--outlet-text-secondary, #4f4635);
+    flex-wrap: wrap;
+}
+
+body.dark-mode .outlet-admin-footer-copyright {
+    color: var(--outlet-text-secondary, #b0c4de);
 }
 
 .outlet-admin-footer-copyright i {
     font-size: 11px;
-    color: var(--outlet-text-muted);
 }
 
 .outlet-admin-footer-separator {
-    opacity: 0.5;
-    margin: 0 4px;
+    color: var(--outlet-border-color, #d2c5b0);
 }
 
 .outlet-admin-badge {
-    background: var(--outlet-border-light);
+    background: var(--outlet-bg-container-low, #fcf2e5);
     padding: 2px 6px;
-    border-radius: 4px;
+    border-radius: var(--outlet-radius-sm, 4px);
     font-size: 9px;
-    font-weight: 600;
-    color: var(--outlet-text-secondary);
-}
-
-/* Versión */
-.outlet-admin-footer-version {
-    display: flex;
-    align-items: center;
-}
-
-.outlet-admin-version-badge {
-    font-size: 9px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    color: var(--outlet-text-muted);
-    border: 1px solid var(--outlet-border-soft);
-    padding: 2px 8px;
-    border-radius: 4px;
-}
-
-/* Modo oscuro */
-body.dark-mode .outlet-admin-footer-gold-line {
-    opacity: 0.8;
+    font-weight: 500;
 }
 
 body.dark-mode .outlet-admin-badge {
-    background: var(--outlet-border-medium);
+    background: var(--outlet-bg-container-low, #0f243d);
+}
+
+/* Versión */
+.outlet-admin-version-badge {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--outlet-text-secondary, #4f4635);
+    background: var(--outlet-bg-container-low, #fcf2e5);
+    padding: 4px 10px;
+    border-radius: var(--outlet-radius-full, 9999px);
+    transition: all var(--outlet-transition-fast, 0.2s ease);
 }
 
 body.dark-mode .outlet-admin-version-badge {
-    border-color: var(--outlet-border-medium);
+    background: var(--outlet-bg-container-low, #0f243d);
+    color: var(--outlet-text-secondary, #b0c4de);
+}
+
+.outlet-admin-version-badge:hover {
+    background: var(--outlet-gold, #ddab3b);
+    color: #1a1a1a;
+}
+
+/* Año actual dinámico */
+.current-year {
+    font-weight: 600;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
+    .outlet-admin-footer {
+        padding: 12px 16px;
+    }
+    
     .outlet-admin-footer-content {
         flex-direction: column;
         text-align: center;
-        gap: 12px;
-        padding: 16px;
+        gap: 8px;
     }
     
     .outlet-admin-footer-copyright {
         justify-content: center;
-    }
-    
-    .outlet-admin-footer-brand {
-        justify-content: center;
-    }
-}
-
-@media (max-width: 480px) {
-    .outlet-admin-footer-content {
-        padding: 12px;
-    }
-    
-    .outlet-admin-footer-copyright {
-        font-size: 10px;
         gap: 4px;
     }
     
+    .outlet-admin-footer-separator {
+        display: none;
+    }
+    
     .outlet-admin-brand-name {
-        font-size: 11px;
+        font-size: 12px;
     }
     
     .outlet-admin-brand-tag {
         font-size: 8px;
+        padding: 2px 6px;
+    }
+}
+
+@media (max-width: 480px) {
+    .outlet-admin-footer {
+        padding: 10px 12px;
+    }
+    
+    .outlet-admin-footer-copyright {
+        font-size: 9px;
+    }
+    
+    .outlet-admin-version-badge {
+        font-size: 8px;
+        padding: 3px 8px;
     }
 }
