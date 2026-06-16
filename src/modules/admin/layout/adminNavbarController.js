@@ -1,7 +1,6 @@
 /* ========================================
    ADMIN NAVBAR CONTROLLER - OUTLET LUXURY EDITION
    Controlador del navbar VERTICAL para administrador
-   Versión mejorada - No fuerza colores oscuros
    CON SOPORTE COMPLETO PARA MÓVIL
    ======================================== */
 
@@ -24,6 +23,8 @@ const MOBILE_BREAKPOINT = 768;
  * Inicializa el controlador del navbar de administrador
  */
 export function initAdminNavbarController() {
+    console.log('🚀 Iniciando Admin Navbar Controller...');
+    
     cacheElements();
     
     if (!elements.navbar) {
@@ -31,6 +32,7 @@ export function initAdminNavbarController() {
         return;
     }
     
+    console.log('✅ Navbar encontrado, vinculando eventos...');
     bindEvents();
     applyStoredTheme();
     restoreCollapsedState();
@@ -38,7 +40,7 @@ export function initAdminNavbarController() {
     loadUserInfo();
     handleMobileResponsive();
     
-    console.log('✅ Admin Navbar Controller (vertical - luxury edition con móvil) inicializado');
+    console.log('✅ Admin Navbar Controller inicializado correctamente');
 }
 
 /**
@@ -57,6 +59,12 @@ function cacheElements() {
         userEmail: document.getElementById('adminUserEmail'),
         body: document.body
     };
+    
+    console.log('📦 Elementos cacheados:', {
+        navbar: !!elements.navbar,
+        mobileToggle: !!elements.mobileToggleBtn,
+        overlay: !!elements.navOverlay
+    });
 }
 
 /**
@@ -70,7 +78,14 @@ function bindEvents() {
     
     // Botón hamburguesa (móvil)
     if (elements.mobileToggleBtn) {
+        console.log('🔗 Vinculando evento al botón hamburguesa');
+        // Eliminar eventos anteriores para evitar duplicados
+        const newBtn = elements.mobileToggleBtn.cloneNode(true);
+        elements.mobileToggleBtn.parentNode.replaceChild(newBtn, elements.mobileToggleBtn);
+        elements.mobileToggleBtn = newBtn;
         elements.mobileToggleBtn.addEventListener('click', toggleMobileNav);
+    } else {
+        console.warn('⚠️ Botón hamburguesa no encontrado');
     }
     
     // Overlay (móvil)
@@ -91,7 +106,6 @@ function bindEvents() {
     // Escuchar cambios de ruta
     document.addEventListener('route:changed', () => {
         setActiveLink();
-        // Cerrar menú móvil al cambiar de ruta
         if (state.isMobileOpen) {
             closeMobileNav();
         }
@@ -121,29 +135,29 @@ function bindEvents() {
  */
 function handleMobileResponsive() {
     const isMobile = window.innerWidth < MOBILE_BREAKPOINT;
+    console.log('📱 Modo móvil:', isMobile);
     
     if (isMobile) {
         // Modo móvil
         elements.navbar?.classList.remove('collapsed');
+        elements.navbar?.classList.add('mobile-hidden');
         
-        if (!state.isMobileOpen) {
-            elements.navbar?.classList.add('mobile-hidden');
-        }
-        
-        // Ocultar botón colapsar en móvil
         if (elements.collapseBtn) {
             elements.collapseBtn.style.display = 'none';
         }
         
+        // Asegurar que el main no tenga margen
+        document.querySelector('main')?.classList.add('mobile-main');
+        
     } else {
         // Modo escritorio
-        elements.navbar?.classList.remove('mobile-hidden', 'mobile-open');
+        elements.navbar?.classList.remove('mobile-hidden', 'open');
         
         if (elements.navOverlay) {
             elements.navOverlay.classList.remove('active');
+            elements.navOverlay.style.display = 'none';
         }
         
-        // Mostrar botón colapsar
         if (elements.collapseBtn) {
             elements.collapseBtn.style.display = '';
         }
@@ -160,8 +174,8 @@ function handleMobileResponsive() {
             updateCollapseIcon(false);
         }
         
-        // Habilitar scroll del body
         document.body.style.overflow = '';
+        document.querySelector('main')?.classList.remove('mobile-main');
     }
 }
 
@@ -172,19 +186,17 @@ function handleResize() {
     const isMobile = window.innerWidth < MOBILE_BREAKPOINT;
     
     if (isMobile && !state.isMobileOpen) {
-        // Si es móvil y el navbar no está abierto, asegurar que esté oculto
         elements.navbar?.classList.add('mobile-hidden');
-        elements.navbar?.classList.remove('mobile-open');
+        elements.navbar?.classList.remove('open');
         
         if (elements.navOverlay) {
             elements.navOverlay.classList.remove('active');
+            elements.navOverlay.style.display = 'none';
         }
         
-        // Actualizar ícono del botón hamburguesa
         updateMobileToggleIcon(false);
         
     } else if (!isMobile && state.isMobileOpen) {
-        // Si pasa a escritorio y el menú móvil estaba abierto, cerrarlo
         closeMobileNav();
     }
 }
@@ -193,6 +205,9 @@ function handleResize() {
  * Alterna el navbar en móvil (abrir/cerrar)
  */
 function toggleMobileNav() {
+    console.log('🔄 Toggle móvil clickeado');
+    console.log('Estado actual:', state.isMobileOpen);
+    
     if (state.isMobileOpen) {
         closeMobileNav();
     } else {
@@ -204,12 +219,17 @@ function toggleMobileNav() {
  * Abre el navbar en móvil
  */
 function openMobileNav() {
+    console.log('📱 Abriendo menú móvil');
     state.isMobileOpen = true;
-    elements.navbar?.classList.remove('mobile-hidden');
-    elements.navbar?.classList.add('mobile-open');
     
+    // Eliminar clase oculta y agregar clase abierta
+    elements.navbar?.classList.remove('mobile-hidden');
+    elements.navbar?.classList.add('open');
+    
+    // Mostrar overlay
     if (elements.navOverlay) {
         elements.navOverlay.classList.add('active');
+        elements.navOverlay.style.display = 'block';
     }
     
     // Deshabilitar scroll del body
@@ -217,18 +237,25 @@ function openMobileNav() {
     
     // Actualizar ícono del botón hamburguesa
     updateMobileToggleIcon(true);
+    
+    console.log('✅ Navbar abierto, clases:', elements.navbar?.className);
 }
 
 /**
  * Cierra el navbar en móvil
  */
 function closeMobileNav() {
+    console.log('📱 Cerrando menú móvil');
     state.isMobileOpen = false;
-    elements.navbar?.classList.remove('mobile-open');
+    
+    // Quitar clase abierta y agregar oculta
+    elements.navbar?.classList.remove('open');
     elements.navbar?.classList.add('mobile-hidden');
     
+    // Ocultar overlay
     if (elements.navOverlay) {
         elements.navOverlay.classList.remove('active');
+        elements.navOverlay.style.display = 'none';
     }
     
     // Habilitar scroll del body
@@ -236,16 +263,22 @@ function closeMobileNav() {
     
     // Actualizar ícono del botón hamburguesa
     updateMobileToggleIcon(false);
+    
+    console.log('✅ Navbar cerrado');
 }
 
 /**
  * Actualiza el ícono del botón hamburguesa
  */
 function updateMobileToggleIcon(isOpen) {
-    if (!elements.mobileToggleBtn) return;
+    if (!elements.mobileToggleBtn) {
+        console.warn('⚠️ Botón hamburguesa no encontrado para actualizar ícono');
+        return;
+    }
     const icon = elements.mobileToggleBtn.querySelector('i');
     if (icon) {
         icon.className = `fas ${isOpen ? 'fa-times' : 'fa-bars'}`;
+        console.log('✅ Ícono actualizado a:', icon.className);
     }
 }
 
@@ -253,19 +286,14 @@ function updateMobileToggleIcon(isOpen) {
  * Alterna colapso del navbar vertical (escritorio)
  */
 function toggleCollapse() {
-    // Solo permitir en escritorio
     if (window.innerWidth < MOBILE_BREAKPOINT) return;
     
     state.isCollapsed = !state.isCollapsed;
     elements.navbar?.classList.toggle('collapsed', state.isCollapsed);
     
-    // Guardar estado en localStorage
     localStorage.setItem('admin_nav_collapsed', state.isCollapsed);
-    
-    // Actualizar ícono del botón
     updateCollapseIcon(state.isCollapsed);
     
-    // Disparar evento para ajustar el main
     window.dispatchEvent(new CustomEvent('admin:nav:toggle', { 
         detail: { collapsed: state.isCollapsed } 
     }));
@@ -286,7 +314,6 @@ function updateCollapseIcon(isCollapsed) {
  * Restaura estado colapsado guardado
  */
 function restoreCollapsedState() {
-    // No restaurar en móvil
     if (window.innerWidth < MOBILE_BREAKPOINT) return;
     
     const saved = localStorage.getItem('admin_nav_collapsed');
@@ -355,12 +382,10 @@ async function handleLogout(e) {
             console.error('Error en logout:', error);
         }
         
-        // Limpieza FORZADA siempre (funcione o no el servicio)
         localStorage.removeItem('outlet_admin');
         localStorage.removeItem('outlet_user');
         sessionStorage.clear();
         
-        // Redirigir al visitante
         window.location.href = '/';
     }
 }
@@ -373,7 +398,6 @@ function toggleTheme() {
     state.isDarkMode = isDark;
     updateThemeButtonIcon(isDark);
     
-    // Disparar evento para que otros componentes se actualicen
     window.dispatchEvent(new CustomEvent('theme:changed', { detail: { isDark } }));
 }
 
@@ -401,52 +425,34 @@ function applyStoredTheme() {
 // EXPORTACIONES PÚBLICAS
 // ============================================
 
-/**
- * Obtiene el estado actual del navbar
- */
 export function getAdminNavState() {
     return { ...state };
 }
 
-/**
- * Colapsa el navbar (solo escritorio)
- */
 export function collapseAdminNav() {
     if (!state.isCollapsed && window.innerWidth >= MOBILE_BREAKPOINT) {
         toggleCollapse();
     }
 }
 
-/**
- * Expande el navbar (solo escritorio)
- */
 export function expandAdminNav() {
     if (state.isCollapsed && window.innerWidth >= MOBILE_BREAKPOINT) {
         toggleCollapse();
     }
 }
 
-/**
- * Cierra el menú móvil desde otros módulos
- */
 export function closeMobileNavExported() {
     if (state.isMobileOpen) {
         closeMobileNav();
     }
 }
 
-/**
- * Abre el menú móvil desde otros módulos
- */
 export function openMobileNavExported() {
     if (!state.isMobileOpen && window.innerWidth < MOBILE_BREAKPOINT) {
         openMobileNav();
     }
 }
 
-/**
- * Alterna el menú móvil desde otros módulos
- */
 export function toggleMobileNavExported() {
     if (window.innerWidth < MOBILE_BREAKPOINT) {
         toggleMobileNav();

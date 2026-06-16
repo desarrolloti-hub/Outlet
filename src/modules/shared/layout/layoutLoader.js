@@ -1,5 +1,5 @@
 /* ========================================
-   LOAD LAYOUT - Solo carga HTML, no controladores
+   LOAD LAYOUT - Con inicialización de controladores
    ======================================== */
 
 import { AuthService, ROLES } from '../../../../services/authService.js';
@@ -44,27 +44,62 @@ async function loadComponent(url, containerId) {
     }
 }
 
+/**
+ * Inicializa los controladores después de cargar el HTML
+ */
+async function initializeControllers(role) {
+    try {
+        // Solo admin tiene controlador de navbar
+        if (role === ROLES.ADMIN) {
+            console.log('🎮 Inicializando controlador del navbar admin...');
+            
+            // Importar dinámicamente el controlador con ruta relativa
+            const module = await import('../../admin/layout/adminNavbarController.js');
+            
+            if (module && typeof module.initAdminNavbarController === 'function') {
+                // Esperar un tick para que el DOM esté listo
+                await new Promise(resolve => setTimeout(resolve, 150));
+                module.initAdminNavbarController();
+                console.log('✅ Controlador admin inicializado correctamente');
+            } else {
+                console.warn('⚠️ No se encontró initAdminNavbarController en el módulo');
+            }
+        }
+        
+    } catch (error) {
+        console.error('❌ Error inicializando controladores:', error);
+    }
+}
+
 export async function loadLayout() {
     console.log('📦 Cargando layouts HTML...');
 
     const paths = getLayoutPaths();
+    const role = AuthService.getUserRoleSync();
 
+    // Cargar componentes HTML
     const [navbarLoaded, footerLoaded] = await Promise.all([
         loadComponent(paths.navbar, 'navbar'),
         loadComponent(paths.footer, 'footer')
     ]);
 
-    // Solo despacha evento con el rol, NO los controladores
+    // 🚀 INICIALIZAR CONTROLADORES DESPUÉS DE CARGAR EL HTML
+    if (navbarLoaded) {
+        await initializeControllers(role);
+    }
+
+    // Disparar evento layout cargado
     const event = new CustomEvent('layout:loaded', {
         detail: {
             navbarLoaded,
             footerLoaded,
-            role: AuthService.getUserRoleSync()
+            role: role,
+            controllersInitialized: true
         }
     });
     window.dispatchEvent(event);
 
-    console.log('✅ Layouts HTML cargados para rol:', AuthService.getUserRoleSync());
+    console.log('✅ Layouts HTML cargados y controladores inicializados para rol:', role);
 
     return { navbarLoaded, footerLoaded };
 }

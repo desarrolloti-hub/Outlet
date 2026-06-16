@@ -1,5 +1,12 @@
 <!-- modules/admin/layout/adminNavbar.html -->
-<nav class="OUTLET-admin-nav" id="adminNav">
+
+<!-- ÚNICO BOTÓN HAMBURGUESA - ELIMINA CUALQUIER OTRO -->
+<button id="adminMobileToggleBtn" class="admin-mobile-toggle" aria-label="Abrir menú">
+    <i class="fas fa-bars"></i>
+</button>
+
+<!-- NAVBAR PRINCIPAL -->
+<nav class="OUTLET-admin-nav mobile-hidden" id="adminNav">
     <!-- Header del navbar -->
     <div class="admin-nav-header">
         <div class="admin-logo">
@@ -64,16 +71,16 @@
 
     <!-- Footer del navbar -->
     <div class="admin-nav-footer">
-        <button class="admin-theme-toggle btn-gold" id="adminThemeToggleBtn" title="Cambiar modo oscuro">
+        <button class="admin-theme-toggle" id="adminThemeToggleBtn" title="Cambiar modo oscuro">
             <i class="fas fa-moon"></i>
             <span>Tema</span>
         </button>
-        <a href="#" id="adminLogoutBtn" class="admin-logout-btn btn-gold">
+        <a href="#" id="adminLogoutBtn" class="admin-logout-btn">
             <i class="fas fa-sign-out-alt"></i>
             <span>Cerrar Sesión</span>
         </a>
     </div>
 </nav>
 
-<!-- Overlay para cerrar menú en móvil -->
+<!-- OVERLAY PARA CERRAR MENÚ EN MÓVIL -->
 <div id="adminNavOverlay" class="admin-nav-overlay"></div>

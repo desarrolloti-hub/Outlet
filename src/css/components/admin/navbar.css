@@ -18,6 +18,15 @@
     overflow-y: auto;
 }
 
+/* ========== ESTADOS PARA MÓVIL ========== */
+.OUTLET-admin-nav.mobile-hidden {
+    transform: translateX(-100%) !important;
+}
+
+.OUTLET-admin-nav.open {
+    transform: translateX(0) !important;
+}
+
 /* ========== MODO COLAPSADO (ESCRITORIO) ========== */
 .OUTLET-admin-nav.collapsed {
     width: 80px;
@@ -302,10 +311,11 @@
     background: rgba(0, 0, 0, 0.5);
     z-index: 1040;
     backdrop-filter: blur(4px);
+    transition: opacity 0.3s ease;
 }
 
 .admin-nav-overlay.active {
-    display: block;
+    display: block !important;
 }
 
 /* ========== RESPONSIVE MÓVIL ========== */
@@ -325,7 +335,11 @@
     }
     
     .OUTLET-admin-nav.open {
-        transform: translateX(0);
+        transform: translateX(0) !important;
+    }
+    
+    .OUTLET-admin-nav.mobile-hidden {
+        transform: translateX(-100%) !important;
     }
     
     .OUTLET-admin-nav.collapsed {
@@ -356,13 +370,12 @@
     
     body.role-admin main,
     body.role-admin .admin-dashboard,
-    body.role-admin .main-content {
+    body.role-admin .main-content,
+    body.role-admin .mobile-main {
         margin-left: 0 !important;
-        padding-top: 70px;
-    }
-    
-    .OUTLET-admin-nav.open ~ .admin-nav-overlay {
-        display: block;
+        padding-top: 80px;
+        padding-left: 16px;
+        padding-right: 16px;
     }
 }
 
@@ -395,6 +408,7 @@
     body.role-admin .main-content {
         margin-left: 280px !important;
         transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        padding: 20px;
     }
     
     body.role-admin .OUTLET-admin-nav.collapsed ~ main,
