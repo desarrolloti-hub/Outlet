@@ -1,6 +1,6 @@
 /* ========================================
    PRODUCT LIST - OUTLET (SPA)
-   Estilos para listado y gestión de productos
+   Estilos para listado y gestión de productos - VERSIÓN CARDS
    Basado en variables globales del proyecto
    ======================================== */
 
@@ -60,7 +60,137 @@
     transform: translateY(-2px);
 }
 
-/* ====== TABLA ====== */
+/* ========================================
+   GRID DE TARJETAS (NUEVO)
+   ======================================== */
+
+.productlist-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+/* Tarjeta de producto */
+.productlist-card {
+    background: var(--outlet-bg-card, #ffffff);
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid rgba(221, 171, 59, 0.12);
+    transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+}
+
+.productlist-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+    border-color: var(--outlet-gold, #ddab3b);
+}
+
+.productlist-card-image {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+    background: #f8f6f3;
+    flex-shrink: 0;
+}
+
+.productlist-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.productlist-card:hover .productlist-card-image img {
+    transform: scale(1.05);
+}
+
+.productlist-card-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: var(--outlet-gold, #ddab3b);
+    color: var(--outlet-text-primary, #1a1a1a);
+    padding: 4px 12px;
+    border-radius: 40px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.productlist-card-body {
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.productlist-card-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--outlet-text-primary, #1a1a1a);
+    margin-bottom: 6px;
+    word-break: break-word;
+}
+
+.productlist-card-category {
+    font-size: 12px;
+    color: var(--outlet-text-secondary, #6b6b6b);
+    margin-bottom: 10px;
+    letter-spacing: 0.3px;
+}
+
+.productlist-card-price {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--outlet-gold, #ddab3b);
+    margin-bottom: 16px;
+}
+
+.productlist-card-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: auto;
+    flex-wrap: wrap;
+}
+
+.productlist-card-actions .productlist-btn-edit,
+.productlist-card-actions .productlist-btn-delete {
+    flex: 1;
+    justify-content: center;
+    padding: 8px 16px;
+    min-width: 70px;
+}
+
+.productlist-card-actions .productlist-btn-edit {
+    background: rgba(221, 171, 59, 0.08);
+    border-color: rgba(221, 171, 59, 0.2);
+    color: var(--outlet-gold, #ddab3b);
+}
+
+.productlist-card-actions .productlist-btn-edit:hover {
+    background: var(--outlet-gold, #ddab3b);
+    color: var(--outlet-text-primary, #1a1a1a);
+}
+
+.productlist-card-actions .productlist-btn-delete {
+    background: rgba(239, 68, 68, 0.08);
+    border-color: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+.productlist-card-actions .productlist-btn-delete:hover {
+    background: #ef4444;
+    border-color: #ef4444;
+    color: white;
+}
+
+/* ====== TABLA (escritorio) ====== */
 .productlist-table-container {
     background: var(--outlet-bg-card, white);
     border-radius: 20px;
@@ -103,11 +233,7 @@
     vertical-align: middle;
 }
 
-/* Imagen del producto */
-.productlist-table td:first-child {
-    text-align: center;
-}
-
+/* Imagen del producto en tabla */
 .productlist-product-img {
     width: 48px;
     height: 48px;
@@ -357,6 +483,33 @@ body.dark-mode .productlist-form-group label {
     color: var(--outlet-text-primary, #d6e5f7);
 }
 
+/* Dark mode para tarjetas */
+body.dark-mode .productlist-card {
+    background: var(--outlet-bg-card, #0f243d);
+    border-color: var(--outlet-border-color, #2a4a6e);
+}
+
+body.dark-mode .productlist-card-name {
+    color: var(--outlet-text-primary, #d6e5f7);
+}
+
+body.dark-mode .productlist-card-category {
+    color: var(--outlet-text-secondary, #b0c4de);
+}
+
+body.dark-mode .productlist-card-image {
+    background: #0a1c2c;
+}
+
+body.dark-mode .productlist-card-actions .productlist-btn-edit {
+    background: rgba(221, 171, 59, 0.12);
+    color: var(--outlet-gold, #ddab3b);
+}
+
+body.dark-mode .productlist-card-actions .productlist-btn-delete {
+    background: rgba(239, 68, 68, 0.12);
+}
+
 /* ====== RESPONSIVE ====== */
 
 /* Tablets (768px - 1024px) */
@@ -367,6 +520,11 @@ body.dark-mode .productlist-form-group label {
     
     .productlist-header h1 {
         font-size: 26px;
+    }
+    
+    .productlist-cards-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 20px;
     }
 }
 
@@ -393,41 +551,51 @@ body.dark-mode .productlist-form-group label {
         padding: 10px 20px;
     }
 
-    .productlist-product-img {
-        width: 40px;
-        height: 40px;
-    }
-    
-    .productlist-table th {
-        padding: 12px 8px;
-        font-size: 11px;
-    }
-    
-    .productlist-table td {
-        padding: 12px 8px;
-        font-size: 13px;
-    }
-    
-    .productlist-btn-edit span,
-    .productlist-btn-delete span {
+    /* Ocultar tabla en tablets y móviles */
+    .productlist-table-container {
         display: none;
     }
 
-    .productlist-btn-edit,
-    .productlist-btn-delete {
-        padding: 8px 12px;
+    .productlist-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 18px;
     }
-    
-    .productlist-btn-edit i,
-    .productlist-btn-delete i {
+
+    .productlist-card-image {
+        height: 170px;
+    }
+
+    .productlist-card-body {
+        padding: 16px;
+    }
+
+    .productlist-card-name {
+        font-size: 14px;
+    }
+
+    .productlist-card-price {
+        font-size: 18px;
+        margin-bottom: 12px;
+    }
+
+    .productlist-card-actions .productlist-btn-edit span,
+    .productlist-card-actions .productlist-btn-delete span {
+        display: none;
+    }
+
+    .productlist-card-actions .productlist-btn-edit,
+    .productlist-card-actions .productlist-btn-delete {
+        padding: 8px 12px;
+        flex: 0 1 auto;
+    }
+
+    .productlist-card-actions .productlist-btn-edit i,
+    .productlist-card-actions .productlist-btn-delete i {
         font-size: 14px;
         margin: 0;
     }
-    
-    .productlist-actions-cell {
-        gap: 6px;
-    }
-    
+
     /* Modal responsive */
     .productlist-modal-content {
         padding: 24px;
@@ -463,40 +631,56 @@ body.dark-mode .productlist-form-group label {
         padding: 10px 16px;
     }
 
-    .productlist-table-container {
-        border-radius: 16px;
+    .productlist-cards-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 14px;
     }
-    
-    .productlist-table th {
-        padding: 10px 6px;
+
+    .productlist-card-image {
+        height: 140px;
+    }
+
+    .productlist-card-body {
+        padding: 12px;
+    }
+
+    .productlist-card-name {
+        font-size: 13px;
+        margin-bottom: 4px;
+    }
+
+    .productlist-card-category {
         font-size: 10px;
+        margin-bottom: 6px;
     }
-    
-    .productlist-table td {
-        padding: 10px 6px;
-        font-size: 12px;
+
+    .productlist-card-price {
+        font-size: 16px;
+        margin-bottom: 10px;
     }
-    
-    .productlist-product-img {
-        width: 36px;
-        height: 36px;
-        border-radius: 8px;
+
+    .productlist-card-badge {
+        font-size: 8px;
+        padding: 2px 10px;
+        top: 8px;
+        right: 8px;
     }
-    
-    .productlist-btn-edit,
-    .productlist-btn-delete {
+
+    .productlist-card-actions {
+        gap: 6px;
+    }
+
+    .productlist-card-actions .productlist-btn-edit,
+    .productlist-card-actions .productlist-btn-delete {
         padding: 6px 10px;
+        font-size: 11px;
     }
-    
-    .productlist-btn-edit i,
-    .productlist-btn-delete i {
+
+    .productlist-card-actions .productlist-btn-edit i,
+    .productlist-card-actions .productlist-btn-delete i {
         font-size: 12px;
     }
-    
-    .productlist-actions-cell {
-        gap: 4px;
-    }
-    
+
     /* Modal responsive móvil */
     .productlist-modal-content {
         padding: 20px;
@@ -551,27 +735,32 @@ body.dark-mode .productlist-form-group label {
         padding: 12px;
     }
     
-    .productlist-product-img {
-        width: 32px;
-        height: 32px;
+    .productlist-cards-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
     }
-    
-    .productlist-table th,
-    .productlist-table td {
-        padding: 8px 4px;
+
+    .productlist-card-image {
+        height: 120px;
     }
-    
-    .productlist-table th {
-        font-size: 9px;
+
+    .productlist-card-body {
+        padding: 10px;
     }
-    
-    .productlist-table td {
+
+    .productlist-card-name {
         font-size: 11px;
     }
-    
-    .productlist-btn-edit,
-    .productlist-btn-delete {
-        padding: 5px 8px;
+
+    .productlist-card-price {
+        font-size: 14px;
+    }
+
+    .productlist-card-actions .productlist-btn-edit,
+    .productlist-card-actions .productlist-btn-delete {
+        padding: 4px 8px;
+        font-size: 10px;
+        min-width: unset;
     }
 }
 
@@ -589,7 +778,27 @@ body.dark-mode .productlist-form-group label {
     .productlist-modal-header {
         margin-bottom: 16px;
     }
+
+    .productlist-cards-grid {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    }
+
+    .productlist-card-image {
+        height: 130px;
+    }
 }
+
+/* Mostrar tabla solo en escritorio (mayor a 768px) */
+@media (min-width: 769px) {
+    .productlist-cards-grid {
+        display: none;
+    }
+    
+    .productlist-table-container {
+        display: block;
+    }
+}
+
 /* ========================================
    INTEGRACIÓN CON NAVBAR LATERAL - VERSIÓN OPTIMIZADA
    ======================================== */
@@ -738,6 +947,7 @@ body:has(.OUTLET-admin-nav.collapsed) .productlist-container {
 .productlist-container {
     transition: margin-left 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
 }
+
 /* ========================================
    MENÚ HAMBURGUESA - ESTILOS GLOBALES
    ======================================== */

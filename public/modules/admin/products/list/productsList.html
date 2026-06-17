@@ -1,6 +1,6 @@
 <!-- ========================================
    PRODUCT LIST - OUTLET (SPA)
-   Listado y gestión de productos
+   Listado y gestión de productos - VERSIÓN CARDS
    ======================================== -->
 
 <main class="productlist-container">
@@ -15,22 +15,29 @@
         </button>
     </div>
 
-    <!-- TABLA -->
-    <div class="productlist-table-container">
-        <table class="productlist-table">
-            <thead>
-                <tr>
-                    <th>Imagen</th>
-                    <th>Nombre</th>
-                    <th>Precio</th>
-                    <th>Categoría</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody id="productlistTableBody">
-                <!-- Productos inyectados desde JS -->
-            </tbody>
-        </table>
+    <!-- GRID DE TARJETAS (visible en móvil/tablet) -->
+    <div class="productlist-cards-grid" id="productlistCardsGrid">
+        <!-- Tarjetas inyectadas desde JS -->
+    </div>
+
+    <!-- TABLA (visible en escritorio) -->
+    <div class="productlist-table-container" id="productlistTableContainer">
+        <div class="productlist-table-wrapper">
+            <table class="productlist-table">
+                <thead>
+                    <tr>
+                        <th>Imagen</th>
+                        <th>Nombre</th>
+                        <th>Precio</th>
+                        <th>Categoría</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="productlistTableBody">
+                    <!-- Productos inyectados desde JS -->
+                </tbody>
+            </table>
+        </div>
     </div>
 </main>
 
