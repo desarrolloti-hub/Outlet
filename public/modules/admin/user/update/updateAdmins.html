@@ -1,0 +1,158 @@
+<!-- ========================================
+   UPDATE ADMINS - OUTLET ADMIN
+   Página para editar administradores existentes
+   ======================================== -->
+
+<main class="updateadmin-container">
+    <!-- Header -->
+    <div class="updateadmin-header">
+        <div>
+            <h1 class="updateadmin-title">Editar Administrador</h1>
+            <p class="updateadmin-subtitle">Actualiza la información del administrador seleccionado</p>
+        </div>
+        <button class="updateadmin-btn-outline" id="backBtn">
+            <i class="material-symbols-outlined">arrow_back</i>
+            <span>Volver al listado</span>
+        </button>
+    </div>
+
+    <!-- Formulario de edición -->
+    <div class="updateadmin-form-container">
+        <div class="updateadmin-form-card">
+            <div class="updateadmin-form-header">
+                <div class="updateadmin-form-icon">
+                    <i class="material-symbols-outlined">edit_note</i>
+                </div>
+                <h2>Información del Administrador</h2>
+                <p>Complete los campos para actualizar el administrador</p>
+            </div>
+
+            <form id="updateAdminForm">
+                <!-- ID oculto -->
+                <input type="hidden" id="adminId">
+                
+                <!-- Selector de administrador a editar -->
+                <div class="updateadmin-form-group">
+                    <label>Seleccionar Administrador <span class="required">*</span></label>
+                    <select id="adminSelector" class="updateadmin-selector">
+                        <option value="">-- Seleccione un administrador --</option>
+                    </select>
+                    <small>Seleccione el administrador que desea editar</small>
+                </div>
+
+                <div class="updateadmin-divider"></div>
+
+                <!-- Campos del formulario (inicialmente deshabilitados hasta seleccionar) -->
+                <fieldset id="formFields" disabled>
+                    <!-- ID del administrador (solo lectura) -->
+                    <div class="updateadmin-form-group">
+                        <label>ID del Administrador</label>
+                        <input type="text" id="adminIdDisplay" readonly disabled style="background: var(--outlet-bg-disabled, #f5f5f5); border-bottom: none; padding: 12px 0;">
+                        <small>El ID no se puede modificar</small>
+                    </div>
+
+                    <div class="updateadmin-form-group">
+                        <label>Nombre Completo <span class="required">*</span></label>
+                        <input type="text" id="adminName" placeholder="Ej: Juan Pérez Gómez">
+                        <span class="updateadmin-input-line"></span>
+                    </div>
+                    
+                    <div class="updateadmin-form-group">
+                        <label>Correo Electrónico <span class="required">*</span></label>
+                        <input type="email" id="adminEmail" placeholder="Ej: juan.perez@outlet.com">
+                        <span class="updateadmin-input-line"></span>
+                    </div>
+                    
+                    <div class="updateadmin-form-group">
+                        <label>Nueva Contraseña</label>
+                        <input type="password" id="adminPassword" placeholder="Déjalo vacío para mantener la actual">
+                        <span class="updateadmin-input-line"></span>
+                        <small>Mínimo 8 caracteres. Déjalo vacío si no quieres cambiar la contraseña</small>
+                    </div>
+                    
+                    <div class="updateadmin-form-group">
+                        <label>Confirmar Nueva Contraseña</label>
+                        <input type="password" id="adminConfirmPassword" placeholder="Repite la nueva contraseña">
+                        <span class="updateadmin-input-line"></span>
+                    </div>
+                    
+                    <div class="updateadmin-form-row">
+                        <div class="updateadmin-form-group">
+                            <label>Teléfono</label>
+                            <input type="text" id="adminPhone" placeholder="Ej: +34 600 123 456">
+                            <span class="updateadmin-input-line"></span>
+                            <small>Número de contacto</small>
+                        </div>
+                        
+                        <div class="updateadmin-form-group">
+                            <label>Rol <span class="required">*</span></label>
+                            <select id="adminRole">
+                                <option value="admin">Administrador</option>
+                                <option value="super_admin">Super Administrador</option>
+                                <option value="manager">Manager</option>
+                                <option value="editor">Editor</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="updateadmin-form-row">
+                        <div class="updateadmin-form-group">
+                            <label>Estado</label>
+                            <select id="adminStatus">
+                                <option value="active">Activo</option>
+                                <option value="inactive">Inactivo</option>
+                            </select>
+                        </div>
+                        
+                        <div class="updateadmin-form-group">
+                            <label>Fecha de Creación</label>
+                            <input type="text" id="adminCreatedAt" readonly disabled style="background: var(--outlet-bg-disabled, #f5f5f5);">
+                            <small>Fecha en que se creó el administrador</small>
+                        </div>
+                    </div>
+
+                    <div class="updateadmin-form-group">
+                        <label>Avatar (Material Icon)</label>
+                        <input type="text" id="adminIcon" placeholder="Ej: person, account_circle, admin_panel_settings...">
+                        <span class="updateadmin-input-line"></span>
+                        <small>Nombre del icono de Material Symbols</small>
+                    </div>
+                </fieldset>
+                
+                <!-- Botones de acción -->
+                <div class="updateadmin-actions" id="actionButtons" style="display: none;">
+                    <button type="button" class="updateadmin-btn-secondary" id="cancelBtn">
+                        <i class="material-symbols-outlined">close</i>
+                        Cancelar
+                    </button>
+                    <button type="submit" class="updateadmin-btn-primary" id="saveBtn">
+                        <i class="material-symbols-outlined">save</i>
+                        Actualizar Administrador
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Panel de vista previa -->
+        <div class="updateadmin-preview-card" id="previewCard" style="display: none;">
+            <div class="updateadmin-preview-header">
+                <div class="updateadmin-preview-icon">
+                    <i class="material-symbols-outlined">person</i>
+                </div>
+                <h3>Vista Previa</h3>
+            </div>
+            <div class="updateadmin-preview-content">
+                <div id="adminPreviewInfo">
+                    <p class="updateadmin-empty">Seleccione un administrador para ver su información</p>
+                </div>
+            </div>
+            <div class="updateadmin-preview-note">
+                <i class="material-symbols-outlined">info</i>
+                <small>Los permisos se gestionan desde el listado principal</small>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Toast Notification -->
+<div id="updateToast" class="updateadmin-toast" style="display: none;"></div>

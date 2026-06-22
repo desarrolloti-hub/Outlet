@@ -29,7 +29,7 @@
 @import url('./pages/visitor/cart/cart.css');
 @import url('./pages/visitor/login/login.css');
 @import url('./pages/visitor/createAccount/createAccount.css');
-@import url('./pages/admin/home/homeAdmin.css');
+
 
 
 
@@ -45,19 +45,26 @@
 
 /* admin */
 
+@import url('./pages/admin/home/homeAdmin.css');
+
 /* -------------- Products -------------- */
+
 @import url('./pages/admin/products/create/createProducts.css');
 @import url('./pages/admin/products/edit/editProducts.css');
 @import url('./pages/admin/products/list/productsList.css');
 
-@import url('./pages/admin/createAccount/createAccountAdmin.css');
+/* -------------- Categorias -------------- */
 
 @import url('./pages/admin/categories/create/createCategories.css');
-
 @import url('./pages/admin/categories/read/readCategories.css');
-
 @import url('./pages/admin/categories/update/updateCategories.css');
 
+/* -------------- usuarios admin -------------- */
+
+@import url('./pages/admin/createAccount/createAccountAdmin.css');
+@import url('./pages/admin/user/create/viewCustumer.css');
+@import url('./pages/admin/user/read/readAdmins.css');
+@import url('./pages/admin/user/update/updateAdmins.css');
 
 /* Utils */
 

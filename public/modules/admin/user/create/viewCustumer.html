@@ -1,0 +1,131 @@
+<!-- ========================================
+   READ CUSTOMERS - OUTLET ADMIN
+   Página para listar y gestionar clientes
+   ======================================== -->
+
+<main class="customerslist-container">
+    <!-- Header -->
+    <div class="customerslist-header">
+        <div>
+            <h1 class="customerslist-title">Clientes Registrados</h1>
+            <p class="customerslist-subtitle">Gestiona todos los clientes de la plataforma</p>
+        </div>
+        <div class="customerslist-header-actions">
+            <span class="customerslist-total">Total: <strong id="totalCustomers">0</strong></span>
+        </div>
+    </div>
+
+    <!-- Tabla de clientes -->
+    <div class="customerslist-table-container">
+        <div class="customerslist-table-wrapper">
+            <table class="customerslist-table">
+                <thead>
+                    <tr>
+                        <th>Avatar</th>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Email</th>
+                        <th>Teléfono</th>
+                        <th>Dirección</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="customersTableBody">
+                    <tr>
+                        <td colspan="8" class="customerslist-loading">
+                            <div class="customerslist-spinner"></div>
+                            <span>Cargando clientes...</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<!-- Modal para editar cliente -->
+<div class="customerslist-modal" id="customerModal" style="display: none;">
+    <div class="customerslist-modal-content">
+        <div class="customerslist-modal-header">
+            <h3 id="modalTitle">Editar Cliente</h3>
+            <button class="customerslist-modal-close" id="closeModalBtn">&times;</button>
+        </div>
+        
+        <form id="customerForm">
+            <input type="hidden" id="customerId">
+            
+            <div class="customerslist-form-group">
+                <label>Nombre Completo <span class="required">*</span></label>
+                <input type="text" id="customerName" placeholder="Ej: Juan Pérez Gómez" required>
+            </div>
+            
+            <div class="customerslist-form-group">
+                <label>Correo Electrónico <span class="required">*</span></label>
+                <input type="email" id="customerEmail" placeholder="Ej: juan.perez@email.com" required>
+            </div>
+            
+            <div class="customerslist-form-group">
+                <label>Teléfono</label>
+                <input type="text" id="customerPhone" placeholder="Ej: +34 600 123 456">
+            </div>
+            
+            <div class="customerslist-form-group">
+                <label>Dirección</label>
+                <input type="text" id="customerAddress" placeholder="Ej: Calle Mayor 123, Madrid">
+            </div>
+            
+            <div class="customerslist-form-row">
+                <div class="customerslist-form-group">
+                    <label>Estado</label>
+                    <select id="customerStatus">
+                        <option value="active">Activo</option>
+                        <option value="inactive">Inactivo</option>
+                        <option value="suspended">Suspendido</option>
+                    </select>
+                </div>
+                
+                <div class="customerslist-form-group">
+                    <label>Avatar (Material Icon)</label>
+                    <input type="text" id="customerIcon" placeholder="Ej: person, account_circle...">
+                    <small>Nombre del icono de Material Symbols</small>
+                </div>
+            </div>
+            
+            <div class="customerslist-form-group" id="createdAtGroup">
+                <label>Fecha de Registro</label>
+                <input type="text" id="customerCreatedAt" readonly disabled style="background: var(--outlet-bg-disabled, #f5f5f5);">
+            </div>
+            
+            <button type="submit" class="customerslist-btn-submit">
+                <i class="material-symbols-outlined">save</i>
+                <span>Actualizar Cliente</span>
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal de confirmación para eliminar -->
+<div class="customerslist-modal" id="deleteModal" style="display: none;">
+    <div class="customerslist-modal-content">
+        <div class="customerslist-modal-header">
+            <h3>Confirmar eliminación</h3>
+            <button class="customerslist-modal-close" id="closeDeleteModalBtn">&times;</button>
+        </div>
+        <div class="customerslist-modal-body">
+            <p>¿Estás seguro de que deseas eliminar al cliente <strong id="deleteItemName"></strong>?</p>
+            <p class="customerslist-modal-warning">⚠️ Esta acción no se puede deshacer.</p>
+            <p class="customerslist-modal-warning" style="color: var(--outlet-danger);">El cliente perderá acceso a la plataforma.</p>
+        </div>
+        <div class="customerslist-modal-footer">
+            <button class="customerslist-btn-cancel" id="cancelDeleteBtn">Cancelar</button>
+            <button class="customerslist-btn-danger" id="confirmDeleteBtn">
+                <i class="material-symbols-outlined">delete_forever</i>
+                Eliminar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="customersToast" class="customerslist-toast" style="display: none;"></div>

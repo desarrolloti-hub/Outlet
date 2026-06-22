@@ -15,7 +15,6 @@ import { loginController } from '../modules/visitor/login/loginController.js';
 import { wishlistController } from '../modules/visitor/wishlist/wishlistController.js';
 import { cartController } from '../modules/visitor/cart/cartController.js';
 import { createAccountController } from '../modules/visitor/createAccount/createAccount.js';
-import { adminController } from '../modules/admin/home/homeAdminController.js';
 import { productsController } from '../modules/visitor/products/productsController.js';
 
 
@@ -28,27 +27,29 @@ import { userProfileEditController } from '../modules/customer/editUser/editUser
 
 //         ---------   Admin   ---------
 //  importar controllers de administración de productos
-
+import { adminController } from '../modules/admin/home/homeAdminController.js';
 import { createAccountAdminController} from '../modules/admin/createAccount/createAccountAdminController.js';
 
 import {readCategoriesController} from '../modules/admin/categories/read/readCategoriesController.js';
-
-
-
-
-
-
-
-
+import {categoriesCreateController } from '../modules/admin/categories/create/createCategoriesController.js';
+import { updateCategoryController } from '../modules/admin/categories/update/updateCategoriesController.js';
 
 import { productCreateController } from '../modules/admin/products/create/createProductsController.js';
 import { productListController } from '../modules/admin/products/productsListController.js';
 import { editProductController }from '../modules/admin/products/edit/editProductController.js';
-import {categoriesCreateController } from '../modules/admin/categories/create/createCategoriesController.js';
 
-import { updateCategoryController } from '../modules/admin/categories/update/updateCategoriesController.js';
+import {readCustomersController}from '../modules/admin/user/create/viewCustumer.js'
+import {readAdminsController}from '../modules/admin/user/read/readAdminsController.js'
+import {updateAdminController} from '../modules/admin/user/update/updateAdminsController.js'
+
+
 
 export const routes = {
+
+        /* ========================================
+                        visitor
+       ======================================== */
+
     "/": {
         view: "/modules/visitor/home/home.html",
         controller: homeController
@@ -93,6 +94,11 @@ export const routes = {
         view: "/src/views/blogs.html",
         controller: null
     },
+    
+
+    /* ========================================
+         Rutas de administración de productos
+       ======================================== */
     "/homeAdmin": {
         view: "/modules/admin/home/homeAdmin.html",
         controller: adminController
@@ -109,11 +115,7 @@ export const routes = {
         view: "/modules/admin/categories/update/updateCategories.html",
         controller: updateCategoryController
     },
-
-    /* ========================================
-         Rutas de administración de productos
-       ======================================== */
-      "/createProducts": {
+    "/createProducts": {
         view: "/modules/admin/products/create/createProducts.html",
         controller: productCreateController
     },
@@ -128,16 +130,32 @@ export const routes = {
         "/createAccountAdmin": {
         view: "/modules/admin/createAccount/createAccountAdmin.html",
         controller: createAccountAdminController
+    
+    },
+        "/viewCustumer":{
+        view:"/modules/admin/user/create/viewCustumer.html",
+        controller: readCustomersController
+    },
+
+    "/readAdmins":{
+        view:"/modules/admin/user/read/readAdmins.html",
+        controller: readAdminsController 
+    },
+
+    "/updateAdmins":{
+        view:"/modules/admin/user/update/updateAdmins.html",
+        controller: updateAdminController
     },
 
        /* ========================================
          Rutas de customer 
          ======================================== */
          
-        "/editUser": {
+    "/editUser":{
         view: "/modules/customer/editUser/editUser.html",
         controller: userProfileEditController
     },
+
 
 
     

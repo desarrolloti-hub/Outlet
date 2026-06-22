@@ -1,0 +1,725 @@
+/* ========================================
+   READ CUSTOMERS - OUTLET ADMIN
+   Estilos para listado y gestión de clientes
+   ======================================== */
+
+/* ====== CONTENEDOR PRINCIPAL ====== */
+.customerslist-container {
+    padding: 40px 48px;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* ====== HEADER ====== */
+.customerslist-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 48px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.customerslist-title {
+    font-size: 28px;
+    font-weight: 400;
+    letter-spacing: -0.5px;
+    color: var(--outlet-text-primary, #1a1a1a);
+    margin: 0;
+}
+
+.customerslist-subtitle {
+    color: var(--outlet-text-secondary, #6b6b6b);
+    font-size: 14px;
+    margin-top: 6px;
+}
+
+.customerslist-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.customerslist-total {
+    font-size: 14px;
+    color: var(--outlet-text-secondary, #6b6b6b);
+    background: rgba(221, 171, 59, 0.08);
+    padding: 8px 18px;
+    border-radius: 30px;
+    border: 1px solid rgba(221, 171, 59, 0.15);
+}
+
+.customerslist-total strong {
+    color: var(--outlet-gold, #ddab3b);
+    font-size: 18px;
+}
+
+/* ====== TABLA ====== */
+.customerslist-table-container {
+    background: var(--outlet-bg-card, white);
+    border-radius: 20px;
+    border: 1px solid rgba(221, 171, 59, 0.12);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+    overflow: hidden;
+}
+
+.customerslist-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.customerslist-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 900px;
+}
+
+.customerslist-table thead {
+    background: #faf8f5;
+    border-bottom: 1px solid #eaeaea;
+}
+
+.customerslist-table th {
+    padding: 18px 16px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 13px;
+    color: #888;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.customerslist-table td {
+    padding: 16px;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+/* Avatar/Icono */
+.customerslist-avatar {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(221, 171, 59, 0.1);
+    border-radius: 50%;
+    color: var(--outlet-gold, #ddab3b);
+}
+
+.customerslist-avatar i {
+    font-size: 24px;
+}
+
+/* Badge de estado */
+.customerslist-status-badge {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.customerslist-status-active {
+    background: rgba(34, 197, 94, 0.12);
+    color: #22c55e;
+}
+
+.customerslist-status-inactive {
+    background: rgba(107, 114, 128, 0.1);
+    color: #6b7280;
+}
+
+.customerslist-status-suspended {
+    background: rgba(239, 68, 68, 0.12);
+    color: var(--outlet-danger, #ef4444);
+}
+
+/* Dirección truncada */
+.customerslist-address {
+    max-width: 160px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+}
+
+/* ====== BOTONES DE ACCIÓN ====== */
+.customerslist-actions-cell {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+}
+
+.customerslist-btn-edit,
+.customerslist-btn-delete {
+    background: transparent;
+    border: 1px solid #e0e0e0;
+    padding: 8px 14px;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    font-size: 12px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #888;
+}
+
+.customerslist-btn-edit i,
+.customerslist-btn-delete i {
+    font-size: 16px;
+}
+
+.customerslist-btn-edit:hover {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+}
+
+.customerslist-btn-delete:hover {
+    background: var(--outlet-danger, #ef4444);
+    border-color: var(--outlet-danger, #ef4444);
+    color: white;
+}
+
+/* ====== LOADING ====== */
+.customerslist-loading {
+    text-align: center;
+    padding: 60px !important;
+    color: var(--outlet-text-secondary, #6b6b6b);
+}
+
+.customerslist-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(221, 171, 59, 0.2);
+    border-top-color: var(--outlet-gold, #ddab3b);
+    border-radius: 50%;
+    animation: customerslistSpin 0.8s linear infinite;
+    margin: 0 auto 12px;
+}
+
+@keyframes customerslistSpin {
+    to { transform: rotate(360deg); }
+}
+
+/* ====== MODAL ====== */
+.customerslist-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: var(--outlet-z-modal, 1050);
+    padding: 16px;
+}
+
+.customerslist-modal-content {
+    background: var(--outlet-modal-bg, white);
+    width: 90%;
+    max-width: 560px;
+    border-radius: 24px;
+    padding: 32px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(221, 171, 59, 0.2);
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.customerslist-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #eee;
+}
+
+.customerslist-modal-header h3 {
+    font-size: 24px;
+    font-weight: 500;
+    color: var(--outlet-text-primary, #1a1a1a);
+    margin: 0;
+}
+
+.customerslist-modal-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    color: #999;
+    transition: color 0.25s;
+    line-height: 1;
+}
+
+.customerslist-modal-close:hover {
+    color: var(--outlet-danger, #ef4444);
+}
+
+/* Modal body para confirmación */
+.customerslist-modal-body {
+    margin-bottom: 24px;
+}
+
+.customerslist-modal-warning {
+    font-size: 13px;
+    color: var(--outlet-danger, #ef4444);
+    margin-top: 8px;
+}
+
+.customerslist-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+/* ====== FORMULARIO ====== */
+.customerslist-form-group {
+    margin-bottom: 20px;
+}
+
+.customerslist-form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--outlet-text-secondary, #6b6b6b);
+}
+
+.customerslist-form-group .required {
+    color: var(--outlet-gold, #ddab3b);
+}
+
+.customerslist-form-group input,
+.customerslist-form-group select,
+.customerslist-form-group textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.25s;
+    background: var(--outlet-bg-card, #fff);
+    color: var(--outlet-text-primary, #1a1a1a);
+    box-sizing: border-box;
+}
+
+.customerslist-form-group input:disabled,
+.customerslist-form-group input[readonly] {
+    opacity: 0.7;
+    cursor: not-allowed;
+    background: var(--outlet-bg-disabled, #f5f5f5);
+}
+
+.customerslist-form-group input:focus,
+.customerslist-form-group select:focus,
+.customerslist-form-group textarea:focus {
+    outline: none;
+    border-color: var(--outlet-gold, #ddab3b);
+    box-shadow: 0 0 0 3px rgba(221, 171, 59, 0.1);
+}
+
+.customerslist-form-group small {
+    display: block;
+    margin-top: 6px;
+    font-size: 11px;
+    color: #888;
+}
+
+.customerslist-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.customerslist-btn-submit {
+    width: 100%;
+    background: var(--outlet-text-primary, #1a1a1a);
+    color: var(--outlet-gold, #ddab3b);
+    border: 1px solid rgba(221, 171, 59, 0.3);
+    padding: 14px;
+    border-radius: 40px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s;
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.customerslist-btn-submit:hover {
+    background: var(--outlet-gold, #ddab3b);
+    color: var(--outlet-text-primary, #1a1a1a);
+    transform: translateY(-2px);
+}
+
+.customerslist-btn-cancel {
+    background: transparent;
+    border: 1px solid #e0e0e0;
+    padding: 10px 24px;
+    border-radius: 40px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: #888;
+    transition: all 0.25s;
+}
+
+.customerslist-btn-cancel:hover {
+    border-color: #999;
+    color: #666;
+}
+
+.customerslist-btn-danger {
+    background: var(--outlet-danger, #ef4444);
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 40px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.25s;
+}
+
+.customerslist-btn-danger:hover {
+    background: #dc2626;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+/* ====== TOAST ====== */
+.customerslist-toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: var(--outlet-toast-bg, #1f1b13);
+    color: var(--outlet-toast-text, #fff8f2);
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    z-index: var(--outlet-z-tooltip, 1070);
+    animation: customerslistSlideIn 0.3s ease-out;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    border-left: 3px solid var(--outlet-gold, #ddab3b);
+}
+
+@keyframes customerslistSlideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* ====== DARK MODE ====== */
+body.dark-mode .customerslist-table-container {
+    background: var(--outlet-bg-card, #0f243d);
+}
+
+body.dark-mode .customerslist-table thead {
+    background: var(--outlet-bg-container-low, #0a1c2c);
+    border-bottom-color: var(--outlet-border-color, #2a4a6e);
+}
+
+body.dark-mode .customerslist-table th {
+    color: var(--outlet-text-secondary, #b0c4de);
+}
+
+body.dark-mode .customerslist-table td {
+    border-bottom-color: var(--outlet-border-color, #2a4a6e);
+    color: var(--outlet-text-primary, #d6e5f7);
+}
+
+body.dark-mode .customerslist-form-group input,
+body.dark-mode .customerslist-form-group select,
+body.dark-mode .customerslist-form-group textarea {
+    background: var(--outlet-bg-container-low, #0a1c2c);
+    border-color: var(--outlet-border-color, #2a4a6e);
+    color: var(--outlet-text-primary, #d6e5f7);
+}
+
+body.dark-mode .customerslist-modal-content {
+    background: var(--outlet-modal-bg, #0f243d);
+    border-color: var(--outlet-border-color, #2a4a6e);
+}
+
+body.dark-mode .customerslist-modal-header {
+    border-bottom-color: var(--outlet-border-color, #2a4a6e);
+}
+
+body.dark-mode .customerslist-modal-header h3 {
+    color: var(--outlet-text-primary, #d6e5f7);
+}
+
+body.dark-mode .customerslist-form-group label {
+    color: var(--outlet-text-secondary, #b0c4de);
+}
+
+body.dark-mode .customerslist-total {
+    background: rgba(221, 171, 59, 0.1);
+    border-color: rgba(221, 171, 59, 0.2);
+    color: var(--outlet-text-secondary, #b0c4de);
+}
+
+body.dark-mode .customerslist-total strong {
+    color: var(--outlet-gold, #ddab3b);
+}
+
+body.dark-mode .customerslist-form-group input:disabled,
+body.dark-mode .customerslist-form-group input[readonly] {
+    background: var(--outlet-bg-container-low, #0a1c2c) !important;
+    color: var(--outlet-text-secondary, #b0c4de);
+}
+
+/* ====== RESPONSIVE ====== */
+
+/* Tablets (768px - 1024px) */
+@media (max-width: 1024px) {
+    .customerslist-container {
+        padding: 32px;
+    }
+    
+    .customerslist-title {
+        font-size: 26px;
+    }
+}
+
+/* Tablets pequeñas y móviles grandes (768px) */
+@media (max-width: 768px) {
+    .customerslist-container {
+        padding: 24px;
+    }
+
+    .customerslist-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+        margin-bottom: 32px;
+    }
+    
+    .customerslist-title {
+        font-size: 24px;
+    }
+    
+    .customerslist-header-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+    
+    .customerslist-table th {
+        padding: 12px 12px;
+        font-size: 11px;
+    }
+    
+    .customerslist-table td {
+        padding: 12px 12px;
+        font-size: 13px;
+    }
+    
+    .customerslist-btn-edit span,
+    .customerslist-btn-delete span {
+        display: none;
+    }
+    
+    .customerslist-btn-edit,
+    .customerslist-btn-delete {
+        padding: 8px 12px;
+    }
+    
+    .customerslist-actions-cell {
+        gap: 4px;
+    }
+    
+    .customerslist-modal-content {
+        padding: 24px;
+        width: 95%;
+    }
+    
+    .customerslist-modal-header h3 {
+        font-size: 20px;
+    }
+    
+    .customerslist-form-row {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+}
+
+/* Móviles pequeños (480px) */
+@media (max-width: 480px) {
+    .customerslist-container {
+        padding: 16px;
+    }
+
+    .customerslist-header {
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+    }
+    
+    .customerslist-title {
+        font-size: 20px;
+    }
+    
+    .customerslist-subtitle {
+        font-size: 12px;
+    }
+    
+    .customerslist-total {
+        font-size: 12px;
+        padding: 6px 14px;
+    }
+    
+    .customerslist-total strong {
+        font-size: 15px;
+    }
+    
+    .customerslist-avatar {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .customerslist-avatar i {
+        font-size: 18px;
+    }
+    
+    .customerslist-table th {
+        padding: 8px 6px;
+        font-size: 9px;
+    }
+    
+    .customerslist-table td {
+        padding: 8px 6px;
+        font-size: 11px;
+    }
+    
+    .customerslist-btn-edit,
+    .customerslist-btn-delete {
+        padding: 4px 8px;
+        font-size: 10px;
+    }
+    
+    .customerslist-btn-edit i,
+    .customerslist-btn-delete i {
+        font-size: 14px;
+    }
+    
+    .customerslist-modal-content {
+        padding: 16px;
+    }
+    
+    .customerslist-modal-header h3 {
+        font-size: 17px;
+    }
+    
+    .customerslist-form-group {
+        margin-bottom: 14px;
+    }
+    
+    .customerslist-form-group label {
+        font-size: 11px;
+    }
+    
+    .customerslist-form-group input,
+    .customerslist-form-group select {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+    
+    .customerslist-btn-submit {
+        font-size: 13px;
+        padding: 12px;
+    }
+    
+    .customerslist-btn-danger,
+    .customerslist-btn-cancel {
+        padding: 8px 16px;
+        font-size: 12px;
+    }
+    
+    .customerslist-toast {
+        bottom: 1rem;
+        right: 1rem;
+        left: 1rem;
+        text-align: center;
+        font-size: 12px;
+        padding: 0.6rem 1rem;
+    }
+}
+
+/* ========================================
+   INTEGRACIÓN CON NAVBAR LATERAL
+   ======================================== */
+
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+}
+
+.customerslist-container {
+    margin-left: 280px;
+    transition: margin-left 0.3s ease;
+    width: auto;
+    max-width: calc(100% - 280px);
+    padding: 32px 32px 32px 32px;
+}
+
+body:has(.OUTLET-admin-nav.collapsed) .customerslist-container {
+    margin-left: 80px;
+    max-width: calc(100% - 80px);
+}
+
+@media (max-width: 1024px) {
+    .customerslist-container {
+        margin-left: 240px;
+        max-width: calc(100% - 240px);
+        padding: 28px;
+    }
+    
+    body:has(.OUTLET-admin-nav.collapsed) .customerslist-container {
+        margin-left: 70px;
+        max-width: calc(100% - 70px);
+    }
+}
+
+@media (max-width: 768px) {
+    .customerslist-container {
+        margin-left: 0 !important;
+        max-width: 100% !important;
+        padding: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .customerslist-container {
+        padding: 12px;
+    }
+}

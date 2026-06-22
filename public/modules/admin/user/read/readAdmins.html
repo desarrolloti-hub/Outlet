@@ -1,0 +1,148 @@
+<!-- ========================================
+   READ ADMINS - OUTLET ADMIN
+   Página para listar y gestionar administradores
+   ======================================== -->
+
+<main class="adminslist-container">
+    <!-- Header -->
+    <div class="adminslist-header">
+        <div>
+            <h1 class="adminslist-title">Administradores del Sistema</h1>
+            <p class="adminslist-subtitle">Gestiona los administradores registrados en la plataforma</p>
+        </div>
+        <div class="adminslist-header-actions">
+            <span class="adminslist-total">Total: <strong id="totalAdmins">0</strong></span>
+        </div>
+    </div>
+
+    <!-- Tabla de administradores -->
+    <div class="adminslist-table-container">
+        <div class="adminslist-table-wrapper">
+            <table class="adminslist-table">
+                <thead>
+                    <tr>
+                        <th>Avatar</th>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Email</th>
+                        <th>Rol</th>
+                        <th>Teléfono</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="adminsTableBody">
+                    <tr>
+                        <td colspan="8" class="adminslist-loading">
+                            <div class="adminslist-spinner"></div>
+                            <span>Cargando administradores...</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<!-- Modal para editar administrador -->
+<div class="adminslist-modal" id="adminModal" style="display: none;">
+    <div class="adminslist-modal-content">
+        <div class="adminslist-modal-header">
+            <h3 id="modalTitle">Editar Administrador</h3>
+            <button class="adminslist-modal-close" id="closeModalBtn">&times;</button>
+        </div>
+        
+        <form id="adminForm">
+            <input type="hidden" id="adminId">
+            
+            <div class="adminslist-form-group">
+                <label>Nombre Completo <span class="required">*</span></label>
+                <input type="text" id="adminName" placeholder="Ej: Juan Pérez Gómez" required>
+            </div>
+            
+            <div class="adminslist-form-group">
+                <label>Correo Electrónico <span class="required">*</span></label>
+                <input type="email" id="adminEmail" placeholder="Ej: juan.perez@outlet.com" required>
+            </div>
+            
+            <div class="adminslist-form-group">
+                <label>Nueva Contraseña</label>
+                <input type="password" id="adminPassword" placeholder="Déjalo vacío para mantener la actual">
+                <small>Mínimo 8 caracteres. Solo si deseas cambiar la contraseña</small>
+            </div>
+            
+            <div class="adminslist-form-group" id="confirmPasswordGroup">
+                <label>Confirmar Nueva Contraseña</label>
+                <input type="password" id="adminConfirmPassword" placeholder="Repite la nueva contraseña">
+            </div>
+            
+            <div class="adminslist-form-row">
+                <div class="adminslist-form-group">
+                    <label>Teléfono</label>
+                    <input type="text" id="adminPhone" placeholder="Ej: +34 600 123 456">
+                </div>
+                
+                <div class="adminslist-form-group">
+                    <label>Rol <span class="required">*</span></label>
+                    <select id="adminRole">
+                        <option value="admin">Administrador</option>
+                        <option value="super_admin">Super Administrador</option>
+                        <option value="manager">Manager</option>
+                        <option value="editor">Editor</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="adminslist-form-row">
+                <div class="adminslist-form-group">
+                    <label>Estado</label>
+                    <select id="adminStatus">
+                        <option value="active">Activo</option>
+                        <option value="inactive">Inactivo</option>
+                    </select>
+                </div>
+                
+                <div class="adminslist-form-group">
+                    <label>Avatar (Material Icon)</label>
+                    <input type="text" id="adminIcon" placeholder="Ej: person, account_circle...">
+                    <small>Nombre del icono de Material Symbols</small>
+                </div>
+            </div>
+            
+            <div class="adminslist-form-group" id="createdAtGroup">
+                <label>Fecha de Creación</label>
+                <input type="text" id="adminCreatedAt" readonly disabled style="background: var(--outlet-bg-disabled, #f5f5f5);">
+            </div>
+            
+            <button type="submit" class="adminslist-btn-submit">
+                <i class="material-symbols-outlined">save</i>
+                <span>Actualizar Administrador</span>
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal de confirmación para eliminar -->
+<div class="adminslist-modal" id="deleteModal" style="display: none;">
+    <div class="adminslist-modal-content">
+        <div class="adminslist-modal-header">
+            <h3>Confirmar eliminación</h3>
+            <button class="adminslist-modal-close" id="closeDeleteModalBtn">&times;</button>
+        </div>
+        <div class="adminslist-modal-body">
+            <p>¿Estás seguro de que deseas eliminar al administrador <strong id="deleteItemName"></strong>?</p>
+            <p class="adminslist-modal-warning">⚠️ Esta acción no se puede deshacer.</p>
+            <p class="adminslist-modal-warning" style="color: var(--outlet-danger);">El administrador perderá acceso al sistema.</p>
+        </div>
+        <div class="adminslist-modal-footer">
+            <button class="adminslist-btn-cancel" id="cancelDeleteBtn">Cancelar</button>
+            <button class="adminslist-btn-danger" id="confirmDeleteBtn">
+                <i class="material-symbols-outlined">delete_forever</i>
+                Eliminar Permanentemente
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="adminsToast" class="adminslist-toast" style="display: none;"></div>
