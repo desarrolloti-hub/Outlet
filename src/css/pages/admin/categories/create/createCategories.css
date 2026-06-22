@@ -165,11 +165,6 @@
     border-radius: 12px;
 }
 
-.outlet-category-badge.inactive {
-    background: var(--outlet-border-medium);
-    color: var(--outlet-text-secondary);
-}
-
 .outlet-category-desc {
     font-size: 12px;
     color: var(--outlet-text-secondary);
@@ -253,73 +248,6 @@
     background: #c82333;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
-}
-
-/* Sección de subcategorías */
-.outlet-subcategory-form {
-    display: flex;
-    gap: var(--outlet-spacing-md);
-    margin-bottom: var(--outlet-spacing-lg);
-}
-
-@media (max-width: 480px) {
-    .outlet-subcategory-form {
-        flex-direction: column;
-    }
-}
-
-.outlet-subcategory-form .outlet-input-group {
-    flex: 1;
-}
-
-.outlet-subcategories-list {
-    max-height: 300px;
-    overflow-y: auto;
-}
-
-.outlet-subcategory-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--outlet-spacing-sm) var(--outlet-spacing-md);
-    border-bottom: 1px solid var(--outlet-border-light);
-    transition: all 0.2s;
-}
-
-.outlet-subcategory-item:hover {
-    background: rgba(221, 171, 59, 0.05);
-}
-
-.outlet-subcategory-name {
-    font-size: 14px;
-    color: var(--outlet-text-primary);
-}
-
-.outlet-subcategory-actions {
-    display: flex;
-    gap: var(--outlet-spacing-sm);
-}
-
-.outlet-subcategory-actions button {
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    padding: 4px;
-    font-size: 16px;
-    transition: all 0.2s;
-    border-radius: 4px;
-}
-
-.outlet-subcategory-actions .edit-subcategory {
-    color: var(--outlet-gold);
-}
-
-.outlet-subcategory-actions .delete-subcategory {
-    color: var(--outlet-danger);
-}
-
-.outlet-subcategory-actions button:hover {
-    transform: scale(1.1);
 }
 
 /* Modal */
@@ -528,10 +456,6 @@
     
     .outlet-category-actions .material-symbols-outlined {
         font-size: 18px;
-    }
-    
-    .outlet-subcategory-item {
-        padding: var(--outlet-spacing-xs) var(--outlet-spacing-sm);
     }
 
     .outlet-form-grid {

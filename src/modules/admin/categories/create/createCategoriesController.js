@@ -1,7 +1,7 @@
 /* ========================================
    CREATE CATEGORIES CONTROLLER - OUTLET ADMIN
    Controlador para gestionar categorías dinámicamente
-   CRUD completo de categorías y subcategorías
+   CRUD completo de categorías
    RESPONSIVE: Se adapta a cualquier tamaño
    ======================================== */
 
@@ -35,21 +35,11 @@ function cacheElements() {
         categoryIdInput: document.getElementById('categoryIdInput'),
         categoryIdHidden: document.getElementById('categoryIdHidden'),
         categoryName: document.getElementById('categoryName'),
-        categorySlug: document.getElementById('categorySlug'),
         categoryDescription: document.getElementById('categoryDescription'),
-        categoryOrder: document.getElementById('categoryOrder'),
-        categoryStatus: document.getElementById('categoryStatus'),
-        categoryIcon: document.getElementById('categoryIcon'),
         saveBtn: document.getElementById('saveCategoryBtn'),
         cancelBtn: document.getElementById('cancelBtn'),
         formTitle: document.getElementById('formTitle'),
         formIcon: document.getElementById('formIcon'),
-        
-        // Subcategorías
-        subcategoriesSection: document.getElementById('subcategoriesSection'),
-        subcategoryName: document.getElementById('subcategoryName'),
-        addSubcategoryBtn: document.getElementById('addSubcategoryBtn'),
-        subcategoriesList: document.getElementById('subcategoriesList'),
         
         // Modal
         deleteModal: document.getElementById('deleteModal'),
@@ -106,23 +96,15 @@ function validarIdFormato(id) {
     return regex.test(id);
 }
 
-// Auto-generar slug cuando se escribe el nombre
-function setupSlugGeneration() {
+// Auto-generar ID cuando se escribe el nombre
+function setupAutoGeneration() {
     if (elements.categoryName) {
         elements.categoryName.addEventListener('input', () => {
             const name = elements.categoryName.value;
-            if (name) {
-                // Solo auto-generar slug si no está en modo edición o si el slug está vacío
-                if (!isEditing || elements.categorySlug.value === '') {
-                    elements.categorySlug.value = generarSlug(name);
-                }
-                
-                // Auto-generar ID solo si no está en modo edición y el campo ID está vacío o es el autogenerado anterior
-                if (!isEditing && (elements.categoryIdInput.value === '' || elements.categoryIdInput.value === generarIdDesdeNombre(elements.categoryName.dataset.lastGeneratedName || ''))) {
-                    const generatedId = generarIdDesdeNombre(name);
-                    elements.categoryIdInput.value = generatedId;
-                    elements.categoryIdInput.dataset.lastGeneratedName = name;
-                }
+            if (name && !isEditing) {
+                // Auto-generar ID solo si no está en modo edición
+                const generatedId = generarIdDesdeNombre(name);
+                elements.categoryIdInput.value = generatedId;
             }
         });
     }
@@ -171,15 +153,11 @@ function renderCategories() {
         <div class="outlet-category-item ${currentCategory?.id === cat.id ? 'selected' : ''}" data-id="${cat.id}">
             <div class="outlet-category-info">
                 <div class="outlet-category-name">
-                    ${cat.icon ? `<span class="material-symbols-outlined" style="font-size: 18px;">${cat.icon}</span>` : ''}
                     ${escapeHtml(cat.name)}
-                    <span class="outlet-category-badge ${cat.status === 'inactive' ? 'inactive' : ''}">
-                        ${cat.status === 'active' ? 'Activo' : 'Inactivo'}
-                    </span>
+                    <span class="outlet-category-badge">Activo</span>
                 </div>
                 <div class="outlet-category-desc">ID: ${escapeHtml(cat.id)}</div>
                 ${cat.description ? `<div class="outlet-category-desc">${escapeHtml(cat.description)}</div>` : ''}
-                <div class="outlet-category-desc">Orden: ${cat.order} | Slug: ${cat.slug}</div>
             </div>
             <div class="outlet-category-actions">
                 <button class="edit-category" data-id="${cat.id}" title="Editar">
@@ -216,54 +194,6 @@ function renderCategories() {
             const id = btn.dataset.id;
             const name = btn.dataset.name;
             showDeleteModal('category', id, name);
-        });
-    });
-}
-
-// ========================================
-// Renderizar subcategorías
-// ========================================
-function renderSubcategories() {
-    if (!elements.subcategoriesList || !currentCategory) return;
-    
-    const subcategories = currentCategory.subcategories || [];
-    
-    if (subcategories.length === 0) {
-        elements.subcategoriesList.innerHTML = `
-            <div class="outlet-empty-message">
-                No hay subcategorías para esta categoría
-            </div>
-        `;
-        return;
-    }
-    
-    elements.subcategoriesList.innerHTML = subcategories.map((sub, index) => `
-        <div class="outlet-subcategory-item">
-            <span class="outlet-subcategory-name">${escapeHtml(sub.name)}</span>
-            <div class="outlet-subcategory-actions">
-                <button class="edit-subcategory" data-id="${sub.id}" title="Editar">
-                    <span class="material-symbols-outlined">edit</span>
-                </button>
-                <button class="delete-subcategory" data-id="${sub.id}" data-name="${escapeHtml(sub.name)}" title="Eliminar">
-                    <span class="material-symbols-outlined">delete</span>
-                </button>
-            </div>
-        </div>
-    `).join('');
-    
-    // Event listeners para subcategorías
-    document.querySelectorAll('.edit-subcategory').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const id = btn.dataset.id;
-            editSubcategory(id);
-        });
-    });
-    
-    document.querySelectorAll('.delete-subcategory').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const id = btn.dataset.id;
-            const name = btn.dataset.name;
-            showDeleteModal('subcategory', id, name);
         });
     });
 }
@@ -305,18 +235,8 @@ function selectCategory(id) {
     if (category) {
         currentCategory = category;
         renderCategories();
-        
-        // Mostrar sección de subcategorías
-        if (elements.subcategoriesSection) {
-            elements.subcategoriesSection.style.display = 'block';
-        }
-        
-        renderSubcategories();
-        
-        // Limpiar formulario de subcategoría
-        if (elements.subcategoryName) {
-            elements.subcategoryName.value = '';
-        }
+        // Cargar los datos de la categoría seleccionada en el formulario
+        editCategory(id);
     }
 }
 
@@ -325,11 +245,7 @@ function resetForm() {
     elements.categoryIdInput.value = '';
     elements.categoryIdHidden.value = '';
     elements.categoryName.value = '';
-    elements.categorySlug.value = '';
     elements.categoryDescription.value = '';
-    elements.categoryOrder.value = '0';
-    elements.categoryStatus.value = 'active';
-    elements.categoryIcon.value = '';
     
     // Habilitar campo ID para nueva creación
     elements.categoryIdInput.disabled = false;
@@ -343,6 +259,10 @@ function resetForm() {
     if (elements.cancelBtn) {
         elements.cancelBtn.style.display = 'none';
     }
+    
+    // Deseleccionar categoría actual
+    currentCategory = null;
+    renderCategories();
 }
 
 function editCategory(id) {
@@ -353,11 +273,7 @@ function editCategory(id) {
     elements.categoryIdInput.value = category.id;
     elements.categoryIdHidden.value = category.id;
     elements.categoryName.value = category.name;
-    elements.categorySlug.value = category.slug;
     elements.categoryDescription.value = category.description || '';
-    elements.categoryOrder.value = category.order || 0;
-    elements.categoryStatus.value = category.status || 'active';
-    elements.categoryIcon.value = category.icon || '';
     
     // Deshabilitar campo ID en modo edición
     elements.categoryIdInput.disabled = true;
@@ -417,11 +333,11 @@ async function saveCategory() {
     const categoryData = {
         id: categoryId,
         name: name,
-        slug: elements.categorySlug.value.trim() || generarSlug(name),
+        slug: generarSlug(name), // Generado automáticamente
         description: elements.categoryDescription.value.trim(),
-        order: parseInt(elements.categoryOrder.value) || 0,
-        status: elements.categoryStatus.value,
-        icon: elements.categoryIcon.value.trim()
+        order: 0, // Valor por defecto
+        status: 'active', // Siempre activo
+        icon: '' // Sin icono
     };
     
     isLoading = true;
@@ -469,117 +385,12 @@ async function deleteCategory(id) {
         // Limpiar selección si era la categoría eliminada
         if (currentCategory && currentCategory.id === id) {
             currentCategory = null;
-            if (elements.subcategoriesSection) {
-                elements.subcategoriesSection.style.display = 'none';
-            }
             resetForm();
         }
         
         await loadCategories();
     } catch (error) {
         console.error('Error al eliminar categoría:', error);
-        mostrarToast(`Error: ${error.message}`, 'error');
-    }
-}
-
-// ========================================
-// CRUD de Subcategorías
-// ========================================
-async function addSubcategory() {
-    const subcategoryName = elements.subcategoryName.value.trim();
-    if (!subcategoryName) {
-        mostrarToast('Ingrese un nombre para la subcategoría', 'error');
-        elements.subcategoryName.focus();
-        return;
-    }
-    
-    if (!currentCategory) {
-        mostrarToast('Seleccione una categoría primero', 'error');
-        return;
-    }
-    
-    try {
-        const updatedCategory = await CategoryService.addSubcategory(currentCategory.id, subcategoryName);
-        
-        // Actualizar la categoría actual
-        currentCategory = updatedCategory;
-        
-        // Actualizar en el array principal
-        const index = categories.findIndex(c => c.id === currentCategory.id);
-        if (index !== -1) {
-            categories[index] = currentCategory;
-        }
-        
-        renderSubcategories();
-        elements.subcategoryName.value = '';
-        mostrarToast(`Subcategoría "${subcategoryName}" añadida`, 'success');
-        
-    } catch (error) {
-        console.error('Error al añadir subcategoría:', error);
-        mostrarToast(`Error: ${error.message}`, 'error');
-    }
-}
-
-function editSubcategory(subcategoryId) {
-    if (!currentCategory || !currentCategory.subcategories) return;
-    
-    const subcategory = currentCategory.subcategories.find(sub => sub.id === subcategoryId);
-    if (!subcategory) return;
-    
-    const newName = prompt('Editar subcategoría:', subcategory.name);
-    
-    if (newName && newName.trim() && newName.trim() !== subcategory.name) {
-        updateSubcategory(subcategoryId, newName.trim());
-    }
-}
-
-async function updateSubcategory(subcategoryId, newName) {
-    if (!currentCategory) return;
-    
-    try {
-        const updatedCategory = await CategoryService.updateSubcategory(
-            currentCategory.id, 
-            subcategoryId, 
-            newName
-        );
-        
-        currentCategory = updatedCategory;
-        const catIndex = categories.findIndex(c => c.id === currentCategory.id);
-        if (catIndex !== -1) {
-            categories[catIndex] = currentCategory;
-        }
-        
-        renderSubcategories();
-        mostrarToast('Subcategoría actualizada', 'success');
-        
-    } catch (error) {
-        console.error('Error al actualizar subcategoría:', error);
-        mostrarToast(`Error: ${error.message}`, 'error');
-    }
-}
-
-async function deleteSubcategory(subcategoryId) {
-    if (!currentCategory) return;
-    
-    const subcategory = currentCategory.subcategories.find(sub => sub.id === subcategoryId);
-    if (!subcategory) return;
-    
-    const subName = subcategory.name;
-    
-    try {
-        const updatedCategory = await CategoryService.deleteSubcategory(currentCategory.id, subcategoryId);
-        
-        currentCategory = updatedCategory;
-        const catIndex = categories.findIndex(c => c.id === currentCategory.id);
-        if (catIndex !== -1) {
-            categories[catIndex] = currentCategory;
-        }
-        
-        renderSubcategories();
-        mostrarToast(`Subcategoría "${subName}" eliminada`, 'success');
-        
-    } catch (error) {
-        console.error('Error al eliminar subcategoría:', error);
         mostrarToast(`Error: ${error.message}`, 'error');
     }
 }
@@ -603,8 +414,6 @@ async function confirmDelete() {
     
     if (deleteTarget.type === 'category') {
         await deleteCategory(deleteTarget.id);
-    } else if (deleteTarget.type === 'subcategory') {
-        await deleteSubcategory(deleteTarget.id);
     }
     
     hideDeleteModal();
@@ -633,15 +442,6 @@ function initEventListeners() {
     elements.saveBtn?.addEventListener('click', saveCategory);
     elements.cancelBtn?.addEventListener('click', resetForm);
     
-    // Subcategorías
-    elements.addSubcategoryBtn?.addEventListener('click', addSubcategory);
-    elements.subcategoryName?.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            addSubcategory();
-        }
-    });
-    
     // Modal
     elements.confirmDeleteBtn?.addEventListener('click', confirmDelete);
     elements.cancelDeleteBtn?.addEventListener('click', hideDeleteModal);
@@ -661,8 +461,8 @@ function initEventListeners() {
         }
     });
     
-    // Auto-generar slug e ID
-    setupSlugGeneration();
+    // Auto-generar ID
+    setupAutoGeneration();
 }
 
 // ========================================
