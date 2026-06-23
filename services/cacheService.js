@@ -3,57 +3,76 @@
    ======================================== */
 
 const DB_NAME = 'OutletVal_Cache';
-const DB_VERSION = 2;
+const DB_VERSION = 4; // 👈 INCREMENTA A 4
 
 export const STORES = {
     USERS: 'users',
     PRODUCTS: 'products',
     ORDERS: 'orders',
     CATEGORIES: 'categories',
-      // Añadir esto
 };
 
 let db = null;
+let dbReady = false;
+let initializationPromise = null;
 
 async function initDB() {
-    return new Promise((resolve, reject) => {
-        if (db) {
-            resolve(db);
-            return;
-        }
-        
+    // Si ya hay una promesa de inicialización en curso, esperarla
+    if (initializationPromise) {
+        return initializationPromise;
+    }
+    
+    if (db && dbReady) {
+        return db;
+    }
+    
+    initializationPromise = new Promise((resolve, reject) => {
         const request = indexedDB.open(DB_NAME, DB_VERSION);
         
         request.onerror = () => {
-            console.error('Error abriendo IndexedDB:', request.error);
+            console.error('❌ Error abriendo IndexedDB:', request.error);
+            dbReady = false;
+            initializationPromise = null;
             reject(request.error);
         };
         
         request.onsuccess = () => {
             db = request.result;
-            console.log('✅ IndexedDB inicializado');
+            dbReady = true;
+            initializationPromise = null;
+            console.log('✅ IndexedDB inicializado correctamente');
             resolve(db);
         };
         
         request.onupgradeneeded = (event) => {
             const database = event.target.result;
+            console.log('🔄 Actualizando IndexedDB a versión', DB_VERSION);
             
-            if (!database.objectStoreNames.contains(STORES.USERS)) {
-                database.createObjectStore(STORES.USERS, { keyPath: 'id' });
-            }
-            if (!database.objectStoreNames.contains(STORES.PRODUCTS)) {
-                database.createObjectStore(STORES.PRODUCTS, { keyPath: 'id' });
-            }
-            if (!database.objectStoreNames.contains(STORES.ORDERS)) {
-                database.createObjectStore(STORES.ORDERS, { keyPath: 'id' });
-            }
+            // ✅ Crear TODOS los stores sin eliminar los existentes primero
+            const allStores = Object.values(STORES);
+            allStores.forEach(storeName => {
+                if (!database.objectStoreNames.contains(storeName)) {
+                    database.createObjectStore(storeName, { keyPath: 'id' });
+                    console.log(`✅ Store ${storeName} creado`);
+                } else {
+                    console.log(`ℹ️ Store ${storeName} ya existe`);
+                }
+            });
         };
     });
+    
+    return initializationPromise;
 }
 
 export async function setCache(storeName, id, data, ttl = 3600000) {
     try {
         const database = await initDB();
+        
+        if (!database.objectStoreNames.contains(storeName)) {
+            console.warn(`⚠️ Store "${storeName}" no existe, omitiendo guardado`);
+            return false;
+        }
+        
         const transaction = database.transaction([storeName], 'readwrite');
         const store = transaction.objectStore(storeName);
         
@@ -78,6 +97,12 @@ export async function setCache(storeName, id, data, ttl = 3600000) {
 export async function getCache(storeName, id) {
     try {
         const database = await initDB();
+        
+        if (!database.objectStoreNames.contains(storeName)) {
+            console.warn(`⚠️ Store "${storeName}" no existe, retornando null`);
+            return null;
+        }
+        
         const transaction = database.transaction([storeName], 'readonly');
         const store = transaction.objectStore(storeName);
         
@@ -102,6 +127,12 @@ export async function getCache(storeName, id) {
 export async function clearCache(storeName) {
     try {
         const database = await initDB();
+        
+        if (!database.objectStoreNames.contains(storeName)) {
+            console.warn(`⚠️ Store "${storeName}" no existe, omitiendo limpieza`);
+            return true;
+        }
+        
         const transaction = database.transaction([storeName], 'readwrite');
         const store = transaction.objectStore(storeName);
         

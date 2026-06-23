@@ -155,6 +155,7 @@ export const routes = {
         view: "/modules/customer/editUser/editUser.html",
         controller: userProfileEditController
     },
+    
 
 
 

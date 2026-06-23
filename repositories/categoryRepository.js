@@ -18,7 +18,8 @@ import {
     limit
 } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
 
-const CATEGORIES_COLLECTION = 'categorias';
+// ✅ CORREGIDO: Con tilde para coincidir con Firebase
+const CATEGORIES_COLLECTION = 'categorías';  // 👈 CAMBIADO de 'categorias' a 'categorías'
 
 export const CategoryRepository = {
     /**
@@ -26,7 +27,6 @@ export const CategoryRepository = {
      */
     async save(categoryData) {
         try {
-            // El ID debe venir en categoryData
             const id = categoryData.id;
             if (!id) {
                 throw new Error('El ID de la categoría es requerido para guardar');
@@ -315,7 +315,6 @@ export const CategoryRepository = {
             if (querySnapshot.empty) return false;
             
             if (excludeId) {
-                // Verificar si el único resultado es el que estamos excluyendo
                 const docs = querySnapshot.docs;
                 return docs.some(doc => doc.id !== excludeId);
             }

@@ -1,6 +1,7 @@
 <!-- ========================================
    VISTA DE CREAR PRODUCTO - OUTLET ADMIN
    Página para dar de alta nuevas prendas
+   CATEGORÍAS Y SUBCATEGORÍAS DINÁMICAS
    ======================================== -->
 
 <main class="outlet-products-container">
@@ -115,31 +116,26 @@
                         <input type="text" placeholder="Ej: Nike, Adidas, Zara..." id="marca">
                         <span class="outlet-input-line"></span>
                     </div>
+                    
+                    <!-- ========================================== -->
+                    <!-- CAMPOS DE CATEGORÍA Y SUBCATEGORÍA DINÁMICOS -->
+                    <!-- ========================================== -->
                     <div class="outlet-input-group">
                         <label>Categoría <span class="outlet-required">*</span></label>
                         <select id="categoria">
-                            <option value="">Seleccionar</option>
-                            <option value="ropa">Ropa</option>
-                            <option value="calzado">Calzado</option>
-                            <option value="accesorios">Accesorios</option>
+                            <option value="">Cargando categorías...</option>
                         </select>
                         <span class="outlet-input-line"></span>
                     </div>
                     <div class="outlet-input-group">
                         <label>Subcategoría</label>
                         <select id="subcategoria">
-                            <option value="">Seleccionar</option>
-                            <option value="camisas">Camisas</option>
-                            <option value="pantalones">Pantalones</option>
-                            <option value="vestidos">Vestidos</option>
-                            <option value="chaquetas">Chaquetas</option>
-                            <option value="playeras">Playeras</option>
-                            <option value="tenis">Tenis</option>
-                            <option value="botas">Botas</option>
-                            <option value="bolsos">Bolsos</option>
+                            <option value="">Seleccionar categoría primero</option>
                         </select>
                         <span class="outlet-input-line"></span>
                     </div>
+                    <!-- ========================================== -->
+                    
                     <div class="outlet-input-group">
                         <label>Género <span class="outlet-required">*</span></label>
                         <select id="genero">
@@ -304,25 +300,27 @@
     </div>
 
     <!-- Botones de navegación (abajo del todo) -->
-<!-- Botones de navegación (abajo del todo) -->
-<div class="outlet-nav-buttons">
-    <button type="button" class="outlet-btn-nav" id="prevBtn" disabled>
-        <span class="material-symbols-outlined">arrow_back</span>
-        Anterior
-    </button>
-    <button type="button" class="outlet-btn-nav outlet-btn-nav-next" id="nextBtn">
-        Siguiente
-        <span class="material-symbols-outlined">arrow_forward</span>
-    </button>
-</div>
+    <div class="outlet-nav-buttons" id="navButtons">
+        <button type="button" class="outlet-btn-nav" id="prevBtn" disabled>
+            <span class="material-symbols-outlined">arrow_back</span>
+            Anterior
+        </button>
+        <button type="button" class="outlet-btn-nav outlet-btn-nav-next" id="nextBtn">
+            Siguiente
+            <span class="material-symbols-outlined">arrow_forward</span>
+        </button>
+    </div>
 
-<!-- Botones de acción finales (solo visibles en paso 3, sin limpiar) -->
-<div class="outlet-action-buttons" id="actionButtons" style="display: none;">
-    <button type="button" class="outlet-btn-primary" id="saveBtn">
-        <span class="material-symbols-outlined">save</span>
-        Guardar producto
-    </button>
-</div>
-
+    <!-- Botones de acción finales (solo visibles en paso 3) -->
+    <div class="outlet-action-buttons" id="actionButtons" style="display: none;">
+        <button type="button" class="outlet-btn-primary" id="clearBtn">
+            <span class="material-symbols-outlined">cleaning_services</span>
+            Limpiar
+        </button>
+        <button type="button" class="outlet-btn-primary" id="saveBtn">
+            <span class="material-symbols-outlined">save</span>
+            Guardar producto
+        </button>
+    </div>
     
 </main>

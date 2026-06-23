@@ -1,8 +1,6 @@
 /* ========================================
    CREATE CATEGORIES CONTROLLER - OUTLET ADMIN
-   Controlador para gestionar categorías dinámicamente
-   CRUD completo de categorías
-   RESPONSIVE: Se adapta a cualquier tamaño
+   Controlador para CREAR categorías con subcategorías
    ======================================== */
 
 import { CategoryService } from '/services/categoryService.js';
@@ -10,12 +8,8 @@ import { CategoryService } from '/services/categoryService.js';
 // ========================================
 // Variables de estado
 // ========================================
-let categories = [];           // Array de categorías
-let currentCategory = null;    // Categoría seleccionada actualmente
-let isEditing = false;         // Modo edición vs creación
-let searchTerm = '';           // Término de búsqueda
-let deleteTarget = null;       // Elemento a eliminar { type, id, name }
-let isLoading = false;         // Para evitar doble envío
+let isSubmitting = false;
+let subcategories = [];
 
 // ========================================
 // DOM Elements
@@ -24,29 +18,23 @@ let elements = {};
 
 function cacheElements() {
     elements = {
-        // Header
         backBtn: document.getElementById('backBtn'),
         
-        // Lista de categorías
-        categoriesList: document.getElementById('categoriesList'),
-        searchInput: document.getElementById('searchCategory'),
-        
-        // Formulario de categorías
-        categoryIdInput: document.getElementById('categoryIdInput'),
-        categoryIdHidden: document.getElementById('categoryIdHidden'),
+        // Formulario de categoría
+        categoryId: document.getElementById('categoryId'),
         categoryName: document.getElementById('categoryName'),
         categoryDescription: document.getElementById('categoryDescription'),
         saveBtn: document.getElementById('saveCategoryBtn'),
-        cancelBtn: document.getElementById('cancelBtn'),
-        formTitle: document.getElementById('formTitle'),
-        formIcon: document.getElementById('formIcon'),
+        resetBtn: document.getElementById('resetBtn'),
         
-        // Modal
-        deleteModal: document.getElementById('deleteModal'),
-        deleteItemName: document.getElementById('deleteItemName'),
-        confirmDeleteBtn: document.getElementById('confirmDeleteBtn'),
-        cancelDeleteBtn: document.getElementById('cancelDeleteBtn'),
-        closeModalBtn: document.getElementById('closeModalBtn')
+        // Subcategorías
+        subcategoryName: document.getElementById('subcategoryName'),
+        subcategoryDescription: document.getElementById('subcategoryDescription'),
+        addSubBtn: document.getElementById('addSubcategoryBtn'),
+        subcategoriesList: document.getElementById('subcategoriesList'),
+        
+        // Toast
+        toast: document.getElementById('categoriesToast')
     };
 }
 
@@ -54,24 +42,41 @@ function cacheElements() {
 // UI Helpers
 // ========================================
 function mostrarToast(mensaje, tipo = 'info') {
-    const toastExistente = document.querySelector('.outlet-toast-notification');
-    if (toastExistente) toastExistente.remove();
+    const toast = elements.toast;
+    if (!toast) return;
     
-    const toast = document.createElement('div');
-    toast.className = 'outlet-toast-notification';
     toast.textContent = mensaje;
-    if (tipo === 'success') toast.style.borderLeftColor = 'var(--outlet-success)';
-    if (tipo === 'error') toast.style.borderLeftColor = 'var(--outlet-danger)';
-    document.body.appendChild(toast);
+    toast.className = 'outlet-toast-notification';
+    
+    if (tipo === 'success') toast.style.borderLeftColor = '#22c55e';
+    else if (tipo === 'error') toast.style.borderLeftColor = '#ef4444';
+    else toast.style.borderLeftColor = 'var(--outlet-gold, #ddab3b)';
+    
+    toast.style.display = 'block';
     
     setTimeout(() => {
         toast.style.opacity = '0';
         toast.style.transform = 'translateX(30px)';
-        setTimeout(() => toast.remove(), 300);
+        setTimeout(() => {
+            toast.style.display = 'none';
+            toast.style.opacity = '1';
+            toast.style.transform = '';
+        }, 300);
     }, 2800);
 }
 
+function escapeHtml(str) {
+    const safeStr = String(str || '');
+    return safeStr
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 function generarSlug(texto) {
+    if (!texto) return '';
     return texto
         .toLowerCase()
         .normalize('NFD')
@@ -81,6 +86,7 @@ function generarSlug(texto) {
 }
 
 function generarIdDesdeNombre(texto) {
+    if (!texto) return '';
     return texto
         .toLowerCase()
         .normalize('NFD')
@@ -89,379 +95,266 @@ function generarIdDesdeNombre(texto) {
         .replace(/^_+|_+$/g, '');
 }
 
-// Validar formato del ID
 function validarIdFormato(id) {
     if (!id || id.trim() === '') return false;
     const regex = /^[a-z0-9_\-]+$/;
     return regex.test(id);
 }
 
-// Auto-generar ID cuando se escribe el nombre
-function setupAutoGeneration() {
-    if (elements.categoryName) {
-        elements.categoryName.addEventListener('input', () => {
-            const name = elements.categoryName.value;
-            if (name && !isEditing) {
-                // Auto-generar ID solo si no está en modo edición
-                const generatedId = generarIdDesdeNombre(name);
-                elements.categoryIdInput.value = generatedId;
-            }
-        });
-    }
-    
-    // Validar formato del ID en tiempo real
-    if (elements.categoryIdInput) {
-        elements.categoryIdInput.addEventListener('input', () => {
-            const idValue = elements.categoryIdInput.value;
-            if (idValue && !validarIdFormato(idValue)) {
-                elements.categoryIdInput.style.borderBottomColor = 'var(--outlet-danger)';
-                mostrarToast('El ID solo puede contener letras minúsculas, números, guiones bajos (_) y guiones (-)', 'error');
-            } else {
-                elements.categoryIdInput.style.borderBottomColor = '';
-            }
-        });
-    }
-}
-
 // ========================================
-// Renderizar lista de categorías
+// Renderizar lista de subcategorías
 // ========================================
-function renderCategories() {
-    if (!elements.categoriesList) return;
+function renderSubcategories() {
+    if (!elements.subcategoriesList) return;
     
-    // Filtrar por búsqueda
-    let filteredCategories = categories;
-    if (searchTerm) {
-        const term = searchTerm.toLowerCase();
-        filteredCategories = categories.filter(cat => 
-            cat.name.toLowerCase().includes(term) ||
-            (cat.description && cat.description.toLowerCase().includes(term)) ||
-            (cat.id && cat.id.toLowerCase().includes(term))
-        );
-    }
-    
-    if (filteredCategories.length === 0) {
-        elements.categoriesList.innerHTML = `
+    if (subcategories.length === 0) {
+        elements.subcategoriesList.innerHTML = `
             <div class="outlet-empty-message">
-                ${searchTerm ? 'No se encontraron categorías con ese término' : 'No hay categorías creadas aún'}
+                No hay subcategorías agregadas
             </div>
         `;
         return;
     }
     
-    elements.categoriesList.innerHTML = filteredCategories.map(cat => `
-        <div class="outlet-category-item ${currentCategory?.id === cat.id ? 'selected' : ''}" data-id="${cat.id}">
-            <div class="outlet-category-info">
-                <div class="outlet-category-name">
-                    ${escapeHtml(cat.name)}
-                    <span class="outlet-category-badge">Activo</span>
+    elements.subcategoriesList.innerHTML = subcategories.map((sub, index) => `
+        <div class="outlet-subcategory-item" data-index="${index}">
+            <div class="outlet-subcategory-info">
+                <div class="outlet-subcategory-name">
+                    <span class="material-symbols-outlined">subdirectory_arrow_right</span>
+                    ${escapeHtml(sub.name)}
                 </div>
-                <div class="outlet-category-desc">ID: ${escapeHtml(cat.id)}</div>
-                ${cat.description ? `<div class="outlet-category-desc">${escapeHtml(cat.description)}</div>` : ''}
+                ${sub.description ? `<div class="outlet-subcategory-desc">${escapeHtml(sub.description)}</div>` : ''}
             </div>
-            <div class="outlet-category-actions">
-                <button class="edit-category" data-id="${cat.id}" title="Editar">
+            <div class="outlet-subcategory-actions">
+                <button class="outlet-subcategory-edit" data-index="${index}" title="Editar">
                     <span class="material-symbols-outlined">edit</span>
                 </button>
-                <button class="delete-category" data-id="${cat.id}" data-name="${escapeHtml(cat.name)}" title="Eliminar">
+                <button class="outlet-subcategory-delete" data-index="${index}" title="Eliminar">
                     <span class="material-symbols-outlined">delete</span>
                 </button>
             </div>
         </div>
     `).join('');
     
-    // Event listeners para los items de la lista
-    document.querySelectorAll('.outlet-category-item').forEach(item => {
-        item.addEventListener('click', (e) => {
-            // Evitar que el click en botones seleccione la categoría
-            if (e.target.closest('.edit-category') || e.target.closest('.delete-category')) return;
-            const id = item.dataset.id;
-            selectCategory(id);
+    document.querySelectorAll('.outlet-subcategory-edit').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const index = parseInt(btn.dataset.index);
+            editSubcategory(index);
         });
     });
     
-    document.querySelectorAll('.edit-category').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const id = btn.dataset.id;
-            editCategory(id);
+    document.querySelectorAll('.outlet-subcategory-delete').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const index = parseInt(btn.dataset.index);
+            deleteSubcategory(index);
         });
     });
-    
-    document.querySelectorAll('.delete-category').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const id = btn.dataset.id;
-            const name = btn.dataset.name;
-            showDeleteModal('category', id, name);
-        });
-    });
-}
-
-// Función de escape para prevenir XSS
-function escapeHtml(str) {
-    if (!str) return '';
-    return str
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
 }
 
 // ========================================
-// CRUD de Categorías
+// CRUD de Subcategorías (local)
 // ========================================
-async function loadCategories() {
-    try {
-        // Usar CategoryService para obtener las categorías
-        categories = await CategoryService.getAll({}, false);
-        renderCategories();
-        
-        // Si hay categorías y ninguna seleccionada, seleccionar la primera
-        if (categories.length > 0 && !currentCategory) {
-            selectCategory(categories[0].id);
-        }
-    } catch (error) {
-        console.error('Error al cargar categorías:', error);
-        mostrarToast('Error al cargar las categorías', 'error');
-        categories = [];
-        renderCategories();
-    }
-}
-
-function selectCategory(id) {
-    const category = categories.find(c => c.id === id);
-    if (category) {
-        currentCategory = category;
-        renderCategories();
-        // Cargar los datos de la categoría seleccionada en el formulario
-        editCategory(id);
-    }
-}
-
-function resetForm() {
-    isEditing = false;
-    elements.categoryIdInput.value = '';
-    elements.categoryIdHidden.value = '';
-    elements.categoryName.value = '';
-    elements.categoryDescription.value = '';
+function addSubcategory() {
+    const name = elements.subcategoryName?.value?.trim() || '';
+    const description = elements.subcategoryDescription?.value?.trim() || '';
     
-    // Habilitar campo ID para nueva creación
-    elements.categoryIdInput.disabled = false;
-    elements.categoryIdInput.style.backgroundColor = '';
-    
-    elements.formTitle.textContent = 'Crear Nueva Categoría';
-    if (elements.formIcon) {
-        elements.formIcon.textContent = 'add_circle';
-    }
-    
-    if (elements.cancelBtn) {
-        elements.cancelBtn.style.display = 'none';
-    }
-    
-    // Deseleccionar categoría actual
-    currentCategory = null;
-    renderCategories();
-}
-
-function editCategory(id) {
-    const category = categories.find(c => c.id === id);
-    if (!category) return;
-    
-    isEditing = true;
-    elements.categoryIdInput.value = category.id;
-    elements.categoryIdHidden.value = category.id;
-    elements.categoryName.value = category.name;
-    elements.categoryDescription.value = category.description || '';
-    
-    // Deshabilitar campo ID en modo edición
-    elements.categoryIdInput.disabled = true;
-    elements.categoryIdInput.style.backgroundColor = 'var(--outlet-bg-disabled, #f5f5f5)';
-    
-    elements.formTitle.textContent = 'Editar Categoría';
-    if (elements.formIcon) {
-        elements.formIcon.textContent = 'edit';
-    }
-    
-    if (elements.cancelBtn) {
-        elements.cancelBtn.style.display = 'inline-flex';
-    }
-    
-    // Scroll al formulario
-    elements.formTitle.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-async function saveCategory() {
-    if (isLoading) return;
-    
-    const name = elements.categoryName.value.trim();
     if (!name) {
-        mostrarToast('El nombre de la categoría es obligatorio', 'error');
-        elements.categoryName.focus();
+        mostrarToast('El nombre de la subcategoría es obligatorio', 'error');
+        if (elements.subcategoryName) elements.subcategoryName.focus();
         return;
     }
     
-    let categoryId = elements.categoryIdInput.value.trim();
+    const exists = subcategories.some(sub => sub.name.toLowerCase() === name.toLowerCase());
+    if (exists) {
+        mostrarToast(`La subcategoría "${name}" ya existe`, 'error');
+        return;
+    }
     
-    if (!isEditing) {
-        // Para nueva categoría, el ID es obligatorio
-        if (!categoryId) {
-            mostrarToast('El ID de la categoría es obligatorio', 'error');
-            elements.categoryIdInput.focus();
-            return;
-        }
-        
-        // Validar formato del ID
-        if (!validarIdFormato(categoryId)) {
-            mostrarToast('El ID solo puede contener letras minúsculas, números, guiones bajos (_) y guiones (-)', 'error');
-            elements.categoryIdInput.focus();
-            return;
-        }
-        
-        // Verificar que el ID no exista ya
-        const existingCategory = categories.find(c => c.id === categoryId);
-        if (existingCategory) {
+    subcategories.push({ name, description });
+    renderSubcategories();
+    
+    if (elements.subcategoryName) elements.subcategoryName.value = '';
+    if (elements.subcategoryDescription) elements.subcategoryDescription.value = '';
+    if (elements.subcategoryName) elements.subcategoryName.focus();
+    
+    mostrarToast(`Subcategoría "${name}" agregada`, 'success');
+}
+
+function editSubcategory(index) {
+    const sub = subcategories[index];
+    if (!sub) return;
+    
+    const newName = prompt('Editar nombre de la subcategoría:', sub.name);
+    if (newName === null) return;
+    
+    const trimmedName = newName.trim();
+    if (!trimmedName) return;
+    
+    const newDescription = prompt('Editar descripción de la subcategoría:', sub.description || '');
+    if (newDescription === null) return;
+    
+    const exists = subcategories.some((s, i) => 
+        i !== index && s.name.toLowerCase() === trimmedName.toLowerCase()
+    );
+    if (exists) {
+        mostrarToast(`La subcategoría "${trimmedName}" ya existe`, 'error');
+        return;
+    }
+    
+    subcategories[index] = {
+        name: trimmedName,
+        description: newDescription.trim() || ''
+    };
+    
+    renderSubcategories();
+    mostrarToast('Subcategoría actualizada', 'success');
+}
+
+function deleteSubcategory(index) {
+    const sub = subcategories[index];
+    if (!sub) return;
+    
+    if (!confirm(`¿Eliminar la subcategoría "${sub.name}"?`)) return;
+    
+    subcategories.splice(index, 1);
+    renderSubcategories();
+    mostrarToast(`Subcategoría "${sub.name}" eliminada`, 'success');
+}
+
+// ========================================
+// Auto-generar ID
+// ========================================
+function setupAutoGeneration() {
+    if (elements.categoryName) {
+        elements.categoryName.addEventListener('input', () => {
+            const name = elements.categoryName.value;
+            if (name && elements.categoryId) {
+                const generatedId = generarIdDesdeNombre(name);
+                elements.categoryId.value = generatedId;
+            }
+        });
+    }
+}
+
+// ========================================
+// Guardar categoría
+// ========================================
+async function saveCategory() {
+    if (isSubmitting) return;
+    
+    const name = elements.categoryName?.value?.trim() || '';
+    if (!name) {
+        mostrarToast('El nombre de la categoría es obligatorio', 'error');
+        if (elements.categoryName) elements.categoryName.focus();
+        return;
+    }
+    
+    let categoryId = elements.categoryId?.value?.trim() || '';
+    if (!categoryId) {
+        mostrarToast('El ID de la categoría es obligatorio', 'error');
+        if (elements.categoryId) elements.categoryId.focus();
+        return;
+    }
+    
+    if (!validarIdFormato(categoryId)) {
+        mostrarToast('El ID solo puede contener letras minúsculas, números, guiones bajos (_) y guiones (-)', 'error');
+        if (elements.categoryId) elements.categoryId.focus();
+        return;
+    }
+    
+    try {
+        const existing = await CategoryService.getById(categoryId);
+        if (existing) {
             mostrarToast(`Ya existe una categoría con el ID "${categoryId}"`, 'error');
-            elements.categoryIdInput.focus();
+            if (elements.categoryId) elements.categoryId.focus();
             return;
         }
-    } else {
-        categoryId = elements.categoryIdHidden.value;
+    } catch (error) {
+        console.warn('Error verificando ID:', error);
     }
     
     const categoryData = {
         id: categoryId,
         name: name,
-        slug: generarSlug(name), // Generado automáticamente
-        description: elements.categoryDescription.value.trim(),
-        order: 0, // Valor por defecto
-        status: 'active', // Siempre activo
-        icon: '' // Sin icono
+        slug: generarSlug(name),
+        description: elements.categoryDescription?.value?.trim() || '',
+        subcategories: subcategories.map(sub => ({
+            name: sub.name,
+            description: sub.description || '',
+            slug: generarSlug(sub.name),
+            createdAt: new Date().toISOString()
+        }))
     };
     
-    isLoading = true;
+    isSubmitting = true;
     const btn = elements.saveBtn;
-    const originalHTML = btn.innerHTML;
-    btn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> Guardando...';
-    btn.disabled = true;
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> Creando...';
+    }
     
     try {
-        let savedCategory;
-        
-        if (isEditing) {
-            const id = elements.categoryIdHidden.value;
-            savedCategory = await CategoryService.update(id, categoryData);
-            mostrarToast(`Categoría "${savedCategory.name}" actualizada`, 'success');
-        } else {
-            savedCategory = await CategoryService.create(categoryData);
-            mostrarToast(`Categoría "${savedCategory.name}" creada con ID: ${savedCategory.id}`, 'success');
-        }
-        
-        // Recargar categorías
-        await loadCategories();
-        
-        // Seleccionar la categoría guardada/actualizada
-        selectCategory(savedCategory.id);
-        
-        // Resetear formulario
+        const savedCategory = await CategoryService.create(categoryData);
+        mostrarToast(`✅ Categoría "${savedCategory.name}" creada con ${savedCategory.subcategories.length} subcategorías`, 'success');
         resetForm();
         
     } catch (error) {
-        console.error('Error al guardar categoría:', error);
-        mostrarToast(`Error: ${error.message}`, 'error');
+        console.error('Error al crear categoría:', error);
+        mostrarToast(`❌ Error: ${error.message}`, 'error');
     } finally {
-        isLoading = false;
-        btn.innerHTML = originalHTML;
-        btn.disabled = false;
-    }
-}
-
-async function deleteCategory(id) {
-    try {
-        await CategoryService.delete(id, false); // Soft delete
-        mostrarToast('Categoría eliminada correctamente', 'success');
-        
-        // Limpiar selección si era la categoría eliminada
-        if (currentCategory && currentCategory.id === id) {
-            currentCategory = null;
-            resetForm();
+        isSubmitting = false;
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<span class="material-symbols-outlined">save</span> Crear Categoría';
         }
-        
-        await loadCategories();
-    } catch (error) {
-        console.error('Error al eliminar categoría:', error);
-        mostrarToast(`Error: ${error.message}`, 'error');
     }
 }
 
 // ========================================
-// Modal de confirmación
+// Resetear formulario
 // ========================================
-function showDeleteModal(type, id, name) {
-    deleteTarget = { type, id, name };
-    elements.deleteItemName.textContent = name;
-    elements.deleteModal.style.display = 'flex';
-}
-
-function hideDeleteModal() {
-    elements.deleteModal.style.display = 'none';
-    deleteTarget = null;
-}
-
-async function confirmDelete() {
-    if (!deleteTarget) return;
+function resetForm() {
+    if (elements.categoryId) elements.categoryId.value = '';
+    if (elements.categoryName) elements.categoryName.value = '';
+    if (elements.categoryDescription) elements.categoryDescription.value = '';
+    if (elements.subcategoryName) elements.subcategoryName.value = '';
+    if (elements.subcategoryDescription) elements.subcategoryDescription.value = '';
     
-    if (deleteTarget.type === 'category') {
-        await deleteCategory(deleteTarget.id);
-    }
+    subcategories = [];
+    renderSubcategories();
     
-    hideDeleteModal();
+    if (elements.categoryName) elements.categoryName.focus();
 }
 
 // ========================================
 // Event Listeners
 // ========================================
 function initEventListeners() {
-    // Navegación
     elements.backBtn?.addEventListener('click', () => {
         if (typeof window.navigateTo === 'function') {
-            window.navigateTo('/admin/productos');
+            window.navigateTo('/readCategories');
         } else {
             window.history.back();
         }
     });
     
-    // Búsqueda
-    elements.searchInput?.addEventListener('input', (e) => {
-        searchTerm = e.target.value;
-        renderCategories();
-    });
-    
-    // Formulario de categorías
     elements.saveBtn?.addEventListener('click', saveCategory);
-    elements.cancelBtn?.addEventListener('click', resetForm);
+    elements.resetBtn?.addEventListener('click', resetForm);
     
-    // Modal
-    elements.confirmDeleteBtn?.addEventListener('click', confirmDelete);
-    elements.cancelDeleteBtn?.addEventListener('click', hideDeleteModal);
-    elements.closeModalBtn?.addEventListener('click', hideDeleteModal);
-    
-    // Cerrar modal con ESC
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && elements.deleteModal.style.display === 'flex') {
-            hideDeleteModal();
+    elements.addSubBtn?.addEventListener('click', addSubcategory);
+    elements.subcategoryName?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addSubcategory();
+        }
+    });
+    elements.subcategoryDescription?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addSubcategory();
         }
     });
     
-    // Cerrar modal al hacer clic fuera
-    elements.deleteModal?.addEventListener('click', (e) => {
-        if (e.target === elements.deleteModal) {
-            hideDeleteModal();
-        }
-    });
-    
-    // Auto-generar ID
     setupAutoGeneration();
 }
 
@@ -488,17 +381,12 @@ document.addEventListener('themeChanged', (e) => {
 // Inicialización
 // ========================================
 export async function categoriesCreateController() {
-    console.log('📝 Categories Management Controller - Gestión de categorías');
+    console.log('📝 Create Categories Controller - Crear categorías con subcategorías');
     
     cacheElements();
     syncDarkMode();
     initEventListeners();
-    
-    // Cargar categorías desde el servicio
-    await loadCategories();
-    
-    // Resetear formulario al inicio
     resetForm();
     
-    console.log('✅ Categories Management page loaded');
+    console.log('✅ Create Categories page loaded');
 }

@@ -1,104 +1,104 @@
 <!-- ========================================
-   VISTA DE CREAR CATEGORÍAS - OUTLET ADMIN
-   Página para gestionar categorías de productos
+   CREATE CATEGORIES - OUTLET ADMIN
+   Página para CREAR categorías con subcategorías
    ======================================== -->
 
 <main class="outlet-categories-container">
     <!-- Header -->
     <div class="outlet-categories-header">
         <div>
-            <h1 class="outlet-text-gold">Gestión de Categorías</h1>
-            <p class="outlet-header-desc">Administra las categorías disponibles para los productos</p>
+            <h1 class="outlet-text-gold">Crear Categoría</h1>
+            <p class="outlet-header-desc">Crea una nueva categoría con sus subcategorías</p>
         </div>
         <button class="outlet-btn-outline" id="backBtn">
             <span class="material-symbols-outlined">arrow_back</span>
-            Volver
+            Ver categorías
         </button>
     </div>
 
-    <!-- Grid principal: lista de categorías + formulario -->
+    <!-- Formulario principal -->
     <div class="outlet-categories-grid">
-
-        <!-- Panel izquierdo: Lista de categorías -->
-        <div class="outlet-categories-panel">
-            <div class="outlet-search-box">
-                <span class="material-symbols-outlined">search</span>
-                <input type="text" class="outlet-search-input" id="searchCategory" placeholder="Buscar categorías...">
-            </div>
-            <div class="outlet-categories-list" id="categoriesList">
-                <div class="outlet-loading">Cargando categorías...</div>
-            </div>
-        </div>
-
-        <!-- Panel derecho: Formulario para crear/editar categorías -->
+        <!-- Panel izquierdo: Datos de la categoría -->
         <div class="outlet-categories-panel">
             <div class="outlet-form-section">
                 <div class="outlet-section-title">
-                    <span class="material-symbols-outlined outlet-section-icon">
-                        <span id="formIcon">add_circle</span>
-                    </span>
-                    <h2 id="formTitle">Crear Nueva Categoría</h2>
+                    <span class="material-symbols-outlined outlet-section-icon">category</span>
+                    <h2>Datos de la Categoría</h2>
                 </div>
 
-                <!-- Formulario -->
                 <div class="outlet-form-grid">
-                    <!-- ID de la categoría (visible y editable) -->
+                    <!-- ID de la categoría -->
                     <div class="outlet-input-group outlet-full-width">
                         <label>ID de la Categoría <span class="outlet-required">*</span></label>
-                        <input type="text" placeholder="Ej: ropa, calzado, accesorios..." id="categoryIdInput">
+                        <input type="text" id="categoryId" placeholder="Ej: calzado, ropa, accesorios..." required>
                         <span class="outlet-input-line"></span>
-                        <small>Identificador único para la categoría (solo letras minúsculas, números y guiones)</small>
+                        <small>Identificador único (solo minúsculas, números, guiones y guiones bajos)</small>
                     </div>
                     
-                    <!-- ID oculto para referencia interna -->
-                    <input type="hidden" id="categoryIdHidden">
-                    
-                    <!-- Nombre de la categoría -->
+                    <!-- Nombre -->
                     <div class="outlet-input-group outlet-full-width">
                         <label>Nombre de la Categoría <span class="outlet-required">*</span></label>
-                        <input type="text" placeholder="Ej: Ropa, Calzado, Accesorios..." id="categoryName">
+                        <input type="text" id="categoryName" placeholder="Ej: Calzado, Ropa, Accesorios..." required>
                         <span class="outlet-input-line"></span>
-                        <small>Nombre único para identificar la categoría</small>
+                        <small>El ID se genera automáticamente desde el nombre</small>
                     </div>
 
                     <!-- Descripción -->
                     <div class="outlet-input-group outlet-full-width">
                         <label>Descripción</label>
-                        <textarea rows="3" placeholder="Descripción de la categoría..." id="categoryDescription"></textarea>
+                        <textarea id="categoryDescription" rows="3" placeholder="Descripción general de la categoría..."></textarea>
                         <span class="outlet-input-line"></span>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <!-- Botones de acción -->
-                <div class="outlet-categories-actions">
-                    <button type="button" class="outlet-btn-outline" id="cancelBtn" style="display: none;">
-                        <span class="material-symbols-outlined">close</span>
-                        Cancelar
-                    </button>
-                    <button type="button" class="outlet-btn-primary" id="saveCategoryBtn">
-                        <span class="material-symbols-outlined">save</span>
-                        Guardar categoría
+        <!-- Panel derecho: Subcategorías -->
+        <div class="outlet-categories-panel">
+            <div class="outlet-form-section">
+                <div class="outlet-section-title">
+                    <span class="material-symbols-outlined outlet-section-icon">subdirectory_arrow_right</span>
+                    <h2>Subcategorías</h2>
+                </div>
+
+                <!-- Agregar subcategoría -->
+                <div class="outlet-subcategory-add">
+                    <div class="outlet-input-group">
+                        <label>Nombre <span class="outlet-required">*</span></label>
+                        <input type="text" id="subcategoryName" placeholder="Ej: Tenis, Botas, Zapatos...">
+                        <span class="outlet-input-line"></span>
+                    </div>
+                    <div class="outlet-input-group">
+                        <label>Descripción</label>
+                        <input type="text" id="subcategoryDescription" placeholder="Descripción de la subcategoría...">
+                        <span class="outlet-input-line"></span>
+                    </div>
+                    <button type="button" class="outlet-btn-subcategory-add" id="addSubcategoryBtn">
+                        <span class="material-symbols-outlined">add</span>
+                        Agregar
                     </button>
                 </div>
+
+                <!-- Lista de subcategorías -->
+                <div class="outlet-subcategory-list" id="subcategoriesList">
+                    <div class="outlet-empty-message">No hay subcategorías agregadas</div>
+                </div>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="outlet-categories-actions">
+                <button type="button" class="outlet-btn-outline" id="resetBtn">
+                    <span class="material-symbols-outlined">restart_alt</span>
+                    Limpiar
+                </button>
+                <button type="button" class="outlet-btn-primary" id="saveCategoryBtn">
+                    <span class="material-symbols-outlined">save</span>
+                    Crear Categoría
+                </button>
             </div>
         </div>
     </div>
 </main>
 
-<!-- Modal de confirmación para eliminar -->
-<div class="outlet-modal" id="deleteModal" style="display: none;">
-    <div class="outlet-modal-content">
-        <div class="outlet-modal-header">
-            <h3>Confirmar eliminación</h3>
-            <button class="outlet-modal-close" id="closeModalBtn">&times;</button>
-        </div>
-        <div class="outlet-modal-body">
-            <p>¿Estás seguro de que deseas eliminar <strong id="deleteItemName"></strong>?</p>
-            <p class="outlet-modal-warning">Esta acción no se puede deshacer.</p>
-        </div>
-        <div class="outlet-modal-footer">
-            <button class="outlet-btn-outline" id="cancelDeleteBtn">Cancelar</button>
-            <button class="outlet-btn-danger" id="confirmDeleteBtn">Eliminar</button>
-        </div>
-    </div>
-</div>
+<!-- Toast Notification -->
+<div id="categoriesToast" class="outlet-toast-notification" style="display: none;"></div>

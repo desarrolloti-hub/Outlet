@@ -3,6 +3,7 @@
    Estilo premium para crear nuevos productos
    Basado en variables globales --outlet-*
    RESPONSIVE: Se adapta a todos los tamaños
+   CATEGORÍAS Y SUBCATEGORÍAS DINÁMICAS
    ======================================== */
 
 /* Contenedor principal - responsive */
@@ -1215,6 +1216,7 @@
         flex: 1;
     }
 }
+
 /* ========================================
    INTEGRACIÓN CON NAVBAR LATERAL - VERSIÓN OPTIMIZADA
    ======================================== */
@@ -1392,6 +1394,7 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-products-container {
 .outlet-products-container {
     transition: margin-left 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
 }
+
 /* ========================================
    MENÚ HAMBURGUESA - ESTILOS GLOBALES
    ======================================== */

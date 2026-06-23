@@ -58,13 +58,17 @@ export const CategoryService = {
         
         // ========== CREAR MODELO ==========
         category.createdBy = adminUserId;
-        category.subcategories = []; // Inicializar array vacío
+        category.subcategories = categoryData.subcategories || [];
         
         // ========== GUARDAR EN FIRESTORE ==========
         const result = await CategoryRepository.save(category.toPlainObject());
         
         // Limpiar caché de categorías
-        await CacheService.clearCache(STORES.CATEGORIES);
+        try {
+            await CacheService.clearCache(STORES.CATEGORIES);
+        } catch (cacheError) {
+            console.warn('⚠️ No se pudo limpiar caché:', cacheError.message);
+        }
         
         return new Category(result);
     },
@@ -74,16 +78,24 @@ export const CategoryService = {
      */
     async getById(categoryId, forceRefresh = false) {
         if (!forceRefresh) {
-            const cached = await CacheService.getCache(STORES.CATEGORIES, categoryId);
-            if (cached) {
-                return new Category(cached);
+            try {
+                const cached = await CacheService.getCache(STORES.CATEGORIES, categoryId);
+                if (cached) {
+                    return new Category(cached);
+                }
+            } catch (cacheError) {
+                console.warn('⚠️ Error leyendo caché, continuando con Firestore:', cacheError.message);
             }
         }
         
         const categoryData = await CategoryRepository.getById(categoryId);
         
         if (categoryData) {
-            await CacheService.setCache(STORES.CATEGORIES, categoryId, categoryData, 3600000);
+            try {
+                await CacheService.setCache(STORES.CATEGORIES, categoryId, categoryData, 3600000);
+            } catch (cacheError) {
+                console.warn('⚠️ No se pudo guardar en caché:', cacheError.message);
+            }
             return new Category(categoryData);
         }
         
@@ -100,42 +112,68 @@ export const CategoryService = {
     
     /**
      * Obtener todas las categorías
+     * 👈 MODIFICADO: SIEMPRE va a Firestore cuando forceRefresh = true
      */
     async getAll(filters = {}, forceRefresh = false) {
         const cacheKey = `categories_list_${JSON.stringify(filters)}`;
         
+        // 👇 SOLO usar caché si NO es forceRefresh
         if (!forceRefresh) {
-            const cached = await CacheService.getCache(STORES.CATEGORIES, cacheKey);
-            if (cached) {
-                return cached.map(c => new Category(c));
+            try {
+                const cached = await CacheService.getCache(STORES.CATEGORIES, cacheKey);
+                if (cached) {
+                    console.log('📦 Usando caché de categorías');
+                    return cached.map(c => new Category(c));
+                }
+            } catch (cacheError) {
+                console.warn('⚠️ Error leyendo caché, continuando con Firestore:', cacheError.message);
+                // Si falla la caché, continuamos a Firestore
             }
         }
         
+        // 👇 SIEMPRE obtener de Firestore (forceRefresh o error de caché)
+        console.log('🔥 Obteniendo categorías desde Firestore...');
         const categoriesData = await CategoryRepository.getAll(filters);
         const categories = categoriesData.map(c => new Category(c));
         
-        await CacheService.setCache(STORES.CATEGORIES, cacheKey, categoriesData, 1800000);
+        // Intentar guardar en caché, pero no fallar si no se puede
+        try {
+            await CacheService.setCache(STORES.CATEGORIES, cacheKey, categoriesData, 1800000);
+            console.log('💾 Categorías guardadas en caché');
+        } catch (cacheError) {
+            console.warn('⚠️ No se pudo guardar en caché:', cacheError.message);
+        }
         
         return categories;
     },
     
     /**
      * Obtener solo categorías activas (para tienda)
+     * NOTA: Como ya no tenemos status, devolvemos todas
      */
     async getActiveCategories(forceRefresh = false) {
         const cacheKey = 'active_categories_list';
         
         if (!forceRefresh) {
-            const cached = await CacheService.getCache(STORES.CATEGORIES, cacheKey);
-            if (cached) {
-                return cached.map(c => new Category(c));
+            try {
+                const cached = await CacheService.getCache(STORES.CATEGORIES, cacheKey);
+                if (cached) {
+                    return cached.map(c => new Category(c));
+                }
+            } catch (cacheError) {
+                console.warn('⚠️ Error leyendo caché de categorías activas:', cacheError.message);
             }
         }
         
-        const categoriesData = await CategoryRepository.getActiveCategories();
+        // Como no tenemos status, devolvemos todas
+        const categoriesData = await CategoryRepository.getAll();
         const categories = categoriesData.map(c => new Category(c));
         
-        await CacheService.setCache(STORES.CATEGORIES, cacheKey, categoriesData, 1800000);
+        try {
+            await CacheService.setCache(STORES.CATEGORIES, cacheKey, categoriesData, 1800000);
+        } catch (cacheError) {
+            console.warn('⚠️ No se pudo guardar caché de categorías activas:', cacheError.message);
+        }
         
         return categories;
     },
@@ -175,27 +213,22 @@ export const CategoryService = {
             }
         }
         
-        // No permitir ciertas actualizaciones inválidas
-        if (updateData.order !== undefined && updateData.order < 0) {
-            throw new Error('El orden debe ser un número positivo');
-        }
-        
-        if (updateData.status && !['active', 'inactive'].includes(updateData.status)) {
-            throw new Error('El estado debe ser "active" o "inactive"');
-        }
-        
         const updated = await CategoryRepository.update(categoryId, updateData);
         
         // Limpiar caché
-        await CacheService.clearCache(STORES.CATEGORIES);
+        try {
+            await CacheService.clearCache(STORES.CATEGORIES);
+        } catch (cacheError) {
+            console.warn('⚠️ No se pudo limpiar caché:', cacheError.message);
+        }
         
         return new Category(updated);
     },
     
     /**
-     * Agregar subcategoría
+     * Agregar subcategoría con descripción
      */
-    async addSubcategory(categoryId, subcategoryName) {
+    async addSubcategory(categoryId, subcategoryName, description = '') {
         if (!subcategoryName || subcategoryName.trim().length < 1) {
             throw new Error('El nombre de la subcategoría es requerido');
         }
@@ -206,8 +239,8 @@ export const CategoryService = {
             throw new Error('Categoría no encontrada');
         }
         
-        // Usar el método del modelo para agregar
-        const newSubcategory = category.addSubcategory(subcategoryName);
+        // Usar el método del modelo para agregar con descripción
+        const newSubcategory = category.addSubcategory(subcategoryName, description);
         
         // Guardar cambios
         await CategoryRepository.update(categoryId, { 
@@ -215,15 +248,19 @@ export const CategoryService = {
         });
         
         // Limpiar caché
-        await CacheService.clearCache(STORES.CATEGORIES);
+        try {
+            await CacheService.clearCache(STORES.CATEGORIES);
+        } catch (cacheError) {
+            console.warn('⚠️ No se pudo limpiar caché:', cacheError.message);
+        }
         
         return await this.getById(categoryId, true);
     },
     
     /**
-     * Actualizar subcategoría
+     * Actualizar subcategoría con descripción
      */
-    async updateSubcategory(categoryId, subcategoryId, newName) {
+    async updateSubcategory(categoryId, subcategoryId, newName, newDescription = '') {
         if (!newName || newName.trim().length < 1) {
             throw new Error('El nombre de la subcategoría es requerido');
         }
@@ -241,8 +278,8 @@ export const CategoryService = {
             throw new Error('Subcategoría no encontrada');
         }
         
-        // Actualizar usando el método del modelo
-        category.updateSubcategory(subIndex, newName);
+        // Actualizar usando el método del modelo con descripción
+        category.updateSubcategory(subIndex, newName, newDescription);
         
         // Guardar cambios
         await CategoryRepository.update(categoryId, { 
@@ -250,7 +287,11 @@ export const CategoryService = {
         });
         
         // Limpiar caché
-        await CacheService.clearCache(STORES.CATEGORIES);
+        try {
+            await CacheService.clearCache(STORES.CATEGORIES);
+        } catch (cacheError) {
+            console.warn('⚠️ No se pudo limpiar caché:', cacheError.message);
+        }
         
         return await this.getById(categoryId, true);
     },
@@ -281,7 +322,11 @@ export const CategoryService = {
         });
         
         // Limpiar caché
-        await CacheService.clearCache(STORES.CATEGORIES);
+        try {
+            await CacheService.clearCache(STORES.CATEGORIES);
+        } catch (cacheError) {
+            console.warn('⚠️ No se pudo limpiar caché:', cacheError.message);
+        }
         
         return await this.getById(categoryId, true);
     },
@@ -299,7 +344,11 @@ export const CategoryService = {
         const result = await CategoryRepository.delete(categoryId, hardDelete);
         
         // Limpiar caché
-        await CacheService.clearCache(STORES.CATEGORIES);
+        try {
+            await CacheService.clearCache(STORES.CATEGORIES);
+        } catch (cacheError) {
+            console.warn('⚠️ No se pudo limpiar caché:', cacheError.message);
+        }
         
         return result;
     },
@@ -308,7 +357,6 @@ export const CategoryService = {
      * Reordenar categorías
      */
     async reorderCategories(categoryOrders) {
-        // categoryOrders: [{ id, order }]
         const updates = [];
         
         for (const item of categoryOrders) {
@@ -336,6 +384,6 @@ export const CategoryService = {
      * Validar categoría para uso en tienda
      */
     validateForStore(category) {
-        return category.isActive;
+        return true; // Todas las categorías son válidas
     }
 };

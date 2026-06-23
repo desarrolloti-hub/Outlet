@@ -5,6 +5,8 @@
    RESPONSIVE: Se adapta a cualquier tamaño
    ======================================== */
 
+import { CategoryService } from '/services/categoryService.js';
+
 // ========================================
 // Variables de estado
 // ========================================
@@ -64,6 +66,11 @@ function cacheElements() {
 // ========================================
 function mostrarToast(mensaje, tipo = 'info') {
     const toast = elements.toast;
+    if (!toast) {
+        console.warn('Toast element not found');
+        return;
+    }
+    
     toast.textContent = mensaje;
     toast.className = 'categorieslist-toast';
     
@@ -103,6 +110,7 @@ style.textContent = `
 document.head.appendChild(style);
 
 function generarSlug(texto) {
+    if (!texto) return '';
     return texto
         .toLowerCase()
         .normalize('NFD')
@@ -112,6 +120,7 @@ function generarSlug(texto) {
 }
 
 function generarIdDesdeNombre(texto) {
+    if (!texto) return '';
     return texto
         .toLowerCase()
         .normalize('NFD')
@@ -121,11 +130,13 @@ function generarIdDesdeNombre(texto) {
 }
 
 function showModal(modal) {
+    if (!modal) return;
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
 }
 
 function hideModal(modal) {
+    if (!modal) return;
     modal.style.display = 'none';
     document.body.style.overflow = '';
 }
@@ -136,7 +147,7 @@ function hideModal(modal) {
 function renderTable() {
     if (!elements.tableBody) return;
     
-    if (categories.length === 0) {
+    if (!categories || categories.length === 0) {
         elements.tableBody.innerHTML = `
             <tr>
                 <td colspan="8" class="categorieslist-loading">
@@ -148,45 +159,55 @@ function renderTable() {
         return;
     }
     
-    elements.tableBody.innerHTML = categories.map(cat => `
-        <tr data-id="${cat.id}">
+    elements.tableBody.innerHTML = categories.map(cat => {
+        // Asegurar que todos los valores sean strings
+        const safeId = cat.id || '';
+        const safeName = cat.name || '';
+        const safeSlug = cat.slug || '';
+        const safeIcon = cat.icon || 'category';
+        const safeOrder = cat.order || 0;
+        const safeStatus = cat.status || 'active';
+        const safeSubcategories = Array.isArray(cat.subcategories) ? cat.subcategories : [];
+        
+        return `
+        <tr data-id="${escapeHtml(safeId)}">
             <td>
                 <div class="categorieslist-icon">
-                    <i class="material-symbols-outlined">${cat.icon || 'category'}</i>
+                    <i class="material-symbols-outlined">${escapeHtml(safeIcon)}</i>
                 </div>
             </td>
-            <td><code style="font-size: 12px;">${escapeHtml(cat.id)}</code></td>
-            <td><strong>${escapeHtml(cat.name)}</strong></td>
-            <td><code style="font-size: 12px;">${cat.slug}</code></td>
+            <td><code style="font-size: 12px;">${escapeHtml(safeId)}</code></td>
+            <td><strong>${escapeHtml(safeName)}</strong></td>
+            <td><code style="font-size: 12px;">${escapeHtml(safeSlug)}</code></td>
             <td>
                 <div class="categorieslist-subcategories">
-                    ${renderSubcategoriesPreview(cat.subcategories, cat.id)}
+                    ${renderSubcategoriesPreview(safeSubcategories, safeId)}
                 </div>
             </td>
-            <td>${cat.order || 0}</td>
+            <td>${safeOrder}</td>
             <td>
-                <span class="categorieslist-status-badge ${cat.status === 'active' ? 'categorieslist-status-active' : 'categorieslist-status-inactive'}">
-                    ${cat.status === 'active' ? 'Activo' : 'Inactivo'}
+                <span class="categorieslist-status-badge ${safeStatus === 'active' ? 'categorieslist-status-active' : 'categorieslist-status-inactive'}">
+                    ${safeStatus === 'active' ? 'Activo' : 'Inactivo'}
                 </span>
             </td>
             <td>
                 <div class="categorieslist-actions-cell">
-                    <button class="categorieslist-btn-subcategories" data-id="${cat.id}" data-name="${escapeHtml(cat.name)}" title="Gestionar subcategorías">
+                    <button class="categorieslist-btn-subcategories" data-id="${escapeHtml(safeId)}" data-name="${escapeHtml(safeName)}" title="Gestionar subcategorías">
                         <i class="material-symbols-outlined">subdirectory_arrow_right</i>
                         <span>Subcats</span>
                     </button>
-                    <button class="categorieslist-btn-edit" data-id="${cat.id}" title="Editar">
+                    <button class="categorieslist-btn-edit" data-id="${escapeHtml(safeId)}" title="Editar">
                         <i class="material-symbols-outlined">edit</i>
                         <span>Editar</span>
                     </button>
-                    <button class="categorieslist-btn-delete" data-id="${cat.id}" data-name="${escapeHtml(cat.name)}" title="Eliminar">
+                    <button class="categorieslist-btn-delete" data-id="${escapeHtml(safeId)}" data-name="${escapeHtml(safeName)}" title="Eliminar">
                         <i class="material-symbols-outlined">delete</i>
                         <span>Eliminar</span>
                     </button>
                 </div>
             </td>
         </tr>
-    `).join('');
+    `}).join('');
     
     // Event listeners para botones de la tabla
     document.querySelectorAll('.categorieslist-btn-subcategories').forEach(btn => {
@@ -214,7 +235,8 @@ function renderTable() {
 }
 
 function renderSubcategoriesPreview(subcategories, categoryId) {
-    if (!subcategories || subcategories.length === 0) {
+    // Validar que subcategories sea un array
+    if (!subcategories || !Array.isArray(subcategories) || subcategories.length === 0) {
         return '<span style="color: #888; font-size: 12px;">—</span>';
     }
     
@@ -222,14 +244,17 @@ function renderSubcategoriesPreview(subcategories, categoryId) {
     const visible = subcategories.slice(0, maxShow);
     const remaining = subcategories.length - maxShow;
     
-    const tags = visible.map(sub => `
-        <span class="categorieslist-subcategory-tag" data-cat-id="${categoryId}" data-sub-name="${escapeHtml(sub.name)}">
-            ${escapeHtml(sub.name)}
-        </span>
-    `).join('');
+    const tags = visible.map(sub => {
+        const safeName = sub.name || '';
+        return `
+            <span class="categorieslist-subcategory-tag" data-cat-id="${escapeHtml(categoryId)}" data-sub-name="${escapeHtml(safeName)}">
+                ${escapeHtml(safeName)}
+            </span>
+        `;
+    }).join('');
     
     const moreTag = remaining > 0 ? `
-        <span class="categorieslist-subcategory-tag more" data-cat-id="${categoryId}">
+        <span class="categorieslist-subcategory-tag more" data-cat-id="${escapeHtml(categoryId)}">
             +${remaining}
         </span>
     ` : '';
@@ -246,13 +271,11 @@ document.addEventListener('click', (e) => {
         const category = categories.find(c => c.id === catId);
         if (category) {
             openSubcategoryModal(catId, category.name);
-            // Pequeño delay para asegurar que el modal está abierto
             setTimeout(() => {
                 const input = elements.newSubcategoryName;
                 if (input) {
-                    input.value = subName;
+                    input.value = subName || '';
                     input.focus();
-                    // Seleccionar el texto para editar fácilmente
                     input.select();
                 }
             }, 200);
@@ -267,8 +290,9 @@ document.addEventListener('click', (e) => {
 });
 
 function escapeHtml(str) {
-    if (!str) return '';
-    return str
+    // Asegurar que str sea string
+    const safeStr = String(str || '');
+    return safeStr
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
@@ -281,25 +305,44 @@ function escapeHtml(str) {
 // ========================================
 async function loadCategories() {
     try {
-        categories = await CategoryService.getAll();
+        console.log('🔄 Cargando categorías...');
+        categories = await CategoryService.getAll({}, true); // forceRefresh = true
+        console.log(`✅ ${categories.length} categorías cargadas`);
         renderTable();
     } catch (error) {
         console.error('Error al cargar categorías:', error);
-        mostrarToast('Error al cargar las categorías', 'error');
+        mostrarToast('Error al cargar las categorías: ' + error.message, 'error');
         categories = [];
-        renderTable();
+        
+        // Mostrar error en la tabla
+        if (elements.tableBody) {
+            elements.tableBody.innerHTML = `
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 40px; color: #ef4444;">
+                        <div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>
+                        <strong>Error al cargar categorías</strong>
+                        <br>
+                        <span style="font-size: 13px; color: #888;">${escapeHtml(error.message)}</span>
+                        <br><br>
+                        <button onclick="location.reload()" style="padding: 8px 24px; background: var(--outlet-gold, #ddab3b); border: none; border-radius: 8px; cursor: pointer; color: #1a1a1a; font-weight: 600;">
+                            Reintentar
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }
     }
 }
 
 function resetCategoryForm() {
-    elements.categoryId.value = '';
-    elements.categoryName.value = '';
-    elements.categorySlug.value = '';
-    elements.categoryDescription.value = '';
-    elements.categoryIcon.value = '';
-    elements.categoryOrder.value = '0';
-    elements.categoryStatus.value = 'active';
-    elements.modalTitle.textContent = 'Nueva Categoría';
+    if (elements.categoryId) elements.categoryId.value = '';
+    if (elements.categoryName) elements.categoryName.value = '';
+    if (elements.categorySlug) elements.categorySlug.value = '';
+    if (elements.categoryDescription) elements.categoryDescription.value = '';
+    if (elements.categoryIcon) elements.categoryIcon.value = '';
+    if (elements.categoryOrder) elements.categoryOrder.value = '0';
+    if (elements.categoryStatus) elements.categoryStatus.value = 'active';
+    if (elements.modalTitle) elements.modalTitle.textContent = 'Nueva Categoría';
 }
 
 function openCreateModal() {
@@ -309,16 +352,19 @@ function openCreateModal() {
 
 async function editCategory(id) {
     const category = categories.find(c => c.id === id);
-    if (!category) return;
+    if (!category) {
+        mostrarToast('Categoría no encontrada', 'error');
+        return;
+    }
     
-    elements.categoryId.value = category.id;
-    elements.categoryName.value = category.name;
-    elements.categorySlug.value = category.slug;
-    elements.categoryDescription.value = category.description || '';
-    elements.categoryIcon.value = category.icon || '';
-    elements.categoryOrder.value = category.order || 0;
-    elements.categoryStatus.value = category.status || 'active';
-    elements.modalTitle.textContent = 'Editar Categoría';
+    if (elements.categoryId) elements.categoryId.value = category.id || '';
+    if (elements.categoryName) elements.categoryName.value = category.name || '';
+    if (elements.categorySlug) elements.categorySlug.value = category.slug || '';
+    if (elements.categoryDescription) elements.categoryDescription.value = category.description || '';
+    if (elements.categoryIcon) elements.categoryIcon.value = category.icon || '';
+    if (elements.categoryOrder) elements.categoryOrder.value = category.order || 0;
+    if (elements.categoryStatus) elements.categoryStatus.value = category.status || 'active';
+    if (elements.modalTitle) elements.modalTitle.textContent = 'Editar Categoría';
     
     showModal(elements.categoryModal);
 }
@@ -326,16 +372,16 @@ async function editCategory(id) {
 async function saveCategory(event) {
     event.preventDefault();
     
-    const name = elements.categoryName.value.trim();
+    const name = elements.categoryName?.value?.trim() || '';
     if (!name) {
         mostrarToast('El nombre de la categoría es obligatorio', 'error');
+        if (elements.categoryName) elements.categoryName.focus();
         return;
     }
     
-    const categoryId = elements.categoryId.value;
+    const categoryId = elements.categoryId?.value || '';
     const isEditing = !!categoryId;
     
-    // Validar ID para nueva categoría
     if (!isEditing) {
         let generatedId = generarIdDesdeNombre(name);
         if (!generatedId) {
@@ -343,29 +389,26 @@ async function saveCategory(event) {
             return;
         }
         
-        // Verificar si el ID ya existe
         const existingCategory = categories.find(c => c.id === generatedId);
         if (existingCategory) {
             mostrarToast(`Ya existe una categoría con el ID "${generatedId}". Por favor, usa un nombre diferente.`, 'error');
             return;
         }
         
-        // Asignar el ID generado
-        elements.categoryId.value = generatedId;
+        if (elements.categoryId) elements.categoryId.value = generatedId;
     }
     
     const categoryData = {
         name: name,
-        slug: elements.categorySlug.value.trim() || generarSlug(name),
-        description: elements.categoryDescription.value.trim(),
-        icon: elements.categoryIcon.value.trim(),
-        order: parseInt(elements.categoryOrder.value) || 0,
-        status: elements.categoryStatus.value
+        slug: elements.categorySlug?.value?.trim() || generarSlug(name),
+        description: elements.categoryDescription?.value?.trim() || '',
+        icon: elements.categoryIcon?.value?.trim() || '',
+        order: parseInt(elements.categoryOrder?.value) || 0,
+        status: elements.categoryStatus?.value || 'active'
     };
     
-    // Para nueva categoría, incluir el ID
     if (!isEditing) {
-        categoryData.id = elements.categoryId.value;
+        categoryData.id = elements.categoryId?.value || '';
     }
     
     try {
@@ -404,11 +447,14 @@ async function deleteCategory(id) {
 // ========================================
 async function openSubcategoryModal(categoryId, categoryName) {
     const category = categories.find(c => c.id === categoryId);
-    if (!category) return;
+    if (!category) {
+        mostrarToast('Categoría no encontrada', 'error');
+        return;
+    }
     
     currentCategoryForSub = category;
-    elements.currentCategoryName.textContent = category.name;
-    elements.submodalTitle.textContent = `Subcategorías de ${category.name}`;
+    if (elements.currentCategoryName) elements.currentCategoryName.textContent = category.name || '';
+    if (elements.submodalTitle) elements.submodalTitle.textContent = `Subcategorías de ${category.name}`;
     
     renderSubcategoriesList(category.subcategories || []);
     showModal(elements.subcategoryModal);
@@ -417,26 +463,28 @@ async function openSubcategoryModal(categoryId, categoryName) {
 function renderSubcategoriesList(subcategories) {
     if (!elements.subcategoriesList) return;
     
-    if (!subcategories || subcategories.length === 0) {
+    if (!subcategories || !Array.isArray(subcategories) || subcategories.length === 0) {
         elements.subcategoriesList.innerHTML = '<div class="categorieslist-empty">No hay subcategorías</div>';
         return;
     }
     
-    elements.subcategoriesList.innerHTML = subcategories.map((sub, index) => `
-        <div class="categorieslist-subcategory-item" data-index="${index}">
-            <span class="categorieslist-subcategory-name">${escapeHtml(sub.name)}</span>
-            <div class="categorieslist-subcategory-actions">
-                <button class="categorieslist-subcategory-edit" data-index="${index}" data-name="${escapeHtml(sub.name)}" title="Editar">
-                    <i class="material-symbols-outlined">edit</i>
-                </button>
-                <button class="categorieslist-subcategory-delete" data-index="${index}" data-name="${escapeHtml(sub.name)}" title="Eliminar">
-                    <i class="material-symbols-outlined">delete</i>
-                </button>
+    elements.subcategoriesList.innerHTML = subcategories.map((sub, index) => {
+        const safeName = sub.name || '';
+        return `
+            <div class="categorieslist-subcategory-item" data-index="${index}">
+                <span class="categorieslist-subcategory-name">${escapeHtml(safeName)}</span>
+                <div class="categorieslist-subcategory-actions">
+                    <button class="categorieslist-subcategory-edit" data-index="${index}" data-name="${escapeHtml(safeName)}" title="Editar">
+                        <i class="material-symbols-outlined">edit</i>
+                    </button>
+                    <button class="categorieslist-subcategory-delete" data-index="${index}" data-name="${escapeHtml(safeName)}" title="Eliminar">
+                        <i class="material-symbols-outlined">delete</i>
+                    </button>
+                </div>
             </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
     
-    // Event listeners para editar/eliminar subcategorías
     document.querySelectorAll('.categorieslist-subcategory-edit').forEach(btn => {
         btn.addEventListener('click', () => {
             const index = parseInt(btn.dataset.index);
@@ -455,9 +503,10 @@ function renderSubcategoriesList(subcategories) {
 }
 
 async function addSubcategory() {
-    const subcategoryName = elements.newSubcategoryName.value.trim();
+    const subcategoryName = elements.newSubcategoryName?.value?.trim() || '';
     if (!subcategoryName) {
         mostrarToast('Ingrese un nombre para la subcategoría', 'error');
+        if (elements.newSubcategoryName) elements.newSubcategoryName.focus();
         return;
     }
     
@@ -469,7 +518,6 @@ async function addSubcategory() {
     try {
         const updatedCategory = await CategoryService.addSubcategory(currentCategoryForSub.id, subcategoryName);
         
-        // Actualizar en el array principal
         const index = categories.findIndex(c => c.id === updatedCategory.id);
         if (index !== -1) {
             categories[index] = updatedCategory;
@@ -477,8 +525,8 @@ async function addSubcategory() {
         currentCategoryForSub = updatedCategory;
         
         renderSubcategoriesList(updatedCategory.subcategories || []);
-        renderTable(); // Actualizar la tabla principal también
-        elements.newSubcategoryName.value = '';
+        renderTable();
+        if (elements.newSubcategoryName) elements.newSubcategoryName.value = '';
         mostrarToast(`Subcategoría "${subcategoryName}" añadida`, 'success');
         
     } catch (error) {
@@ -494,9 +542,11 @@ async function editSubcategory(index, oldName) {
     const trimmedName = newName.trim();
     if (!trimmedName) return;
     
-    // Obtener el ID de la subcategoría
-    const subcategoryId = currentCategoryForSub.subcategories[index]?.id;
-    if (!subcategoryId) return;
+    const subcategoryId = currentCategoryForSub?.subcategories?.[index]?.id;
+    if (!subcategoryId) {
+        mostrarToast('Subcategoría no encontrada', 'error');
+        return;
+    }
     
     try {
         const updatedCategory = await CategoryService.updateSubcategory(
@@ -522,9 +572,12 @@ async function editSubcategory(index, oldName) {
 }
 
 async function deleteSubcategory(subcategoryId) {
-    if (!currentCategoryForSub) return;
+    if (!currentCategoryForSub) {
+        mostrarToast('No hay categoría seleccionada', 'error');
+        return;
+    }
     
-    const subName = currentCategoryForSub.subcategories.find(sub => sub.id === subcategoryId)?.name;
+    const subName = currentCategoryForSub.subcategories?.find(sub => sub.id === subcategoryId)?.name || '';
     
     try {
         const updatedCategory = await CategoryService.deleteSubcategory(currentCategoryForSub.id, subcategoryId);
@@ -550,7 +603,7 @@ async function deleteSubcategory(subcategoryId) {
 // ========================================
 function showDeleteModal(type, id, name) {
     deleteTarget = { type, id, name };
-    elements.deleteItemName.textContent = name;
+    if (elements.deleteItemName) elements.deleteItemName.textContent = name || '';
     showModal(elements.deleteModal);
 }
 
@@ -578,8 +631,7 @@ function setupSlugGeneration() {
     if (elements.categoryName) {
         elements.categoryName.addEventListener('input', () => {
             const name = elements.categoryName.value;
-            if (name && !elements.categoryId.value) {
-                // Solo auto-generar en creación, no en edición
+            if (name && elements.categorySlug && !elements.categoryId?.value) {
                 elements.categorySlug.value = generarSlug(name);
             }
         });
@@ -590,14 +642,11 @@ function setupSlugGeneration() {
 // Event Listeners
 // ========================================
 function initEventListeners() {
-    // Botón agregar
     elements.addBtn?.addEventListener('click', openCreateModal);
     
-    // Modal de categoría
     elements.categoryForm?.addEventListener('submit', saveCategory);
     elements.closeModalBtn?.addEventListener('click', () => hideModal(elements.categoryModal));
     
-    // Modal de subcategorías
     elements.addSubcategoryBtn?.addEventListener('click', addSubcategory);
     elements.closeSubmodalBtn?.addEventListener('click', () => hideModal(elements.subcategoryModal));
     elements.newSubcategoryName?.addEventListener('keypress', (e) => {
@@ -607,12 +656,10 @@ function initEventListeners() {
         }
     });
     
-    // Modal de eliminación
     elements.confirmDeleteBtn?.addEventListener('click', confirmDelete);
     elements.cancelDeleteBtn?.addEventListener('click', hideDeleteModal);
     elements.closeDeleteModalBtn?.addEventListener('click', hideDeleteModal);
     
-    // Cerrar modales con ESC
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             if (elements.deleteModal?.style.display === 'flex') hideDeleteModal();
@@ -621,7 +668,6 @@ function initEventListeners() {
         }
     });
     
-    // Cerrar modales al hacer clic fuera
     elements.categoryModal?.addEventListener('click', (e) => {
         if (e.target === elements.categoryModal) hideModal(elements.categoryModal);
     });
@@ -632,7 +678,6 @@ function initEventListeners() {
         if (e.target === elements.deleteModal) hideDeleteModal();
     });
     
-    // Auto-generar slug
     setupSlugGeneration();
 }
 
@@ -656,7 +701,7 @@ document.addEventListener('themeChanged', (e) => {
 });
 
 // ========================================
-// Inicialización
+// Inicialización - Exportada para que el HTML la use
 // ========================================
 export async function readCategoriesController() {
     console.log('📋 Read Categories Controller - Listado de categorías');

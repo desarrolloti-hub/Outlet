@@ -12,13 +12,8 @@ export class Category {
         this.name = data.name || '';
         this.slug = data.slug || '';
         this.description = data.description || '';
-        this.icon = data.icon || '';
         
-        // Orden y estado
-        this.order = data.order || 0;
-        this.status = data.status || 'active';  // active, inactive
-        
-        // Subcategorías
+        // Subcategorías (con descripción)
         this.subcategories = data.subcategories || [];
         
         // Metadata
@@ -29,38 +24,27 @@ export class Category {
     
     // ========== GETTERS ==========
     
-    // ¿Está activa?
-    get isActive() {
-        return this.status === 'active';
-    }
-    
-    // Cantidad de subcategorías
     get subcategoriesCount() {
         return this.subcategories.length;
     }
     
-    // Subcategorías activas (si tuvieran estado)
     get activeSubcategories() {
         return this.subcategories.filter(sub => sub.status !== 'inactive');
     }
     
-    // Datos resumidos para listados
     get summary() {
         return {
             id: this.id,
             name: this.name,
             slug: this.slug,
-            icon: this.icon,
-            order: this.order,
-            status: this.status,
             subcategoriesCount: this.subcategoriesCount
         };
     }
     
     // ========== MÉTODOS ==========
     
-    // Agregar subcategoría
-    addSubcategory(subcategoryName) {
+    // Agregar subcategoría con descripción
+    addSubcategory(subcategoryName, description = '') {
         if (!subcategoryName || subcategoryName.trim() === '') {
             throw new Error('El nombre de la subcategoría es requerido');
         }
@@ -77,8 +61,8 @@ export class Category {
         const newSubcategory = {
             id: `${this.id}_sub_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
             name: subcategoryName.trim(),
+            description: description.trim() || '',
             slug: this.generateSlug(subcategoryName),
-            status: 'active',
             createdAt: new Date().toISOString()
         };
         
@@ -88,8 +72,8 @@ export class Category {
         return newSubcategory;
     }
     
-    // Actualizar subcategoría
-    updateSubcategory(index, newName) {
+    // Actualizar subcategoría (con descripción)
+    updateSubcategory(index, newName, newDescription = '') {
         if (!this.subcategories[index]) {
             throw new Error('Subcategoría no encontrada');
         }
@@ -108,6 +92,7 @@ export class Category {
         }
         
         this.subcategories[index].name = newName.trim();
+        this.subcategories[index].description = newDescription.trim() || '';
         this.subcategories[index].slug = this.generateSlug(newName);
         this.subcategories[index].updatedAt = new Date().toISOString();
         this.updatedAt = new Date().toISOString();
@@ -129,6 +114,7 @@ export class Category {
     
     // Generar slug
     generateSlug(texto) {
+        if (!texto) return '';
         return texto
             .toLowerCase()
             .normalize('NFD')
@@ -162,14 +148,6 @@ export class Category {
             this.slug = this.generateSlug(this.name);
         }
         
-        if (this.order < 0) {
-            errors.push('El orden debe ser un número positivo');
-        }
-        
-        if (!['active', 'inactive'].includes(this.status)) {
-            errors.push('El estado debe ser "active" o "inactive"');
-        }
-        
         return {
             isValid: errors.length === 0,
             errors
@@ -183,9 +161,6 @@ export class Category {
             name: this.name,
             slug: this.slug,
             description: this.description || '',
-            icon: this.icon || '',
-            order: this.order,
-            status: this.status,
             subcategories: this.subcategories.map(sub => ({ ...sub })),
             createdAt: this.createdAt,
             updatedAt: this.updatedAt,
