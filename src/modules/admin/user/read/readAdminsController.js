@@ -138,13 +138,34 @@ function hideModal(modal) {
     document.body.style.overflow = '';
 }
 
+/**
+ * Obtener nombre completo de un admin
+ */
+function getNombreCompleto(admin) {
+    const partes = [];
+    if (admin.nombre) partes.push(admin.nombre);
+    if (admin.apellidoPa) partes.push(admin.apellidoPa);
+    if (admin.apellidoMa) partes.push(admin.apellidoMa);
+    return partes.length > 0 ? partes.join(' ') : 'Sin nombre';
+}
+
+/**
+ * Obtener iniciales de un admin
+ */
+function getIniciales(admin) {
+    let iniciales = '';
+    if (admin.nombre) iniciales += admin.nombre.charAt(0);
+    if (admin.apellidoPa) iniciales += admin.apellidoPa.charAt(0);
+    return iniciales.toUpperCase() || 'A';
+}
+
 // ========================================
 // Renderizar tabla de administradores
 // ========================================
 function renderTable() {
     if (!elements.tableBody) return;
     
-    if (admins.length === 0) {
+    if (!admins || admins.length === 0) {
         elements.tableBody.innerHTML = `
             <tr>
                 <td colspan="8" class="adminslist-loading">
@@ -157,25 +178,42 @@ function renderTable() {
         return;
     }
     
-    elements.tableBody.innerHTML = admins.map(admin => `
+    elements.tableBody.innerHTML = admins.map(admin => {
+        // ✅ Mapeo correcto de campos de Firestore
+        const nombreCompleto = getNombreCompleto(admin);
+        const iniciales = getIniciales(admin);
+        const email = admin.email || 'Sin email';
+        const rol = admin.rol || 'admin';
+        const estado = admin.estado || 'activo';
+        
+        // Para teléfono - si no existe, mostrar '—'
+        const telefono = admin.telefono || admin.phone || '—';
+        
+        // Para icono/avatar - usar iniciales si no hay icono
+        const icono = admin.icon || admin.avatar || 'person';
+        
+        // ID corto para mostrar
+        const idCorto = admin.id ? admin.id.substring(0, 8) : '—';
+        
+        return `
         <tr data-id="${admin.id}">
             <td>
                 <div class="adminslist-avatar">
-                    <i class="material-symbols-outlined">${admin.icon || 'person'}</i>
+                    <i class="material-symbols-outlined">${escapeHtml(icono)}</i>
                 </div>
             </td>
-            <td><code style="font-size: 12px;">${escapeHtml(admin.id)}</code></td>
-            <td><strong>${escapeHtml(admin.name)}</strong></td>
-            <td>${escapeHtml(admin.email)}</td>
+            <td><code style="font-size: 12px;">${escapeHtml(idCorto)}</code></td>
+            <td><strong>${escapeHtml(nombreCompleto)}</strong></td>
+            <td>${escapeHtml(email)}</td>
             <td>
-                <span class="adminslist-role-badge ${getRoleClass(admin.role)}">
-                    ${getRoleLabel(admin.role)}
+                <span class="adminslist-role-badge ${getRoleClass(rol)}">
+                    ${getRoleLabel(rol)}
                 </span>
             </td>
-            <td>${admin.phone || '—'}</td>
+            <td>${escapeHtml(telefono)}</td>
             <td>
-                <span class="adminslist-status-badge ${admin.status === 'active' ? 'adminslist-status-active' : 'adminslist-status-inactive'}">
-                    ${admin.status === 'active' ? 'Activo' : 'Inactivo'}
+                <span class="adminslist-status-badge ${estado === 'activo' || estado === 'active' ? 'adminslist-status-active' : 'adminslist-status-inactive'}">
+                    ${estado === 'activo' || estado === 'active' ? 'Activo' : 'Inactivo'}
                 </span>
             </td>
             <td>
@@ -184,14 +222,14 @@ function renderTable() {
                         <i class="material-symbols-outlined">edit</i>
                         <span>Editar</span>
                     </button>
-                    <button class="adminslist-btn-delete" data-id="${admin.id}" data-name="${escapeHtml(admin.name)}" title="Eliminar administrador">
+                    <button class="adminslist-btn-delete" data-id="${admin.id}" data-name="${escapeHtml(nombreCompleto)}" title="Eliminar administrador">
                         <i class="material-symbols-outlined">delete</i>
                         <span>Eliminar</span>
                     </button>
                 </div>
             </td>
         </tr>
-    `).join('');
+    `}).join('');
     
     // Actualizar contador
     if (elements.totalAdmins) {
@@ -220,11 +258,18 @@ function renderTable() {
 // ========================================
 async function loadAdmins() {
     try {
-        admins = await AdminService.getAll({}, false);
+        console.log('🔄 Cargando administradores...');
+        
+        // ✅ Usar el método correcto
+        admins = await AdminService.getAllAdmins();
+        
+        console.log('✅ Administradores cargados:', admins.length);
+        console.log('📋 Primer admin:', admins[0]);
+        
         renderTable();
     } catch (error) {
-        console.error('Error al cargar administradores:', error);
-        mostrarToast('Error al cargar los administradores', 'error');
+        console.error('❌ Error al cargar administradores:', error);
+        mostrarToast(`Error al cargar los administradores: ${error.message}`, 'error');
         admins = [];
         renderTable();
     }
@@ -239,7 +284,7 @@ function resetAdminForm() {
     elements.adminConfirmPassword.value = '';
     elements.adminPhone.value = '';
     elements.adminRole.value = 'admin';
-    elements.adminStatus.value = 'active';
+    elements.adminStatus.value = 'activo';
     elements.adminIcon.value = '';
     elements.adminCreatedAt.value = '';
     elements.modalTitle.textContent = 'Editar Administrador';
@@ -247,19 +292,24 @@ function resetAdminForm() {
 
 async function editAdmin(id) {
     const admin = admins.find(a => a.id === id);
-    if (!admin) return;
+    if (!admin) {
+        mostrarToast('Administrador no encontrado', 'error');
+        return;
+    }
+    
+    console.log('✏️ Editando admin:', admin);
     
     isEditMode = true;
     elements.adminId.value = admin.id;
-    elements.adminName.value = admin.name;
-    elements.adminEmail.value = admin.email;
+    elements.adminName.value = admin.nombre || '';
+    elements.adminEmail.value = admin.email || '';
     elements.adminPassword.value = '';
     elements.adminConfirmPassword.value = '';
-    elements.adminPhone.value = admin.phone || '';
-    elements.adminRole.value = admin.role || 'admin';
-    elements.adminStatus.value = admin.status || 'active';
-    elements.adminIcon.value = admin.icon || '';
-    elements.adminCreatedAt.value = formatDate(admin.createdAt);
+    elements.adminPhone.value = admin.telefono || admin.phone || '';
+    elements.adminRole.value = admin.rol || 'admin';
+    elements.adminStatus.value = admin.estado || 'activo';
+    elements.adminIcon.value = admin.icon || admin.avatar || 'person';
+    elements.adminCreatedAt.value = formatDate(admin.fechaCreacion);
     elements.modalTitle.textContent = 'Editar Administrador';
     
     showModal(elements.adminModal);
@@ -288,8 +338,8 @@ async function saveAdmin(event) {
     
     // Validar contraseña solo si se está cambiando
     if (password) {
-        if (password.length < 8) {
-            mostrarToast('La contraseña debe tener al menos 8 caracteres', 'error');
+        if (password.length < 6) {
+            mostrarToast('La contraseña debe tener al menos 6 caracteres', 'error');
             elements.adminPassword.focus();
             return;
         }
@@ -300,13 +350,14 @@ async function saveAdmin(event) {
         }
     }
     
+    // ✅ Construir datos con los nombres de campos correctos para Firestore
     const adminData = {
-        name: name,
+        nombre: name,
         email: email,
-        phone: elements.adminPhone.value.trim(),
-        role: elements.adminRole.value,
-        status: elements.adminStatus.value,
-        icon: elements.adminIcon.value.trim()
+        telefono: elements.adminPhone.value.trim() || '',
+        rol: elements.adminRole.value,
+        estado: elements.adminStatus.value,
+        icon: elements.adminIcon.value.trim() || 'person'
     };
     
     if (password) {
@@ -314,24 +365,24 @@ async function saveAdmin(event) {
     }
     
     try {
-        const updatedAdmin = await AdminService.update(adminId, adminData);
-        mostrarToast(`✅ Administrador "${updatedAdmin.name}" actualizado exitosamente`, 'success');
+        const updatedAdmin = await AdminService.updateAdmin(adminId, adminData);
+        mostrarToast(`✅ Administrador "${updatedAdmin.nombre}" actualizado exitosamente`, 'success');
         await loadAdmins();
         hideModal(elements.adminModal);
         resetAdminForm();
     } catch (error) {
-        console.error('Error al actualizar administrador:', error);
+        console.error('❌ Error al actualizar administrador:', error);
         mostrarToast(`❌ Error: ${error.message}`, 'error');
     }
 }
 
 async function deleteAdmin(id) {
     try {
-        await AdminService.delete(id);
-        mostrarToast('Administrador eliminado correctamente', 'success');
+        await AdminService.deleteAdmin(id);
+        mostrarToast('✅ Administrador eliminado correctamente', 'success');
         await loadAdmins();
     } catch (error) {
-        console.error('Error al eliminar administrador:', error);
+        console.error('❌ Error al eliminar administrador:', error);
         mostrarToast(`❌ Error: ${error.message}`, 'error');
     }
 }
@@ -414,6 +465,24 @@ export async function readAdminsController() {
     cacheElements();
     syncDarkMode();
     initEventListeners();
+    
+    // ✅ Verificar sesión antes de cargar
+    const session = AdminService.getCurrentSession();
+    console.log('🔐 Sesión actual:', session);
+    console.log('🔐 Rol en sesión:', session?.rol);
+    console.log('🔐 ID del admin:', session?.id);
+    
+    if (!session) {
+        console.warn('⚠️ No hay sesión activa');
+        mostrarToast('⚠️ No hay sesión activa. Inicia sesión nuevamente.', 'error');
+        return;
+    }
+    
+    if (session.rol !== 'admin' && session.rol !== 'super_admin') {
+        console.warn('⚠️ El usuario no tiene rol de administrador:', session.rol);
+        mostrarToast(`⚠️ No tienes permisos de administrador. Rol actual: ${session.rol}`, 'error');
+        return;
+    }
     
     await loadAdmins();
     

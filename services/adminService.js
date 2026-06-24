@@ -225,16 +225,43 @@ export const AdminService = {
 
     /**
      * Obtener todos los administradores
+     * ✅ Método principal para obtener la lista
      */
     async getAllAdmins() {
         const currentAdmin = await this.getCurrentAdmin(true);
         
-        if (!currentAdmin || (currentAdmin.rol !== ROLES.SUPER_ADMIN && !currentAdmin.hasPermission('admin.view'))) {
+        console.log('🔍 Verificando permisos para getAllAdmins:');
+        console.log('  - Admin actual:', currentAdmin?.nombre);
+        console.log('  - Rol:', currentAdmin?.rol);
+        
+        if (!currentAdmin) {
+            throw new Error('No autenticado. Inicie sesión nuevamente.');
+        }
+        
+        // ✅ Verificar si tiene permisos para ver administradores
+        if (currentAdmin.rol !== ROLES.SUPER_ADMIN && 
+            currentAdmin.rol !== ROLES.ADMIN && 
+            !currentAdmin.hasPermission('admin.view')) {
             throw new Error('No tiene permisos para ver la lista de administradores');
         }
         
         const admins = await AdminRepository.getAll();
-        return admins.map(admin => new Admin(admin).datosResumidos);
+        console.log(`📋 Total admins obtenidos: ${admins.length}`);
+        
+        // ✅ Retornar los datos mapeados correctamente
+        return admins.map(admin => {
+            const adminObj = new Admin(admin);
+            return adminObj.datosResumidos;
+        });
+    },
+
+    /**
+     * ✅ ALIAS: getAll() - Método que espera el controller
+     * Redirige al método principal getAllAdmins()
+     */
+    async getAll(options = {}, forceRefresh = false) {
+        console.log('🔄 getAll() llamado - redirigiendo a getAllAdmins()');
+        return await this.getAllAdmins();
     },
 
     /**
@@ -257,19 +284,42 @@ export const AdminService = {
             throw new Error('Administrador no encontrado');
         }
         
+        // ✅ Mapear campos para compatibilidad
+        const mappedData = {
+            nombre: updateData.nombre || updateData.name,
+            apellidoPa: updateData.apellidoPa || '',
+            apellidoMa: updateData.apellidoMa || '',
+            email: updateData.email || updateData.correo,
+            rol: updateData.rol || updateData.role,
+            estado: updateData.estado || updateData.status,
+            telefono: updateData.telefono || updateData.phone,
+            avatar: updateData.avatar || updateData.icon || 'person'
+        };
+        
+        // Eliminar campos undefined
+        Object.keys(mappedData).forEach(key => {
+            if (mappedData[key] === undefined) {
+                delete mappedData[key];
+            }
+        });
+        
+        // No permitir cambiar rol si no es super_admin
         if (updateData.rol && currentAdmin.rol !== ROLES.SUPER_ADMIN) {
-            delete updateData.rol;
+            delete mappedData.rol;
         }
         
-        if (updateData.estado === 'inactivo' && adminId === currentAdmin.id) {
+        // No permitir desactivar propia cuenta
+        if ((mappedData.estado === 'inactivo' || mappedData.estado === 'inactive') && 
+            adminId === currentAdmin.id) {
             throw new Error('No puede desactivar su propia cuenta');
         }
         
-        if (updateData.email && !this._validateEmail(updateData.email)) {
+        // Validar email
+        if (mappedData.email && !this._validateEmail(mappedData.email)) {
             throw new Error('Email inválido');
         }
         
-        const updated = await AdminRepository.update(adminId, updateData);
+        const updated = await AdminRepository.update(adminId, mappedData);
         
         if (adminId === currentAdmin.id) {
             const updatedAdmin = new Admin(updated);
@@ -435,6 +485,46 @@ export const AdminService = {
             hasAdminSession: !!adminSession,
             adminSession: adminSession ? JSON.parse(adminSession) : null
         };
+    },
+
+    /**
+     * 🔍 DIAGNÓSTICO: Verificar si el admin actual tiene permisos
+     * Útil para depurar problemas de visualización
+     */
+    async diagnosticarPermisos() {
+        console.log('🔍 ===== DIAGNÓSTICO DE PERMISOS =====');
+        
+        const session = this._getSession();
+        console.log('  📦 Sesión existe:', !!session);
+        console.log('  📦 Rol en sesión:', session?.rol);
+        console.log('  📦 ¿Es admin o super_admin?', session?.rol === 'admin' || session?.rol === 'super_admin');
+        
+        try {
+            const currentAdmin = await this.getCurrentAdmin(true);
+            console.log('  👤 Admin actual desde DB:', currentAdmin?.nombre);
+            console.log('  👤 Rol desde DB:', currentAdmin?.rol);
+            
+            if (currentAdmin) {
+                const hasAdminView = currentAdmin.hasPermission('admin.view');
+                console.log('  🔑 Tiene permiso admin.view:', hasAdminView);
+                console.log('  🔑 Es super_admin:', currentAdmin.rol === ROLES.SUPER_ADMIN);
+                console.log('  🔑 Es admin:', currentAdmin.rol === ROLES.ADMIN);
+            }
+        } catch (error) {
+            console.error('  ❌ Error al obtener admin actual:', error.message);
+        }
+        
+        try {
+            const admins = await this.getAllAdmins();
+            console.log('  📋 Admins obtenidos:', admins.length);
+            if (admins.length > 0) {
+                console.log('  📋 Primer admin:', admins[0]);
+            }
+        } catch (error) {
+            console.error('  ❌ Error al obtener admins:', error.message);
+        }
+        
+        console.log('🔍 ===== FIN DIAGNÓSTICO =====');
     },
 
     // ========== MÉTODOS PRIVADOS ==========
