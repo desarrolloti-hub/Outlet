@@ -9,13 +9,13 @@ const LAYOUT_PATHS = {
         navbar: '/modules/admin/layout/adminNavbar.html',
         footer: '/modules/admin/layout/adminFooter.html'
     },
-    [ROLES.VISITOR]: {
-        navbar: '/modules/visitor/layout/navbar.html',
-        footer: '/modules/visitor/layout/footer.html'
-    },
     [ROLES.GUEST]: {
         navbar: '/modules/visitor/layout/navbar.html',
         footer: '/modules/visitor/layout/footer.html'
+    },
+    [ROLES.CUSTOMER]: {
+        navbar: '/modules/customer/layout/navbarCustumer.html',  // ✅ Verifica que el nombre del archivo coincida
+        footer: '/modules/customer/layout/footerCustomer.html'
     }
 };
 
@@ -49,15 +49,13 @@ async function loadComponent(url, containerId) {
  */
 async function initializeControllers(role) {
     try {
-        // Solo admin tiene controlador de navbar
+        // Solo admin tiene controlador específico en el loader
         if (role === ROLES.ADMIN) {
             console.log('🎮 Inicializando controlador del navbar admin...');
             
-            // Importar dinámicamente el controlador con ruta relativa
             const module = await import('../../admin/layout/adminNavbarController.js');
             
             if (module && typeof module.initAdminNavbarController === 'function') {
-                // Esperar un tick para que el DOM esté listo
                 await new Promise(resolve => setTimeout(resolve, 150));
                 module.initAdminNavbarController();
                 console.log('✅ Controlador admin inicializado correctamente');
@@ -65,6 +63,9 @@ async function initializeControllers(role) {
                 console.warn('⚠️ No se encontró initAdminNavbarController en el módulo');
             }
         }
+        
+        // Si necesitas inicializar algo específico para customer aquí
+        // puedes agregarlo, pero normalmente se maneja desde main.js
         
     } catch (error) {
         console.error('❌ Error inicializando controladores:', error);

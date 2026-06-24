@@ -39,16 +39,14 @@ export const AdminService = {
             throw new Error('Ya existe un administrador con este email');
         }
         
-        // ✅ Forzar rol 'admin' al crear (a menos que sea super_admin explícitamente)
-        let rolAsignado = ROLES.ADMIN; // Por defecto 'admin'
+        let rolAsignado = ROLES.ADMIN;
         
-        // Si el currentAdminRole es super_admin y viene especificado otro rol, respetarlo
         if (adminData.rol === ROLES.SUPER_ADMIN && currentAdminRole === ROLES.SUPER_ADMIN) {
             rolAsignado = ROLES.SUPER_ADMIN;
         } else if (adminData.rol === ROLES.EDITOR && currentAdminRole === ROLES.SUPER_ADMIN) {
             rolAsignado = ROLES.EDITOR;
         } else {
-            rolAsignado = ROLES.ADMIN; // ✅ Siempre 'admin' por defecto
+            rolAsignado = ROLES.ADMIN;
         }
         
         console.log('📝 Creando admin con rol:', rolAsignado);
@@ -87,37 +85,51 @@ export const AdminService = {
             
             const admin = await AdminRepository.getByEmail(email.toLowerCase().trim());
             
-            if (admin) {
-                const adminObj = new Admin(admin);
-                
-                if (!adminObj.isActive()) {
-                    if (adminObj.bloqueadoHasta) {
-                        const bloqueadoHasta = new Date(adminObj.bloqueadoHasta);
-                        if (bloqueadoHasta > new Date()) {
-                            const minutosRestantes = Math.ceil((bloqueadoHasta - new Date()) / 60000);
-                            throw new Error(`Cuenta bloqueada. Intente en ${minutosRestantes} minutos`);
-                        }
+            // ✅ FIX: si el correo no pertenece a un admin, cortar aquí.
+            // Antes, si `admin` era null, el código seguía de largo sin
+            // lanzar error, y llamaba a loginWithEmail igual. Como Firebase
+            // Auth autentica cualquier correo/contraseña válidos sin
+            // importar el rol, esto provocaba que login.controller.js
+            // clasificara erróneamente a clientes como 'admin'
+            // (por el fallback `result.adminData?.rol || 'admin'`),
+            // mandándolos a /homeAdmin en vez de su página de cliente.
+            if (!admin) {
+                throw new Error('No tiene permisos de administrador');
+            }
+            
+            const adminObj = new Admin(admin);
+            
+            if (!adminObj.isActive()) {
+                if (adminObj.bloqueadoHasta) {
+                    const bloqueadoHasta = new Date(adminObj.bloqueadoHasta);
+                    if (bloqueadoHasta > new Date()) {
+                        const minutosRestantes = Math.ceil((bloqueadoHasta - new Date()) / 60000);
+                        throw new Error(`Cuenta bloqueada. Intente en ${minutosRestantes} minutos`);
                     }
-                    throw new Error('Cuenta inactiva o suspendida');
                 }
+                throw new Error('Cuenta inactiva o suspendida');
             }
             
             const result = await AdminRepository.loginWithEmail(email.toLowerCase().trim(), password);
             
-            if (result.adminData) {
-                await AdminRepository.updateFailedAttempts(email, false);
-                
-                // ✅ Guardar sesión con estructura JSON completa
-                const adminObj = new Admin(result.adminData);
-                const sessionData = this._buildSessionData(adminObj);
-                this._saveSession(sessionData);
-                this._dispatchAuthChange(result.adminData);
-                
-                // ✅ Verificar que se guardó correctamente
-                const savedSession = this._getSession();
-                console.log('✅ Sesión guardada en localStorage:', savedSession);
-                console.log('📦 Rol guardado en sesión:', savedSession?.rol);
+            // ✅ FIX adicional: resguardo por si loginWithEmail no regresa
+            // adminData (por ejemplo si el repo cambia su implementación).
+            if (!result.adminData) {
+                throw new Error('No tiene permisos de administrador');
             }
+            
+            await AdminRepository.updateFailedAttempts(email, false);
+            
+            // ✅ Guardar sesión con estructura JSON completa
+            const adminObjFinal = new Admin(result.adminData);
+            const sessionData = this._buildSessionData(adminObjFinal);
+            this._saveSession(sessionData);
+            this._dispatchAuthChange(result.adminData);
+            
+            // ✅ Verificar que se guardó correctamente
+            const savedSession = this._getSession();
+            console.log('✅ Sesión guardada en localStorage:', savedSession);
+            console.log('📦 Rol guardado en sesión:', savedSession?.rol);
             
             return result;
         } else {
@@ -150,7 +162,7 @@ export const AdminService = {
             apellidoMa: admin.apellidoMa || '',
             nombreCompleto: admin.nombreCompleto,
             email: admin.email,
-            rol: admin.rol, // ✅ Aquí debe venir 'admin'
+            rol: admin.rol,
             estado: admin.estado,
             iniciales: admin.iniciales,
             fechaSesion: new Date().toISOString(),
@@ -225,7 +237,6 @@ export const AdminService = {
 
     /**
      * Obtener todos los administradores
-     * ✅ Método principal para obtener la lista
      */
     async getAllAdmins() {
         const currentAdmin = await this.getCurrentAdmin(true);
@@ -238,7 +249,6 @@ export const AdminService = {
             throw new Error('No autenticado. Inicie sesión nuevamente.');
         }
         
-        // ✅ Verificar si tiene permisos para ver administradores
         if (currentAdmin.rol !== ROLES.SUPER_ADMIN && 
             currentAdmin.rol !== ROLES.ADMIN && 
             !currentAdmin.hasPermission('admin.view')) {
@@ -248,7 +258,6 @@ export const AdminService = {
         const admins = await AdminRepository.getAll();
         console.log(`📋 Total admins obtenidos: ${admins.length}`);
         
-        // ✅ Retornar los datos mapeados correctamente
         return admins.map(admin => {
             const adminObj = new Admin(admin);
             return adminObj.datosResumidos;
@@ -257,7 +266,6 @@ export const AdminService = {
 
     /**
      * ✅ ALIAS: getAll() - Método que espera el controller
-     * Redirige al método principal getAllAdmins()
      */
     async getAll(options = {}, forceRefresh = false) {
         console.log('🔄 getAll() llamado - redirigiendo a getAllAdmins()');
@@ -284,7 +292,6 @@ export const AdminService = {
             throw new Error('Administrador no encontrado');
         }
         
-        // ✅ Mapear campos para compatibilidad
         const mappedData = {
             nombre: updateData.nombre || updateData.name,
             apellidoPa: updateData.apellidoPa || '',
@@ -296,25 +303,21 @@ export const AdminService = {
             avatar: updateData.avatar || updateData.icon || 'person'
         };
         
-        // Eliminar campos undefined
         Object.keys(mappedData).forEach(key => {
             if (mappedData[key] === undefined) {
                 delete mappedData[key];
             }
         });
         
-        // No permitir cambiar rol si no es super_admin
         if (updateData.rol && currentAdmin.rol !== ROLES.SUPER_ADMIN) {
             delete mappedData.rol;
         }
         
-        // No permitir desactivar propia cuenta
         if ((mappedData.estado === 'inactivo' || mappedData.estado === 'inactive') && 
             adminId === currentAdmin.id) {
             throw new Error('No puede desactivar su propia cuenta');
         }
         
-        // Validar email
         if (mappedData.email && !this._validateEmail(mappedData.email)) {
             throw new Error('Email inválido');
         }
@@ -429,7 +432,6 @@ export const AdminService = {
 
     /**
      * Obtener sesión actual (JSON de localStorage)
-     * 📦 Retorna el objeto JSON guardado
      */
     getCurrentSession() {
         return this._getSession();
@@ -437,7 +439,6 @@ export const AdminService = {
 
     /**
      * ✅ MÉTODO PÚBLICO getSession()
-     * Versión pública para acceder a la sesión desde otros servicios
      */
     getSession() {
         return this._getSession();
@@ -489,7 +490,6 @@ export const AdminService = {
 
     /**
      * 🔍 DIAGNÓSTICO: Verificar si el admin actual tiene permisos
-     * Útil para depurar problemas de visualización
      */
     async diagnosticarPermisos() {
         console.log('🔍 ===== DIAGNÓSTICO DE PERMISOS =====');
@@ -536,7 +536,6 @@ export const AdminService = {
 
     /**
      * Guarda la sesión en localStorage
-     * 📦 Formato JSON estándar
      */
     _saveSession(adminData) {
         if (!adminData || typeof adminData !== 'object') {
@@ -551,7 +550,7 @@ export const AdminService = {
             apellidoMa: adminData.apellidoMa || '',
             nombreCompleto: adminData.nombreCompleto || `${adminData.nombre || ''} ${adminData.apellidoPa || ''}`.trim(),
             email: adminData.email || '',
-            rol: adminData.rol || ROLES.ADMIN, // ✅ Por defecto 'admin'
+            rol: adminData.rol || ROLES.ADMIN,
             estado: adminData.estado || 'activo',
             iniciales: adminData.iniciales || (adminData.nombre ? adminData.nombre[0] : 'A'),
             fechaSesion: adminData.fechaSesion || new Date().toISOString(),

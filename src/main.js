@@ -6,7 +6,7 @@
 import { loadLayout, initLayoutWatcher } from './modules/shared/layout/layoutLoader.js';
 import { initRouter } from './router/router.js';
 import { AuthService, ROLES } from '../services/authService.js';
-import {ThemeService} from './modules/shared/layout/themeService.js'; // <-- IMPORTAR THEME SERVICE
+import { ThemeService } from './modules/shared/layout/themeService.js';
 
 function loadExternalScripts() {
     return new Promise((resolve) => {
@@ -56,18 +56,22 @@ async function initLayoutControllers(role) {
             navbar: () => import('./modules/admin/layout/adminNavbarController.js').then(m => m.initAdminNavbarController?.()),
             footer: () => import('./modules/admin/layout/adminFooterController.js').then(m => m.initAdminFooterController?.())
         },
-        [ROLES.VISITOR]: {
+        [ROLES.CUSTOMER]: {
+            navbar: () => import('./modules/customer/layout/navbarCustumerController.js').then(m => m.initCustomerNavbarController?.()),
+            footer: () => import('./modules/customer/layout/footerCustomerController.js').then(m => m.initFooterCustomerController?.())
+        },
+        [ROLES.GUEST]: {
             navbar: () => import('./modules/visitor/layout/navbarController.js').then(m => m.initNavbarController?.()),
             footer: () => import('./modules/visitor/layout/footerController.js').then(m => m.initFooterController?.())
         }
     };
 
-    // Si el rol no existe en el mapa, usar VISITOR por defecto
+    // Si el rol no existe en el mapa, usar GUEST por defecto
     let controllers = controllersMap[role];
     
     if (!controllers) {
-        console.warn(`⚠️ Rol "${role}" no tiene controladores definidos, usando VISITOR por defecto`);
-        controllers = controllersMap[ROLES.VISITOR];
+        console.warn(`⚠️ Rol "${role}" no tiene controladores definidos, usando GUEST por defecto`);
+        controllers = controllersMap[ROLES.GUEST];
     }
     
     if (!controllers) {
