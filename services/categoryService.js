@@ -112,12 +112,11 @@ export const CategoryService = {
     
     /**
      * Obtener todas las categorías
-     * 👈 MODIFICADO: SIEMPRE va a Firestore cuando forceRefresh = true
+     * ✅ MODIFICADO: Ya no filtra por status
      */
     async getAll(filters = {}, forceRefresh = false) {
         const cacheKey = `categories_list_${JSON.stringify(filters)}`;
         
-        // 👇 SOLO usar caché si NO es forceRefresh
         if (!forceRefresh) {
             try {
                 const cached = await CacheService.getCache(STORES.CATEGORIES, cacheKey);
@@ -127,16 +126,13 @@ export const CategoryService = {
                 }
             } catch (cacheError) {
                 console.warn('⚠️ Error leyendo caché, continuando con Firestore:', cacheError.message);
-                // Si falla la caché, continuamos a Firestore
             }
         }
         
-        // 👇 SIEMPRE obtener de Firestore (forceRefresh o error de caché)
         console.log('🔥 Obteniendo categorías desde Firestore...');
         const categoriesData = await CategoryRepository.getAll(filters);
         const categories = categoriesData.map(c => new Category(c));
         
-        // Intentar guardar en caché, pero no fallar si no se puede
         try {
             await CacheService.setCache(STORES.CATEGORIES, cacheKey, categoriesData, 1800000);
             console.log('💾 Categorías guardadas en caché');
@@ -149,7 +145,7 @@ export const CategoryService = {
     
     /**
      * Obtener solo categorías activas (para tienda)
-     * NOTA: Como ya no tenemos status, devolvemos todas
+     * ✅ MODIFICADO: Como no tenemos status, devolvemos todas
      */
     async getActiveCategories(forceRefresh = false) {
         const cacheKey = 'active_categories_list';
@@ -166,7 +162,7 @@ export const CategoryService = {
         }
         
         // Como no tenemos status, devolvemos todas
-        const categoriesData = await CategoryRepository.getAll();
+        const categoriesData = await CategoryRepository.getActiveCategories();
         const categories = categoriesData.map(c => new Category(c));
         
         try {

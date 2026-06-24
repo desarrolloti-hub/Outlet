@@ -2,12 +2,11 @@
    CREATE PRODUCT CONTROLLER - OUTLET ADMIN
    Controlador para dar de alta nuevas prendas
    Wizard de 3 pasos | Botones de navegación abajo
-   RESPONSIVE: Se adapta a todos los tamaños
-   CATEGORÍAS Y SUBCATEGORÍAS DINÁMICAS
+   RESPONSIVE: Se adapta a cualquier tamaño
    ======================================== */
 
 import { ProductService } from '/services/productService.js';
-import { CategoryService } from '/services/categoryService.js';
+import { CategoryService } from '/services/categoryService.js'; // 👈 NUEVA IMPORTACIÓN
 
 // ========================================
 // Variables de estado
@@ -19,9 +18,9 @@ let tallasArray = [];
 let materialesArray = [];
 let galleryImages = [];
 let currentMainImage = null;
-let isLoading = false;
+let isLoading = false;  // Para evitar doble envío
 
-// Variables para categorías dinámicas
+// 👈 NUEVAS VARIABLES PARA CATEGORÍAS
 let categoriesList = [];
 let subcategoriesMap = {};
 
@@ -35,7 +34,7 @@ function cacheElements() {
         // Navegación
         prevBtn: document.getElementById('prevBtn'),
         nextBtn: document.getElementById('nextBtn'),
-        navButtons: document.getElementById('navButtons'),
+        navButtons: document.querySelector('.outlet-nav-buttons'),
         actionButtons: document.getElementById('actionButtons'),
         stepItems: document.querySelectorAll('.outlet-step'),
         stepCurrent: document.getElementById('stepCurrent'),
@@ -108,8 +107,8 @@ function mostrarToast(mensaje, tipo = 'info') {
     const toast = document.createElement('div');
     toast.className = 'outlet-toast-notification';
     toast.textContent = mensaje;
-    if (tipo === 'success') toast.style.borderLeftColor = 'var(--outlet-success, #22c55e)';
-    if (tipo === 'error') toast.style.borderLeftColor = 'var(--outlet-danger, #ef4444)';
+    if (tipo === 'success') toast.style.borderLeftColor = 'var(--outlet-success)';
+    if (tipo === 'error') toast.style.borderLeftColor = 'var(--outlet-danger)';
     document.body.appendChild(toast);
     
     setTimeout(() => {
@@ -132,59 +131,20 @@ function actualizarPrecioFinal() {
 }
 
 // ========================================
-// FUNCIONES PARA CATEGORÍAS DINÁMICAS
+// 👈 NUEVA FUNCIÓN: CARGAR CATEGORÍAS DINÁMICAS
 // ========================================
-
-/**
- * Carga las categorías desde Firebase y actualiza los selects
- */
 async function loadCategories() {
     try {
         console.log('🔄 Cargando categorías para el formulario...');
-        
-        // 🔍 PRIMERO: Verificar que CategoryService esté disponible
-        console.log('📦 CategoryService:', CategoryService);
-        
-        // ForceRefresh = true para asegurar datos frescos
         categoriesList = await CategoryService.getAll({}, true);
-        
         console.log(`✅ ${categoriesList.length} categorías cargadas`);
-        console.log('📋 Lista completa de categorías:', JSON.stringify(categoriesList, null, 2));
-        
-        // 🔍 VERIFICAR ESTRUCTURA DE CADA CATEGORÍA
-        categoriesList.forEach((cat, index) => {
-            console.log(`🔍 Categoría ${index + 1}:`, {
-                id: cat.id,
-                name: cat.name,
-                subcategories: cat.subcategories,
-                subcategoriesLength: cat.subcategories?.length || 0,
-                subcategoriesType: typeof cat.subcategories,
-                isArray: Array.isArray(cat.subcategories)
-            });
-            
-            // Verificar si subcategories es un array
-            if (Array.isArray(cat.subcategories)) {
-                cat.subcategories.forEach((sub, subIdx) => {
-                    console.log(`  📌 Subcategoría ${subIdx + 1}:`, {
-                        name: sub.name,
-                        description: sub.description,
-                        hasName: !!sub.name
-                    });
-                });
-            } else {
-                console.warn(`⚠️ La categoría "${cat.name}" NO tiene subcategorías como array:`, cat.subcategories);
-            }
-        });
         
         // Construir mapa de subcategorías por categoría
         subcategoriesMap = {};
         categoriesList.forEach(cat => {
-            // Las subcategorías vienen con nombre y descripción
             const subNames = (cat.subcategories || []).map(sub => sub.name);
             subcategoriesMap[cat.id] = subNames;
         });
-        
-        console.log('🗺️ Mapa de subcategorías:', subcategoriesMap);
         
         // Poblar el select de categorías
         populateCategorySelect();
@@ -197,20 +157,10 @@ async function loadCategories() {
                 // Actualizar subcategorías para la primera categoría
                 updateSubcategories(firstCat.id);
             }
-        } else {
-            // No hay categorías, mostrar mensaje
-            if (elements.categoria) {
-                elements.categoria.innerHTML = '<option value="">No hay categorías disponibles</option>';
-            }
-            if (elements.subcategoria) {
-                elements.subcategoria.innerHTML = '<option value="">Crea categorías primero</option>';
-            }
-            mostrarToast('No hay categorías disponibles. Crea una categoría primero.', 'error');
         }
         
     } catch (error) {
-        console.error('❌ Error al cargar categorías:', error);
-        console.error('Detalles del error:', error.message, error.stack);
+        console.error('Error al cargar categorías:', error);
         mostrarToast('Error al cargar categorías: ' + error.message, 'error');
         
         // Fallback: opciones estáticas por si falla la carga
@@ -218,28 +168,17 @@ async function loadCategories() {
     }
 }
 
-/**
- * Pobla el select de categorías con las opciones dinámicas
- */
+// 👈 NUEVA FUNCIÓN: POBLAR SELECT DE CATEGORÍAS
 function populateCategorySelect() {
-    if (!elements.categoria) {
-        console.warn('⚠️ No se encontró el elemento #categoria');
-        return;
-    }
-    
-    console.log('📝 Poblando select de categorías...');
+    if (!elements.categoria) return;
     
     // Guardar el valor seleccionado actual (si existe)
     const currentValue = elements.categoria.value;
     
-    // Limpiar opciones existentes
-    elements.categoria.innerHTML = '';
-    
-    // Agregar opción por defecto
-    const defaultOption = document.createElement('option');
-    defaultOption.value = '';
-    defaultOption.textContent = 'Seleccionar categoría';
-    elements.categoria.appendChild(defaultOption);
+    // Limpiar opciones existentes (excepto la primera opción vacía)
+    while (elements.categoria.options.length > 1) {
+        elements.categoria.remove(1);
+    }
     
     // Agregar las categorías dinámicas
     categoriesList.forEach(cat => {
@@ -247,7 +186,6 @@ function populateCategorySelect() {
         option.value = cat.id;
         option.textContent = cat.name;
         elements.categoria.appendChild(option);
-        console.log(`  ✅ Agregada categoría: ${cat.name} (${cat.id})`);
     });
     
     // Restaurar selección si era válida
@@ -256,17 +194,11 @@ function populateCategorySelect() {
     } else if (categoriesList.length > 0) {
         elements.categoria.value = categoriesList[0].id;
     }
-    
-    console.log(`✅ Select de categorías poblado con ${categoriesList.length} categorías`);
 }
 
-/**
- * Fallback estático por si falla la carga de categorías
- */
+// 👈 NUEVA FUNCIÓN: FALLBACK ESTÁTICO
 function populateCategorySelectFallback() {
     if (!elements.categoria) return;
-    
-    console.log('📝 Usando fallback estático para categorías');
     
     // Si ya hay opciones, no hacer nada
     if (elements.categoria.options.length > 1) return;
@@ -285,28 +217,16 @@ function populateCategorySelectFallback() {
     });
 }
 
-/**
- * Actualiza el select de subcategorías según la categoría seleccionada
- */
+// 👈 NUEVA FUNCIÓN: ACTUALIZAR SUBCATEGORÍAS
 function updateSubcategories(categoryId) {
-    if (!elements.subcategoria) {
-        console.warn('⚠️ No se encontró el elemento #subcategoria');
-        return;
-    }
-    
-    console.log(`🔄 Actualizando subcategorías para categoría: ${categoryId}`);
+    if (!elements.subcategoria) return;
     
     const subNames = subcategoriesMap[categoryId] || [];
-    console.log(`📌 Subcategorías encontradas:`, subNames);
     
-    // Limpiar opciones existentes
-    elements.subcategoria.innerHTML = '';
-    
-    // Agregar opción por defecto
-    const defaultOption = document.createElement('option');
-    defaultOption.value = '';
-    defaultOption.textContent = subNames.length > 0 ? 'Seleccionar subcategoría' : 'No hay subcategorías';
-    elements.subcategoria.appendChild(defaultOption);
+    // Limpiar opciones existentes (excepto la primera opción vacía)
+    while (elements.subcategoria.options.length > 1) {
+        elements.subcategoria.remove(1);
+    }
     
     // Agregar las subcategorías
     subNames.forEach(name => {
@@ -314,23 +234,17 @@ function updateSubcategories(categoryId) {
         option.value = name;
         option.textContent = name;
         elements.subcategoria.appendChild(option);
-        console.log(`  ✅ Agregada subcategoría: ${name}`);
     });
     
     // Si hay subcategorías, seleccionar la primera
     if (subNames.length > 0) {
         elements.subcategoria.value = subNames[0];
     }
-    
-    console.log(`✅ Select de subcategorías actualizado con ${subNames.length} subcategorías`);
 }
 
-/**
- * Maneja el cambio de categoría para actualizar subcategorías
- */
+// 👈 NUEVA FUNCIÓN: MANEJAR CAMBIO DE CATEGORÍA
 function handleCategoryChange() {
     const selectedCategory = elements.categoria?.value;
-    console.log(`🔄 Cambio de categoría: ${selectedCategory}`);
     if (selectedCategory) {
         updateSubcategories(selectedCategory);
     }
@@ -346,8 +260,9 @@ function updateWizardUI() {
     });
     if (elements.stepCurrent) elements.stepCurrent.textContent = currentStep;
     
-    // En paso 3: ocultar botones de navegación y mostrar botones de acción
+    // ===== CAMBIOS AQUÍ =====
     if (currentStep === 3) {
+        // En paso 3: ocultar botones de navegación y mostrar solo Guardar
         if (elements.navButtons) {
             elements.navButtons.style.display = 'none';
         }
@@ -355,6 +270,7 @@ function updateWizardUI() {
             elements.actionButtons.style.display = 'flex';
         }
     } else {
+        // En pasos 1 y 2: mostrar navegación, ocultar botón Guardar
         if (elements.navButtons) {
             elements.navButtons.style.display = 'flex';
         }
@@ -392,7 +308,7 @@ function cambiarPanel(direction) {
     }, 300);
 }
 
-function nextStep() { if (currentStep < 3) cambiarPanel(1); }
+function nextStep() { if (currentStep < 3) {cambiarPanel(1);}}
 function prevStep() { if (currentStep > 1) cambiarPanel(-1); }
 
 // ========================================
@@ -562,7 +478,7 @@ function renderGallery() {
 }
 
 // ========================================
-// Formulario - RECOLECTA DATOS
+// Formulario - SOLO RECOLECTA DATOS, NO VALIDA
 // ========================================
 function recolectarDatosProducto() {
     return {
@@ -592,11 +508,12 @@ function recolectarDatosProducto() {
 }
 
 function limpiarFormulario() {
-    // Limpiar inputs (excepto categoría y subcategoría)
+    // Limpiar inputs
     if (elements.sku) elements.sku.value = '';
     if (elements.nombre) elements.nombre.value = '';
     if (elements.descripcion) elements.descripcion.value = '';
     if (elements.marca) elements.marca.value = '';
+    // 👈 NO LIMPIAMOS categoría y subcategoría para mantenerlas
     if (elements.genero) elements.genero.value = '';
     
     if (elements.precioCompra) elements.precioCompra.value = '';
@@ -633,9 +550,11 @@ function limpiarFormulario() {
 // Guardar producto usando ProductService
 // ========================================
 async function guardarProducto() {
+    // Evitar doble envío
     if (isLoading) return;
     
-    // Verificar campos obligatorios
+    // Verificar campos obligatorios SOLO a nivel de UI (para saber en qué paso está el usuario)
+    // NOTA: La validación REAL la hará el service
     if (!elements.sku?.value || !elements.nombre?.value || !elements.descripcion?.value || 
         !elements.marca?.value || !elements.categoria?.value || !elements.genero?.value) {
         mostrarToast('Complete los campos del paso 1 antes de guardar', 'error');
@@ -665,11 +584,15 @@ async function guardarProducto() {
     btn.disabled = true;
     
     try {
+        // Obtener datos del formulario
         const productData = recolectarDatosProducto();
+        
+        // 👇 EL SERVICE VALIDA Y EL REPOSITORY GUARDA
         const productoGuardado = await ProductService.create(productData);
         
         mostrarToast(`✅ Producto "${productoGuardado.nombre}" guardado exitosamente`, 'success');
         
+        // Limpiar formulario para siguiente producto
         limpiarFormulario();
         
         // Restaurar categorías después de limpiar
@@ -720,7 +643,7 @@ function initEventListeners() {
         }
     });
     
-    // Event listener para cambio de categoría (dinámico)
+    // 👈 NUEVO: Event listener para cambio de categoría
     elements.categoria?.addEventListener('change', handleCategoryChange);
     
     // Imagen principal
@@ -793,7 +716,7 @@ document.addEventListener('themeChanged', (e) => {
 // Inicialización
 // ========================================
 export async function productCreateController() {
-    console.log('📝 Product Create Controller - Alta de prendas con categorías dinámicas');
+    console.log('📝 Product Create Controller - Alta de prendas');
     
     cacheElements();
     actualizarPrecioFinal();
@@ -804,7 +727,7 @@ export async function productCreateController() {
     syncDarkMode();
     updateWizardUI();
     
-    // Cargar categorías dinámicas ANTES de los event listeners
+    // 👈 CARGAR CATEGORÍAS DINÁMICAS ANTES DE LOS EVENT LISTENERS
     await loadCategories();
     
     initEventListeners();

@@ -18,8 +18,8 @@ import {
     limit
 } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
 
-// ✅ CORREGIDO: Con tilde para coincidir con Firebase
-const CATEGORIES_COLLECTION = 'categorías';  // 👈 CAMBIADO de 'categorias' a 'categorías'
+// ✅ CORREGIDO: Sin tilde para coincidir con Firebase
+const CATEGORIES_COLLECTION = 'categorias';
 
 export const CategoryRepository = {
     /**
@@ -95,57 +95,79 @@ export const CategoryRepository = {
     
     /**
      * Obtener todas las categorías
+     * ✅ MODIFICADO: Sin filtro de status
      */
-    async getAll(filters = {}, sortBy = 'order', sortDir = 'asc', limitCount = 100) {
-        try {
-            let constraints = [];
-            
-            // Aplicar filtros
-            if (filters.status) {
-                constraints.push(where('status', '==', filters.status));
-            }
-            
-            if (filters.search) {
-                // Nota: Firestore no soporta búsqueda de texto completo
-                // Se filtrará en memoria después
-            }
-            
-            // Ordenamiento
-            constraints.push(orderBy(sortBy, sortDir));
-            constraints.push(limit(limitCount));
-            
-            const q = query(collection(db, CATEGORIES_COLLECTION), ...constraints);
-            const querySnapshot = await getDocs(q);
-            
-            let categorias = [];
-            querySnapshot.forEach((doc) => {
-                categorias.push({ id: doc.id, ...doc.data() });
-            });
-            
-            // Filtro de búsqueda en memoria (si es necesario)
-            if (filters.search) {
-                const searchTerm = filters.search.toLowerCase();
-                categorias = categorias.filter(cat => 
-                    cat.name.toLowerCase().includes(searchTerm) ||
-                    (cat.description && cat.description.toLowerCase().includes(searchTerm))
-                );
-            }
-            
-            return categorias;
-        } catch (error) {
-            console.error('Error obteniendo categorías:', error);
-            throw new Error(`Error al obtener categorías: ${error.message}`);
+    /**
+ * Obtener todas las categorías
+ */
+async getAll(filters = {}, sortBy = 'order', sortDir = 'asc', limitCount = 100) {
+    try {
+        // ✅ Sin orderBy en Firestore (excluye docs sin el campo).
+        // Ordenamos en memoria para que funcione aunque falte 'order'.
+        const q = query(collection(db, CATEGORIES_COLLECTION), limit(limitCount));
+        const querySnapshot = await getDocs(q);
+
+        let categorias = [];
+        querySnapshot.forEach((doc) => {
+            categorias.push({ id: doc.id, ...doc.data() });
+        });
+
+        // Filtro de búsqueda en memoria (si es necesario)
+        if (filters.search) {
+            const searchTerm = filters.search.toLowerCase();
+            categorias = categorias.filter(cat =>
+                cat.name.toLowerCase().includes(searchTerm) ||
+                (cat.description && cat.description.toLowerCase().includes(searchTerm))
+            );
         }
-    },
+
+        // Ordenamiento en memoria, con fallback si falta el campo
+        categorias.sort((a, b) => {
+            const valA = a[sortBy] ?? 0;
+            const valB = b[sortBy] ?? 0;
+            if (valA < valB) return sortDir === 'asc' ? -1 : 1;
+            if (valA > valB) return sortDir === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        return categorias;
+    } catch (error) {
+        console.error('Error obteniendo categorías:', error);
+        throw new Error(`Error al obtener categorías: ${error.message}`);
+    }
+},
+
+/**
+ * Obtener solo categorías activas (para tienda)
+ */
+async getActiveCategories() {
+    try {
+        // ✅ Sin orderBy en Firestore, ordenamos en memoria
+        const querySnapshot = await getDocs(collection(db, CATEGORIES_COLLECTION));
+
+        const categorias = [];
+        querySnapshot.forEach((doc) => {
+            categorias.push({ id: doc.id, ...doc.data() });
+        });
+
+        categorias.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+        return categorias;
+    } catch (error) {
+        console.error('Error obteniendo categorías activas:', error);
+        throw new Error(`Error al obtener categorías activas: ${error.message}`);
+    }
+},
     
     /**
      * Obtener solo categorías activas (para tienda)
+     * ✅ MODIFICADO: Como no tenemos status, devolvemos todas
      */
     async getActiveCategories() {
         try {
+            // Como no tenemos status, devolvemos todas
             const q = query(
                 collection(db, CATEGORIES_COLLECTION),
-                where('status', '==', 'active'),
                 orderBy('order', 'asc')
             );
             const querySnapshot = await getDocs(q);
@@ -202,6 +224,7 @@ export const CategoryRepository = {
             const newSubcategory = {
                 id: `${categoryId}_sub_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
                 name: subcategoryData.name,
+                description: subcategoryData.description || '',
                 slug: subcategoryData.slug,
                 status: subcategoryData.status || 'active',
                 createdAt: new Date().toISOString()

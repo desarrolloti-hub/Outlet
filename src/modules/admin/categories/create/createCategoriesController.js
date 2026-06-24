@@ -1,7 +1,7 @@
-/* ========================================
-   CREATE CATEGORIES CONTROLLER - OUTLET ADMIN
-   Controlador para CREAR categorías con subcategorías
-   ======================================== */
+// ========================================
+// CREATE CATEGORIES CONTROLLER - OUTLET ADMIN
+// Controlador para CREAR categorías con subcategorías
+// ========================================
 
 import { CategoryService } from '/services/categoryService.js';
 
@@ -10,6 +10,7 @@ import { CategoryService } from '/services/categoryService.js';
 // ========================================
 let isSubmitting = false;
 let subcategories = [];
+let categoriesList = [];
 
 // ========================================
 // DOM Elements
@@ -19,6 +20,9 @@ let elements = {};
 function cacheElements() {
     elements = {
         backBtn: document.getElementById('backBtn'),
+        
+        // Selector de categorías existentes
+        existingCategorySelect: document.getElementById('existingCategorySelect'),
         
         // Formulario de categoría
         categoryId: document.getElementById('categoryId'),
@@ -99,6 +103,61 @@ function validarIdFormato(id) {
     if (!id || id.trim() === '') return false;
     const regex = /^[a-z0-9_\-]+$/;
     return regex.test(id);
+}
+
+// ========================================
+// Cargar categorías existentes
+// ========================================
+async function loadExistingCategories() {
+    try {
+        console.log('🔄 Cargando categorías existentes...');
+        
+        if (elements.existingCategorySelect) {
+            elements.existingCategorySelect.innerHTML = '<option value="">Cargando categorías...</option>';
+            elements.existingCategorySelect.disabled = true;
+        }
+        
+        categoriesList = await CategoryService.getAll({}, true);
+        
+        console.log(`✅ ${categoriesList.length} categorías cargadas`);
+        
+        if (elements.existingCategorySelect) {
+            elements.existingCategorySelect.disabled = false;
+            populateExistingCategories();
+        }
+        
+        if (categoriesList.length === 0) {
+            if (elements.existingCategorySelect) {
+                elements.existingCategorySelect.innerHTML = '<option value="">No hay categorías disponibles</option>';
+            }
+        }
+        
+    } catch (error) {
+        console.error('❌ Error al cargar categorías:', error);
+        if (elements.existingCategorySelect) {
+            elements.existingCategorySelect.innerHTML = '<option value="">Error al cargar categorías</option>';
+            elements.existingCategorySelect.disabled = false;
+        }
+    }
+}
+
+function populateExistingCategories() {
+    if (!elements.existingCategorySelect) return;
+    
+    elements.existingCategorySelect.innerHTML = '';
+    
+    const defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.textContent = 'Seleccionar categoría existente';
+    elements.existingCategorySelect.appendChild(defaultOption);
+    
+    categoriesList.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat.id;
+        const subCount = cat.subcategories?.length || 0;
+        option.textContent = `${cat.name} (${subCount} subcategorías)`;
+        elements.existingCategorySelect.appendChild(option);
+    });
 }
 
 // ========================================
@@ -237,6 +296,27 @@ function setupAutoGeneration() {
 }
 
 // ========================================
+// Cargar datos de categoría existente
+// ========================================
+function loadCategoryData(categoryId) {
+    const category = categoriesList.find(c => c.id === categoryId);
+    if (!category) return;
+    
+    if (elements.categoryId) elements.categoryId.value = category.id || '';
+    if (elements.categoryName) elements.categoryName.value = category.name || '';
+    if (elements.categoryDescription) elements.categoryDescription.value = category.description || '';
+    
+    // Cargar subcategorías
+    subcategories = (category.subcategories || []).map(sub => ({
+        name: sub.name || '',
+        description: sub.description || ''
+    }));
+    renderSubcategories();
+    
+    mostrarToast(`Cargada categoría "${category.name}"`, 'success');
+}
+
+// ========================================
 // Guardar categoría
 // ========================================
 async function saveCategory() {
@@ -274,17 +354,18 @@ async function saveCategory() {
     }
     
     const categoryData = {
-        id: categoryId,
-        name: name,
-        slug: generarSlug(name),
-        description: elements.categoryDescription?.value?.trim() || '',
-        subcategories: subcategories.map(sub => ({
-            name: sub.name,
-            description: sub.description || '',
-            slug: generarSlug(sub.name),
-            createdAt: new Date().toISOString()
-        }))
-    };
+    id: categoryId,
+    name: name,
+    slug: generarSlug(name),
+    description: elements.categoryDescription?.value?.trim() || '',
+    order: categoriesList.length, // ✅ nuevo: la pone al final
+    subcategories: subcategories.map(sub => ({
+        name: sub.name,
+        description: sub.description || '',
+        slug: generarSlug(sub.name),
+        createdAt: new Date().toISOString()
+    }))
+};
     
     isSubmitting = true;
     const btn = elements.saveBtn;
@@ -297,6 +378,7 @@ async function saveCategory() {
         const savedCategory = await CategoryService.create(categoryData);
         mostrarToast(`✅ Categoría "${savedCategory.name}" creada con ${savedCategory.subcategories.length} subcategorías`, 'success');
         resetForm();
+        await loadExistingCategories(); // Recargar la lista
         
     } catch (error) {
         console.error('Error al crear categoría:', error);
@@ -355,6 +437,14 @@ function initEventListeners() {
         }
     });
     
+    // Event listener para cargar categoría existente
+    elements.existingCategorySelect?.addEventListener('change', (e) => {
+        const selectedId = e.target.value;
+        if (selectedId) {
+            loadCategoryData(selectedId);
+        }
+    });
+    
     setupAutoGeneration();
 }
 
@@ -387,6 +477,9 @@ export async function categoriesCreateController() {
     syncDarkMode();
     initEventListeners();
     resetForm();
+    
+    // Cargar categorías existentes
+    await loadExistingCategories();
     
     console.log('✅ Create Categories page loaded');
 }
