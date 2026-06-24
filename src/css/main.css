@@ -20,6 +20,7 @@
 
 @import url('./components/admin/navbar.css');
 
+
 /* Pages */
 @import url('./pages/visitor/home/home.css');
 @import url('./pages/visitor/shared/errors/404.css');
@@ -39,7 +40,6 @@
 
 /* -------------- editar usuario -------------- */
 @import url('./pages/customer/editUser/editUser.css');
-@import url('./pages/customer/layout/navbarCustumer.css');
 
 
 
