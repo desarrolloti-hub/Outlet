@@ -26,6 +26,7 @@ import { homeCustomerController } from '../modules/customer/home/homeCustumerCon
 import{cartCustomerController} from '../modules/customer/cart/cartCustumerController.js'
 import{wishlistCustomerController} from '../modules/customer/wishlist/wishlistCustumerController.js'
 import { productsCustumerController } from '../modules/customer/products/productsCustumer.js';
+import{collectionCustomerController} from '../modules/customer/collection/collectionCustumerController.js'
 
 
 
@@ -174,6 +175,10 @@ export const routes = {
     "/productsCustomer":{
         view: "/modules/customer/products/productsCustomer.html",
         controller: productsCustumerController
+    },
+    "/collectionCustomer":{
+        view: "/modules/customer/collection/collectionCustomer.html",
+        controller: collectionCustomerController
     },
 
     /* ========================================
