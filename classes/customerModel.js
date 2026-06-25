@@ -11,6 +11,7 @@ export class Customer {
         this.apellidoPa = data.apellidoPa || '';
         this.apellidoMa = data.apellidoMa || '';
         this.email = data.email || '';
+        this.fotoPerfil = data.fotoPerfil || ''; // 🆕 URL de la foto de perfil
         
         // Rol fijo: 'customer'
         this.rol = 'customer';
@@ -62,6 +63,11 @@ export class Customer {
         const primera = this.nombre ? this.nombre.charAt(0) : '';
         const segunda = this.apellidoPa ? this.apellidoPa.charAt(0) : '';
         return (primera + segunda).toUpperCase() || 'C';
+    }
+    
+    // Getter: Obtener URL de foto o null
+    get fotoUrl() {
+        return this.fotoPerfil || null;
     }
     
     // Getter: Dirección formateada para mostrar
@@ -117,6 +123,7 @@ export class Customer {
             apellidoPa: this.apellidoPa,
             apellidoMa: this.apellidoMa,
             email: this.email,
+            fotoPerfil: this.fotoPerfil,
             nombreCompleto: this.nombreCompleto,
             iniciales: this.iniciales,
             rol: this.rol,
@@ -146,6 +153,13 @@ export class Customer {
             ...this.preferencias,
             ...nuevasPreferencias
         };
+        this.fechaActualizacion = new Date().toISOString();
+        return this;
+    }
+    
+    // 🆕 Método: Actualizar foto de perfil
+    actualizarFotoPerfil(url) {
+        this.fotoPerfil = url;
         this.fechaActualizacion = new Date().toISOString();
         return this;
     }
@@ -217,12 +231,19 @@ export class Customer {
     
     // Método estático: Crear Customer desde datos de Firebase Auth
     static fromFirebaseUser(firebaseUser, additionalData = {}) {
+        // 🆕 Obtener foto de perfil de Google si existe
+        let fotoPerfil = additionalData.fotoPerfil || '';
+        if (!fotoPerfil && firebaseUser.photoURL) {
+            fotoPerfil = firebaseUser.photoURL;
+        }
+        
         return new Customer({
             id: firebaseUser.uid,
             email: firebaseUser.email,
             nombre: additionalData.nombre || firebaseUser.displayName?.split(' ')[0] || '',
             apellidoPa: additionalData.apellidoPa || firebaseUser.displayName?.split(' ')[1] || '',
             apellidoMa: additionalData.apellidoMa || '',
+            fotoPerfil: fotoPerfil,
             provider: additionalData.provider || 'email',
             emailVerified: firebaseUser.emailVerified || false,
             direccion: additionalData.direccion || {},

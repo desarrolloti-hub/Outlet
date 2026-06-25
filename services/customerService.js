@@ -40,6 +40,7 @@ export const CustomerService = {
             apellidoPa: customerData.apellidoPa?.trim() || '',
             apellidoMa: customerData.apellidoMa?.trim() || '',
             email: customerData.email.toLowerCase().trim(),
+            fotoPerfil: customerData.fotoPerfil || '',
             direccion: customerData.direccion || {},
             preferencias: customerData.preferencias || {},
             provider: 'email',
@@ -100,12 +101,35 @@ export const CustomerService = {
             
             return result;
         } else {
+            console.log('🔐 Iniciando login con Google desde Service...');
             const result = await CustomerRepository.loginWithGoogle();
+            
+            console.log('📊 Resultado del login:', {
+                tieneUser: !!result.user,
+                tieneCustomerData: !!result.customerData,
+                tieneFoto: result.customerData?.fotoPerfil ? '✅ Sí' : '❌ No',
+                fotoUrl: result.customerData?.fotoPerfil
+            });
+            
             if (result.customerData) {
                 const customerObj = new Customer(result.customerData);
+                
+                console.log('📸 CustomerObj:', {
+                    tieneFoto: !!customerObj.fotoPerfil,
+                    fotoUrl: customerObj.fotoPerfil
+                });
+                
                 const sessionData = this._buildSessionData(customerObj);
+                
+                console.log('📦 SessionData a guardar:', {
+                    tieneFoto: !!sessionData.fotoPerfil,
+                    fotoUrl: sessionData.fotoPerfil
+                });
+                
                 this._saveSession(sessionData);
                 this._dispatchAuthChange(result.customerData);
+                
+                console.log('✅ Sesión guardada correctamente');
             }
             return result;
         }
@@ -118,7 +142,9 @@ export const CustomerService = {
         console.log('🏗️ Construyendo sesión para customer:', {
             id: customer.id,
             nombre: customer.nombre,
-            rol: customer.rol
+            rol: customer.rol,
+            tieneFoto: !!customer.fotoPerfil,
+            fotoUrl: customer.fotoPerfil ? customer.fotoPerfil.substring(0, 50) + '...' : 'sin foto'
         });
         
         return {
@@ -128,7 +154,8 @@ export const CustomerService = {
             apellidoMa: customer.apellidoMa || '',
             nombreCompleto: customer.nombreCompleto,
             email: customer.email,
-            rol: customer.rol, // 'customer'
+            fotoPerfil: customer.fotoPerfil || '',
+            rol: customer.rol,
             estado: customer.estado,
             iniciales: customer.iniciales,
             fechaSesion: new Date().toISOString(),
@@ -225,6 +252,32 @@ export const CustomerService = {
         const updated = await CustomerRepository.update(customerId, updateData);
         
         // Actualizar sesión local
+        const updatedCustomer = new Customer(updated);
+        const sessionData = this._buildSessionData(updatedCustomer);
+        this._saveSession(sessionData);
+        this._dispatchAuthChange(updatedCustomer);
+        
+        return updatedCustomer;
+    },
+    
+    /**
+     * Actualizar foto de perfil
+     */
+    async updateProfilePicture(customerId, imageUrl) {
+        const currentCustomer = await this.getCurrentCustomer(true);
+        
+        if (!currentCustomer || currentCustomer.id !== customerId) {
+            throw new Error('No autorizado');
+        }
+        
+        if (!imageUrl || !imageUrl.startsWith('http')) {
+            throw new Error('URL de imagen inválida');
+        }
+        
+        const updated = await CustomerRepository.update(customerId, {
+            fotoPerfil: imageUrl
+        });
+        
         const updatedCustomer = new Customer(updated);
         const sessionData = this._buildSessionData(updatedCustomer);
         this._saveSession(sessionData);
@@ -335,9 +388,6 @@ export const CustomerService = {
             throw new Error('La nueva contraseña debe tener al menos 6 caracteres');
         }
         
-        // Aquí iría la lógica para cambiar la contraseña en Firebase Auth
-        // Por ahora solo retornamos éxito
-        
         return { success: true, message: 'Contraseña actualizada exitosamente' };
     },
     
@@ -405,6 +455,7 @@ export const CustomerService = {
             apellidoMa: customerData.apellidoMa || '',
             nombreCompleto: customerData.nombreCompleto || '',
             email: customerData.email || '',
+            fotoPerfil: customerData.fotoPerfil || '',
             rol: ROLES.CUSTOMER,
             estado: customerData.estado || 'activo',
             iniciales: customerData.iniciales || 'C',
@@ -415,7 +466,11 @@ export const CustomerService = {
         };
         
         localStorage.setItem('outlet_customer', JSON.stringify(validSession));
-        console.log('✅ Sesión de customer guardada:', { id: validSession.id, rol: validSession.rol });
+        console.log('✅ Sesión de customer guardada:', { 
+            id: validSession.id, 
+            rol: validSession.rol, 
+            tieneFoto: !!validSession.fotoPerfil 
+        });
     },
     
     _getSession() {

@@ -116,6 +116,46 @@ function updatePasswordRequirements(password) {
 }
 
 /**
+ * 🆕 Validar y manejar la foto de perfil
+ */
+function handleProfilePicture(file) {
+    if (!file) return null;
+    
+    // Validar tipo de archivo
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+        showNotification('❌ Formato de imagen no válido. Usa JPG, PNG, GIF o WEBP', true);
+        return null;
+    }
+    
+    // Validar tamaño (máximo 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+        showNotification('❌ La imagen no debe pesar más de 5MB', true);
+        return null;
+    }
+    
+    const reader = new FileReader();
+    return new Promise((resolve) => {
+        reader.onload = (e) => {
+            const imageUrl = e.target.result;
+            // Mostrar preview
+            const preview = document.getElementById('profilePreview');
+            if (preview) {
+                preview.src = imageUrl;
+                preview.style.display = 'block';
+            }
+            // Ocultar placeholder
+            const placeholder = document.getElementById('profilePlaceholder');
+            if (placeholder) {
+                placeholder.style.display = 'none';
+            }
+            resolve(imageUrl);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+/**
  * Validar formulario completo
  */
 function validateForm() {
@@ -194,6 +234,19 @@ async function handleGoogleRegister() {
         // Usar el login con Google del CustomerService
         const result = await CustomerService.login(null, null, true);
         
+        // 🆕 Si hay foto de Google, mostrarla en el preview
+        if (result.user?.photoURL) {
+            const preview = document.getElementById('profilePreview');
+            if (preview) {
+                preview.src = result.user.photoURL;
+                preview.style.display = 'block';
+            }
+            const placeholder = document.getElementById('profilePlaceholder');
+            if (placeholder) {
+                placeholder.style.display = 'none';
+            }
+        }
+        
         showNotification('✅ ¡Cuenta creada con Google exitosamente!');
         
         // Redirigir a la página principal
@@ -231,6 +284,20 @@ async function handleRegister(e) {
     const password = document.getElementById('password').value;
     const newsletter = document.getElementById('newsletter').checked;
     
+    // 🆕 Obtener foto de perfil (si se subió)
+    let fotoPerfil = '';
+    const fileInput = document.getElementById('profilePhoto');
+    if (fileInput && fileInput.files.length > 0) {
+        try {
+            const imageUrl = await handleProfilePicture(fileInput.files[0]);
+            if (imageUrl) {
+                fotoPerfil = imageUrl;
+            }
+        } catch (error) {
+            console.error('Error al procesar la foto:', error);
+        }
+    }
+    
     const { nombre, apellidoPa, apellidoMa } = splitFullName(fullname);
     
     const customerData = {
@@ -238,6 +305,7 @@ async function handleRegister(e) {
         apellidoPa: apellidoPa,
         apellidoMa: apellidoMa,
         email: email,
+        fotoPerfil: fotoPerfil, // 🆕
         direccion: {
             destinatario: fullname,
             telefono1: phone,
@@ -273,6 +341,17 @@ async function handleRegister(e) {
         showNotification('✅ ¡Cuenta creada exitosamente! Revisa tu correo para verificar tu cuenta.');
         
         document.getElementById('createAccountForm').reset();
+        
+        // 🆕 Resetear preview
+        const preview = document.getElementById('profilePreview');
+        if (preview) {
+            preview.style.display = 'none';
+            preview.src = '';
+        }
+        const placeholder = document.getElementById('profilePlaceholder');
+        if (placeholder) {
+            placeholder.style.display = 'flex';
+        }
         
         setTimeout(() => {
             if (typeof window.navigateTo === 'function') {
@@ -312,6 +391,49 @@ function handleLoginRedirect(e) {
 function handleTerms(e) {
     e.preventDefault();
     showNotification('📜 Por favor lee nuestros Términos y Condiciones en el sitio web');
+}
+
+/**
+ * 🆕 Inicializar el campo de foto de perfil
+ */
+function initProfilePictureUpload() {
+    const fileInput = document.getElementById('profilePhoto');
+    const dropZone = document.getElementById('profileDropZone');
+    
+    if (!fileInput || !dropZone) return;
+    
+    // Click en la zona de drop para abrir el selector de archivos
+    dropZone.addEventListener('click', () => {
+        fileInput.click();
+    });
+    
+    // Drag and drop
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+    });
+    
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('dragover');
+    });
+    
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        
+        if (e.dataTransfer.files.length > 0) {
+            const file = e.dataTransfer.files[0];
+            fileInput.files = e.dataTransfer.files;
+            handleProfilePicture(file);
+        }
+    });
+    
+    // Cambio de archivo seleccionado
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            handleProfilePicture(e.target.files[0]);
+        }
+    });
 }
 
 /**
@@ -357,6 +479,7 @@ export async function createAccountController() {
     
     loadStyles();
     initRealtimeValidation();
+    initProfilePictureUpload(); // 🆕
     
     const registerForm = document.getElementById('createAccountForm');
     const loginBtn = document.getElementById('loginBtn');

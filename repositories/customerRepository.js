@@ -37,7 +37,12 @@ export const CustomerRepository = {
         try {
             const customerRef = doc(db, CUSTOMERS_COLLECTION, customerData.id);
             await setDoc(customerRef, customerData);
-            console.log('✅ Customer guardado en Firestore:', { id: customerData.id, rol: customerData.rol });
+            console.log('✅ Customer guardado en Firestore:', { 
+                id: customerData.id, 
+                rol: customerData.rol, 
+                tieneFoto: !!customerData.fotoPerfil,
+                fotoUrl: customerData.fotoPerfil ? customerData.fotoPerfil.substring(0, 50) + '...' : 'sin foto'
+            });
             return { id: customerData.id, ...customerData };
         } catch (error) {
             console.error('Error guardando cliente:', error);
@@ -55,7 +60,12 @@ export const CustomerRepository = {
             
             if (docSnap.exists()) {
                 const data = { id: docSnap.id, ...docSnap.data() };
-                console.log('📖 Customer obtenido por ID:', { id: data.id, rol: data.rol });
+                console.log('📖 Customer obtenido por ID:', { 
+                    id: data.id, 
+                    rol: data.rol, 
+                    tieneFoto: !!data.fotoPerfil,
+                    fotoUrl: data.fotoPerfil ? data.fotoPerfil.substring(0, 50) + '...' : 'sin foto'
+                });
                 return data;
             }
             return null;
@@ -80,7 +90,11 @@ export const CustomerRepository = {
             if (!querySnapshot.empty) {
                 const doc = querySnapshot.docs[0];
                 const data = { id: doc.id, ...doc.data() };
-                console.log('📖 Customer obtenido por email:', { email: data.email, rol: data.rol });
+                console.log('📖 Customer obtenido por email:', { 
+                    email: data.email, 
+                    rol: data.rol,
+                    tieneFoto: !!data.fotoPerfil
+                });
                 return data;
             }
             return null;
@@ -125,7 +139,11 @@ export const CustomerRepository = {
             });
             
             const updated = await this.getById(customerId);
-            console.log('✏️ Customer actualizado:', { id: customerId });
+            console.log('✏️ Customer actualizado:', { 
+                id: customerId, 
+                tieneFoto: !!updated?.fotoPerfil,
+                fotoUrl: updated?.fotoPerfil ? updated.fotoPerfil.substring(0, 50) + '...' : 'sin foto'
+            });
             return updated;
         } catch (error) {
             console.error('Error actualizando cliente:', error);
@@ -208,13 +226,18 @@ export const CustomerRepository = {
             console.log('📝 3. Enviando email de verificación...');
             await sendEmailVerification(firebaseUser);
             
+            // Guardar foto de perfil
+            const fotoPerfil = customerData.fotoPerfil || '';
+            console.log('📝 Foto de perfil recibida:', fotoPerfil ? '✅ Tiene foto' : '❌ Sin foto');
+            
             const customerToSave = {
                 id: firebaseUser.uid,
                 nombre: customerData.nombre || '',
                 apellidoPa: customerData.apellidoPa || '',
                 apellidoMa: customerData.apellidoMa || '',
                 email: firebaseUser.email,
-                rol: 'customer', // Rol fijo
+                fotoPerfil: fotoPerfil,
+                rol: 'customer',
                 direccion: customerData.direccion || {},
                 preferencias: customerData.preferencias || {},
                 provider: 'email',
@@ -226,7 +249,11 @@ export const CustomerRepository = {
                 ultimoLogin: null
             };
             
-            console.log('📝 4. Guardando en Firestore con rol:', customerToSave.rol);
+            console.log('📝 4. Guardando en Firestore con:', { 
+                rol: customerToSave.rol, 
+                tieneFoto: !!customerToSave.fotoPerfil,
+                fotoPreview: customerToSave.fotoPerfil ? customerToSave.fotoPerfil.substring(0, 30) + '...' : 'sin foto'
+            });
             await this.save(customerToSave);
             console.log('✅ Customer guardado exitosamente');
             
@@ -259,7 +286,11 @@ export const CustomerRepository = {
                 throw new Error('Esta cuenta no es de cliente');
             }
             
-            console.log('✅ Customer autenticado:', { id: firebaseUser.uid, rol: customerData.rol });
+            console.log('✅ Customer autenticado:', { 
+                id: firebaseUser.uid, 
+                rol: customerData.rol,
+                tieneFoto: !!customerData.fotoPerfil 
+            });
             
             return {
                 user: firebaseUser,
@@ -276,13 +307,29 @@ export const CustomerRepository = {
      */
     async loginWithGoogle() {
         try {
+            console.log('🔐 Iniciando login con Google...');
             const provider = new GoogleAuthProvider();
+            provider.setCustomParameters({
+                prompt: 'select_account'
+            });
+            
             const userCredential = await signInWithPopup(auth, provider);
             const firebaseUser = userCredential.user;
+            
+            console.log('✅ Usuario de Google:', {
+                uid: firebaseUser.uid,
+                email: firebaseUser.email,
+                displayName: firebaseUser.displayName,
+                photoURL: firebaseUser.photoURL ? '✅ Tiene foto' : '❌ Sin foto'
+            });
             
             let customerData = await this.getById(firebaseUser.uid);
             
             if (!customerData) {
+                // 🆕 Obtener foto de Google
+                const fotoPerfil = firebaseUser.photoURL || '';
+                console.log('📸 Foto de Google obtenida:', fotoPerfil ? '✅ Sí' : '❌ No');
+                
                 // Registrar nuevo cliente con Google
                 const newCustomer = {
                     id: firebaseUser.uid,
@@ -290,6 +337,7 @@ export const CustomerRepository = {
                     apellidoPa: firebaseUser.displayName?.split(' ')[1] || '',
                     apellidoMa: '',
                     email: firebaseUser.email,
+                    fotoPerfil: fotoPerfil,
                     rol: 'customer',
                     direccion: {
                         destinatario: firebaseUser.displayName || '',
@@ -318,17 +366,38 @@ export const CustomerRepository = {
                     ultimoLogin: new Date().toISOString()
                 };
                 
+                console.log('📝 Guardando nuevo cliente con foto:', !!fotoPerfil);
                 await this.save(newCustomer);
                 customerData = newCustomer;
                 console.log('✅ Nuevo customer registrado con Google');
             } else {
-                await this.update(firebaseUser.uid, {
-                    ultimoLogin: new Date().toISOString()
-                });
-                customerData = await this.getById(firebaseUser.uid);
+                console.log('📝 Cliente existente, verificando foto...');
+                // Si ya existe pero no tiene foto, actualizar con la de Google
+                if (!customerData.fotoPerfil && firebaseUser.photoURL) {
+                    console.log('📸 Actualizando foto de perfil existente...');
+                    await this.update(firebaseUser.uid, {
+                        fotoPerfil: firebaseUser.photoURL,
+                        ultimoLogin: new Date().toISOString()
+                    });
+                    customerData = await this.getById(firebaseUser.uid);
+                } else {
+                    console.log('📸 Cliente ya tiene foto o Google no proporcionó:', {
+                        tieneFoto: !!customerData.fotoPerfil,
+                        googleFoto: !!firebaseUser.photoURL
+                    });
+                    await this.update(firebaseUser.uid, {
+                        ultimoLogin: new Date().toISOString()
+                    });
+                    customerData = await this.getById(firebaseUser.uid);
+                }
             }
             
-            console.log('✅ Customer autenticado con Google:', { id: firebaseUser.uid, rol: customerData.rol });
+            console.log('✅ Customer autenticado con Google:', { 
+                id: firebaseUser.uid, 
+                rol: customerData.rol, 
+                tieneFoto: !!customerData.fotoPerfil,
+                fotoUrl: customerData.fotoPerfil ? customerData.fotoPerfil.substring(0, 50) + '...' : 'sin foto'
+            });
             
             return {
                 user: firebaseUser,
@@ -372,7 +441,8 @@ export const CustomerRepository = {
             'auth/user-not-found': 'Usuario no encontrado',
             'auth/wrong-password': 'Contraseña incorrecta',
             'auth/popup-closed-by-user': 'Ventana de Google cerrada',
-            'auth/account-exists-with-different-credential': 'Ya existe una cuenta con este correo usando otro método'
+            'auth/account-exists-with-different-credential': 'Ya existe una cuenta con este correo usando otro método',
+            'auth/too-many-requests': 'Demasiados intentos. Espera un momento e intenta de nuevo'
         };
         
         return new Error(errors[error.code] || `Error de autenticación: ${error.message}`);

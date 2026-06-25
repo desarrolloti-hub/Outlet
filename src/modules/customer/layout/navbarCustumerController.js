@@ -1,510 +1,345 @@
 /* ========================================
-   CUSTOMER NAVBAR CONTROLLER
-   Controlador del navbar para clientes registrados
+   CUSTOMER NAVBAR CONTROLLER - Outlet Val
+   Controlador para el navbar de clientes
    ======================================== */
 
-import ThemeService from '../../shared/layout/themeService.js';
+import { CustomerService } from '/services/customerService.js';
 
-// Estado privado
-let state = {
-    isMenuOpen: false,
-    isScrolled: false,
-    isDarkMode: false,
-    user: null
-};
-
-// Elementos DOM cacheados
-let elements = {};
+// Estado del navbar
+let isNavbarInitialized = false;
+let currentUser = null;
 
 /**
- * Inicializa el controlador del navbar customer
+ * Actualizar la foto de perfil en el navbar
  */
-export function initCustomerNavbarController() {
-    cacheElements();
-    
-    if (!elements.navbar) {
-        console.warn('⚠️ Customer navbar no encontrado en el DOM');
-        return;
-    }
-    
-    bindEvents();
-    handleScroll();
-    updateCartCount();
-    updateWishlistCount();
-    initMarquee();
-    applyStoredTheme();
-    setActiveLink();
-    loadUserProfile();
-    
-    console.log('✅ Customer Navbar Controller inicializado');
-}
-
-/**
- * Cachea elementos del DOM
- */
-function cacheElements() {
-    elements = {
-        navbar: document.querySelector('.OUTLET-nav'),
-        themeBtn: document.getElementById('themeToggleBtn'),
-        hamburgerBtn: document.getElementById('hamburgerBtn'),
-        mobileMenu: document.getElementById('mobileMenu'),
-        mobileCloseBtn: document.getElementById('mobileCloseBtn'),
-        cartCount: document.getElementById('cartCount'),
-        wishlistCount: document.getElementById('wishlistCount'),
-        searchBtn: document.getElementById('searchBtn'),
-        cartBtn: document.getElementById('cartBtn'),
-        wishlistBtn: document.getElementById('wishlistBtn'),
-        profileBtn: document.getElementById('profileBtn'),
-        profileAvatar: document.getElementById('profileAvatar'),
-        body: document.body,
-        mobileLogoutBtn: document.getElementById('mobileLogoutBtn')
-    };
-}
-
-/**
- * Vincula eventos del DOM
- */
-function bindEvents() {
-    if (elements.themeBtn) {
-        elements.themeBtn.addEventListener('click', toggleTheme);
-    }
-    
-    if (elements.hamburgerBtn && elements.mobileMenu) {
-        elements.hamburgerBtn.addEventListener('click', toggleMobileMenu);
-    }
-    
-    if (elements.mobileCloseBtn) {
-        const newCloseBtn = elements.mobileCloseBtn.cloneNode(true);
-        if (elements.mobileCloseBtn.parentNode) {
-            elements.mobileCloseBtn.parentNode.replaceChild(newCloseBtn, elements.mobileCloseBtn);
-            elements.mobileCloseBtn = newCloseBtn;
+function updateProfileAvatar() {
+    try {
+        const session = JSON.parse(localStorage.getItem('outlet_customer'));
+        if (!session) {
+            console.log('❌ No hay sesión para actualizar avatar');
+            return;
         }
+
+        // Buscar elementos del avatar
+        const avatarImg = document.getElementById('profileAvatar');
+        const badgeSpan = document.getElementById('profileBadge');
         
-        elements.mobileCloseBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            closeMobileMenu();
-        });
-    }
-    
-    const mobileLinks = document.querySelectorAll('.mobile-nav-links a:not(#mobileLogoutBtn)');
-    mobileLinks.forEach(link => {
-        const newLink = link.cloneNode(true);
-        if (link.parentNode) {
-            link.parentNode.replaceChild(newLink, link);
+        if (!avatarImg) {
+            console.log('⚠️ No se encontró #profileAvatar en el DOM');
+            return;
         }
-        
-        newLink.addEventListener('click', (e) => {
-            const href = newLink.getAttribute('href');
+
+        if (session.fotoPerfil && session.fotoPerfil.startsWith('http')) {
+            // ✅ Mostrar foto
+            avatarImg.src = session.fotoPerfil;
+            avatarImg.style.display = 'block';
+            avatarImg.style.width = '40px';
+            avatarImg.style.height = '40px';
+            avatarImg.style.borderRadius = '50%';
+            avatarImg.style.objectFit = 'cover';
+            avatarImg.style.border = '2px solid var(--outlet-gold, #c9a84c)';
             
-            if (!href || href === '#') {
-                e.preventDefault();
-                return;
-            }
-            
-            e.preventDefault();
-            closeMobileMenu();
-            
-            if (window.navigateTo) {
-                window.navigateTo(href);
-            } else {
-                window.location.href = href;
-            }
-        });
-    });
-    
-    if (elements.mobileLogoutBtn) {
-        elements.mobileLogoutBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            closeMobileMenu();
-            handleLogout();
-        });
-    }
-    
-    const desktopLinks = document.querySelectorAll('.nav-links a');
-    desktopLinks.forEach(link => {
-        const newLink = link.cloneNode(true);
-        if (link.parentNode) {
-            link.parentNode.replaceChild(newLink, link);
-        }
-        
-        newLink.addEventListener('click', (e) => {
-            const href = newLink.getAttribute('href');
-            
-            if (!href || href === '#') {
-                e.preventDefault();
-                return;
+            if (badgeSpan) {
+                badgeSpan.style.display = 'none';
             }
             
-            updateActiveDesktopLink(newLink);
-            
-            if (window.navigateTo) {
-                e.preventDefault();
-                window.navigateTo(href);
-            }
-        });
-    });
-    
-    const logoLink = document.getElementById('logoLink');
-    if (logoLink) {
-        const newLogoLink = logoLink.cloneNode(true);
-        if (logoLink.parentNode) {
-            logoLink.parentNode.replaceChild(newLogoLink, logoLink);
-        }
-        
-        newLogoLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            closeMobileMenu();
-            
-            if (window.navigateTo) {
-                window.navigateTo('/');
-            } else {
-                window.location.href = '/';
-            }
-        });
-    }
-    
-    if (elements.profileBtn) {
-        elements.profileBtn.addEventListener('click', () => {
-            if (window.navigateTo) {
-                window.navigateTo('/my-account');
-            } else {
-                window.location.href = '/my-account';
-            }
-        });
-    }
-    
-    if (elements.cartBtn) {
-        elements.cartBtn.addEventListener('click', () => {
-            if (window.navigateTo) {
-                window.navigateTo('/cart');
-            } else {
-                window.location.href = '/cart';
-            }
-        });
-    }
-    
-    if (elements.wishlistBtn) {
-        elements.wishlistBtn.addEventListener('click', () => {
-            if (window.navigateTo) {
-                window.navigateTo('/wishlist');
-            } else {
-                window.location.href = '/wishlist';
-            }
-        });
-    }
-    
-    if (elements.searchBtn) {
-        elements.searchBtn.addEventListener('click', () => {
-            if (window.navigateTo) {
-                window.navigateTo('/search');
-            } else {
-                window.location.href = '/search';
-            }
-        });
-    }
-    
-    window.addEventListener('scroll', handleScroll);
-    
-    document.addEventListener('route:changed', () => {
-        closeMobileMenu();
-        updateCartCount();
-        updateWishlistCount();
-        setActiveLink();
-        loadUserProfile();
-    });
-    
-    window.addEventListener('storage', (e) => {
-        if (e.key === 'OUTLET_cart' || e.key === 'cart') {
-            updateCartCount();
-        }
-        if (e.key === 'OUTLET_wishlist' || e.key === 'wishlist') {
-            updateWishlistCount();
-        }
-    });
-    
-    window.addEventListener('cart:updated', updateCartCount);
-    window.addEventListener('wishlist:updated', updateWishlistCount);
-    
-    document.addEventListener('auth:changed', () => {
-        loadUserProfile();
-    });
-}
-
-/**
- * Carga la foto de perfil del usuario
- */
-function loadUserProfile() {
-    const user = AuthService.getCurrentUser();
-    
-    if (user && user.profileImage) {
-        elements.profileAvatar.src = user.profileImage;
-        elements.profileAvatar.alt = user.name || 'Usuario';
-        elements.profileAvatar.style.display = 'block';
-        elements.profileAvatar.style.backgroundColor = 'transparent';
-        elements.profileAvatar.style.color = 'inherit';
-        elements.profileAvatar.style.fontSize = 'inherit';
-        elements.profileAvatar.style.fontWeight = 'normal';
-        elements.profileAvatar.textContent = '';
-    } else if (user && user.name) {
-        const initials = user.name
-            .split(' ')
-            .map(n => n[0])
-            .join('')
-            .toUpperCase()
-            .slice(0, 2);
-        
-        elements.profileAvatar.src = '';
-        elements.profileAvatar.style.display = 'flex';
-        elements.profileAvatar.style.alignItems = 'center';
-        elements.profileAvatar.style.justifyContent = 'center';
-        elements.profileAvatar.style.backgroundColor = '#ddab3b';
-        elements.profileAvatar.style.color = '#1a1a1a';
-        elements.profileAvatar.style.fontWeight = '700';
-        elements.profileAvatar.style.fontSize = '16px';
-        elements.profileAvatar.textContent = initials;
-    } else {
-        elements.profileAvatar.src = '/assets/imagenes/usuario-default.png';
-        elements.profileAvatar.alt = 'Perfil';
-        elements.profileAvatar.style.display = 'block';
-        elements.profileAvatar.style.backgroundColor = 'transparent';
-        elements.profileAvatar.style.color = 'inherit';
-        elements.profileAvatar.style.fontSize = 'inherit';
-        elements.profileAvatar.style.fontWeight = 'normal';
-        elements.profileAvatar.textContent = '';
-    }
-}
-
-/**
- * Maneja el cierre de sesión
- */
-function handleLogout() {
-    AuthService.logout();
-    
-    if (window.navigateTo) {
-        window.navigateTo('/');
-    } else {
-        window.location.href = '/';
-    }
-}
-
-/**
- * Actualiza el link activo en desktop
- */
-function updateActiveDesktopLink(clickedLink) {
-    const allDesktopLinks = document.querySelectorAll('.nav-links a');
-    allDesktopLinks.forEach(link => {
-        link.classList.remove('active');
-    });
-    clickedLink.classList.add('active');
-}
-
-/**
- * Alterna el menú móvil
- */
-function toggleMobileMenu() {
-    if (!elements.mobileMenu || !elements.hamburgerBtn) return;
-    
-    const isOpen = elements.mobileMenu.classList.contains('open');
-    
-    if (isOpen) {
-        closeMobileMenu();
-    } else {
-        openMobileMenu();
-    }
-}
-
-function openMobileMenu() {
-    elements.mobileMenu.classList.add('open');
-    elements.hamburgerBtn?.classList.add('open');
-    elements.body.classList.add('menu-open');
-    createOverlay();
-    state.isMenuOpen = true;
-}
-
-function closeMobileMenu() {
-    if (!elements.mobileMenu) return;
-    
-    elements.mobileMenu.classList.remove('open');
-    
-    if (elements.hamburgerBtn) {
-        elements.hamburgerBtn.classList.remove('open');
-    }
-    
-    document.body.classList.remove('menu-open');
-    
-    const overlay = document.querySelector('.mobile-overlay');
-    
-    if (overlay) {
-        overlay.classList.remove('open');
-        setTimeout(() => {
-            overlay.remove();
-        }, 300);
-    }
-    
-    state.isMenuOpen = false;
-}
-
-function createOverlay() {
-    let overlay = document.querySelector('.mobile-overlay');
-    if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.className = 'mobile-overlay';
-        document.body.appendChild(overlay);
-        overlay.addEventListener('click', closeMobileMenu);
-    }
-    overlay.classList.add('open');
-}
-
-/**
- * Maneja el scroll del navbar
- */
-function handleScroll() {
-    if (!elements.navbar) return;
-    
-    const scrolled = window.scrollY > 50;
-    
-    if (scrolled !== state.isScrolled) {
-        state.isScrolled = scrolled;
-        if (scrolled) {
-            elements.navbar.classList.add('navbar-scrolled');
+            console.log('✅ Foto de perfil actualizada');
         } else {
-            elements.navbar.classList.remove('navbar-scrolled');
+            // ❌ Mostrar iniciales
+            avatarImg.style.display = 'none';
+            
+            if (badgeSpan) {
+                badgeSpan.style.display = 'flex';
+                badgeSpan.textContent = session.iniciales || session.nombre?.charAt(0) || 'C';
+                badgeSpan.style.width = '40px';
+                badgeSpan.style.height = '40px';
+                badgeSpan.style.borderRadius = '50%';
+                badgeSpan.style.background = 'var(--outlet-gold, #c9a84c)';
+                badgeSpan.style.color = '#1a1a1a';
+                badgeSpan.style.fontWeight = '700';
+                badgeSpan.style.fontSize = '16px';
+                badgeSpan.style.alignItems = 'center';
+                badgeSpan.style.justifyContent = 'center';
+                badgeSpan.style.display = 'flex';
+                badgeSpan.style.textTransform = 'uppercase';
+            }
         }
+    } catch (error) {
+        console.error('Error actualizando avatar:', error);
     }
 }
 
 /**
- * Inicializa el marquee del banner
+ * Cargar perfil del usuario (usando CustomerService en lugar de AuthService)
  */
-function initMarquee() {
-    const banner = document.querySelector('.promo-banner');
-    if (!banner) return;
-    
-    if (banner.querySelector('.marquee-wrapper')) return;
-    
-    const originalContent = banner.innerHTML;
-    banner.innerHTML = `
-        <div class="marquee-wrapper">
-            <div class="marquee-content">${originalContent}</div>
-            <div class="marquee-content">${originalContent}</div>
-        </div>
-    `;
-    
-    const content = banner.querySelector('.marquee-content');
-    if (content) {
-        const contentWidth = content.offsetWidth;
-        const duration = contentWidth / 50;
-        banner.style.setProperty('--marquee-duration', `${duration}s`);
-    }
-}
-
-/**
- * Actualiza el contador del carrito
- */
-function updateCartCount() {
-    if (!elements.cartCount) return;
-    
-    let cart = [];
+async function loadUserProfile() {
     try {
-        const storedCart = localStorage.getItem('OUTLET_cart') || localStorage.getItem('cart');
-        if (storedCart) cart = JSON.parse(storedCart);
-    } catch (e) {}
-    
-    const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
-    elements.cartCount.textContent = totalItems;
-    elements.cartCount.style.opacity = totalItems === 0 ? '0' : '1';
-}
-
-/**
- * Actualiza el contador de favoritos
- */
-function updateWishlistCount() {
-    if (!elements.wishlistCount) return;
-    
-    let wishlist = [];
-    try {
-        const storedWishlist = localStorage.getItem('OUTLET_wishlist') || localStorage.getItem('wishlist');
-        if (storedWishlist) wishlist = JSON.parse(storedWishlist);
-    } catch (e) {}
-    
-    const totalItems = wishlist.length;
-    
-    if (totalItems > 0) {
-        elements.wishlistCount.textContent = totalItems;
-        elements.wishlistCount.style.display = 'flex';
-    } else {
-        elements.wishlistCount.style.display = 'none';
-    }
-}
-
-/**
- * Alterna el tema (oscuro/claro)
- */
-function toggleTheme() {
-    if (!ThemeService || typeof ThemeService.toggle !== 'function') {
-        console.error('❌ ThemeService no disponible');
-        return;
-    }
-    
-    const isDark = ThemeService.toggle();
-    state.isDarkMode = isDark;
-    updateThemeButtonIcon(isDark);
-}
-
-/**
- * Actualiza el ícono del botón de tema
- */
-function updateThemeButtonIcon(isDark) {
-    if (!elements.themeBtn) return;
-    
-    elements.themeBtn.innerHTML = '';
-    const icon = document.createElement('i');
-    icon.className = `fas ${isDark ? 'fa-sun' : 'fa-moon'}`;
-    icon.style.fontSize = '18px';
-    elements.themeBtn.appendChild(icon);
-}
-
-/**
- * Aplica el tema almacenado
- */
-function applyStoredTheme() {
-    if (!ThemeService || typeof ThemeService.isDarkMode !== 'function') {
-        console.warn('⚠️ ThemeService no disponible para aplicar tema');
-        return;
-    }
-    
-    const isDark = ThemeService.isDarkMode();
-    state.isDarkMode = isDark;
-    updateThemeButtonIcon(isDark);
-}
-
-/**
- * Marca el link activo según la ruta actual
- */
-function setActiveLink() {
-    const currentPath = window.location.pathname;
-    const navLinks = document.querySelectorAll('.nav-links a, .mobile-nav-links a:not(#mobileLogoutBtn)');
-    
-    navLinks.forEach(link => {
-        const href = link.getAttribute('href');
-        if (!href || href === '#') return;
+        // Usar CustomerService en lugar de AuthService
+        const customer = await CustomerService.getCurrentCustomer(true);
         
-        link.classList.remove('active');
-        
-        if (currentPath === '/' && href === '/') {
-            link.classList.add('active');
-        } else if (href !== '/' && currentPath.includes(href)) {
-            link.classList.add('active');
-        } else if (href.includes('?') && currentPath === href.split('?')[0]) {
-            link.classList.add('active');
+        if (customer) {
+            currentUser = customer;
+            console.log('👤 Usuario cargado:', customer.nombreCompleto || customer.nombre);
+            
+            // Actualizar UI
+            updateUserUI(customer);
+            
+            // Actualizar avatar con la foto
+            updateProfileAvatar();
+        } else {
+            console.log('👤 No hay usuario autenticado');
+            // Mostrar estado de invitado
+            showGuestUI();
+        }
+    } catch (error) {
+        console.error('Error cargando perfil:', error);
+        showGuestUI();
+    }
+}
+
+/**
+ * Actualizar la UI con los datos del usuario
+ */
+function updateUserUI(customer) {
+    const nameElements = document.querySelectorAll('.user-name, .nav-username, .profile-name, [class*="userName"]');
+    nameElements.forEach(el => {
+        if (el.tagName === 'SPAN' || el.tagName === 'DIV' || el.tagName === 'A') {
+            el.textContent = customer.nombreCompleto || customer.nombre || 'Usuario';
+        }
+    });
+    
+    const emailElements = document.querySelectorAll('.user-email, .nav-email, .profile-email');
+    emailElements.forEach(el => {
+        if (el.tagName === 'SPAN' || el.tagName === 'DIV') {
+            el.textContent = customer.email || '';
         }
     });
 }
 
 /**
- * Exporta el estado del navbar
+ * Mostrar UI de invitado
  */
-export function getNavbarState() {
-    return { ...state };
+function showGuestUI() {
+    const nameElements = document.querySelectorAll('.user-name, .nav-username, .profile-name');
+    nameElements.forEach(el => {
+        if (el.tagName === 'SPAN' || el.tagName === 'DIV' || el.tagName === 'A') {
+            el.textContent = 'Invitado';
+        }
+    });
+    
+    // Mostrar avatar por defecto
+    const avatarImg = document.getElementById('profileAvatar');
+    const badgeSpan = document.getElementById('profileBadge');
+    
+    if (avatarImg) {
+        avatarImg.style.display = 'none';
+    }
+    if (badgeSpan) {
+        badgeSpan.style.display = 'flex';
+        badgeSpan.textContent = '?';
+        badgeSpan.style.width = '40px';
+        badgeSpan.style.height = '40px';
+        badgeSpan.style.borderRadius = '50%';
+        badgeSpan.style.background = 'var(--outlet-text-secondary, #666)';
+        badgeSpan.style.color = 'white';
+        badgeSpan.style.fontWeight = '700';
+        badgeSpan.style.fontSize = '16px';
+        badgeSpan.style.alignItems = 'center';
+        badgeSpan.style.justifyContent = 'center';
+        badgeSpan.style.display = 'flex';
+        badgeSpan.style.textTransform = 'uppercase';
+    }
 }
+
+/**
+ * Inicializar el controlador del navbar
+ */
+export async function initCustomerNavbarController() {
+    if (isNavbarInitialized) {
+        console.log('🔄 Navbar ya inicializado');
+        return;
+    }
+    
+    console.log('🔄 Inicializando Customer Navbar Controller...');
+    
+    try {
+        // Esperar a que el DOM esté listo
+        await new Promise(resolve => {
+            if (document.readyState === 'complete') {
+                resolve();
+            } else {
+                window.addEventListener('load', resolve);
+            }
+        });
+        
+        // Cargar perfil del usuario
+        await loadUserProfile();
+        
+        // Escuchar cambios en la autenticación
+        window.addEventListener('customer:authStateChanged', async (event) => {
+            console.log('🔄 Auth state changed:', event.detail);
+            await loadUserProfile();
+            updateProfileAvatar();
+        });
+        
+        // Escuchar cambios en localStorage
+        window.addEventListener('storage', (event) => {
+            if (event.key === 'outlet_customer') {
+                console.log('🔄 Sesión actualizada desde otra pestaña');
+                updateProfileAvatar();
+            }
+        });
+        
+        // Inicializar avatar cuando el DOM esté listo
+        setTimeout(updateProfileAvatar, 200);
+        
+        // Configurar event listeners para botones del navbar
+        setupNavbarEvents();
+        
+        isNavbarInitialized = true;
+        console.log('✅ Customer Navbar Controller inicializado');
+        
+    } catch (error) {
+        console.error('❌ Error inicializando navbar:', error);
+    }
+}
+
+/**
+ * Configurar eventos del navbar
+ */
+function setupNavbarEvents() {
+    // Botón de perfil
+    const profileBtn = document.getElementById('profileBtn');
+    if (profileBtn) {
+        profileBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            // Redirigir al perfil o mostrar dropdown
+            const session = JSON.parse(localStorage.getItem('outlet_customer'));
+            if (session) {
+                // Usuario logueado - ir a perfil
+                if (typeof window.navigateTo === 'function') {
+                    window.navigateTo('/perfil');
+                } else {
+                    window.location.href = '/perfil';
+                }
+            } else {
+                // Usuario no logueado - ir a login
+                if (typeof window.navigateTo === 'function') {
+                    window.navigateTo('/login');
+                } else {
+                    window.location.href = '/login';
+                }
+            }
+        });
+    }
+    
+    // Botón de logout
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            try {
+                await CustomerService.logout();
+                // Redirigir al login
+                if (typeof window.navigateTo === 'function') {
+                    window.navigateTo('/login');
+                } else {
+                    window.location.href = '/login';
+                }
+            } catch (error) {
+                console.error('Error al cerrar sesión:', error);
+            }
+        });
+    }
+}
+
+// ========================================
+// SISTEMA DE FOTO DE PERFIL AUTO-ACTUALIZABLE
+// ========================================
+
+/**
+ * Sistema para actualizar automáticamente la foto de perfil
+ * cuando la sesión cambia o el DOM se actualiza
+ */
+function initProfilePhotoSystem() {
+    console.log('🔄 Inicializando sistema de foto de perfil...');
+    
+    // Función para actualizar desde la sesión
+    function updateFromSession() {
+        try {
+            const session = JSON.parse(localStorage.getItem('outlet_customer'));
+            if (session?.fotoPerfil) {
+                const avatar = document.getElementById('profileAvatar');
+                if (avatar) {
+                    avatar.src = session.fotoPerfil;
+                    avatar.style.display = 'block';
+                    avatar.style.width = '40px';
+                    avatar.style.height = '40px';
+                    avatar.style.borderRadius = '50%';
+                    avatar.style.objectFit = 'cover';
+                    avatar.style.border = '2px solid var(--outlet-gold, #c9a84c)';
+                    
+                    const badge = document.getElementById('profileBadge');
+                    if (badge) badge.style.display = 'none';
+                    
+                    console.log('✅ Foto de perfil actualizada desde sesión');
+                    return true;
+                }
+            }
+        } catch (e) {
+            console.error('Error actualizando foto:', e);
+        }
+        return false;
+    }
+    
+    // Ejecutar inmediatamente si el DOM está listo
+    if (document.readyState !== 'loading') {
+        setTimeout(updateFromSession, 100);
+    }
+    
+    // Escuchar eventos de autenticación
+    window.addEventListener('customer:authStateChanged', () => {
+        setTimeout(updateFromSession, 50);
+    });
+    
+    // Escuchar cambios en localStorage
+    window.addEventListener('storage', (event) => {
+        if (event.key === 'outlet_customer') {
+            setTimeout(updateFromSession, 50);
+        }
+    });
+    
+    // Observador de DOM para cuando se cargue el navbar dinámicamente
+    const observer = new MutationObserver(() => {
+        if (document.getElementById('profileAvatar')) {
+            updateFromSession();
+            observer.disconnect();
+        }
+    });
+    
+    setTimeout(() => {
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    }, 200);
+    
+    // Exponer función para uso manual
+    window.updateProfileAvatar = updateFromSession;
+}
+
+// Inicializar sistema de foto
+if (typeof window !== 'undefined') {
+    // Esperar a que el DOM esté listo
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initProfilePhotoSystem);
+    } else {
+        initProfilePhotoSystem();
+    }
+}
+
+// Exportar funciones
+export { loadUserProfile, updateProfileAvatar, showGuestUI };
+
+// Inicialización automática cuando se importa
+console.log('📦 Customer Navbar Controller cargado');

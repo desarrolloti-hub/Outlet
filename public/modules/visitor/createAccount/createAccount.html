@@ -26,6 +26,23 @@
                 </div>
                 
                 <form class="outlet-account-form" id="createAccountForm">
+                    <!-- 🆕 FOTO DE PERFIL -->
+                    <div class="outlet-account-form-group">
+                        <label>FOTO DE PERFIL <span class="outlet-account-optional">(OPCIONAL)</span></label>
+                        <div class="outlet-account-profile-upload" id="profileDropZone">
+                            <input type="file" id="profilePhoto" accept="image/*" style="display:none;">
+                            <div class="outlet-account-profile-placeholder" id="profilePlaceholder">
+                                <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="12" cy="7" r="4"/>
+                                </svg>
+                                <span>Haz clic o arrastra una imagen</span>
+                                <small>JPG, PNG, GIF, WEBP (máx. 5MB)</small>
+                            </div>
+                            <img id="profilePreview" class="outlet-account-profile-preview" style="display:none;" alt="Vista previa de perfil">
+                        </div>
+                    </div>
+                    
                     <!-- Nombre completo -->
                     <div class="outlet-account-form-group">
                         <label>NOMBRE COMPLETO</label>
@@ -86,12 +103,12 @@
                     </button>
                 </form>
 
-                <!-- 🆕 DIVISOR CON TEXTO "O" -->
+                <!-- DIVISOR CON TEXTO "O" -->
                 <div class="outlet-account-divider">
                     <span>O</span>
                 </div>
 
-                <!-- 🆕 BOTÓN DE GOOGLE -->
+                <!-- BOTÓN DE GOOGLE -->
                 <button type="button" class="outlet-account-btn-google" id="googleRegisterBtn">
                     <svg class="google-icon" viewBox="0 0 24 24" width="20" height="20">
                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>

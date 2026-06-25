@@ -161,7 +161,73 @@
     }
 }
 
-/* Formulario */
+/* ===== 🆕 FOTO DE PERFIL ===== */
+.outlet-account-profile-upload {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 2px dashed var(--outlet-border-color);
+    background: var(--outlet-bg-primary);
+    cursor: pointer;
+    margin: 0 auto 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    transition: all var(--outlet-transition-base);
+    position: relative;
+}
+
+.outlet-account-profile-upload:hover {
+    border-color: var(--outlet-gold);
+    background: var(--outlet-bg-surface);
+}
+
+.outlet-account-profile-upload.dragover {
+    border-color: var(--outlet-gold);
+    background: rgba(var(--outlet-gold-rgb), 0.1);
+    transform: scale(1.02);
+}
+
+.outlet-account-profile-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--outlet-text-secondary);
+    text-align: center;
+    padding: 8px;
+}
+
+.outlet-account-profile-placeholder svg {
+    color: var(--outlet-text-disabled);
+    margin-bottom: 4px;
+}
+
+.outlet-account-profile-placeholder span {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.outlet-account-profile-placeholder small {
+    font-size: 8px;
+    opacity: 0.6;
+    margin-top: 2px;
+}
+
+.outlet-account-profile-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* ===== FORMULARIO ===== */
 .outlet-account-form {
     display: flex;
     flex-direction: column;
@@ -348,66 +414,6 @@
     border-color: var(--outlet-gold);
 }
 
-/* ===== RESPONSIVE ===== */
-@media (max-width: 768px) {
-    .outlet-account-container {
-        padding: 12px;
-    }
-    
-    .outlet-account-layout {
-        min-height: auto;
-    }
-    
-    .outlet-account-panel-form {
-        padding: 32px 20px;
-    }
-    
-    .outlet-account-header h1 {
-        font-size: 32px;
-    }
-    
-    .outlet-account-password-requirements {
-        flex-direction: column;
-        gap: 6px;
-    }
-}
-
-/* ===== TOAST NOTIFICATION ===== */
-.toast-notification {
-    position: fixed;
-    bottom: 2rem;
-    right: 2rem;
-    background: var(--outlet-toast-bg);
-    color: var(--outlet-toast-text);
-    padding: 0.75rem 1.5rem;
-    border-radius: var(--outlet-radius-md);
-    font-size: 0.875rem;
-    font-weight: 500;
-    z-index: var(--outlet-z-tooltip);
-    animation: slideIn 0.3s ease-out;
-    box-shadow: var(--outlet-shadow-md);
-    border-left: 3px solid var(--outlet-gold);
-}
-
-@keyframes slideIn {
-    from {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
-}
-
-@media (max-width: 768px) {
-    .toast-notification {
-        bottom: 1rem;
-        right: 1rem;
-        left: 1rem;
-        text-align: center;
-    }
-}
 /* ===== DIVISOR "O" ===== */
 .outlet-account-divider {
     display: flex;
@@ -473,6 +479,72 @@
     width: 20px;
     height: 20px;
     flex-shrink: 0;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .outlet-account-container {
+        padding: 12px;
+    }
+    
+    .outlet-account-layout {
+        min-height: auto;
+    }
+    
+    .outlet-account-panel-form {
+        padding: 32px 20px;
+    }
+    
+    .outlet-account-header h1 {
+        font-size: 32px;
+    }
+    
+    .outlet-account-password-requirements {
+        flex-direction: column;
+        gap: 6px;
+    }
+    
+    .outlet-account-profile-upload {
+        width: 96px;
+        height: 96px;
+    }
+}
+
+/* ===== TOAST NOTIFICATION ===== */
+.toast-notification {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: var(--outlet-toast-bg);
+    color: var(--outlet-toast-text);
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--outlet-radius-md);
+    font-size: 0.875rem;
+    font-weight: 500;
+    z-index: var(--outlet-z-tooltip);
+    animation: slideIn 0.3s ease-out;
+    box-shadow: var(--outlet-shadow-md);
+    border-left: 3px solid var(--outlet-gold);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .toast-notification {
+        bottom: 1rem;
+        right: 1rem;
+        left: 1rem;
+        text-align: center;
+    }
 }
 
 /* Ajuste para modo oscuro (si tienes) */
