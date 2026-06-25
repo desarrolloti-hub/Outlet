@@ -25,6 +25,7 @@ import { userProfileEditController } from '../modules/customer/editUser/editUser
 import { homeCustomerController } from '../modules/customer/home/homeCustumerController.js';
 import{cartCustomerController} from '../modules/customer/cart/cartCustumerController.js'
 import{wishlistCustomerController} from '../modules/customer/wishlist/wishlistCustumerController.js'
+import { productsCustumerController } from '../modules/customer/products/productsCustumer.js';
 
 
 
@@ -169,6 +170,10 @@ export const routes = {
     "/wishlistCustomer":{
         view: "/modules/customer/wishlist/wishlistCustumer.html",
         controller: wishlistCustomerController
+    },
+    "/productsCustomer":{
+        view: "/modules/customer/products/productsCustomer.html",
+        controller: productsCustumerController
     },
 
     /* ========================================
