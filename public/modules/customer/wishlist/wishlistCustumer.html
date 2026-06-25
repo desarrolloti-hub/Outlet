@@ -1,0 +1,51 @@
+<!-- ========================================
+   VISTA DE LISTA DE DESEOS - OUTLET
+   Página de productos favoritos / lista de deseos
+   DISEÑO UNIVERSAL RESPONSIVE
+   ======================================== -->
+
+<main class="outlet-wishlist-container">
+    <div class="container">
+        <!-- Sección de Encabezado -->
+        <header class="wishlist-header">
+            <h1 class="wishlist-title">
+                MI LISTA DE DESEOS
+            </h1>
+            <p class="body-lg">
+                Una selección curada de tus piezas más codiciadas. Revisa y finaliza tu colección.
+            </p>
+        </header>
+
+        <!-- Barra de Filtros/Utilidades -->
+        <div class="wishlist-filter-bar">
+            <div class="wishlist-filter-info">
+                <span id="wishlistItemsCount">0 Artículos Guardados</span>
+                <span class="filter-divider"></span>
+                <button class="wishlist-sort-btn" id="sortBtn">
+                    Ordenar por: Más reciente <i class="fa-solid fa-chevron-down"></i>
+                </button>
+            </div>
+            <div class="wishlist-filter-actions">
+                <button class="wishlist-move-all-btn" id="moveAllToCartBtn">Mover todo al carrito</button>
+            </div>
+        </div>
+
+        <!-- Grid de Productos -->
+        <div class="wishlist-product-grid" id="wishlistGrid">
+            <!-- Los productos se inyectarán dinámicamente -->
+        </div>
+
+        <!-- Estado Vacío -->
+        <div class="wishlist-empty-state" id="wishlistEmptyState" style="display: none;">
+            <i class="fa-regular fa-heart"></i>
+            <h3>Tu lista de deseos está vacía</h3>
+            <p>Guarda tus artículos favoritos aquí y aparecerán pronto.</p>
+            <button class="outlet-btn-primary" id="exploreMoreBtn">Explorar Colección</button>
+        </div>
+
+        <!-- Paginación o Ver Más -->
+        <div class="wishlist-footer" id="wishlistFooter">
+            <button class="luxury-button" id="exploreMoreFooterBtn">Explorar Más Piezas</button>
+        </div>
+    </div>
+</main>

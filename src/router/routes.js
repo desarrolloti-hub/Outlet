@@ -24,6 +24,7 @@ import { productsController } from '../modules/visitor/products/productsControll
 import { userProfileEditController } from '../modules/customer/editUser/editUser.js';
 import { homeCustomerController } from '../modules/customer/home/homeCustumerController.js';
 import{cartCustomerController} from '../modules/customer/cart/cartCustumerController.js'
+import{wishlistCustomerController} from '../modules/customer/wishlist/wishlistCustumerController.js'
 
 
 
@@ -165,8 +166,10 @@ export const routes = {
         view: "/modules/customer/cart/cartCustomer.html",
         controller: cartCustomerController
     },
-
-    
+    "/wishlistCustomer":{
+        view: "/modules/customer/wishlist/wishlistCustumer.html",
+        controller: wishlistCustomerController
+    },
 
     /* ========================================
          Rutas de error y fallback  
