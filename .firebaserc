@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "otril-mx"
-  }
+    "default": "otril-mx",
+    "otril": "otril-mx"
+  },
+  "targets": {},
+  "etags": {}
 }
