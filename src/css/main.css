@@ -39,6 +39,8 @@
 /* customer */
 
 /* -------------- editar usuario -------------- */
+@import url('./pages/customer/home/homeCustumer.css');
+
 @import url('./pages/customer/editUser/editUser.css');
 
 

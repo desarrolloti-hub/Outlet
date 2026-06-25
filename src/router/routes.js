@@ -22,6 +22,7 @@ import { productsController } from '../modules/visitor/products/productsControll
 //  importar controllers de customer de edición de perfil
 
 import { userProfileEditController } from '../modules/customer/editUser/editUser.js';
+import { homeCustomerController } from '../modules/customer/home/homeCustumerController.js';
 
 
 
@@ -154,6 +155,10 @@ export const routes = {
     "/editUser":{
         view: "/modules/customer/editUser/editUser.html",
         controller: userProfileEditController
+    },
+    "/homeCustomer":{
+        view: "/modules/customer/home/homeCustomer.html",
+        controller: homeCustomerController
     },
     
 
