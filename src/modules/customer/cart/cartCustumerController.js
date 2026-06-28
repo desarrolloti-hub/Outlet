@@ -249,9 +249,9 @@ function renderSummary() {
             
             <div class="outlet-cart-summary-divider"></div>
             
-             <div class="outlet-cart-summary-total">
+            <div class="outlet-cart-summary-total">
                 <span>TOTAL A PAGAR</span>
-                <span class="outlet-cart-total-amount">${formatMoney(total)} MXN</span>
+                <span class="outlet-cart-total-amount">${formatMoney(total)}</span>
             </div>
             
             <div class="outlet-cart-promo">

@@ -12,7 +12,7 @@ const defaultProducts = [
         id: 1,
         image: "https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=100&h=100&fit=crop",
         name: "Vestido de Seda Noir",
-        price: 1250,
+        price: 25000, // Precio en MXN
         stock: 10,
         status: "Activo"
     },
@@ -20,7 +20,7 @@ const defaultProducts = [
         id: 2,
         image: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=100&h=100&fit=crop",
         name: "Blazer Estructurado",
-        price: 890,
+        price: 17800, // Precio en MXN
         stock: 5,
         status: "Activo"
     },
@@ -28,7 +28,7 @@ const defaultProducts = [
         id: 3,
         image: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=100&h=100&fit=crop",
         name: "Bolso Clutch Gold",
-        price: 1800,
+        price: 36000, // Precio en MXN
         stock: 0,
         status: "Inactivo"
     },
@@ -36,7 +36,7 @@ const defaultProducts = [
         id: 4,
         image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=100&h=100&fit=crop",
         name: "Zapatos Tacco Alto",
-        price: 650,
+        price: 13000, // Precio en MXN
         stock: 8,
         status: "Activo"
     }
@@ -78,13 +78,14 @@ function saveAdminProducts() {
 }
 
 /**
- * Formatear dinero
+ * Formatear dinero (Pesos Mexicanos)
  */
 function formatMoney(amount) {
-    return new Intl.NumberFormat('es-ES', { 
+    return new Intl.NumberFormat('es-MX', { 
         style: 'currency', 
-        currency: 'EUR',
-        minimumFractionDigits: 0
+        currency: 'MXN',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
     }).format(amount);
 }
 
