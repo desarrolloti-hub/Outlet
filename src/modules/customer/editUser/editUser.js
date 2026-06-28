@@ -2,7 +2,10 @@
    USER PROFILE EDIT CONTROLLER - OUTLET
    Controlador para edición de perfil de usuario
    Wizard de 3 pasos | Diseño premium con variables globales
+   Conectado a Firebase mediante CustomerService
    ======================================== */
+
+import { CustomerService } from '/services/customerService.js';
 
 // ========================================
 // DOM Elements
@@ -10,16 +13,11 @@
 let currentStep = 1;
 let cards = [];
 let isTransitioning = false;
+let currentCustomer = null;
 
-// Datos de ejemplo para tarjetas
-const defaultCards = [
-    { id: 1, number: '**** **** **** 4242', expiry: '12/28', name: 'Ana García López', isDefault: true },
-    { id: 2, number: '**** **** **** 5656', expiry: '09/26', name: 'Ana García López', isDefault: false }
-];
-
-/**
- * Muestra notificación toast
- */
+// ========================================
+// Toast Notifications
+// ========================================
 function showNotification(message, type = 'info') {
     const existingToast = document.querySelector('.outlet-toast-notification');
     if (existingToast) existingToast.remove();
@@ -40,6 +38,152 @@ function showNotification(message, type = 'info') {
     }, 2800);
 }
 
+// ========================================
+// Cargar datos del usuario desde Firebase
+// ========================================
+async function loadCustomerData() {
+    try {
+        console.log('📥 Cargando datos del customer desde Firebase...');
+        
+        const customer = await CustomerService.getCurrentCustomer(true);
+        
+        if (!customer) {
+            console.warn('⚠️ No hay customer autenticado');
+            showNotification('No hay sesión activa', 'error');
+            return false;
+        }
+        
+        currentCustomer = customer;
+        console.log('✅ Customer cargado:', currentCustomer.nombreCompleto);
+        
+        // Cargar datos en el formulario
+        loadDataToForm(currentCustomer);
+        
+        // Cargar tarjetas desde la base de datos (si existen)
+        if (currentCustomer.tarjetas && Array.isArray(currentCustomer.tarjetas)) {
+            cards = currentCustomer.tarjetas;
+        } else {
+            // Si no hay tarjetas en DB, usar datos de ejemplo o vacío
+            cards = [];
+        }
+        renderCards();
+        
+        // Actualizar avatar y UI
+        actualizarIniciales();
+        actualizarEstadoDireccion();
+        updateAvatarFromSession();
+        
+        return true;
+    } catch (error) {
+        console.error('❌ Error cargando datos del customer:', error);
+        showNotification('Error al cargar perfil', 'error');
+        return false;
+    }
+}
+
+/**
+ * Cargar datos del customer al formulario
+ */
+function loadDataToForm(customer) {
+    // Datos personales
+    const nombre = document.getElementById('nombre');
+    const apellidoPa = document.getElementById('apellidoPa');
+    const apellidoMa = document.getElementById('apellidoMa');
+    const email = document.getElementById('email');
+    const telefonoPrincipal = document.getElementById('telefonoPrincipal');
+    
+    if (nombre) nombre.value = customer.nombre || '';
+    if (apellidoPa) apellidoPa.value = customer.apellidoPa || '';
+    if (apellidoMa) apellidoMa.value = customer.apellidoMa || '';
+    if (email) {
+        email.value = customer.email || '';
+        email.readOnly = true;
+        email.disabled = true;
+    }
+    if (telefonoPrincipal) telefonoPrincipal.value = customer.telefono || customer.direccion?.telefono1 || '';
+    
+    // Dirección
+    const direccion = customer.direccion || {};
+    const destinatario = document.getElementById('destinatario');
+    const dirTelefono1 = document.getElementById('dirTelefono1');
+    const dirTelefono2 = document.getElementById('dirTelefono2');
+    const calle = document.getElementById('calle');
+    const numeroExterior = document.getElementById('numeroExterior');
+    const numeroInterior = document.getElementById('numeroInterior');
+    const colonia = document.getElementById('colonia');
+    const ciudad = document.getElementById('ciudad');
+    const estado = document.getElementById('estado');
+    const codigoPostal = document.getElementById('codigoPostal');
+    const pais = document.getElementById('pais');
+    const referencias = document.getElementById('referencias');
+    
+    if (destinatario) destinatario.value = direccion.destinatario || customer.nombreCompleto || '';
+    if (dirTelefono1) dirTelefono1.value = direccion.telefono1 || '';
+    if (dirTelefono2) dirTelefono2.value = direccion.telefono2 || '';
+    if (calle) calle.value = direccion.calle || '';
+    if (numeroExterior) numeroExterior.value = direccion.numeroExterior || '';
+    if (numeroInterior) numeroInterior.value = direccion.numeroInterior || '';
+    if (colonia) colonia.value = direccion.colonia || '';
+    if (ciudad) ciudad.value = direccion.ciudad || '';
+    if (estado) estado.value = direccion.estado || '';
+    if (codigoPostal) codigoPostal.value = direccion.codigoPostal || '';
+    if (pais) pais.value = direccion.pais || 'México';
+    if (referencias) referencias.value = direccion.referencias || '';
+    
+    // Preferencias
+    const preferencias = customer.preferencias || {};
+    const newsletterToggle = document.getElementById('newsletterToggle');
+    const notificacionesToggle = document.getElementById('notificacionesToggle');
+    
+    if (newsletterToggle) newsletterToggle.checked = preferencias.newsletter || false;
+    if (notificacionesToggle) notificacionesToggle.checked = preferencias.notificaciones !== false;
+}
+
+/**
+ * Actualizar avatar desde la sesión
+ */
+function updateAvatarFromSession() {
+    try {
+        const session = JSON.parse(localStorage.getItem('outlet_customer'));
+        if (!session) return;
+        
+        const avatarImg = document.getElementById('profileAvatar');
+        const badgeSpan = document.getElementById('profileBadge');
+        
+        if (avatarImg && session.fotoPerfil && session.fotoPerfil.startsWith('http')) {
+            avatarImg.src = session.fotoPerfil;
+            avatarImg.style.display = 'block';
+            avatarImg.style.width = '40px';
+            avatarImg.style.height = '40px';
+            avatarImg.style.borderRadius = '50%';
+            avatarImg.style.objectFit = 'cover';
+            avatarImg.style.border = '2px solid var(--outlet-gold, #c9a84c)';
+            if (badgeSpan) badgeSpan.style.display = 'none';
+        } else if (badgeSpan) {
+            avatarImg.style.display = 'none';
+            badgeSpan.style.display = 'flex';
+            badgeSpan.textContent = session.iniciales || session.nombre?.charAt(0) || 'U';
+            badgeSpan.style.width = '40px';
+            badgeSpan.style.height = '40px';
+            badgeSpan.style.borderRadius = '50%';
+            badgeSpan.style.background = 'var(--outlet-gold, #c9a84c)';
+            badgeSpan.style.color = '#1a1a1a';
+            badgeSpan.style.fontWeight = '700';
+            badgeSpan.style.fontSize = '16px';
+            badgeSpan.style.alignItems = 'center';
+            badgeSpan.style.justifyContent = 'center';
+            badgeSpan.style.display = 'flex';
+            badgeSpan.style.textTransform = 'uppercase';
+        }
+    } catch (error) {
+        console.error('Error actualizando avatar:', error);
+    }
+}
+
+// ========================================
+// Funciones de UI
+// ========================================
+
 /**
  * Actualiza las iniciales del avatar
  */
@@ -50,8 +194,8 @@ function actualizarIniciales() {
     
     if (!avatarIniciales) return;
     
-    const nombre = nombreInput?.value.trim() || '';
-    const apellido = apellidoPaInput?.value.trim() || '';
+    const nombre = nombreInput?.value.trim() || currentCustomer?.nombre || '';
+    const apellido = apellidoPaInput?.value.trim() || currentCustomer?.apellidoPa || '';
     let iniciales = '';
     if (nombre) iniciales += nombre.charAt(0);
     if (apellido) iniciales += apellido.charAt(0);
@@ -94,11 +238,19 @@ function actualizarEstadoDireccion() {
     if (tieneDireccionCompleta) {
         badgeEnvio.textContent = 'Completa';
         badgeEnvio.classList.add('completa');
+        badgeEnvio.style.background = 'var(--outlet-success, #28a745)';
+        badgeEnvio.style.color = '#fff';
     } else {
         badgeEnvio.textContent = 'Incompleta';
         badgeEnvio.classList.remove('completa');
+        badgeEnvio.style.background = 'var(--outlet-danger, #dc3545)';
+        badgeEnvio.style.color = '#fff';
     }
 }
+
+// ========================================
+// Tarjetas de pago
+// ========================================
 
 /**
  * Renderiza las tarjetas de pago
@@ -109,7 +261,7 @@ function renderCards() {
     
     if (!paymentCardsList) return;
     
-    if (cards.length === 0) {
+    if (!cards || cards.length === 0) {
         paymentCardsList.innerHTML = `<div class="outlet-card-item" style="justify-content: center; text-align: center;">
             <span style="color: var(--outlet-text-secondary);">No tienes tarjetas guardadas</span>
         </div>`;
@@ -127,9 +279,9 @@ function renderCards() {
             <div class="outlet-card-info">
                 <span class="material-symbols-outlined outlet-card-icon">credit_card</span>
                 <div class="outlet-card-details">
-                    <span class="outlet-card-number">${card.number}</span>
-                    <span class="outlet-card-expiry">Expira: ${card.expiry}</span>
-                    <span style="font-size: 10px; color: var(--outlet-text-secondary);">${card.name}</span>
+                    <span class="outlet-card-number">${card.number || '**** **** **** ****'}</span>
+                    <span class="outlet-card-expiry">Expira: ${card.expiry || '12/28'}</span>
+                    <span style="font-size: 10px; color: var(--outlet-text-secondary);">${card.name || ''}</span>
                 </div>
                 ${card.isDefault ? '<span class="outlet-default-badge">Predeterminada</span>' : ''}
             </div>
@@ -150,8 +302,8 @@ function renderCards() {
             defaultPaymentDisplay.innerHTML = `<div class="outlet-default-placeholder" style="flex-direction: row; justify-content: center; gap: 12px;">
                 <span class="material-symbols-outlined" style="color: var(--outlet-gold);">credit_card</span>
                 <div>
-                    <strong>${defaultCard.number}</strong>
-                    <p style="font-size: 11px; margin-top: 4px;">Expira: ${defaultCard.expiry}</p>
+                    <strong>${defaultCard.number || '**** **** **** ****'}</strong>
+                    <p style="font-size: 11px; margin-top: 4px;">Expira: ${defaultCard.expiry || '12/28'}</p>
                 </div>
             </div>`;
         } else {
@@ -217,6 +369,7 @@ function agregarTarjeta(numero, expiry, nombre) {
 // ========================================
 // Wizard / Carrusel
 // ========================================
+
 function updateWizardUI() {
     const stepItems = document.querySelectorAll('.outlet-step-item');
     const stepCurrentSpan = document.getElementById('stepCurrent');
@@ -283,6 +436,7 @@ function irAlPaso(step) {
 // ========================================
 // Modal de tarjetas
 // ========================================
+
 function openModal() {
     const modal = document.getElementById('cardModalOverlay');
     if (modal) modal.classList.add('active');
@@ -318,13 +472,135 @@ function saveCard() {
 }
 
 // ========================================
+// Guardar cambios en Firebase
+// ========================================
+
+async function guardarCambios() {
+    try {
+        if (!currentCustomer) {
+            showNotification('No hay sesión activa', 'error');
+            return;
+        }
+        
+        // Recopilar datos del formulario
+        const nombre = document.getElementById('nombre')?.value || '';
+        const apellidoPa = document.getElementById('apellidoPa')?.value || '';
+        const apellidoMa = document.getElementById('apellidoMa')?.value || '';
+        const telefonoPrincipal = document.getElementById('telefonoPrincipal')?.value || '';
+        
+        // Dirección
+        const direccion = {
+            destinatario: document.getElementById('destinatario')?.value || '',
+            telefono1: document.getElementById('dirTelefono1')?.value || '',
+            telefono2: document.getElementById('dirTelefono2')?.value || '',
+            calle: document.getElementById('calle')?.value || '',
+            numeroExterior: document.getElementById('numeroExterior')?.value || '',
+            numeroInterior: document.getElementById('numeroInterior')?.value || '',
+            colonia: document.getElementById('colonia')?.value || '',
+            ciudad: document.getElementById('ciudad')?.value || '',
+            estado: document.getElementById('estado')?.value || '',
+            codigoPostal: document.getElementById('codigoPostal')?.value || '',
+            pais: document.getElementById('pais')?.value || 'México',
+            referencias: document.getElementById('referencias')?.value || ''
+        };
+        
+        // Preferencias
+        const preferencias = {
+            newsletter: document.getElementById('newsletterToggle')?.checked || false,
+            notificaciones: document.getElementById('notificacionesToggle')?.checked || true
+        };
+        
+        // Datos a actualizar
+        const updateData = {
+            nombre: nombre,
+            apellidoPa: apellidoPa,
+            apellidoMa: apellidoMa,
+            telefono: telefonoPrincipal,
+            direccion: direccion,
+            preferencias: preferencias,
+            tarjetas: cards // Guardar tarjetas en la base de datos
+        };
+        
+        console.log('📤 Guardando cambios en Firebase...');
+        
+        // Usar CustomerService para actualizar
+        const updatedCustomer = await CustomerService.updateProfile(
+            currentCustomer.id,
+            updateData
+        );
+        
+        if (updatedCustomer) {
+            currentCustomer = updatedCustomer;
+            showNotification('✨ Todos los cambios han sido guardados', 'success');
+            
+            // Actualizar avatar
+            updateAvatarFromSession();
+            
+            // Disparar evento de actualización
+            window.dispatchEvent(new CustomEvent('customer:authStateChanged', {
+                detail: updatedCustomer
+            }));
+            
+            // Scroll al header
+            document.querySelector('.outlet-profile-header')?.scrollIntoView({ behavior: 'smooth' });
+        }
+    } catch (error) {
+        console.error('❌ Error guardando cambios:', error);
+        showNotification(error.message || 'Error al guardar cambios', 'error');
+    }
+}
+
+// ========================================
+// Cambiar contraseña
+// ========================================
+
+async function cambiarContrasena() {
+    try {
+        if (!currentCustomer) {
+            showNotification('No hay sesión activa', 'error');
+            return;
+        }
+        
+        const email = currentCustomer.email;
+        if (!email) {
+            showNotification('No hay correo registrado', 'error');
+            return;
+        }
+        
+        const btn = document.getElementById('btnCambiarPass');
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> Enviando...';
+        btn.disabled = true;
+        
+        try {
+            // Usar el servicio de autenticación para enviar email de restablecimiento
+            const { getAuth, sendPasswordResetEmail } = await import('https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js');
+            const auth = getAuth();
+            await sendPasswordResetEmail(auth, email);
+            
+            showNotification(`✨ Enlace de restablecimiento enviado a ${email}`, 'success');
+        } catch (error) {
+            console.error('Error enviando email:', error);
+            showNotification('Error al enviar el enlace. Intenta de nuevo.', 'error');
+        } finally {
+            btn.innerHTML = originalHTML;
+            btn.disabled = false;
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification('Error al cambiar contraseña', 'error');
+    }
+}
+
+// ========================================
 // Event Listeners
 // ========================================
+
 function initEventListeners() {
     // Avatar
     const btnCambiarAvatar = document.getElementById('btnCambiarAvatar');
     btnCambiarAvatar?.addEventListener('click', () => {
-        showNotification('Avatar actualizado', 'success');
+        showNotification('Función de avatar disponible próximamente', 'info');
     });
     
     // Campos para iniciales
@@ -343,23 +619,7 @@ function initEventListeners() {
     
     // Cambiar contraseña
     const btnCambiarPass = document.getElementById('btnCambiarPass');
-    const emailInput = document.getElementById('email');
-    btnCambiarPass?.addEventListener('click', () => {
-        const email = emailInput?.value || '';
-        if (!email) {
-            showNotification('No hay correo registrado', 'error');
-            return;
-        }
-        const btn = btnCambiarPass;
-        const originalHTML = btn.innerHTML;
-        btn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> Enviando...';
-        btn.disabled = true;
-        setTimeout(() => {
-            btn.innerHTML = originalHTML;
-            btn.disabled = false;
-            showNotification(`✨ Enlace de restablecimiento enviado a ${email}`, 'success');
-        }, 1500);
-    });
+    btnCambiarPass?.addEventListener('click', cambiarContrasena);
     
     // Toggles de preferencias
     const newsletterToggle = document.getElementById('newsletterToggle');
@@ -403,21 +663,19 @@ function initEventListeners() {
     const btnGuardar = document.getElementById('btnGuardar');
     const btnCancelar = document.getElementById('btnCancelar');
     
-    btnGuardar?.addEventListener('click', () => {
-        btnGuardar.style.transform = 'scale(0.98)';
-        setTimeout(() => { if (btnGuardar) btnGuardar.style.transform = ''; }, 200);
-        showNotification('✨ Todos los cambios han sido guardados', 'success');
-        document.querySelector('.outlet-profile-header')?.scrollIntoView({ behavior: 'smooth' });
-    });
+    btnGuardar?.addEventListener('click', guardarCambios);
     
     btnCancelar?.addEventListener('click', () => {
         showNotification('Cambios descartados', 'info');
+        // Recargar datos desde Firebase
+        loadCustomerData();
     });
 }
 
 // ========================================
 // Sincronización con modo oscuro
 // ========================================
+
 function syncDarkMode() {
     if (window.OUTLETNav && typeof window.OUTLETNav.getTheme === 'function') {
         const navDark = window.OUTLETNav.getTheme();
@@ -438,70 +696,52 @@ document.addEventListener('themeChanged', (e) => {
 });
 
 // ========================================
-// Cargar datos de ejemplo
-// ========================================
-function loadExampleData() {
-    // Datos personales
-    const nombre = document.getElementById('nombre');
-    const apellidoPa = document.getElementById('apellidoPa');
-    const apellidoMa = document.getElementById('apellidoMa');
-    const email = document.getElementById('email');
-    const telefonoPrincipal = document.getElementById('telefonoPrincipal');
-    
-    if (nombre) nombre.value = 'Ana';
-    if (apellidoPa) apellidoPa.value = 'García';
-    if (apellidoMa) apellidoMa.value = 'López';
-    if (email) email.value = 'ana.garcia@email.com';
-    if (telefonoPrincipal) telefonoPrincipal.value = '5512345678';
-    
-    // Dirección
-    const destinatario = document.getElementById('destinatario');
-    const dirTelefono1 = document.getElementById('dirTelefono1');
-    const calle = document.getElementById('calle');
-    const numeroExterior = document.getElementById('numeroExterior');
-    const colonia = document.getElementById('colonia');
-    const ciudad = document.getElementById('ciudad');
-    const estado = document.getElementById('estado');
-    const codigoPostal = document.getElementById('codigoPostal');
-    const pais = document.getElementById('pais');
-    
-    if (destinatario) destinatario.value = 'Ana García López';
-    if (dirTelefono1) dirTelefono1.value = '5512345678';
-    if (calle) calle.value = 'Av. Insurgentes';
-    if (numeroExterior) numeroExterior.value = '123';
-    if (colonia) colonia.value = 'Condesa';
-    if (ciudad) ciudad.value = 'Ciudad de México';
-    if (estado) estado.value = 'CDMX';
-    if (codigoPostal) codigoPostal.value = '06100';
-    if (pais) pais.value = 'México';
-    
-    actualizarIniciales();
-    actualizarEstadoDireccion();
-}
-
-// ========================================
 // Inicialización
 // ========================================
+
 export async function userProfileEditController() {
     console.log('👤 User Profile Edit Controller - Edición de perfil');
     
-    // Cargar tarjetas de ejemplo
-    cards = [...defaultCards];
-    
-    // Cargar datos de ejemplo
-    loadExampleData();
-    
-    // Renderizar tarjetas
-    renderCards();
-    
-    // Sincronizar modo oscuro
-    syncDarkMode();
-    
-    // Actualizar UI del wizard
-    updateWizardUI();
-    
-    // Inicializar event listeners
-    initEventListeners();
-    
-    console.log('✅ User Profile Edit page loaded');
+    try {
+        // Cargar datos del usuario desde Firebase
+        const loaded = await loadCustomerData();
+        
+        if (!loaded) {
+            console.warn('⚠️ No se pudieron cargar los datos del usuario');
+            showNotification('Error al cargar perfil. Redirigiendo al login...', 'error');
+            
+            // Redirigir al login después de 2 segundos
+            setTimeout(() => {
+                if (typeof window.navigateTo === 'function') {
+                    window.navigateTo('/login');
+                } else {
+                    window.location.href = '/login';
+                }
+            }, 2000);
+            return;
+        }
+        
+        // Renderizar tarjetas
+        renderCards();
+        
+        // Sincronizar modo oscuro
+        syncDarkMode();
+        
+        // Actualizar UI del wizard
+        updateWizardUI();
+        
+        // Inicializar event listeners
+        initEventListeners();
+        
+        // Escuchar cambios en la sesión
+        window.addEventListener('customer:authStateChanged', async (event) => {
+            console.log('🔄 Auth state changed, recargando datos...');
+            await loadCustomerData();
+        });
+        
+        console.log('✅ User Profile Edit page loaded');
+    } catch (error) {
+        console.error('❌ Error inicializando:', error);
+        showNotification('Error al cargar el perfil', 'error');
+    }
 }

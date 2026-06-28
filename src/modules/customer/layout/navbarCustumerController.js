@@ -153,6 +153,37 @@ function showGuestUI() {
 }
 
 /**
+ * Manejar click en perfil/avatar
+ */
+function handleProfileClick(e) {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    console.log('🖱️ Click en perfil/avatar');
+    const session = JSON.parse(localStorage.getItem('outlet_customer'));
+    
+    if (session) {
+        // Usuario logueado - ir a editUser
+        console.log('👤 Usuario logueado, redirigiendo a /editUser');
+        if (typeof window.navigateTo === 'function') {
+            window.navigateTo('/editUser');
+        } else {
+            window.location.href = '/editUser';
+        }
+    } else {
+        // Usuario no logueado - ir a login
+        console.log('👤 Usuario no logueado, redirigiendo a /login');
+        if (typeof window.navigateTo === 'function') {
+            window.navigateTo('/login');
+        } else {
+            window.location.href = '/login';
+        }
+    }
+}
+
+/**
  * Inicializar el controlador del navbar
  */
 export async function initCustomerNavbarController() {
@@ -209,58 +240,68 @@ export async function initCustomerNavbarController() {
  * Configurar eventos del navbar
  */
 function setupNavbarEvents() {
-    // Botón de perfil
+    console.log('🔧 Configurando eventos del navbar...');
+    
+    // ========================================
+    // 1. Botón de perfil (profileBtn)
+    // ========================================
     const profileBtn = document.getElementById('profileBtn');
     if (profileBtn) {
-        profileBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            // Redirigir al perfil o mostrar dropdown
-            const session = JSON.parse(localStorage.getItem('outlet_customer'));
-            if (session) {
-                // Usuario logueado - ir a perfil
-                if (typeof window.navigateTo === 'function') {
-                    window.navigateTo('/perfil');
-                } else {
-                    window.location.href = '/perfil';
-                }
-            } else {
-                // Usuario no logueado - ir a login
-                if (typeof window.navigateTo === 'function') {
-                    window.navigateTo('/login');
-                } else {
-                    window.location.href = '/login';
-                }
-            }
-        });
+        console.log('✅ Encontrado #profileBtn');
+        // Remover listeners anteriores para evitar duplicados
+        profileBtn.removeEventListener('click', handleProfileClick);
+        profileBtn.addEventListener('click', handleProfileClick);
+    } else {
+        console.warn('⚠️ No se encontró #profileBtn en el DOM');
     }
     
-    // Botón de logout
+    // ========================================
+    // 2. Avatar (profileAvatar)
+    // ========================================
+    const profileAvatar = document.getElementById('profileAvatar');
+    if (profileAvatar) {
+        console.log('✅ Encontrado #profileAvatar');
+        profileAvatar.style.cursor = 'pointer';
+        profileAvatar.removeEventListener('click', handleProfileClick);
+        profileAvatar.addEventListener('click', handleProfileClick);
+    } else {
+        console.warn('⚠️ No se encontró #profileAvatar en el DOM');
+    }
+    
+    // ========================================
+    // 3. Badge (profileBadge)
+    // ========================================
+    const profileBadge = document.getElementById('profileBadge');
+    if (profileBadge) {
+        console.log('✅ Encontrado #profileBadge');
+        profileBadge.style.cursor = 'pointer';
+        profileBadge.removeEventListener('click', handleProfileClick);
+        profileBadge.addEventListener('click', handleProfileClick);
+    } else {
+        console.warn('⚠️ No se encontró #profileBadge en el DOM');
+    }
+    
+    // ========================================
+    // 4. Botón de logout
+    // ========================================
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
-        logoutBtn.addEventListener('click', async (e) => {
-            e.preventDefault();
-            try {
-                await CustomerService.logout();
-                // Redirigir al login
-                if (typeof window.navigateTo === 'function') {
-                    window.navigateTo('/login');
-                } else {
-                    window.location.href = '/login';
-                }
-            } catch (error) {
-                console.error('Error al cerrar sesión:', error);
-            }
-        });
+        console.log('✅ Encontrado #logoutBtn');
+        logoutBtn.removeEventListener('click', handleLogout);
+        logoutBtn.addEventListener('click', handleLogout);
+    } else {
+        console.warn('⚠️ No se encontró #logoutBtn en el DOM');
     }
-
-    // Botón de cambio de tema (claro/oscuro)
+    
+    // ========================================
+    // 5. Botón de cambio de tema
+    // ========================================
     const themeToggleBtn = document.getElementById('themeToggleBtn');
     if (themeToggleBtn) {
-        themeToggleBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            ThemeService.toggle();
-        });
-
+        console.log('✅ Encontrado #themeToggleBtn');
+        themeToggleBtn.removeEventListener('click', handleThemeToggle);
+        themeToggleBtn.addEventListener('click', handleThemeToggle);
+        
         // Actualizar el icono (luna/sol) según el tema actual
         const updateThemeIcon = () => {
             const icon = themeToggleBtn.querySelector('i');
@@ -270,11 +311,79 @@ function setupNavbarEvents() {
         };
         updateThemeIcon();
         document.addEventListener('themeChanged', updateThemeIcon);
-
-        console.log('✅ Listener de themeToggleBtn configurado');
     } else {
-        console.log('⚠️ No se encontró #themeToggleBtn en el DOM');
+        console.warn('⚠️ No se encontró #themeToggleBtn en el DOM');
     }
+    
+    console.log('✅ Eventos del navbar configurados');
+}
+
+/**
+ * Manejar logout
+ */
+async function handleLogout(e) {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    console.log('🚪 Cerrando sesión...');
+    try {
+        await CustomerService.logout();
+        console.log('✅ Sesión cerrada exitosamente');
+        
+        // Redirigir al login
+        if (typeof window.navigateTo === 'function') {
+            window.navigateTo('/login');
+        } else {
+            window.location.href = '/login';
+        }
+    } catch (error) {
+        console.error('❌ Error al cerrar sesión:', error);
+        showNotification('Error al cerrar sesión', 'error');
+    }
+}
+
+/**
+ * Manejar toggle de tema
+ */
+function handleThemeToggle(e) {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    console.log('🎨 Cambiando tema...');
+    ThemeService.toggle();
+}
+
+/**
+ * Mostrar notificación temporal
+ */
+function showNotification(message, type = 'info') {
+    const existingToast = document.querySelector('.outlet-toast-notification');
+    if (existingToast) existingToast.remove();
+    
+    const toast = document.createElement('div');
+    toast.className = 'outlet-toast-notification';
+    toast.textContent = message;
+    toast.style.position = 'fixed';
+    toast.style.bottom = '20px';
+    toast.style.right = '20px';
+    toast.style.padding = '12px 24px';
+    toast.style.borderRadius = '8px';
+    toast.style.background = type === 'error' ? '#dc3545' : '#28a745';
+    toast.style.color = '#fff';
+    toast.style.zIndex = '9999';
+    toast.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+    toast.style.transition = 'all 0.3s ease';
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(20px)';
+        setTimeout(() => toast.remove(), 300);
+    }, 2800);
 }
 
 // ========================================
