@@ -63,7 +63,6 @@ async function loadCustomerData() {
         if (currentCustomer.tarjetas && Array.isArray(currentCustomer.tarjetas)) {
             cards = currentCustomer.tarjetas;
         } else {
-            // Si no hay tarjetas en DB, usar datos de ejemplo o vacío
             cards = [];
         }
         renderCards();
@@ -518,7 +517,7 @@ async function guardarCambios() {
             telefono: telefonoPrincipal,
             direccion: direccion,
             preferencias: preferencias,
-            tarjetas: cards // Guardar tarjetas en la base de datos
+            tarjetas: cards
         };
         
         console.log('📤 Guardando cambios en Firebase...');
@@ -573,7 +572,6 @@ async function cambiarContrasena() {
         btn.disabled = true;
         
         try {
-            // Usar el servicio de autenticación para enviar email de restablecimiento
             const { getAuth, sendPasswordResetEmail } = await import('https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js');
             const auth = getAuth();
             await sendPasswordResetEmail(auth, email);
@@ -589,6 +587,54 @@ async function cambiarContrasena() {
     } catch (error) {
         console.error('Error:', error);
         showNotification('Error al cambiar contraseña', 'error');
+    }
+}
+
+// ========================================
+// Cerrar sesión
+// ========================================
+
+async function handleLogout() {
+    try {
+        console.log('🚪 Cerrando sesión desde el perfil...');
+        
+        // Mostrar confirmación
+        const confirmLogout = confirm('¿Estás seguro de que deseas cerrar sesión?');
+        if (!confirmLogout) return;
+        
+        // Mostrar estado de carga en el botón
+        const btnLogout = document.getElementById('btnLogout');
+        const originalHTML = btnLogout.innerHTML;
+        btnLogout.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> Cerrando sesión...';
+        btnLogout.disabled = true;
+        
+        // Cerrar sesión con CustomerService
+        await CustomerService.logout();
+        
+        console.log('✅ Sesión cerrada exitosamente');
+        
+        // Mostrar notificación
+        showNotification('Sesión cerrada exitosamente', 'success');
+        
+        // Redirigir al login después de un breve delay
+        setTimeout(() => {
+            if (typeof window.navigateTo === 'function') {
+                window.navigateTo('/login');
+            } else {
+                window.location.href = '/login';
+            }
+        }, 500);
+        
+    } catch (error) {
+        console.error('❌ Error al cerrar sesión:', error);
+        showNotification('Error al cerrar sesión: ' + error.message, 'error');
+        
+        // Restaurar botón
+        const btnLogout = document.getElementById('btnLogout');
+        if (btnLogout) {
+            btnLogout.innerHTML = originalHTML || '<span class="material-symbols-outlined">logout</span> Cerrar sesión';
+            btnLogout.disabled = false;
+        }
     }
 }
 
@@ -658,6 +704,16 @@ function initEventListeners() {
     btnPrevTop?.addEventListener('click', () => cambiarPanel(-1));
     btnNextTop?.addEventListener('click', () => cambiarPanel(1));
     stepItems.forEach((step, idx) => step.addEventListener('click', () => irAlPaso(idx + 1)));
+    
+    // Botón de cerrar sesión
+    const btnLogout = document.getElementById('btnLogout');
+    if (btnLogout) {
+        btnLogout.removeEventListener('click', handleLogout);
+        btnLogout.addEventListener('click', handleLogout);
+        console.log('✅ Listener de logout configurado');
+    } else {
+        console.warn('⚠️ No se encontró #btnLogout en el DOM');
+    }
     
     // Botones finales
     const btnGuardar = document.getElementById('btnGuardar');
