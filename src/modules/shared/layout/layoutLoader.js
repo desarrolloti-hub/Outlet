@@ -14,7 +14,7 @@ const LAYOUT_PATHS = {
         footer: '/modules/visitor/layout/footer.html'
     },
     [ROLES.CUSTOMER]: {
-        navbar: '/modules/customer/layout/navbarCustumer.html',  // ✅ Verifica que el nombre del archivo coincida
+        navbar: '/modules/customer/layout/navbarCustumer.html',
         footer: '/modules/customer/layout/footerCustomer.html'
     }
 };
@@ -49,7 +49,7 @@ async function loadComponent(url, containerId) {
  */
 async function initializeControllers(role) {
     try {
-        // Solo admin tiene controlador específico en el loader
+        // Inicializar controlador de admin
         if (role === ROLES.ADMIN) {
             console.log('🎮 Inicializando controlador del navbar admin...');
             
@@ -64,8 +64,56 @@ async function initializeControllers(role) {
             }
         }
         
-        // Si necesitas inicializar algo específico para customer aquí
-        // puedes agregarlo, pero normalmente se maneja desde main.js
+        // 🆕 INICIALIZAR CONTROLADOR DE CUSTOMER
+        if (role === ROLES.CUSTOMER) {
+            console.log('🎮 Inicializando controladores de customer...');
+            
+            // Esperar un poco para que el DOM se actualice
+            await new Promise(resolve => setTimeout(resolve, 150));
+            
+            // Inicializar footer controller
+            try {
+                const footerModule = await import('../../customer/layout/footerCustomerController.js');
+                if (footerModule && typeof footerModule.initFooterController === 'function') {
+                    footerModule.initFooterController();
+                    console.log('✅ Footer Customer Controller inicializado');
+                } else {
+                    console.warn('⚠️ No se encontró initFooterController en el módulo');
+                }
+            } catch (error) {
+                console.error('❌ Error importando footerCustomerController:', error);
+            }
+            
+            // Aquí puedes agregar otros controladores de customer si los tienes
+            // Ejemplo: navbar customer
+            try {
+                const navbarModule = await import('../../customer/layout/navbarCustomerController.js');
+                if (navbarModule && typeof navbarModule.initNavbarController === 'function') {
+                    navbarModule.initNavbarController();
+                    console.log('✅ Navbar Customer Controller inicializado');
+                }
+            } catch (error) {
+                // No es crítico si no existe
+                console.log('ℹ️ No se encontró navbarCustomerController (opcional)');
+            }
+        }
+        
+        // Inicializar controladores de guest (visitante)
+        if (role === ROLES.GUEST) {
+            console.log('🎮 Inicializando controladores de guest...');
+            
+            await new Promise(resolve => setTimeout(resolve, 150));
+            
+            try {
+                const footerModule = await import('../../visitor/layout/footerController.js');
+                if (footerModule && typeof footerModule.initFooterController === 'function') {
+                    footerModule.initFooterController();
+                    console.log('✅ Footer Guest Controller inicializado');
+                }
+            } catch (error) {
+                console.error('❌ Error importando footerController de guest:', error);
+            }
+        }
         
     } catch (error) {
         console.error('❌ Error inicializando controladores:', error);
@@ -85,7 +133,7 @@ export async function loadLayout() {
     ]);
 
     // 🚀 INICIALIZAR CONTROLADORES DESPUÉS DE CARGAR EL HTML
-    if (navbarLoaded) {
+    if (navbarLoaded || footerLoaded) {
         await initializeControllers(role);
     }
 

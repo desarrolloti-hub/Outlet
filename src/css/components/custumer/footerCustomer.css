@@ -1,0 +1,352 @@
+/* ========================================
+   FOOTER - OUTLET
+   Componente de pie de página
+   Versión original con colores fijos (siempre oscuro)
+   ======================================== */
+
+/* ========== FOOTER PRINCIPAL ========== */
+.OUTLET-footer {
+    background: #0a0a0a;
+    color: #ffffff;
+    width: 100%;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    border-top: 1px solid rgba(221, 171, 59, 0.2);
+    margin-top: auto;
+}
+
+.footer-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 48px 32px 24px;
+}
+
+/* ========== DIVIDER ========== */
+.footer-divider {
+    height: 1px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    margin-bottom: 48px;
+}
+
+/* ========== GRID PRINCIPAL ========== */
+.footer-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 48px;
+    padding-bottom: 48px;
+}
+
+/* Columnas */
+.footer-col-brand {
+    max-width: 320px;
+}
+
+.footer-col-double {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.footer-subcol:last-child {
+    margin-top: 0;
+}
+
+/* ========== LOGO Y BRAND ========== */
+.footer-logo-link {
+    display: inline-block;
+    margin-bottom: 20px;
+    transition: opacity 0.2s;
+}
+
+.footer-logo-link:hover {
+    opacity: 0.7;
+}
+
+.footer-logo-img {
+    height: 45px;
+    width: auto;
+    object-fit: contain;
+    filter: brightness(0) invert(1);
+    transition: filter 0.2s;
+}
+
+.footer-description {
+    font-size: 12px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 24px;
+}
+
+/* ========== REDES SOCIALES ========== */
+.footer-social {
+    display: flex;
+    gap: 16px;
+}
+
+.footer-social-link {
+    width: 36px;
+    height: 36px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 16px;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.footer-social-link:hover {
+    border-color: #ddab3b;
+    color: #ddab3b;
+    transform: translateY(-2px);
+}
+
+/* ========== TÍTULOS DE COLUMNAS ========== */
+.footer-col-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #ddab3b;
+    margin-bottom: 20px;
+}
+
+/* ========== LISTA DE ENLACES ========== */
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-links li {
+    margin-bottom: 12px;
+}
+
+.footer-links li a {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.5);
+    text-decoration: none;
+    transition: color 0.2s ease, padding-left 0.2s ease;
+    display: inline-block;
+}
+
+.footer-links li a:hover {
+    color: #ddab3b;
+    padding-left: 4px;
+}
+
+/* ========== NEWSLETTER ========== */
+.footer-newsletter-text {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.footer-newsletter-form {
+    position: relative;
+    margin-bottom: 16px;
+}
+
+.footer-newsletter-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 12px 40px 12px 0;
+    font-size: 12px;
+    color: #ffffff;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.footer-newsletter-input:focus {
+    border-bottom-color: #ddab3b;
+}
+
+.footer-newsletter-input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 1px;
+}
+
+.footer-newsletter-btn {
+    position: absolute;
+    right: 0;
+    bottom: 12px;
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.2s;
+}
+
+.footer-newsletter-btn:hover {
+    color: #ddab3b;
+    transform: translateX(4px);
+}
+
+/* ========== SEGURO ========== */
+.footer-secure {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.footer-secure i {
+    font-size: 16px;
+    color: #ddab3b;
+}
+
+.footer-secure span {
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.4);
+    font-weight: 600;
+}
+
+/* ========== BOTTOM BAR ========== */
+.footer-bottom {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footer-copyright span {
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.footer-legal {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+}
+
+.footer-legal a {
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.4);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.footer-legal a:hover {
+    color: #ddab3b;
+}
+
+/* ========== MÉTODOS DE PAGO ========== */
+.footer-payments {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.footer-payments i {
+    font-size: 20px;
+    color: rgba(255, 255, 255, 0.4);
+    transition: color 0.2s, transform 0.2s;
+}
+
+.footer-payments i:hover {
+    color: #ddab3b;
+    transform: translateY(-2px);
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 1024px) {
+    .footer-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 40px;
+    }
+    
+    .footer-col-brand {
+        max-width: 100%;
+    }
+    
+    .footer-col-double {
+        flex-direction: row;
+        gap: 40px;
+    }
+    
+    .footer-col-double .footer-subcol {
+        flex: 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .footer-container {
+        padding: 40px 20px 20px;
+    }
+    
+    .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 32px;
+    }
+    
+    .footer-col-double {
+        flex-direction: column;
+        gap: 32px;
+    }
+    
+    .footer-bottom {
+        flex-direction: column;
+        text-align: center;
+        gap: 16px;
+    }
+    
+    .footer-legal {
+        justify-content: center;
+    }
+    
+    .footer-payments {
+        justify-content: center;
+    }
+    
+    .footer-social {
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 480px) {
+    .footer-container {
+        padding: 32px 16px 16px;
+    }
+    
+    .footer-divider {
+        margin-bottom: 32px;
+    }
+    
+    .footer-legal {
+        gap: 16px;
+    }
+    
+    .footer-legal a {
+        font-size: 9px;
+    }
+    
+    .footer-logo-img {
+        height: 35px;
+    }
+}
+
+/* ========== MODO OSCURO - SOLO AJUSTES MÍNIMOS ========== */
+body.dark-mode .OUTLET-footer {
+    background: #0a1c2c;
+}
+
+body.dark-mode .footer-divider {
+    background: rgba(221, 171, 59, 0.2);
+}

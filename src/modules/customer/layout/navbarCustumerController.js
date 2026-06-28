@@ -4,6 +4,7 @@
    ======================================== */
 
 import { CustomerService } from '/services/customerService.js';
+import { ThemeService } from '../../shared/layout/themeService.js';
 
 // Estado del navbar
 let isNavbarInitialized = false;
@@ -250,6 +251,29 @@ function setupNavbarEvents() {
                 console.error('Error al cerrar sesión:', error);
             }
         });
+    }
+
+    // Botón de cambio de tema (claro/oscuro)
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            ThemeService.toggle();
+        });
+
+        // Actualizar el icono (luna/sol) según el tema actual
+        const updateThemeIcon = () => {
+            const icon = themeToggleBtn.querySelector('i');
+            if (icon) {
+                icon.className = ThemeService.isDarkMode() ? 'fas fa-sun' : 'fas fa-moon';
+            }
+        };
+        updateThemeIcon();
+        document.addEventListener('themeChanged', updateThemeIcon);
+
+        console.log('✅ Listener de themeToggleBtn configurado');
+    } else {
+        console.log('⚠️ No se encontró #themeToggleBtn en el DOM');
     }
 }
 
