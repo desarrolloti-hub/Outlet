@@ -14,7 +14,7 @@ const LAYOUT_PATHS = {
         footer: '/modules/visitor/layout/footer.html'
     },
     [ROLES.CUSTOMER]: {
-        navbar: '/modules/customer/layout/navbarCustumer.html',
+        navbar: '/modules/customer/layout/navbarCustumer.html',  // ⚠️ Verifica el nombre del archivo
         footer: '/modules/customer/layout/footerCustomer.html'
     }
 };
@@ -64,14 +64,14 @@ async function initializeControllers(role) {
             }
         }
         
-        // 🆕 INICIALIZAR CONTROLADOR DE CUSTOMER
+        // INICIALIZAR CONTROLADOR DE CUSTOMER (SOLO FOOTER)
         if (role === ROLES.CUSTOMER) {
             console.log('🎮 Inicializando controladores de customer...');
             
             // Esperar un poco para que el DOM se actualice
             await new Promise(resolve => setTimeout(resolve, 150));
             
-            // Inicializar footer controller
+            // Inicializar footer controller (SÍ existe)
             try {
                 const footerModule = await import('../../customer/layout/footerCustomerController.js');
                 if (footerModule && typeof footerModule.initFooterController === 'function') {
@@ -84,17 +84,19 @@ async function initializeControllers(role) {
                 console.error('❌ Error importando footerCustomerController:', error);
             }
             
-            // Aquí puedes agregar otros controladores de customer si los tienes
-            // Ejemplo: navbar customer
+            // ✅ ELIMINADO: No existe navbarCustomerController.js
+            // Si quieres agregarlo después, crea el archivo primero
+            
+            // ✅ Alternativa: si el navbar de customer es el mismo que el de guest
+            // puedes inicializar el controlador de guest
             try {
-                const navbarModule = await import('../../customer/layout/navbarCustomerController.js');
-                if (navbarModule && typeof navbarModule.initNavbarController === 'function') {
-                    navbarModule.initNavbarController();
-                    console.log('✅ Navbar Customer Controller inicializado');
+                const guestNavbarModule = await import('../../visitor/layout/navbarController.js');
+                if (guestNavbarModule && typeof guestNavbarModule.initNavbarController === 'function') {
+                    guestNavbarModule.initNavbarController();
+                    console.log('✅ Navbar Controller (guest) inicializado para customer');
                 }
             } catch (error) {
-                // No es crítico si no existe
-                console.log('ℹ️ No se encontró navbarCustomerController (opcional)');
+                console.log('ℹ️ No se encontró navbarController de guest');
             }
         }
         
@@ -112,6 +114,17 @@ async function initializeControllers(role) {
                 }
             } catch (error) {
                 console.error('❌ Error importando footerController de guest:', error);
+            }
+            
+            // Inicializar navbar de guest
+            try {
+                const navbarModule = await import('../../visitor/layout/navbarController.js');
+                if (navbarModule && typeof navbarModule.initNavbarController === 'function') {
+                    navbarModule.initNavbarController();
+                    console.log('✅ Navbar Guest Controller inicializado');
+                }
+            } catch (error) {
+                console.error('❌ Error importando navbarController de guest:', error);
             }
         }
         
