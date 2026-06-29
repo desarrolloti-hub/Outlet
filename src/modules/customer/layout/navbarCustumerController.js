@@ -369,108 +369,135 @@ function handleProfileClick(e) {
 }
 
 /**
- * Inicializar el controlador del navbar customer
- * CON PRIORIDAD MÁXIMA
+ * Manejar click en el botón de favoritos - NAVEGAR A WISHLIST
  */
-export async function initCustomerNavbarController() {
-    if (isNavbarInitialized) {
-        console.log('🔄 Customer Navbar ya inicializado');
-        // Forzar actualización del avatar
-        setTimeout(updateProfileAvatar, 100);
-        return;
+function handleWishlistClick(e) {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
     }
     
-    console.log('🔄 [CUSTOMER NAVBAR] Inicializando CON PRIORIDAD MÁXIMA...');
+    console.log('❤️ Click en favoritos - navegando a wishlist');
+    
+    // Verificar si el usuario está logueado
+    const session = JSON.parse(localStorage.getItem('outlet_customer'));
+    
+    if (session) {
+        // Usuario logueado → wishlist de customer
+        if (typeof window.navigateTo === 'function') {
+            window.navigateTo('/wishlistCustomer');
+        } else {
+            window.location.href = '/wishlistCustomer';
+        }
+    } else {
+        // Usuario invitado → wishlist de visitor
+        if (typeof window.navigateTo === 'function') {
+            window.navigateTo('/wishlist');
+        } else {
+            window.location.href = '/wishlist';
+        }
+    }
+}
+
+/**
+ * Manejar click en el botón del carrito
+ */
+function handleCartClick(e) {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    console.log('🛒 Click en carrito - navegando a cart');
+    
+    const session = JSON.parse(localStorage.getItem('outlet_customer'));
+    
+    if (session) {
+        if (typeof window.navigateTo === 'function') {
+            window.navigateTo('/cartCustomer');
+        } else {
+            window.location.href = '/cartCustomer';
+        }
+    } else {
+        if (typeof window.navigateTo === 'function') {
+            window.navigateTo('/cart');
+        } else {
+            window.location.href = '/cart';
+        }
+    }
+}
+
+/**
+ * Manejar click en el logo
+ */
+function handleLogoClick(e) {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    console.log('🏠 Click en logo - navegando a home');
+    
+    const session = JSON.parse(localStorage.getItem('outlet_customer'));
+    
+    if (session) {
+        if (typeof window.navigateTo === 'function') {
+            window.navigateTo('/homeCustomer');
+        } else {
+            window.location.href = '/homeCustomer';
+        }
+    } else {
+        if (typeof window.navigateTo === 'function') {
+            window.navigateTo('/');
+        } else {
+            window.location.href = '/';
+        }
+    }
+}
+
+/**
+ * Actualizar el contador de favoritos
+ */
+function updateWishlistBadge() {
+    const badge = document.getElementById('wishlistCount');
+    if (!badge) return;
     
     try {
-        // Esperar a que el DOM esté listo
-        await new Promise(resolve => {
-            if (document.readyState === 'complete') {
-                resolve();
-            } else {
-                window.addEventListener('load', resolve);
-            }
-        });
+        const wishlist = JSON.parse(localStorage.getItem('outlet_wishlist') || '[]');
+        const count = wishlist.length;
         
-        // Pequeño delay para asegurar que el DOM está renderizado
-        await new Promise(resolve => setTimeout(resolve, 300));
-        
-        // ===== FORZAR EL TEMA INICIAL =====
-        // Ignorar cualquier tema anterior y forzar claro por defecto
-        const savedTheme = localStorage.getItem(THEME_KEY);
-        let initialTheme = 'light'; // POR DEFECTO CLARO
-        
-        // Solo usar dark si explícitamente está guardado como dark
-        if (savedTheme === 'dark') {
-            initialTheme = 'dark';
+        if (count > 0) {
+            badge.style.display = 'inline-block';
+            badge.textContent = count;
+        } else {
+            badge.style.display = 'none';
         }
-        
-        // FORZAR aplicación del tema
-        applyThemeWithPriority(initialTheme);
-        
-        // Cargar perfil del usuario
-        await loadUserProfile();
-        
-        // Escuchar cambios en la autenticación
-        window.addEventListener('customer:authStateChanged', async (event) => {
-            console.log('🔄 Auth state changed en customer:', event.detail);
-            await loadUserProfile();
-            setTimeout(updateProfileAvatar, 100);
-        });
-        
-        // Escuchar cambios en localStorage
-        window.addEventListener('storage', (event) => {
-            if (event.key === 'outlet_customer') {
-                console.log('🔄 Sesión actualizada desde otra pestaña');
-                setTimeout(updateProfileAvatar, 100);
-            }
-            if (event.key === THEME_KEY) {
-                console.log('🔄 Tema actualizado desde otra pestaña');
-                const newTheme = event.newValue || 'light';
-                applyThemeWithPriority(newTheme);
-            }
-        });
-        
-        // Escuchar cambios de tema desde otros componentes
-        document.addEventListener('themeChanged', (event) => {
-            console.log('🔄 ThemeChanged event recibido en customer:', event.detail);
-            forceUpdateThemeIcon();
-        });
-        
-        // Configurar event listeners
-        setupNavbarEvents();
-        
-        // Actualizaciones forzadas
-        setTimeout(updateProfileAvatar, 300);
-        setTimeout(updateProfileAvatar, 600);
-        setTimeout(() => {
-            // Forzar el tema nuevamente después de que todo esté cargado
-            const currentTheme = localStorage.getItem(THEME_KEY) || 'light';
-            applyThemeWithPriority(currentTheme);
-        }, 500);
-        
-        // 🔥 PREVENIR que otros navbars cambien el tema
-        // Bloquear el botón de tema de otros navbars
-        setTimeout(() => {
-            const allThemeBtns = document.querySelectorAll('.theme-toggle-btn');
-            if (allThemeBtns.length > 1) {
-                console.log('🔒 Bloqueando botones de tema de otros navbars...');
-                allThemeBtns.forEach((btn, index) => {
-                    // El primer botón es el nuestro, los demás los bloqueamos
-                    if (index > 0) {
-                        btn.style.pointerEvents = 'none';
-                        btn.style.opacity = '0.5';
-                        btn.title = 'Usa el botón de tema del navbar principal';
-                    }
-                });
-            }
-        }, 1000);
-        
-        isNavbarInitialized = true;
-        console.log('✅ [CUSTOMER NAVBAR] Inicializado con prioridad máxima');
-        
     } catch (error) {
-        console.error('❌ Error inicializando customer navbar:', error);
+        console.error('Error actualizando contador de wishlist:', error);
+        badge.style.display = 'none';
+    }
+}
+
+/**
+ * Actualizar el contador del carrito
+ */
+function updateCartBadge() {
+    const badge = document.getElementById('cartCount');
+    if (!badge) return;
+    
+    try {
+        const cart = JSON.parse(localStorage.getItem('outlet_cart') || '[]');
+        const total = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+        
+        if (total > 0) {
+            badge.style.display = 'inline-block';
+            badge.textContent = total;
+        } else {
+            badge.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Error actualizando contador del carrito:', error);
+        badge.style.display = 'none';
     }
 }
 
@@ -480,7 +507,7 @@ export async function initCustomerNavbarController() {
 function setupNavbarEvents() {
     console.log('🔧 Configurando eventos del Customer Navbar...');
     
-    // Buscar o crear elementos
+    // ===== PERFIL =====
     let profileBtn = document.getElementById('profileBtn');
     let profileAvatar = document.getElementById('profileAvatar');
     let profileBadge = document.getElementById('profileBadge');
@@ -517,31 +544,54 @@ function setupNavbarEvents() {
         profileBadge.addEventListener('click', handleProfileClick);
     }
     
-    // Configurar logout
-    const logoutBtn = document.getElementById('logoutBtn') || document.getElementById('mobileLogoutBtn');
-    if (logoutBtn) {
-        console.log('✅ Configurando #logoutBtn customer');
-        logoutBtn.removeEventListener('click', handleLogout);
-        logoutBtn.addEventListener('click', handleLogout);
+    // ===== WISHLIST (FAVORITOS) =====
+    const wishlistBtn = document.getElementById('wishlistBtn');
+    if (wishlistBtn) {
+        console.log('✅ Configurando #wishlistBtn customer');
+        wishlistBtn.removeEventListener('click', handleWishlistClick);
+        wishlistBtn.addEventListener('click', handleWishlistClick);
+    } else {
+        console.warn('⚠️ Botón de wishlist no encontrado');
     }
     
-    // ===== CONFIGURAR TEMA - CON PRIORIDAD =====
+    // ===== CARRITO =====
+    const cartBtn = document.getElementById('cartBtn');
+    if (cartBtn) {
+        console.log('✅ Configurando #cartBtn customer');
+        cartBtn.removeEventListener('click', handleCartClick);
+        cartBtn.addEventListener('click', handleCartClick);
+    } else {
+        console.warn('⚠️ Botón de carrito no encontrado');
+    }
+    
+    // ===== LOGO =====
+    const logoLink = document.getElementById('logoLink');
+    if (logoLink) {
+        console.log('✅ Configurando #logoLink customer');
+        logoLink.removeEventListener('click', handleLogoClick);
+        logoLink.addEventListener('click', handleLogoClick);
+    }
+    
+    // ===== TEMA =====
     const themeToggleBtn = document.getElementById('themeToggleBtn');
     if (themeToggleBtn) {
         console.log('✅ Configurando #themeToggleBtn customer con prioridad');
-        
-        // Remover eventos anteriores
         themeToggleBtn.removeEventListener('click', handleThemeToggle);
-        // Agregar nuevo evento
         themeToggleBtn.addEventListener('click', handleThemeToggle);
-        
-        // Forzar actualización del ícono
         forceUpdateThemeIcon();
     } else {
         console.warn('⚠️ Botón de tema no encontrado en Customer Navbar');
     }
     
-    // Configurar hamburguesa
+    // ===== BÚSQUEDA =====
+    const searchBtn = document.getElementById('searchBtn');
+    if (searchBtn) {
+        console.log('✅ Configurando #searchBtn customer');
+        searchBtn.removeEventListener('click', handleSearchClick);
+        searchBtn.addEventListener('click', handleSearchClick);
+    }
+    
+    // ===== MENÚ MÓVIL =====
     const hamburgerBtn = document.getElementById('hamburgerBtn');
     const mobileMenu = document.getElementById('mobileMenu');
     const mobileCloseBtn = document.getElementById('mobileCloseBtn');
@@ -563,7 +613,72 @@ function setupNavbarEvents() {
         mobileOverlay.addEventListener('click', closeMobileMenu);
     }
     
+    // ===== LOGOUT =====
+    const logoutBtn = document.getElementById('logoutBtn') || document.getElementById('mobileLogoutBtn');
+    if (logoutBtn) {
+        console.log('✅ Configurando #logoutBtn customer');
+        logoutBtn.removeEventListener('click', handleLogout);
+        logoutBtn.addEventListener('click', handleLogout);
+    }
+    
     console.log('✅ Eventos del Customer Navbar configurados');
+}
+
+/**
+ * Manejar click en búsqueda
+ */
+function handleSearchClick(e) {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    console.log('🔍 Click en búsqueda');
+    // Aquí puedes abrir el modal de búsqueda o redirigir a la página de búsqueda
+    // Por ahora solo mostramos un mensaje
+    const searchInput = document.querySelector('.search-input') || document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.focus();
+    } else {
+        // Si no hay input de búsqueda, podrías abrir un modal
+        console.log('🔍 Abrir modal de búsqueda');
+        showNotification('🔍 Buscar productos...', 'info');
+    }
+}
+
+/**
+ * Manejar cambio de tema - CON PRIORIDAD
+ */
+function handleThemeToggle(e) {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    console.log('🎨 [CUSTOMER NAVBAR] Click en botón de tema');
+    
+    // Determinar nuevo tema
+    const isDark = document.body.classList.contains('dark-mode');
+    const newTheme = isDark ? 'light' : 'dark';
+    
+    console.log('🌓 Tema actual:', isDark ? 'oscuro' : 'claro');
+    console.log('🌓 Nuevo tema:', newTheme);
+    
+    // Aplicar nuevo tema CON PRIORIDAD
+    applyThemeWithPriority(newTheme);
+    
+    // 🔥 Forzar actualización en todos los botones de tema
+    setTimeout(() => {
+        const allThemeBtns = document.querySelectorAll('.theme-toggle-btn');
+        allThemeBtns.forEach(btn => {
+            const icon = btn.querySelector('i');
+            if (icon) {
+                icon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+            }
+        });
+    }, 50);
+    
+    console.log('✅ [CUSTOMER NAVBAR] Tema cambiado a:', newTheme);
 }
 
 // ========================================
@@ -626,41 +741,6 @@ async function handleLogout(e) {
         console.error('❌ Error al cerrar sesión:', error);
         showNotification('Error al cerrar sesión', 'error');
     }
-}
-
-/**
- * Manejar cambio de tema - CON PRIORIDAD
- */
-function handleThemeToggle(e) {
-    if (e) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
-    
-    console.log('🎨 [CUSTOMER NAVBAR] Click en botón de tema');
-    
-    // Determinar nuevo tema
-    const isDark = document.body.classList.contains('dark-mode');
-    const newTheme = isDark ? 'light' : 'dark';
-    
-    console.log('🌓 Tema actual:', isDark ? 'oscuro' : 'claro');
-    console.log('🌓 Nuevo tema:', newTheme);
-    
-    // Aplicar nuevo tema CON PRIORIDAD
-    applyThemeWithPriority(newTheme);
-    
-    // 🔥 Forzar actualización en todos los botones de tema
-    setTimeout(() => {
-        const allThemeBtns = document.querySelectorAll('.theme-toggle-btn');
-        allThemeBtns.forEach(btn => {
-            const icon = btn.querySelector('i');
-            if (icon) {
-                icon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-            }
-        });
-    }, 50);
-    
-    console.log('✅ [CUSTOMER NAVBAR] Tema cambiado a:', newTheme);
 }
 
 function showNotification(message, type = 'info') {
@@ -786,6 +866,128 @@ function initProfilePhotoSystem() {
     window.updateProfileAvatar = updateFromSession;
 }
 
+// ========================================
+// INICIALIZACIÓN PRINCIPAL
+// ========================================
+
+export async function initCustomerNavbarController() {
+    if (isNavbarInitialized) {
+        console.log('🔄 Customer Navbar ya inicializado');
+        setTimeout(updateProfileAvatar, 100);
+        updateWishlistBadge();
+        updateCartBadge();
+        return;
+    }
+    
+    console.log('🔄 [CUSTOMER NAVBAR] Inicializando CON PRIORIDAD MÁXIMA...');
+    
+    try {
+        // Esperar a que el DOM esté listo
+        await new Promise(resolve => {
+            if (document.readyState === 'complete') {
+                resolve();
+            } else {
+                window.addEventListener('load', resolve);
+            }
+        });
+        
+        // Pequeño delay para asegurar que el DOM está renderizado
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        // ===== FORZAR EL TEMA INICIAL =====
+        const savedTheme = localStorage.getItem(THEME_KEY);
+        let initialTheme = 'light'; // POR DEFECTO CLARO
+        
+        if (savedTheme === 'dark') {
+            initialTheme = 'dark';
+        }
+        
+        // FORZAR aplicación del tema
+        applyThemeWithPriority(initialTheme);
+        
+        // Cargar perfil del usuario
+        await loadUserProfile();
+        
+        // Configurar eventos
+        setupNavbarEvents();
+        
+        // Actualizar contadores
+        updateWishlistBadge();
+        updateCartBadge();
+        
+        // Escuchar cambios en la autenticación
+        window.addEventListener('customer:authStateChanged', async (event) => {
+            console.log('🔄 Auth state changed en customer:', event.detail);
+            await loadUserProfile();
+            setTimeout(updateProfileAvatar, 100);
+            updateWishlistBadge();
+            updateCartBadge();
+        });
+        
+        // Escuchar cambios en localStorage
+        window.addEventListener('storage', (event) => {
+            if (event.key === 'outlet_customer') {
+                console.log('🔄 Sesión actualizada desde otra pestaña');
+                setTimeout(updateProfileAvatar, 100);
+            }
+            if (event.key === 'outlet_wishlist') {
+                console.log('🔄 Wishlist actualizada desde otra pestaña');
+                updateWishlistBadge();
+            }
+            if (event.key === 'outlet_cart') {
+                console.log('🔄 Carrito actualizado desde otra pestaña');
+                updateCartBadge();
+            }
+            if (event.key === THEME_KEY) {
+                console.log('🔄 Tema actualizado desde otra pestaña');
+                const newTheme = event.newValue || 'light';
+                applyThemeWithPriority(newTheme);
+            }
+        });
+        
+        // Escuchar cambios de tema desde otros componentes
+        document.addEventListener('themeChanged', (event) => {
+            console.log('🔄 ThemeChanged event recibido en customer:', event.detail);
+            forceUpdateThemeIcon();
+        });
+        
+        // Escuchar eventos de wishlist
+        document.addEventListener('wishlistUpdated', updateWishlistBadge);
+        document.addEventListener('cartUpdated', updateCartBadge);
+        
+        // Actualizaciones forzadas
+        setTimeout(updateProfileAvatar, 300);
+        setTimeout(updateProfileAvatar, 600);
+        setTimeout(updateWishlistBadge, 500);
+        setTimeout(updateCartBadge, 500);
+        setTimeout(() => {
+            const currentTheme = localStorage.getItem(THEME_KEY) || 'light';
+            applyThemeWithPriority(currentTheme);
+        }, 500);
+        
+        // 🔥 PREVENIR que otros navbars cambien el tema
+        setTimeout(() => {
+            const allThemeBtns = document.querySelectorAll('.theme-toggle-btn');
+            if (allThemeBtns.length > 1) {
+                console.log('🔒 Bloqueando botones de tema de otros navbars...');
+                allThemeBtns.forEach((btn, index) => {
+                    if (index > 0) {
+                        btn.style.pointerEvents = 'none';
+                        btn.style.opacity = '0.5';
+                        btn.title = 'Usa el botón de tema del navbar principal';
+                    }
+                });
+            }
+        }, 1000);
+        
+        isNavbarInitialized = true;
+        console.log('✅ [CUSTOMER NAVBAR] Inicializado con prioridad máxima');
+        
+    } catch (error) {
+        console.error('❌ Error inicializando customer navbar:', error);
+    }
+}
+
 // Inicializar sistema de foto
 if (typeof window !== 'undefined') {
     if (document.readyState === 'loading') {
@@ -795,13 +997,19 @@ if (typeof window !== 'undefined') {
     }
 }
 
-// Exportar
+// Exportar todo
 export { 
     loadUserProfile, 
     updateProfileAvatar, 
     showGuestUI,
     applyThemeWithPriority,
-    forceUpdateThemeIcon
+    forceUpdateThemeIcon,
+    handleWishlistClick,
+    updateWishlistBadge,
+    updateCartBadge,
+    handleCartClick,
+    handleLogoClick,
+    handleSearchClick
 };
 
-console.log('📦 Customer Navbar Controller cargado CON PRIORIDAD');
+console.log('📦 Customer Navbar Controller cargado CON PRIORIDAD - COMPLETO');
