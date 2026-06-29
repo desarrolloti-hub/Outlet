@@ -15,23 +15,47 @@ let currentUser = null;
  */
 function updateProfileAvatar() {
     try {
-        const session = JSON.parse(localStorage.getItem('outlet_customer'));
-        if (!session) {
-            console.log('❌ No hay sesión para actualizar avatar');
-            return;
+        console.log('🔄 Actualizando avatar del navbar...');
+        
+        // Primero intentar obtener la sesión
+        let session = null;
+        try {
+            session = JSON.parse(localStorage.getItem('outlet_customer'));
+        } catch (e) {
+            console.error('Error parseando sesión:', e);
         }
-
+        
+        console.log('📦 Sesión en navbar:', session ? 'existe' : 'no existe');
+        if (session) {
+            console.log('📸 Foto en sesión:', session.fotoPerfil ? '✅ tiene foto' : '❌ sin foto');
+            console.log('📸 URL foto:', session.fotoPerfil);
+        }
+        
         // Buscar elementos del avatar
         const avatarImg = document.getElementById('profileAvatar');
         const badgeSpan = document.getElementById('profileBadge');
         
-        if (!avatarImg) {
-            console.log('⚠️ No se encontró #profileAvatar en el DOM');
+        if (!avatarImg || !badgeSpan) {
+            console.warn('⚠️ Elementos del avatar no encontrados');
+            // Intentar crear los elementos
+            createAvatarElements();
+            setTimeout(updateProfileAvatar, 100);
             return;
         }
-
-        if (session.fotoPerfil && session.fotoPerfil.startsWith('http')) {
+        
+        if (!session) {
+            console.log('❌ No hay sesión, mostrando invitado');
+            showGuestUI();
+            return;
+        }
+        
+        // Verificar si tiene foto de perfil
+        const tieneFoto = session.fotoPerfil && session.fotoPerfil.startsWith('http');
+        console.log('📸 ¿Tiene foto de perfil?', tieneFoto);
+        
+        if (tieneFoto) {
             // ✅ Mostrar foto
+            console.log('🖼️ Mostrando foto de perfil:', session.fotoPerfil.substring(0, 60) + '...');
             avatarImg.src = session.fotoPerfil;
             avatarImg.style.display = 'block';
             avatarImg.style.width = '40px';
@@ -39,6 +63,7 @@ function updateProfileAvatar() {
             avatarImg.style.borderRadius = '50%';
             avatarImg.style.objectFit = 'cover';
             avatarImg.style.border = '2px solid var(--outlet-gold, #c9a84c)';
+            avatarImg.style.cursor = 'pointer';
             
             if (badgeSpan) {
                 badgeSpan.style.display = 'none';
@@ -47,11 +72,17 @@ function updateProfileAvatar() {
             console.log('✅ Foto de perfil actualizada');
         } else {
             // ❌ Mostrar iniciales
+            console.log('🔤 Mostrando iniciales');
             avatarImg.style.display = 'none';
             
             if (badgeSpan) {
+                const iniciales = session.iniciales || 
+                                 (session.nombre ? session.nombre.charAt(0) : '') + 
+                                 (session.apellidoPa ? session.apellidoPa.charAt(0) : '') || 
+                                 'C';
+                
                 badgeSpan.style.display = 'flex';
-                badgeSpan.textContent = session.iniciales || session.nombre?.charAt(0) || 'C';
+                badgeSpan.textContent = iniciales.toUpperCase();
                 badgeSpan.style.width = '40px';
                 badgeSpan.style.height = '40px';
                 badgeSpan.style.borderRadius = '50%';
@@ -63,37 +94,120 @@ function updateProfileAvatar() {
                 badgeSpan.style.justifyContent = 'center';
                 badgeSpan.style.display = 'flex';
                 badgeSpan.style.textTransform = 'uppercase';
+                badgeSpan.style.cursor = 'pointer';
             }
+            
+            console.log('✅ Mostrando iniciales:', iniciales);
         }
     } catch (error) {
-        console.error('Error actualizando avatar:', error);
+        console.error('❌ Error actualizando avatar:', error);
     }
 }
 
 /**
- * Cargar perfil del usuario (usando CustomerService en lugar de AuthService)
+ * Crear elementos del avatar si no existen
+ */
+function createAvatarElements() {
+    // Buscar el contenedor del perfil
+    const profileContainer = document.querySelector('.profile-avatar-wrapper, .nav-profile, [class*="profile-avatar"]');
+    
+    // Buscar el botón de perfil
+    const profileBtn = document.getElementById('profileBtn');
+    
+    if (profileBtn) {
+        // Verificar si ya tiene el avatar
+        if (profileBtn.querySelector('#profileAvatar')) {
+            return;
+        }
+        
+        // Crear contenedor dentro del botón
+        const container = document.createElement('span');
+        container.className = 'profile-avatar-wrapper';
+        container.style.cssText = 'display:inline-flex; align-items:center; gap:8px;';
+        
+        // Crear imagen
+        const img = document.createElement('img');
+        img.id = 'profileAvatar';
+        img.alt = 'Avatar';
+        img.style.cssText = 'display:none; width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid #c9a84c; cursor:pointer;';
+        
+        // Crear badge
+        const badge = document.createElement('span');
+        badge.id = 'profileBadge';
+        badge.style.cssText = 'display:flex; width:40px; height:40px; border-radius:50%; background:#c9a84c; color:#1a1a1a; font-weight:700; font-size:16px; align-items:center; justify-content:center; text-transform:uppercase; cursor:pointer;';
+        badge.textContent = 'C';
+        
+        container.appendChild(img);
+        container.appendChild(badge);
+        
+        // Insertar al principio del botón
+        profileBtn.prepend(container);
+        console.log('✅ Elementos del avatar creados dentro de #profileBtn');
+        return;
+    }
+    
+    // Si no hay profileBtn, buscar el navbar
+    const navbar = document.querySelector('nav, header, .navbar, [class*="nav"]');
+    if (!navbar) {
+        console.warn('⚠️ No se encontró navbar');
+        return;
+    }
+    
+    // Crear contenedor
+    const container = document.createElement('div');
+    container.className = 'profile-avatar-wrapper';
+    container.style.cssText = 'display:inline-flex; align-items:center; gap:8px; cursor:pointer;';
+    container.id = 'profileBtn';
+    
+    // Crear imagen
+    const img = document.createElement('img');
+    img.id = 'profileAvatar';
+    img.alt = 'Avatar';
+    img.style.cssText = 'display:none; width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid #c9a84c; cursor:pointer;';
+    
+    // Crear badge
+    const badge = document.createElement('span');
+    badge.id = 'profileBadge';
+    badge.style.cssText = 'display:flex; width:40px; height:40px; border-radius:50%; background:#c9a84c; color:#1a1a1a; font-weight:700; font-size:16px; align-items:center; justify-content:center; text-transform:uppercase; cursor:pointer;';
+    badge.textContent = 'C';
+    
+    container.appendChild(img);
+    container.appendChild(badge);
+    
+    // Agregar al navbar
+    navbar.appendChild(container);
+    console.log('✅ Elementos del avatar creados en navbar');
+}
+
+/**
+ * Cargar perfil del usuario
  */
 async function loadUserProfile() {
     try {
-        // Usar CustomerService en lugar de AuthService
+        console.log('📥 Cargando perfil del usuario...');
         const customer = await CustomerService.getCurrentCustomer(true);
         
         if (customer) {
             currentUser = customer;
-            console.log('👤 Usuario cargado:', customer.nombreCompleto || customer.nombre);
+            console.log('👤 Usuario cargado:', {
+                id: customer.id,
+                nombre: customer.nombreCompleto,
+                email: customer.email,
+                tieneFoto: !!customer.fotoPerfil,
+                fotoUrl: customer.fotoPerfil ? customer.fotoPerfil.substring(0, 50) + '...' : 'sin foto'
+            });
             
             // Actualizar UI
             updateUserUI(customer);
             
             // Actualizar avatar con la foto
-            updateProfileAvatar();
+            setTimeout(updateProfileAvatar, 100);
         } else {
             console.log('👤 No hay usuario autenticado');
-            // Mostrar estado de invitado
             showGuestUI();
         }
     } catch (error) {
-        console.error('Error cargando perfil:', error);
+        console.error('❌ Error cargando perfil:', error);
         showGuestUI();
     }
 }
@@ -121,6 +235,8 @@ function updateUserUI(customer) {
  * Mostrar UI de invitado
  */
 function showGuestUI() {
+    console.log('👤 Mostrando UI de invitado');
+    
     const nameElements = document.querySelectorAll('.user-name, .nav-username, .profile-name');
     nameElements.forEach(el => {
         if (el.tagName === 'SPAN' || el.tagName === 'DIV' || el.tagName === 'A') {
@@ -149,6 +265,7 @@ function showGuestUI() {
         badgeSpan.style.justifyContent = 'center';
         badgeSpan.style.display = 'flex';
         badgeSpan.style.textTransform = 'uppercase';
+        badgeSpan.style.cursor = 'pointer';
     }
 }
 
@@ -165,7 +282,6 @@ function handleProfileClick(e) {
     const session = JSON.parse(localStorage.getItem('outlet_customer'));
     
     if (session) {
-        // Usuario logueado - ir a editUser
         console.log('👤 Usuario logueado, redirigiendo a /editUser');
         if (typeof window.navigateTo === 'function') {
             window.navigateTo('/editUser');
@@ -173,7 +289,6 @@ function handleProfileClick(e) {
             window.location.href = '/editUser';
         }
     } else {
-        // Usuario no logueado - ir a login
         console.log('👤 Usuario no logueado, redirigiendo a /login');
         if (typeof window.navigateTo === 'function') {
             window.navigateTo('/login');
@@ -189,6 +304,8 @@ function handleProfileClick(e) {
 export async function initCustomerNavbarController() {
     if (isNavbarInitialized) {
         console.log('🔄 Navbar ya inicializado');
+        // Forzar actualización del avatar
+        setTimeout(updateProfileAvatar, 100);
         return;
     }
     
@@ -204,6 +321,9 @@ export async function initCustomerNavbarController() {
             }
         });
         
+        // Pequeño delay para asegurar que el DOM está renderizado
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
         // Cargar perfil del usuario
         await loadUserProfile();
         
@@ -211,22 +331,23 @@ export async function initCustomerNavbarController() {
         window.addEventListener('customer:authStateChanged', async (event) => {
             console.log('🔄 Auth state changed:', event.detail);
             await loadUserProfile();
-            updateProfileAvatar();
+            setTimeout(updateProfileAvatar, 100);
         });
         
         // Escuchar cambios en localStorage
         window.addEventListener('storage', (event) => {
             if (event.key === 'outlet_customer') {
                 console.log('🔄 Sesión actualizada desde otra pestaña');
-                updateProfileAvatar();
+                setTimeout(updateProfileAvatar, 100);
             }
         });
         
-        // Inicializar avatar cuando el DOM esté listo
-        setTimeout(updateProfileAvatar, 200);
-        
-        // Configurar event listeners para botones del navbar
+        // Configurar event listeners
         setupNavbarEvents();
+        
+        // Actualización forzada del avatar
+        setTimeout(updateProfileAvatar, 300);
+        setTimeout(updateProfileAvatar, 600);
         
         isNavbarInitialized = true;
         console.log('✅ Customer Navbar Controller inicializado');
@@ -242,67 +363,58 @@ export async function initCustomerNavbarController() {
 function setupNavbarEvents() {
     console.log('🔧 Configurando eventos del navbar...');
     
-    // ========================================
-    // 1. Botón de perfil (profileBtn)
-    // ========================================
-    const profileBtn = document.getElementById('profileBtn');
-    if (profileBtn) {
-        console.log('✅ Encontrado #profileBtn');
-        // Remover listeners anteriores para evitar duplicados
-        profileBtn.removeEventListener('click', handleProfileClick);
-        profileBtn.addEventListener('click', handleProfileClick);
-    } else {
-        console.warn('⚠️ No se encontró #profileBtn en el DOM');
+    // Buscar o crear elementos
+    let profileBtn = document.getElementById('profileBtn');
+    let profileAvatar = document.getElementById('profileAvatar');
+    let profileBadge = document.getElementById('profileBadge');
+    
+    // Si no hay avatar, crearlo
+    if (!profileAvatar || !profileBadge) {
+        console.log('⚠️ No se encontraron elementos de avatar, creándolos...');
+        createAvatarElements();
+        // Reintentar después de crear
+        setTimeout(() => {
+            setupNavbarEvents();
+        }, 200);
+        return;
     }
     
-    // ========================================
-    // 2. Avatar (profileAvatar)
-    // ========================================
-    const profileAvatar = document.getElementById('profileAvatar');
+    // Configurar eventos
+    if (profileBtn) {
+        console.log('✅ Configurando #profileBtn');
+        profileBtn.removeEventListener('click', handleProfileClick);
+        profileBtn.addEventListener('click', handleProfileClick);
+    }
+    
     if (profileAvatar) {
-        console.log('✅ Encontrado #profileAvatar');
+        console.log('✅ Configurando #profileAvatar');
         profileAvatar.style.cursor = 'pointer';
         profileAvatar.removeEventListener('click', handleProfileClick);
         profileAvatar.addEventListener('click', handleProfileClick);
-    } else {
-        console.warn('⚠️ No se encontró #profileAvatar en el DOM');
     }
     
-    // ========================================
-    // 3. Badge (profileBadge)
-    // ========================================
-    const profileBadge = document.getElementById('profileBadge');
     if (profileBadge) {
-        console.log('✅ Encontrado #profileBadge');
+        console.log('✅ Configurando #profileBadge');
         profileBadge.style.cursor = 'pointer';
         profileBadge.removeEventListener('click', handleProfileClick);
         profileBadge.addEventListener('click', handleProfileClick);
-    } else {
-        console.warn('⚠️ No se encontró #profileBadge en el DOM');
     }
     
-    // ========================================
-    // 4. Botón de logout
-    // ========================================
+    // Configurar logout
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
-        console.log('✅ Encontrado #logoutBtn');
+        console.log('✅ Configurando #logoutBtn');
         logoutBtn.removeEventListener('click', handleLogout);
         logoutBtn.addEventListener('click', handleLogout);
-    } else {
-        console.warn('⚠️ No se encontró #logoutBtn en el DOM');
     }
     
-    // ========================================
-    // 5. Botón de cambio de tema
-    // ========================================
+    // Configurar tema
     const themeToggleBtn = document.getElementById('themeToggleBtn');
     if (themeToggleBtn) {
-        console.log('✅ Encontrado #themeToggleBtn');
+        console.log('✅ Configurando #themeToggleBtn');
         themeToggleBtn.removeEventListener('click', handleThemeToggle);
         themeToggleBtn.addEventListener('click', handleThemeToggle);
         
-        // Actualizar el icono (luna/sol) según el tema actual
         const updateThemeIcon = () => {
             const icon = themeToggleBtn.querySelector('i');
             if (icon) {
@@ -311,16 +423,15 @@ function setupNavbarEvents() {
         };
         updateThemeIcon();
         document.addEventListener('themeChanged', updateThemeIcon);
-    } else {
-        console.warn('⚠️ No se encontró #themeToggleBtn en el DOM');
     }
     
     console.log('✅ Eventos del navbar configurados');
 }
 
-/**
- * Manejar logout
- */
+// ========================================
+// Funciones auxiliares
+// ========================================
+
 async function handleLogout(e) {
     if (e) {
         e.preventDefault();
@@ -332,7 +443,6 @@ async function handleLogout(e) {
         await CustomerService.logout();
         console.log('✅ Sesión cerrada exitosamente');
         
-        // Redirigir al login
         if (typeof window.navigateTo === 'function') {
             window.navigateTo('/login');
         } else {
@@ -344,9 +454,6 @@ async function handleLogout(e) {
     }
 }
 
-/**
- * Manejar toggle de tema
- */
 function handleThemeToggle(e) {
     if (e) {
         e.preventDefault();
@@ -356,9 +463,6 @@ function handleThemeToggle(e) {
     ThemeService.toggle();
 }
 
-/**
- * Mostrar notificación temporal
- */
 function showNotification(message, type = 'info') {
     const existingToast = document.querySelector('.outlet-toast-notification');
     if (existingToast) existingToast.remove();
@@ -387,20 +491,17 @@ function showNotification(message, type = 'info') {
 }
 
 // ========================================
-// SISTEMA DE FOTO DE PERFIL AUTO-ACTUALIZABLE
+// Sistema de foto de perfil
 // ========================================
 
-/**
- * Sistema para actualizar automáticamente la foto de perfil
- * cuando la sesión cambia o el DOM se actualiza
- */
 function initProfilePhotoSystem() {
     console.log('🔄 Inicializando sistema de foto de perfil...');
     
-    // Función para actualizar desde la sesión
     function updateFromSession() {
         try {
             const session = JSON.parse(localStorage.getItem('outlet_customer'));
+            console.log('📸 Actualizando desde sesión:', session ? 'tiene sesión' : 'sin sesión');
+            
             if (session?.fotoPerfil) {
                 const avatar = document.getElementById('profileAvatar');
                 if (avatar) {
@@ -411,6 +512,7 @@ function initProfilePhotoSystem() {
                     avatar.style.borderRadius = '50%';
                     avatar.style.objectFit = 'cover';
                     avatar.style.border = '2px solid var(--outlet-gold, #c9a84c)';
+                    avatar.style.cursor = 'pointer';
                     
                     const badge = document.getElementById('profileBadge');
                     if (badge) badge.style.display = 'none';
@@ -418,6 +520,33 @@ function initProfilePhotoSystem() {
                     console.log('✅ Foto de perfil actualizada desde sesión');
                     return true;
                 }
+            } else if (session) {
+                // Mostrar iniciales
+                const avatar = document.getElementById('profileAvatar');
+                const badge = document.getElementById('profileBadge');
+                if (avatar) avatar.style.display = 'none';
+                if (badge) {
+                    badge.style.display = 'flex';
+                    const iniciales = session.iniciales || 
+                                     (session.nombre ? session.nombre.charAt(0) : '') + 
+                                     (session.apellidoPa ? session.apellidoPa.charAt(0) : '') || 
+                                     'C';
+                    badge.textContent = iniciales.toUpperCase();
+                    badge.style.width = '40px';
+                    badge.style.height = '40px';
+                    badge.style.borderRadius = '50%';
+                    badge.style.background = 'var(--outlet-gold, #c9a84c)';
+                    badge.style.color = '#1a1a1a';
+                    badge.style.fontWeight = '700';
+                    badge.style.fontSize = '16px';
+                    badge.style.alignItems = 'center';
+                    badge.style.justifyContent = 'center';
+                    badge.style.display = 'flex';
+                    badge.style.textTransform = 'uppercase';
+                    badge.style.cursor = 'pointer';
+                }
+                console.log('✅ Mostrando iniciales');
+                return true;
             }
         } catch (e) {
             console.error('Error actualizando foto:', e);
@@ -425,24 +554,21 @@ function initProfilePhotoSystem() {
         return false;
     }
     
-    // Ejecutar inmediatamente si el DOM está listo
-    if (document.readyState !== 'loading') {
-        setTimeout(updateFromSession, 100);
-    }
+    // Ejecutar inmediatamente
+    setTimeout(updateFromSession, 100);
     
-    // Escuchar eventos de autenticación
+    // Escuchar eventos
     window.addEventListener('customer:authStateChanged', () => {
-        setTimeout(updateFromSession, 50);
+        setTimeout(updateFromSession, 100);
     });
     
-    // Escuchar cambios en localStorage
     window.addEventListener('storage', (event) => {
         if (event.key === 'outlet_customer') {
-            setTimeout(updateFromSession, 50);
+            setTimeout(updateFromSession, 100);
         }
     });
     
-    // Observador de DOM para cuando se cargue el navbar dinámicamente
+    // Observador de DOM
     const observer = new MutationObserver(() => {
         if (document.getElementById('profileAvatar')) {
             updateFromSession();
@@ -457,13 +583,11 @@ function initProfilePhotoSystem() {
         });
     }, 200);
     
-    // Exponer función para uso manual
     window.updateProfileAvatar = updateFromSession;
 }
 
-// Inicializar sistema de foto
+// Inicializar
 if (typeof window !== 'undefined') {
-    // Esperar a que el DOM esté listo
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initProfilePhotoSystem);
     } else {
@@ -471,8 +595,7 @@ if (typeof window !== 'undefined') {
     }
 }
 
-// Exportar funciones
+// Exportar
 export { loadUserProfile, updateProfileAvatar, showGuestUI };
 
-// Inicialización automática cuando se importa
 console.log('📦 Customer Navbar Controller cargado');

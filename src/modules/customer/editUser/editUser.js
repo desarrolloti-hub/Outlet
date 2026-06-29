@@ -177,6 +177,26 @@ function updateAvatarFromSession() {
     } catch (error) {
         console.error('Error actualizando avatar:', error);
     }
+    function updateAvatarFromSession() {
+    try {
+        const session = JSON.parse(localStorage.getItem('outlet_customer'));
+        if (!session) return;
+        
+        // ... tu código existente ...
+        
+        // Forzar actualización del navbar
+        if (typeof window.updateProfileAvatar === 'function') {
+            setTimeout(window.updateProfileAvatar, 100);
+        }
+        
+        // También disparar evento para que el navbar lo escuche
+        window.dispatchEvent(new CustomEvent('customer:authStateChanged', {
+            detail: session
+        }));
+    } catch (error) {
+        console.error('Error actualizando avatar:', error);
+    }
+}
 }
 
 // ========================================
@@ -475,6 +495,26 @@ function saveCard() {
 // ========================================
 
 async function guardarCambios() {
+    function updateAvatarFromSession() {
+    try {
+        const session = JSON.parse(localStorage.getItem('outlet_customer'));
+        if (!session) return;
+        
+        // ... tu código existente ...
+        
+        // Forzar actualización del navbar
+        if (typeof window.updateProfileAvatar === 'function') {
+            setTimeout(window.updateProfileAvatar, 100);
+        }
+        
+        // También disparar evento para que el navbar lo escuche
+        window.dispatchEvent(new CustomEvent('customer:authStateChanged', {
+            detail: session
+        }));
+    } catch (error) {
+        console.error('Error actualizando avatar:', error);
+    }
+}
     try {
         if (!currentCustomer) {
             showNotification('No hay sesión activa', 'error');
