@@ -982,3 +982,58 @@ body.dark-mode .logo-img {
         right: -16px;
     }
 }
+/* ========== LÍNEA DORADA ELEGANTE ========== */
+.nav-gold-line {
+    height: 3px;
+    width: 100%;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        #b8860b 10%,
+        #ddab3b 25%,
+        #f3bf4d 50%,
+        #ddab3b 75%,
+        #b8860b 90%,
+        transparent 100%
+    );
+    position: relative;
+    z-index: 2;
+    box-shadow: 0 2px 8px rgba(221, 171, 59, 0.3);
+}
+
+/* Efecto de brillo en hover */
+.OUTLET-nav:hover .nav-gold-line {
+    animation: goldShine 3s ease-in-out infinite;
+}
+
+@keyframes goldShine {
+    0%, 100% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+}
+
+/* Efecto de brillo adicional */
+.nav-gold-line::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, 
+        transparent 0%,
+        rgba(255, 215, 0, 0.1) 20%,
+        rgba(255, 215, 0, 0.3) 50%,
+        rgba(255, 215, 0, 0.1) 80%,
+        transparent 100%
+    );
+    animation: goldPulse 4s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes goldPulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.8; }
+}
