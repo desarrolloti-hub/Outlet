@@ -1,113 +1,378 @@
 /* ========================================
-   BOTONES - Sistema completo
+   BUTTONS COMPONENT - OUTLET LUXURY
+   Sistema de botones reutilizable - FULL RESPONSIVE
+   Basado en cartCustomer.css
    ======================================== */
 
-/* Base del botón */
-.rsi-btn {
+/* ====== BASE DEL BOTÓN ====== */
+.outlet-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    padding: 12px 28px;
-    border-radius: var(--rsi-radius-md);
-    font-weight: 600;
+    gap: var(--outlet-spacing-sm, 8px);
+    font-family: var(--outlet-font-primary, 'Inter', sans-serif);
+    font-weight: 700;
+    letter-spacing: 0.15em;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    transition: all var(--rsi-transition-base);
     text-decoration: none;
-    font-size: 0.9rem;
     border: none;
+    cursor: pointer;
+    transition: all var(--outlet-transition-base, 0.3s ease);
+    border-radius: var(--outlet-radius-sm, 4px);
+    height: 44px;
+    padding: 0 24px;
+    font-size: 11px;
+    white-space: nowrap;
+    user-select: none;
     position: relative;
     overflow: hidden;
+    flex-shrink: 0;
 }
 
-.rsi-btn i {
-    font-size: 1rem;
-    transition: transform var(--rsi-transition-fast);
+.outlet-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
 }
 
-.rsi-btn:hover i {
+.outlet-btn:focus-visible {
+    outline: 2px solid var(--outlet-gold, #d4a843);
+    outline-offset: 2px;
+}
+
+/* ====== VARIANTES ====== */
+
+/* 
+   BOTÓN PRIMARIO - Fondo NEGRO, texto BLANCO
+   Hover: Fondo DORADO, texto NEGRO
+   Basado en .outlet-cart-checkout-btn y .outlet-cart-empty-btn
+*/
+.outlet-btn-primary {
+    background-color: var(--outlet-text-primary, #1a1a1a);
+    color: var(--outlet-bg-primary, #ffffff);
+}
+
+.outlet-btn-primary:hover:not(:disabled) {
+    background-color: var(--outlet-gold, #d4a843);
+    color: #1a1a1a;
+    transform: translateY(-2px);
+    box-shadow: var(--outlet-shadow-md, 0 8px 24px rgba(0,0,0,0.15));
+}
+
+/* 
+   BOTÓN SECUNDARIO - Fondo DORADO, texto NEGRO
+   Hover: Fondo DORADO CLARO, texto NEGRO
+   Basado en .outlet-cart-empty-btn
+*/
+.outlet-btn-secondary {
+    background-color: var(--outlet-gold, #d4a843);
+    color: #1a1a1a;
+}
+
+.outlet-btn-secondary:hover:not(:disabled) {
+    background-color: var(--outlet-gold-light, #e8c86a);
+    color: #1a1a1a;
+    transform: translateY(-2px);
+    box-shadow: var(--outlet-shadow-md, 0 8px 24px rgba(0,0,0,0.15));
+}
+
+/* 
+   BOTÓN OUTLINE - Borde sutil, fondo transparente
+   Basado en los inputs de promocode (estilo sutil)
+*/
+.outlet-btn-outline {
+    background-color: transparent;
+    color: var(--outlet-text-primary, #1a1a1a);
+    border: 1px solid var(--outlet-border-color, #e0e0e0);
+}
+
+.outlet-btn-outline:hover:not(:disabled) {
+    background-color: var(--outlet-gold, #d4a843);
+    color: #1a1a1a;
+    border-color: var(--outlet-gold, #d4a843);
+    transform: translateY(-2px);
+    box-shadow: var(--outlet-shadow-md, 0 8px 24px rgba(0,0,0,0.15));
+}
+
+/* 
+   BOTÓN PELIGRO - Para eliminar (como .outlet-cart-remove)
+   Fondo transparente, texto gris, hover rojo
+*/
+.outlet-btn-danger {
+    background-color: transparent;
+    color: var(--outlet-text-secondary, #888888);
+    padding: 0 12px;
+    letter-spacing: 0.1em;
+    font-size: 11px;
+}
+
+.outlet-btn-danger:hover:not(:disabled) {
+    color: var(--outlet-danger, #dc3545);
+}
+
+.outlet-btn-danger .outlet-btn-icon {
+    font-size: 14px;
+}
+
+/* 
+   BOTÓN GHOST - Transparente (acción sutil)
+*/
+.outlet-btn-ghost {
+    background-color: transparent;
+    color: var(--outlet-text-secondary, #888888);
+    padding: 0 12px;
+    letter-spacing: 0.1em;
+}
+
+.outlet-btn-ghost:hover:not(:disabled) {
+    background-color: var(--outlet-bg-container-low, #f5f5f5);
+    color: var(--outlet-text-primary, #1a1a1a);
+}
+
+/* 
+   BOTÓN DARK - Alias del primario (fondo negro)
+*/
+.outlet-btn-dark {
+    background-color: var(--outlet-text-primary, #1a1a1a);
+    color: var(--outlet-bg-primary, #ffffff);
+}
+
+.outlet-btn-dark:hover:not(:disabled) {
+    background-color: var(--outlet-gold, #d4a843);
+    color: #1a1a1a;
+    transform: translateY(-2px);
+    box-shadow: var(--outlet-shadow-md, 0 8px 24px rgba(0,0,0,0.15));
+}
+
+/* 
+   BOTÓN GOLD - Alias del secundario (fondo dorado)
+*/
+.outlet-btn-gold {
+    background-color: var(--outlet-gold, #d4a843);
+    color: #1a1a1a;
+}
+
+.outlet-btn-gold:hover:not(:disabled) {
+    background-color: var(--outlet-gold-light, #e8c86a);
+    color: #1a1a1a;
+    transform: translateY(-2px);
+    box-shadow: var(--outlet-shadow-md, 0 8px 24px rgba(0,0,0,0.15));
+}
+
+/* 
+   BOTÓN GOLD OUTLINE - Borde dorado, fondo transparente
+*/
+.outlet-btn-gold-outline {
+    background-color: transparent;
+    color: var(--outlet-gold, #d4a843);
+    border: 1px solid var(--outlet-gold, #d4a843);
+}
+
+.outlet-btn-gold-outline:hover:not(:disabled) {
+    background-color: var(--outlet-gold, #d4a843);
+    color: #1a1a1a;
+    transform: translateY(-2px);
+    box-shadow: var(--outlet-shadow-md, 0 8px 24px rgba(0,0,0,0.15));
+}
+
+/* ====== TAMAÑOS ====== */
+
+/* Pequeño */
+.outlet-btn-sm {
+    height: 32px;
+    padding: 0 12px;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+}
+
+/* Mediano (Default) */
+.outlet-btn-md {
+    height: 44px;
+    padding: 0 24px;
+    font-size: 11px;
+}
+
+/* Grande */
+.outlet-btn-lg {
+    height: 56px;
+    padding: 0 32px;
+    font-size: 13px;
+    letter-spacing: 0.2em;
+}
+
+/* Extra Grande */
+.outlet-btn-xl {
+    height: 64px;
+    padding: 0 48px;
+    font-size: 14px;
+    letter-spacing: 0.25em;
+}
+
+/* ====== FULL WIDTH ====== */
+.outlet-btn-block {
+    width: 100%;
+    justify-content: center;
+}
+
+/* ====== CON ICONOS ====== */
+.outlet-btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.outlet-btn-icon-left {
+    margin-right: 8px;
+}
+
+.outlet-btn-icon-right {
+    margin-left: 8px;
+}
+
+/* ====== EFECTO HOVER CON ICONO (como .outlet-cart-checkout-btn) ====== */
+.outlet-btn-hover-icon .outlet-btn-icon {
+    transition: transform var(--outlet-transition-fast, 0.2s ease);
+}
+
+.outlet-btn-hover-icon:hover .outlet-btn-icon {
     transform: translateX(4px);
 }
 
-/* Botón primario */
-.rsi-btn-primary {
-    background-color: var(--rsi-primary);
-    color: var(--rsi-white);
+/* ====== ESTADO DE CARGA ====== */
+.outlet-btn-loading {
+    position: relative;
+    color: transparent !important;
+    pointer-events: none;
 }
 
-.rsi-btn-primary:hover {
-    background-color: var(--rsi-primary-light);
-    transform: translateY(-2px);
-    box-shadow: var(--rsi-shadow-primary);
+.outlet-btn-loading::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: outlet-btn-spin 0.8s linear infinite;
 }
 
-/* Botón secundario */
-.rsi-btn-secondary {
-    background-color: var(--rsi-accent);
-    color: var(--rsi-primary);
+@keyframes outlet-btn-spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
-.rsi-btn-secondary:hover {
-    background-color: var(--rsi-accent-dark);
-    color: var(--rsi-white);
-    transform: translateY(-2px);
+/* ====== RESPONSIVE ====== */
+
+/* Tablets */
+@media (max-width: 768px) {
+    .outlet-btn {
+        font-size: 10px;
+        padding: 0 16px;
+    }
+    
+    .outlet-btn-lg {
+        height: 44px;
+        padding: 0 20px;
+        font-size: 11px;
+    }
+    
+    .outlet-btn-xl {
+        height: 48px;
+        padding: 0 24px;
+        font-size: 12px;
+    }
 }
 
-/* Botón outline */
-.rsi-btn-outline {
-    background: transparent;
-    border: 2px solid var(--rsi-primary);
-    color: var(--rsi-primary);
+/* Móviles */
+@media (max-width: 480px) {
+    .outlet-btn {
+        font-size: 9px;
+        padding: 0 12px;
+        height: 32px;
+        letter-spacing: 0.1em;
+    }
+    
+    .outlet-btn-md {
+        height: 36px;
+        padding: 0 16px;
+        font-size: 10px;
+    }
+    
+    .outlet-btn-lg {
+        height: 44px;
+        padding: 0 20px;
+        font-size: 10px;
+    }
+    
+    .outlet-btn-xl {
+        height: 48px;
+        padding: 0 24px;
+        font-size: 11px;
+    }
+    
+    .outlet-btn-block-mobile {
+        width: 100%;
+        justify-content: center;
+    }
 }
 
-.rsi-btn-outline:hover {
-    background-color: var(--rsi-primary);
-    color: var(--rsi-white);
-    transform: translateY(-2px);
+/* Móviles muy pequeños */
+@media (max-width: 380px) {
+    .outlet-btn {
+        font-size: 8px;
+        padding: 0 8px;
+        height: 28px;
+    }
+    
+    .outlet-btn-md {
+        height: 28px;
+        padding: 0 12px;
+        font-size: 9px;
+    }
+    
+    .outlet-btn-lg {
+        height: 32px;
+        padding: 0 12px;
+        font-size: 9px;
+    }
 }
 
-/* Botón CTA */
-.rsi-primary-btn {
-    display: inline-block;
-    padding: 12px 30px;
-    background-color: #1c1948;
-    color: white !important;
-    border: none;
-    border-radius: 6px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-decoration: none;
-    font-size: 1rem;
+/* ====== MODO OSCURO (Dark Theme) ====== */
+/* En modo oscuro, los colores se invierten automáticamente gracias a las variables */
+/* Si usas clase .dark-mode o @media prefers-color-scheme: dark */
+
+.dark-mode .outlet-btn-primary,
+.dark-mode .outlet-btn-dark {
+    background-color: var(--outlet-bg-surface, #2a2a2a);
+    color: var(--outlet-text-primary, #ffffff);
 }
 
-.rsi-primary-btn:hover {
-    background-color: #2a2670;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(28, 25, 72, 0.2);
+.dark-mode .outlet-btn-primary:hover:not(:disabled),
+.dark-mode .outlet-btn-dark:hover:not(:disabled) {
+    background-color: var(--outlet-gold, #d4a843);
+    color: #1a1a1a;
 }
 
-/* Botón CTA especial */
-.rsi-cta-button {
-    background-color: white;
-    color: #1c1948 !important;
-    border: none;
-    padding: 15px 40px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    border-radius: 50px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-top: 30px;
+.dark-mode .outlet-btn-outline {
+    border-color: var(--outlet-border-color, #444444);
+    color: var(--outlet-text-secondary, #aaaaaa);
 }
 
-.rsi-cta-button:hover {
-    background-color: #8f94fb;
-    color: white !important;
-    transform: translateY(-3px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+.dark-mode .outlet-btn-outline:hover:not(:disabled) {
+    background-color: var(--outlet-gold, #d4a843);
+    color: #1a1a1a;
+    border-color: var(--outlet-gold, #d4a843);
+}
+
+.dark-mode .outlet-btn-ghost:hover:not(:disabled) {
+    background-color: var(--outlet-bg-container-low, #333333);
+    color: var(--outlet-text-primary, #ffffff);
+}
+
+.dark-mode .outlet-btn-danger:hover:not(:disabled) {
+    color: var(--outlet-danger, #e74c5e);
 }
