@@ -14,7 +14,7 @@ const LAYOUT_PATHS = {
         footer: '/modules/visitor/layout/footer.html'
     },
     [ROLES.CUSTOMER]: {
-        navbar: '/modules/customer/layout/navbarCustumer.html',  // ⚠️ Verifica el nombre del archivo
+        navbar: '/modules/customer/layout/navbarCustumer.html',
         footer: '/modules/customer/layout/footerCustomer.html'
     }
 };
@@ -64,14 +64,13 @@ async function initializeControllers(role) {
             }
         }
         
-        // INICIALIZAR CONTROLADOR DE CUSTOMER (SOLO FOOTER)
+        // ===== INICIALIZAR CONTROLADOR DE CUSTOMER =====
         if (role === ROLES.CUSTOMER) {
             console.log('🎮 Inicializando controladores de customer...');
             
-            // Esperar un poco para que el DOM se actualice
             await new Promise(resolve => setTimeout(resolve, 150));
             
-            // Inicializar footer controller (SÍ existe)
+            // ✅ Inicializar footer controller
             try {
                 const footerModule = await import('../../customer/layout/footerCustomerController.js');
                 if (footerModule && typeof footerModule.initFooterController === 'function') {
@@ -84,20 +83,22 @@ async function initializeControllers(role) {
                 console.error('❌ Error importando footerCustomerController:', error);
             }
             
-            // ✅ ELIMINADO: No existe navbarCustomerController.js
-            // Si quieres agregarlo después, crea el archivo primero
-            
-            // ✅ Alternativa: si el navbar de customer es el mismo que el de guest
-            // puedes inicializar el controlador de guest
+            // ✅ INICIALIZAR NAVBAR CUSTOMER - ESTE ES EL QUE DEBE CONTROLAR EL TEMA
             try {
-                const guestNavbarModule = await import('../../visitor/layout/navbarController.js');
-                if (guestNavbarModule && typeof guestNavbarModule.initNavbarController === 'function') {
-                    guestNavbarModule.initNavbarController();
-                    console.log('✅ Navbar Controller (guest) inicializado para customer');
+                const navbarModule = await import('../../customer/layout/navbarCustumerController.js');
+                if (navbarModule && typeof navbarModule.initCustomerNavbarController === 'function') {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    navbarModule.initCustomerNavbarController();
+                    console.log('✅ Navbar Customer Controller inicializado');
+                } else {
+                    console.warn('⚠️ No se encontró initCustomerNavbarController en el módulo');
                 }
             } catch (error) {
-                console.log('ℹ️ No se encontró navbarController de guest');
+                console.error('❌ Error importando navbarCustumerController:', error);
             }
+            
+            // ❌ ELIMINADO: Ya no inicializamos el navbar de guest para customer
+            // Cada navbar debe ser independiente
         }
         
         // Inicializar controladores de guest (visitante)

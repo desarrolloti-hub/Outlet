@@ -1,6 +1,7 @@
 /* ========================================
    CUSTOMER NAVBAR CONTROLLER - Outlet Val
-   Controlador para el navbar de clientes
+   Controlador independiente para el navbar de clientes
+   CON PRIORIDAD SOBRE OTROS NAVBARS
    ======================================== */
 
 import { CustomerService } from '/services/customerService.js';
@@ -9,13 +10,85 @@ import { ThemeService } from '../../shared/layout/themeService.js';
 // Estado del navbar
 let isNavbarInitialized = false;
 let currentUser = null;
+let isApplyingTheme = false;
+
+// ===== CONFIGURACIÓN DE TEMA - CON PRIORIDAD =====
+const THEME_KEY = 'outlet_theme';
+
+/**
+ * APLICAR TEMA CON PRIORIDAD - Sobrescribe cualquier otro navbar
+ */
+function applyThemeWithPriority(theme) {
+    if (isApplyingTheme) {
+        console.log('⚠️ Ya aplicando tema, ignorando...');
+        return;
+    }
+    
+    isApplyingTheme = true;
+    
+    try {
+        console.log('🌓 [CUSTOMER NAVBAR] Aplicando tema con prioridad:', theme);
+        
+        // 🔥 FORZAR la aplicación del tema en el body
+        if (theme === 'dark') {
+            document.body.classList.add('dark-mode');
+        } else {
+            document.body.classList.remove('dark-mode');
+        }
+        
+        // 🔥 FORZAR guardado en localStorage
+        localStorage.setItem(THEME_KEY, theme);
+        
+        // 🔥 FORZAR actualización del ícono
+        forceUpdateThemeIcon();
+        
+        // 🔥 FORZAR evento para otros componentes
+        document.dispatchEvent(new CustomEvent('themeChanged', { 
+            detail: { isDarkMode: theme === 'dark' } 
+        }));
+        
+        // 🔥 FORZAR que el ThemeService esté sincronizado
+        if (ThemeService && typeof ThemeService.sync === 'function') {
+            ThemeService.sync();
+        }
+        
+        console.log('✅ [CUSTOMER NAVBAR] Tema aplicado con prioridad:', theme);
+    } catch (error) {
+        console.error('❌ Error aplicando tema:', error);
+    } finally {
+        isApplyingTheme = false;
+    }
+}
+
+/**
+ * FORZAR actualización del ícono - Sobrescribe cualquier otro
+ */
+function forceUpdateThemeIcon() {
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    if (!themeToggleBtn) {
+        console.warn('⚠️ Botón de tema no encontrado');
+        return;
+    }
+    
+    // Buscar o crear el ícono
+    let icon = themeToggleBtn.querySelector('i');
+    if (!icon) {
+        icon = document.createElement('i');
+        icon.style.fontSize = '18px';
+        themeToggleBtn.appendChild(icon);
+    }
+    
+    const isDark = document.body.classList.contains('dark-mode');
+    icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+    console.log('🌓 [CUSTOMER NAVBAR] Ícono FORZADO a:', isDark ? '☀️ sol (dark)' : '🌙 luna (light)');
+}
 
 /**
  * Actualizar la foto de perfil en el navbar
  */
 function updateProfileAvatar() {
     try {
-        console.log('🔄 Actualizando avatar del navbar...');
+        console.log('🔄 Actualizando avatar del navbar customer...');
         
         // Primero intentar obtener la sesión
         let session = null;
@@ -25,7 +98,7 @@ function updateProfileAvatar() {
             console.error('Error parseando sesión:', e);
         }
         
-        console.log('📦 Sesión en navbar:', session ? 'existe' : 'no existe');
+        console.log('📦 Sesión en navbar customer:', session ? 'existe' : 'no existe');
         if (session) {
             console.log('📸 Foto en sesión:', session.fotoPerfil ? '✅ tiene foto' : '❌ sin foto');
             console.log('📸 URL foto:', session.fotoPerfil);
@@ -97,7 +170,7 @@ function updateProfileAvatar() {
                 badgeSpan.style.cursor = 'pointer';
             }
             
-            console.log('✅ Mostrando iniciales:', iniciales);
+            console.log('✅ Mostrando iniciales');
         }
     } catch (error) {
         console.error('❌ Error actualizando avatar:', error);
@@ -108,9 +181,6 @@ function updateProfileAvatar() {
  * Crear elementos del avatar si no existen
  */
 function createAvatarElements() {
-    // Buscar el contenedor del perfil
-    const profileContainer = document.querySelector('.profile-avatar-wrapper, .nav-profile, [class*="profile-avatar"]');
-    
     // Buscar el botón de perfil
     const profileBtn = document.getElementById('profileBtn');
     
@@ -147,7 +217,7 @@ function createAvatarElements() {
     }
     
     // Si no hay profileBtn, buscar el navbar
-    const navbar = document.querySelector('nav, header, .navbar, [class*="nav"]');
+    const navbar = document.querySelector('.OUTLET-nav, nav, header');
     if (!navbar) {
         console.warn('⚠️ No se encontró navbar');
         return;
@@ -184,7 +254,7 @@ function createAvatarElements() {
  */
 async function loadUserProfile() {
     try {
-        console.log('📥 Cargando perfil del usuario...');
+        console.log('📥 Cargando perfil del usuario customer...');
         const customer = await CustomerService.getCurrentCustomer(true);
         
         if (customer) {
@@ -235,7 +305,7 @@ function updateUserUI(customer) {
  * Mostrar UI de invitado
  */
 function showGuestUI() {
-    console.log('👤 Mostrando UI de invitado');
+    console.log('👤 Mostrando UI de invitado en customer navbar');
     
     const nameElements = document.querySelectorAll('.user-name, .nav-username, .profile-name');
     nameElements.forEach(el => {
@@ -278,7 +348,7 @@ function handleProfileClick(e) {
         e.stopPropagation();
     }
     
-    console.log('🖱️ Click en perfil/avatar');
+    console.log('🖱️ Click en perfil/avatar customer');
     const session = JSON.parse(localStorage.getItem('outlet_customer'));
     
     if (session) {
@@ -299,17 +369,18 @@ function handleProfileClick(e) {
 }
 
 /**
- * Inicializar el controlador del navbar
+ * Inicializar el controlador del navbar customer
+ * CON PRIORIDAD MÁXIMA
  */
 export async function initCustomerNavbarController() {
     if (isNavbarInitialized) {
-        console.log('🔄 Navbar ya inicializado');
+        console.log('🔄 Customer Navbar ya inicializado');
         // Forzar actualización del avatar
         setTimeout(updateProfileAvatar, 100);
         return;
     }
     
-    console.log('🔄 Inicializando Customer Navbar Controller...');
+    console.log('🔄 [CUSTOMER NAVBAR] Inicializando CON PRIORIDAD MÁXIMA...');
     
     try {
         // Esperar a que el DOM esté listo
@@ -322,14 +393,27 @@ export async function initCustomerNavbarController() {
         });
         
         // Pequeño delay para asegurar que el DOM está renderizado
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        // ===== FORZAR EL TEMA INICIAL =====
+        // Ignorar cualquier tema anterior y forzar claro por defecto
+        const savedTheme = localStorage.getItem(THEME_KEY);
+        let initialTheme = 'light'; // POR DEFECTO CLARO
+        
+        // Solo usar dark si explícitamente está guardado como dark
+        if (savedTheme === 'dark') {
+            initialTheme = 'dark';
+        }
+        
+        // FORZAR aplicación del tema
+        applyThemeWithPriority(initialTheme);
         
         // Cargar perfil del usuario
         await loadUserProfile();
         
         // Escuchar cambios en la autenticación
         window.addEventListener('customer:authStateChanged', async (event) => {
-            console.log('🔄 Auth state changed:', event.detail);
+            console.log('🔄 Auth state changed en customer:', event.detail);
             await loadUserProfile();
             setTimeout(updateProfileAvatar, 100);
         });
@@ -340,28 +424,61 @@ export async function initCustomerNavbarController() {
                 console.log('🔄 Sesión actualizada desde otra pestaña');
                 setTimeout(updateProfileAvatar, 100);
             }
+            if (event.key === THEME_KEY) {
+                console.log('🔄 Tema actualizado desde otra pestaña');
+                const newTheme = event.newValue || 'light';
+                applyThemeWithPriority(newTheme);
+            }
+        });
+        
+        // Escuchar cambios de tema desde otros componentes
+        document.addEventListener('themeChanged', (event) => {
+            console.log('🔄 ThemeChanged event recibido en customer:', event.detail);
+            forceUpdateThemeIcon();
         });
         
         // Configurar event listeners
         setupNavbarEvents();
         
-        // Actualización forzada del avatar
+        // Actualizaciones forzadas
         setTimeout(updateProfileAvatar, 300);
         setTimeout(updateProfileAvatar, 600);
+        setTimeout(() => {
+            // Forzar el tema nuevamente después de que todo esté cargado
+            const currentTheme = localStorage.getItem(THEME_KEY) || 'light';
+            applyThemeWithPriority(currentTheme);
+        }, 500);
+        
+        // 🔥 PREVENIR que otros navbars cambien el tema
+        // Bloquear el botón de tema de otros navbars
+        setTimeout(() => {
+            const allThemeBtns = document.querySelectorAll('.theme-toggle-btn');
+            if (allThemeBtns.length > 1) {
+                console.log('🔒 Bloqueando botones de tema de otros navbars...');
+                allThemeBtns.forEach((btn, index) => {
+                    // El primer botón es el nuestro, los demás los bloqueamos
+                    if (index > 0) {
+                        btn.style.pointerEvents = 'none';
+                        btn.style.opacity = '0.5';
+                        btn.title = 'Usa el botón de tema del navbar principal';
+                    }
+                });
+            }
+        }, 1000);
         
         isNavbarInitialized = true;
-        console.log('✅ Customer Navbar Controller inicializado');
+        console.log('✅ [CUSTOMER NAVBAR] Inicializado con prioridad máxima');
         
     } catch (error) {
-        console.error('❌ Error inicializando navbar:', error);
+        console.error('❌ Error inicializando customer navbar:', error);
     }
 }
 
 /**
- * Configurar eventos del navbar
+ * Configurar eventos del navbar customer
  */
 function setupNavbarEvents() {
-    console.log('🔧 Configurando eventos del navbar...');
+    console.log('🔧 Configurando eventos del Customer Navbar...');
     
     // Buscar o crear elementos
     let profileBtn = document.getElementById('profileBtn');
@@ -379,53 +496,110 @@ function setupNavbarEvents() {
         return;
     }
     
-    // Configurar eventos
+    // Configurar eventos de perfil
     if (profileBtn) {
-        console.log('✅ Configurando #profileBtn');
+        console.log('✅ Configurando #profileBtn customer');
         profileBtn.removeEventListener('click', handleProfileClick);
         profileBtn.addEventListener('click', handleProfileClick);
     }
     
     if (profileAvatar) {
-        console.log('✅ Configurando #profileAvatar');
+        console.log('✅ Configurando #profileAvatar customer');
         profileAvatar.style.cursor = 'pointer';
         profileAvatar.removeEventListener('click', handleProfileClick);
         profileAvatar.addEventListener('click', handleProfileClick);
     }
     
     if (profileBadge) {
-        console.log('✅ Configurando #profileBadge');
+        console.log('✅ Configurando #profileBadge customer');
         profileBadge.style.cursor = 'pointer';
         profileBadge.removeEventListener('click', handleProfileClick);
         profileBadge.addEventListener('click', handleProfileClick);
     }
     
     // Configurar logout
-    const logoutBtn = document.getElementById('logoutBtn');
+    const logoutBtn = document.getElementById('logoutBtn') || document.getElementById('mobileLogoutBtn');
     if (logoutBtn) {
-        console.log('✅ Configurando #logoutBtn');
+        console.log('✅ Configurando #logoutBtn customer');
         logoutBtn.removeEventListener('click', handleLogout);
         logoutBtn.addEventListener('click', handleLogout);
     }
     
-    // Configurar tema
+    // ===== CONFIGURAR TEMA - CON PRIORIDAD =====
     const themeToggleBtn = document.getElementById('themeToggleBtn');
     if (themeToggleBtn) {
-        console.log('✅ Configurando #themeToggleBtn');
+        console.log('✅ Configurando #themeToggleBtn customer con prioridad');
+        
+        // Remover eventos anteriores
         themeToggleBtn.removeEventListener('click', handleThemeToggle);
+        // Agregar nuevo evento
         themeToggleBtn.addEventListener('click', handleThemeToggle);
         
-        const updateThemeIcon = () => {
-            const icon = themeToggleBtn.querySelector('i');
-            if (icon) {
-                icon.className = ThemeService.isDarkMode() ? 'fas fa-sun' : 'fas fa-moon';
-            }
-        };
-        updateThemeIcon();
-        document.addEventListener('themeChanged', updateThemeIcon);
+        // Forzar actualización del ícono
+        forceUpdateThemeIcon();
+    } else {
+        console.warn('⚠️ Botón de tema no encontrado en Customer Navbar');
     }
     
-    console.log('✅ Eventos del navbar configurados');
+    // Configurar hamburguesa
+    const hamburgerBtn = document.getElementById('hamburgerBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const mobileCloseBtn = document.getElementById('mobileCloseBtn');
+    const mobileOverlay = document.getElementById('mobileOverlay');
+    
+    if (hamburgerBtn && mobileMenu) {
+        console.log('✅ Configurando menú móvil customer');
+        hamburgerBtn.removeEventListener('click', toggleMobileMenu);
+        hamburgerBtn.addEventListener('click', toggleMobileMenu);
+    }
+    
+    if (mobileCloseBtn && mobileMenu) {
+        mobileCloseBtn.removeEventListener('click', closeMobileMenu);
+        mobileCloseBtn.addEventListener('click', closeMobileMenu);
+    }
+    
+    if (mobileOverlay && mobileMenu) {
+        mobileOverlay.removeEventListener('click', closeMobileMenu);
+        mobileOverlay.addEventListener('click', closeMobileMenu);
+    }
+    
+    console.log('✅ Eventos del Customer Navbar configurados');
+}
+
+// ========================================
+// Funciones de menú móvil
+// ========================================
+
+function toggleMobileMenu(e) {
+    if (e) e.preventDefault();
+    const mobileMenu = document.getElementById('mobileMenu');
+    const hamburgerBtn = document.getElementById('hamburgerBtn');
+    const overlay = document.getElementById('mobileOverlay');
+    
+    if (mobileMenu) {
+        const isOpen = mobileMenu.classList.contains('open');
+        if (isOpen) {
+            closeMobileMenu();
+        } else {
+            mobileMenu.classList.add('open');
+            if (hamburgerBtn) hamburgerBtn.classList.add('open');
+            if (overlay) overlay.classList.add('open');
+            document.body.classList.add('menu-open');
+        }
+    }
+}
+
+function closeMobileMenu() {
+    const mobileMenu = document.getElementById('mobileMenu');
+    const hamburgerBtn = document.getElementById('hamburgerBtn');
+    const overlay = document.getElementById('mobileOverlay');
+    
+    if (mobileMenu) {
+        mobileMenu.classList.remove('open');
+        if (hamburgerBtn) hamburgerBtn.classList.remove('open');
+        if (overlay) overlay.classList.remove('open');
+        document.body.classList.remove('menu-open');
+    }
 }
 
 // ========================================
@@ -438,7 +612,7 @@ async function handleLogout(e) {
         e.stopPropagation();
     }
     
-    console.log('🚪 Cerrando sesión...');
+    console.log('🚪 Cerrando sesión desde customer...');
     try {
         await CustomerService.logout();
         console.log('✅ Sesión cerrada exitosamente');
@@ -454,13 +628,39 @@ async function handleLogout(e) {
     }
 }
 
+/**
+ * Manejar cambio de tema - CON PRIORIDAD
+ */
 function handleThemeToggle(e) {
     if (e) {
         e.preventDefault();
         e.stopPropagation();
     }
-    console.log('🎨 Cambiando tema...');
-    ThemeService.toggle();
+    
+    console.log('🎨 [CUSTOMER NAVBAR] Click en botón de tema');
+    
+    // Determinar nuevo tema
+    const isDark = document.body.classList.contains('dark-mode');
+    const newTheme = isDark ? 'light' : 'dark';
+    
+    console.log('🌓 Tema actual:', isDark ? 'oscuro' : 'claro');
+    console.log('🌓 Nuevo tema:', newTheme);
+    
+    // Aplicar nuevo tema CON PRIORIDAD
+    applyThemeWithPriority(newTheme);
+    
+    // 🔥 Forzar actualización en todos los botones de tema
+    setTimeout(() => {
+        const allThemeBtns = document.querySelectorAll('.theme-toggle-btn');
+        allThemeBtns.forEach(btn => {
+            const icon = btn.querySelector('i');
+            if (icon) {
+                icon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+            }
+        });
+    }, 50);
+    
+    console.log('✅ [CUSTOMER NAVBAR] Tema cambiado a:', newTheme);
 }
 
 function showNotification(message, type = 'info') {
@@ -495,12 +695,12 @@ function showNotification(message, type = 'info') {
 // ========================================
 
 function initProfilePhotoSystem() {
-    console.log('🔄 Inicializando sistema de foto de perfil...');
+    console.log('🔄 Inicializando sistema de foto de perfil customer...');
     
     function updateFromSession() {
         try {
             const session = JSON.parse(localStorage.getItem('outlet_customer'));
-            console.log('📸 Actualizando desde sesión:', session ? 'tiene sesión' : 'sin sesión');
+            console.log('📸 Actualizando desde sesión customer:', session ? 'tiene sesión' : 'sin sesión');
             
             if (session?.fotoPerfil) {
                 const avatar = document.getElementById('profileAvatar');
@@ -517,7 +717,7 @@ function initProfilePhotoSystem() {
                     const badge = document.getElementById('profileBadge');
                     if (badge) badge.style.display = 'none';
                     
-                    console.log('✅ Foto de perfil actualizada desde sesión');
+                    console.log('✅ Foto de perfil actualizada desde sesión customer');
                     return true;
                 }
             } else if (session) {
@@ -545,11 +745,11 @@ function initProfilePhotoSystem() {
                     badge.style.textTransform = 'uppercase';
                     badge.style.cursor = 'pointer';
                 }
-                console.log('✅ Mostrando iniciales');
+                console.log('✅ Mostrando iniciales customer');
                 return true;
             }
         } catch (e) {
-            console.error('Error actualizando foto:', e);
+            console.error('Error actualizando foto customer:', e);
         }
         return false;
     }
@@ -586,7 +786,7 @@ function initProfilePhotoSystem() {
     window.updateProfileAvatar = updateFromSession;
 }
 
-// Inicializar
+// Inicializar sistema de foto
 if (typeof window !== 'undefined') {
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initProfilePhotoSystem);
@@ -596,6 +796,12 @@ if (typeof window !== 'undefined') {
 }
 
 // Exportar
-export { loadUserProfile, updateProfileAvatar, showGuestUI };
+export { 
+    loadUserProfile, 
+    updateProfileAvatar, 
+    showGuestUI,
+    applyThemeWithPriority,
+    forceUpdateThemeIcon
+};
 
-console.log('📦 Customer Navbar Controller cargado');
+console.log('📦 Customer Navbar Controller cargado CON PRIORIDAD');
