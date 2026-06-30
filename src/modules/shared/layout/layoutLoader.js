@@ -2,7 +2,7 @@
    LOAD LAYOUT - Con inicialización de controladores
    ======================================== */
 
-import { AuthService, ROLES } from '../../../../services/authService.js';
+import { AuthService, ROLES } from '../../../services/authService.js';
 
 const LAYOUT_PATHS = {
     [ROLES.ADMIN]: {

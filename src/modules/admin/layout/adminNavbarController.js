@@ -376,7 +376,7 @@ async function handleLogout(e) {
     
     if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
         try {
-            const { AuthService } = await import('/services/authService.js');
+            const { AuthService } = await import('../../../services/authService.js');
             await AuthService.logout();
         } catch (error) {
             console.error('Error en logout:', error);

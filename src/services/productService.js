@@ -3,9 +3,9 @@
    Lógica de negocio para productos
    ======================================== */
 
-import { Product } from '/classes/productModel.js';
-import { ProductRepository } from '/repositories/productRepository.js';
-import { CacheService, STORES } from '/services/cacheService.js';
+import { Product } from '../classes/productModel.js';
+import { ProductRepository } from '../repositories/productRepository.js';
+import { CacheService, STORES } from '../services/cacheService.js';
 
 export const ProductService = {
     /**

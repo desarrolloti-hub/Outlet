@@ -4,9 +4,9 @@
    Soporta login de Administradores y Clientes
    ======================================== */
 
-import { CustomerService } from '/services/customerService.js';
-import { AdminService } from '/services/adminService.js';
-import { AuthService } from '/services/authService.js';
+import { CustomerService } from '../../../services/customerService.js';
+import { AdminService } from '../../../services/adminService.js';
+import { AuthService } from '../../../services/authService.js';
 
 // Estado del controlador
 let isLoading = false;

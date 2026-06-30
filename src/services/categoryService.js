@@ -3,9 +3,9 @@
    Lógica de negocio para categorías
    ======================================== */
 
-import { Category } from '/classes/categoryModel.js';
-import { CategoryRepository } from '/repositories/categoryRepository.js';
-import { CacheService, STORES } from '/services/cacheService.js';
+import { Category } from '../classes/categoryModel.js';
+import { CategoryRepository } from '../repositories/categoryRepository.js';
+import { CacheService, STORES } from './cacheService.js';
 
 export const CategoryService = {
     /**

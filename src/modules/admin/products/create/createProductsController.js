@@ -5,8 +5,8 @@
    RESPONSIVE: Se adapta a cualquier tamaño
    ======================================== */
 
-import { ProductService } from '/services/productService.js';
-import { CategoryService } from '/services/categoryService.js'; // 👈 NUEVA IMPORTACIÓN
+import { ProductService } from '../../../../services/productService.js';
+import { CategoryService } from '../../../../services/categoryService.js'; // 👈 NUEVA IMPORTACIÓN
 
 // ========================================
 // Variables de estado

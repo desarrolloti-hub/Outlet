@@ -5,7 +5,7 @@
    Conectado a Firebase mediante CustomerService
    ======================================== */
 
-import { CustomerService } from '/services/customerService.js';
+import { CustomerService } from '../../../services/customerService.js';
 
 // ========================================
 // DOM Elements

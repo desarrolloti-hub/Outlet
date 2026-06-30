@@ -4,7 +4,7 @@
    Basado en el estilo de updateCategoriesController
    ======================================== */
 
-import { AdminService } from '/services/adminService.js';
+import { AdminService } from '../../../../services/adminService.js';
 
 // ========================================
 // Variables de estado

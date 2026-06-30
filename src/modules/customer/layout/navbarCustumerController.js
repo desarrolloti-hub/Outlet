@@ -4,7 +4,7 @@
    CON PRIORIDAD SOBRE OTROS NAVBARS
    ======================================== */
 
-import { CustomerService } from '/services/customerService.js';
+import { CustomerService } from '../../../services/customerService.js';
 import { ThemeService } from '../../shared/layout/themeService.js';
 
 // Estado del navbar

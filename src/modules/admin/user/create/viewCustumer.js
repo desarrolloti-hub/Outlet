@@ -3,7 +3,7 @@
 // Controlador para listar, editar y eliminar clientes
 // ========================================
 
-import { CustomerService } from '/services/customerService.js';
+import { CustomerService } from '../../../../services/customerService.js';
 
 // ========================================
 // Variables de estado

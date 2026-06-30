@@ -3,7 +3,7 @@
 // Controlador para CREAR categorías con subcategorías
 // ========================================
 
-import { CategoryService } from '/services/categoryService.js';
+import { CategoryService } from '../../../../services/categoryService.js';
 
 // ========================================
 // Variables de estado

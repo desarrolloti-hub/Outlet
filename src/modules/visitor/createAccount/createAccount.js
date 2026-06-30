@@ -3,7 +3,7 @@
    Registro de clientes (customers) con Firebase
    ======================================== */
 
-import { CustomerService } from '/services/customerService.js';
+import { CustomerService } from '../../../services/customerService.js';
 
 // Estado del controlador
 let isLoading = false;

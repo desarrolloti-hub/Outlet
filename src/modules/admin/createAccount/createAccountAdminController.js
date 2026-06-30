@@ -4,7 +4,7 @@
    ======================================== */
 
 // ✅ RUTAS CORREGIDAS
-import { AdminService } from '/services/adminService.js';
+import { AdminService } from '../../../services/adminService.js';
 
 /**
  * Mostrar notificación toast

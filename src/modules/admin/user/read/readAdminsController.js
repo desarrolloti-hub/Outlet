@@ -4,7 +4,7 @@
    RESPONSIVE: Se adapta a cualquier tamaño
    ======================================== */
 
-import { AdminService } from '/services/adminService.js';
+import { AdminService } from '../../../../services/adminService.js';
 
 // ========================================
 // Variables de estado

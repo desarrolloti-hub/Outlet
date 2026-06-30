@@ -3,7 +3,7 @@
    Operaciones CRUD directas con Firebase para administradores
    ======================================== */
 
-import { db, auth } from '../config/firebaseConfig.js';
+import { db, auth } from '../../config/firebaseConfig.js';
 import { 
     collection, 
     doc, 
