@@ -1,0 +1,328 @@
+/* ========================================
+   VERIFICAR EMAIL - OUTLET
+   Estilos para verificación de correo (SPA)
+   ======================================== */
+
+/* ===== CONTENEDOR PRINCIPAL ===== */
+.outlet-verification-main {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1.5rem;
+    background-color: var(--outlet-bg-primary);
+}
+
+.outlet-verification-container {
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    animation: outletFadeInUp 0.6s ease-out;
+}
+
+@keyframes outletFadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== TARJETA PRINCIPAL ===== */
+.outlet-verification-card {
+    background: var(--outlet-bg-surface);
+    border-radius: var(--outlet-radius-lg);
+    padding: 3rem 2.5rem;
+    text-align: center;
+    position: relative;
+    border: 1px solid var(--outlet-border-color);
+    box-shadow: var(--outlet-shadow-lg);
+    transition: all var(--outlet-transition-base);
+}
+
+.outlet-verification-card:hover {
+    box-shadow: var(--outlet-shadow-xl);
+}
+
+/* ===== LOGO ===== */
+.outlet-verification-logo {
+    margin-bottom: 2rem;
+}
+
+.outlet-verification-logo img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid var(--outlet-gold);
+    box-shadow: 0 0 20px rgba(221, 171, 59, 0.2);
+}
+
+/* ===== DIVISOR DORADO ===== */
+.outlet-verification-divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+}
+
+.outlet-verification-divider span {
+    flex: 1;
+    height: 1px;
+    background: var(--outlet-gold-gradient-horizontal);
+}
+
+.outlet-verification-divider i {
+    color: var(--outlet-gold);
+    font-size: 0.9rem;
+}
+
+.outlet-verification-footer {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--outlet-text-muted);
+    margin-top: 0.25rem;
+}
+
+/* ===== ESTADOS DE CARGA ===== */
+.outlet-loading-state {
+    text-align: center;
+}
+
+.outlet-spinner {
+    width: 50px;
+    height: 50px;
+    margin: 0 auto 1.5rem;
+    border: 3px solid rgba(221, 171, 59, 0.2);
+    border-top-color: var(--outlet-gold);
+    border-right-color: var(--outlet-gold);
+    border-radius: 50%;
+    animation: outletSpin 0.8s linear infinite;
+}
+
+@keyframes outletSpin {
+    to { transform: rotate(360deg); }
+}
+
+.outlet-loading-state p {
+    color: var(--outlet-text-secondary);
+    font-size: 0.9rem;
+}
+
+/* ===== ESTADO DE ÉXITO ===== */
+.outlet-success-state {
+    text-align: center;
+    animation: outletFadeIn 0.5s ease;
+}
+
+@keyframes outletFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.outlet-success-icon {
+    width: 70px;
+    height: 70px;
+    margin: 0 auto 1.5rem;
+    background: var(--outlet-gold-gradient);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: outletScaleUp 0.5s ease;
+}
+
+@keyframes outletScaleUp {
+    from {
+        transform: scale(0);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.outlet-success-icon i {
+    font-size: 2.5rem;
+    color: #1a1a1a;
+}
+
+.outlet-success-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    font-family: var(--outlet-font-secondary, Georgia, serif);
+    margin-bottom: 0.75rem;
+    background: var(--outlet-gold-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.outlet-success-message {
+    color: var(--outlet-text-secondary);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.outlet-success-message .email-highlight {
+    color: var(--outlet-gold);
+    font-weight: 600;
+}
+
+/* ===== ESTADO DE ERROR ===== */
+.outlet-error-state {
+    text-align: center;
+    animation: outletFadeIn 0.5s ease;
+}
+
+.outlet-error-icon {
+    width: 70px;
+    height: 70px;
+    margin: 0 auto 1.5rem;
+    background: var(--outlet-danger);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: outletShake 0.5s ease;
+}
+
+@keyframes outletShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+}
+
+.outlet-error-icon i {
+    font-size: 2.5rem;
+    color: white;
+}
+
+.outlet-error-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    font-family: var(--outlet-font-secondary, Georgia, serif);
+    margin-bottom: 0.75rem;
+    color: var(--outlet-danger);
+}
+
+.outlet-error-message {
+    color: var(--outlet-text-secondary);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+/* ===== BOTONES ===== */
+.outlet-verification-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    background: var(--outlet-gold-gradient);
+    border: none;
+    padding: 0.9rem 2rem;
+    border-radius: var(--outlet-radius-sm);
+    color: #1a1a1a;
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all var(--outlet-transition-base);
+    text-decoration: none;
+}
+
+.outlet-verification-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--outlet-shadow-gold-lg);
+}
+
+.outlet-verification-btn i {
+    font-size: 0.9rem;
+}
+
+/* Botón secundario (outline) */
+.outlet-verification-btn-outline {
+    background: transparent;
+    border: 1.5px solid var(--outlet-border-color);
+    color: var(--outlet-text-primary);
+}
+
+.outlet-verification-btn-outline:hover {
+    border-color: var(--outlet-gold);
+    color: var(--outlet-gold);
+    box-shadow: none;
+}
+
+/* ===== CONTADOR Y PROGRESO ===== */
+.outlet-countdown-container {
+    margin-top: 1.5rem;
+}
+
+.outlet-countdown-text {
+    font-size: 0.75rem;
+    color: var(--outlet-text-muted);
+    margin-bottom: 0.5rem;
+}
+
+.outlet-countdown-number {
+    font-weight: 700;
+    color: var(--outlet-gold);
+}
+
+.outlet-progress-bar {
+    width: 100%;
+    height: 2px;
+    background: rgba(221, 171, 59, 0.15);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 0.5rem;
+}
+
+.outlet-progress-fill {
+    height: 100%;
+    background: var(--outlet-gold-gradient-horizontal);
+    width: 0%;
+    transition: width 1s linear;
+    border-radius: 2px;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 640px) {
+    .outlet-verification-card {
+        padding: 2rem 1.5rem;
+    }
+    
+    .outlet-success-title,
+    .outlet-error-title {
+        font-size: 1.3rem;
+    }
+    
+    .outlet-success-icon,
+    .outlet-error-icon {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .outlet-success-icon i,
+    .outlet-error-icon i {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .outlet-verification-card {
+        padding: 1.5rem 1rem;
+    }
+    
+    .outlet-verification-btn {
+        padding: 0.75rem 1.5rem;
+        font-size: 0.65rem;
+    }
+}

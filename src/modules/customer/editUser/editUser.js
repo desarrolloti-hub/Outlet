@@ -147,7 +147,7 @@ function updateAvatarFromSession() {
         if (!session) return;
         
         const avatarImg = document.getElementById('profileAvatar');
-        const badgeSpan = document.getElementById('profileBadge');
+    
         
         if (avatarImg && session.fotoPerfil && session.fotoPerfil.startsWith('http')) {
             avatarImg.src = session.fotoPerfil;

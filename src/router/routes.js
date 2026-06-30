@@ -188,5 +188,10 @@ export const routes = {
     '/404': {
     view: '/modules/shared/errors/404.html',
     controller: init404Controller
-    }
+    },
+
+   '/verifyEmail': {
+    view: '/modules/shared/email/verifyEmail.html',
+    controller: null
+    }, 
 };

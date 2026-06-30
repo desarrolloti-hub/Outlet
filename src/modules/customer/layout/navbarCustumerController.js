@@ -29,25 +29,19 @@ function applyThemeWithPriority(theme) {
     try {
         console.log('🌓 [CUSTOMER NAVBAR] Aplicando tema con prioridad:', theme);
         
-        // 🔥 FORZAR la aplicación del tema en el body
         if (theme === 'dark') {
             document.body.classList.add('dark-mode');
         } else {
             document.body.classList.remove('dark-mode');
         }
         
-        // 🔥 FORZAR guardado en localStorage
         localStorage.setItem(THEME_KEY, theme);
-        
-        // 🔥 FORZAR actualización del ícono
         forceUpdateThemeIcon();
         
-        // 🔥 FORZAR evento para otros componentes
         document.dispatchEvent(new CustomEvent('themeChanged', { 
             detail: { isDarkMode: theme === 'dark' } 
         }));
         
-        // 🔥 FORZAR que el ThemeService esté sincronizado
         if (ThemeService && typeof ThemeService.sync === 'function') {
             ThemeService.sync();
         }
@@ -70,7 +64,6 @@ function forceUpdateThemeIcon() {
         return;
     }
     
-    // Buscar o crear el ícono
     let icon = themeToggleBtn.querySelector('i');
     if (!icon) {
         icon = document.createElement('i');
@@ -81,172 +74,6 @@ function forceUpdateThemeIcon() {
     const isDark = document.body.classList.contains('dark-mode');
     icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
     console.log('🌓 [CUSTOMER NAVBAR] Ícono FORZADO a:', isDark ? '☀️ sol (dark)' : '🌙 luna (light)');
-}
-
-/**
- * Actualizar la foto de perfil en el navbar
- */
-function updateProfileAvatar() {
-    try {
-        console.log('🔄 Actualizando avatar del navbar customer...');
-        
-        // Primero intentar obtener la sesión
-        let session = null;
-        try {
-            session = JSON.parse(localStorage.getItem('outlet_customer'));
-        } catch (e) {
-            console.error('Error parseando sesión:', e);
-        }
-        
-        console.log('📦 Sesión en navbar customer:', session ? 'existe' : 'no existe');
-        if (session) {
-            console.log('📸 Foto en sesión:', session.fotoPerfil ? '✅ tiene foto' : '❌ sin foto');
-            console.log('📸 URL foto:', session.fotoPerfil);
-        }
-        
-        // Buscar elementos del avatar
-        const avatarImg = document.getElementById('profileAvatar');
-        const badgeSpan = document.getElementById('profileBadge');
-        
-        if (!avatarImg || !badgeSpan) {
-            console.warn('⚠️ Elementos del avatar no encontrados');
-            // Intentar crear los elementos
-            createAvatarElements();
-            setTimeout(updateProfileAvatar, 100);
-            return;
-        }
-        
-        if (!session) {
-            console.log('❌ No hay sesión, mostrando invitado');
-            showGuestUI();
-            return;
-        }
-        
-        // Verificar si tiene foto de perfil
-        const tieneFoto = session.fotoPerfil && session.fotoPerfil.startsWith('http');
-        console.log('📸 ¿Tiene foto de perfil?', tieneFoto);
-        
-        if (tieneFoto) {
-            // ✅ Mostrar foto
-            console.log('🖼️ Mostrando foto de perfil:', session.fotoPerfil.substring(0, 60) + '...');
-            avatarImg.src = session.fotoPerfil;
-            avatarImg.style.display = 'block';
-            avatarImg.style.width = '40px';
-            avatarImg.style.height = '40px';
-            avatarImg.style.borderRadius = '50%';
-            avatarImg.style.objectFit = 'cover';
-            avatarImg.style.border = '2px solid var(--outlet-gold, #c9a84c)';
-            avatarImg.style.cursor = 'pointer';
-            
-            if (badgeSpan) {
-                badgeSpan.style.display = 'none';
-            }
-            
-            console.log('✅ Foto de perfil actualizada');
-        } else {
-            // ❌ Mostrar iniciales
-            console.log('🔤 Mostrando iniciales');
-            avatarImg.style.display = 'none';
-            
-            if (badgeSpan) {
-                const iniciales = session.iniciales || 
-                                 (session.nombre ? session.nombre.charAt(0) : '') + 
-                                 (session.apellidoPa ? session.apellidoPa.charAt(0) : '') || 
-                                 'C';
-                
-                badgeSpan.style.display = 'flex';
-                badgeSpan.textContent = iniciales.toUpperCase();
-                badgeSpan.style.width = '40px';
-                badgeSpan.style.height = '40px';
-                badgeSpan.style.borderRadius = '50%';
-                badgeSpan.style.background = 'var(--outlet-gold, #c9a84c)';
-                badgeSpan.style.color = '#1a1a1a';
-                badgeSpan.style.fontWeight = '700';
-                badgeSpan.style.fontSize = '16px';
-                badgeSpan.style.alignItems = 'center';
-                badgeSpan.style.justifyContent = 'center';
-                badgeSpan.style.display = 'flex';
-                badgeSpan.style.textTransform = 'uppercase';
-                badgeSpan.style.cursor = 'pointer';
-            }
-            
-            console.log('✅ Mostrando iniciales');
-        }
-    } catch (error) {
-        console.error('❌ Error actualizando avatar:', error);
-    }
-}
-
-/**
- * Crear elementos del avatar si no existen
- */
-function createAvatarElements() {
-    // Buscar el botón de perfil
-    const profileBtn = document.getElementById('profileBtn');
-    
-    if (profileBtn) {
-        // Verificar si ya tiene el avatar
-        if (profileBtn.querySelector('#profileAvatar')) {
-            return;
-        }
-        
-        // Crear contenedor dentro del botón
-        const container = document.createElement('span');
-        container.className = 'profile-avatar-wrapper';
-        container.style.cssText = 'display:inline-flex; align-items:center; gap:8px;';
-        
-        // Crear imagen
-        const img = document.createElement('img');
-        img.id = 'profileAvatar';
-        img.alt = 'Avatar';
-        img.style.cssText = 'display:none; width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid #c9a84c; cursor:pointer;';
-        
-        // Crear badge
-        const badge = document.createElement('span');
-        badge.id = 'profileBadge';
-        badge.style.cssText = 'display:flex; width:40px; height:40px; border-radius:50%; background:#c9a84c; color:#1a1a1a; font-weight:700; font-size:16px; align-items:center; justify-content:center; text-transform:uppercase; cursor:pointer;';
-        badge.textContent = 'C';
-        
-        container.appendChild(img);
-        container.appendChild(badge);
-        
-        // Insertar al principio del botón
-        profileBtn.prepend(container);
-        console.log('✅ Elementos del avatar creados dentro de #profileBtn');
-        return;
-    }
-    
-    // Si no hay profileBtn, buscar el navbar
-    const navbar = document.querySelector('.OUTLET-nav, nav, header');
-    if (!navbar) {
-        console.warn('⚠️ No se encontró navbar');
-        return;
-    }
-    
-    // Crear contenedor
-    const container = document.createElement('div');
-    container.className = 'profile-avatar-wrapper';
-    container.style.cssText = 'display:inline-flex; align-items:center; gap:8px; cursor:pointer;';
-    container.id = 'profileBtn';
-    
-    // Crear imagen
-    const img = document.createElement('img');
-    img.id = 'profileAvatar';
-    img.alt = 'Avatar';
-    img.style.cssText = 'display:none; width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid #c9a84c; cursor:pointer;';
-    
-    // Crear badge
-    const badge = document.createElement('span');
-    badge.id = 'profileBadge';
-    badge.style.cssText = 'display:flex; width:40px; height:40px; border-radius:50%; background:#c9a84c; color:#1a1a1a; font-weight:700; font-size:16px; align-items:center; justify-content:center; text-transform:uppercase; cursor:pointer;';
-    badge.textContent = 'C';
-    
-    container.appendChild(img);
-    container.appendChild(badge);
-    
-    // Agregar al navbar
-    navbar.appendChild(container);
-    console.log('✅ Elementos del avatar creados en navbar');
 }
 
 /**
@@ -267,10 +94,7 @@ async function loadUserProfile() {
                 fotoUrl: customer.fotoPerfil ? customer.fotoPerfil.substring(0, 50) + '...' : 'sin foto'
             });
             
-            // Actualizar UI
             updateUserUI(customer);
-            
-            // Actualizar avatar con la foto
             setTimeout(updateProfileAvatar, 100);
         } else {
             console.log('👤 No hay usuario autenticado');
@@ -302,7 +126,7 @@ function updateUserUI(customer) {
 }
 
 /**
- * Mostrar UI de invitado
+ * Mostrar UI de invitado - SOLO ACTUALIZA TEXTO, NO CREA BADGE
  */
 function showGuestUI() {
     console.log('👤 Mostrando UI de invitado en customer navbar');
@@ -314,28 +138,67 @@ function showGuestUI() {
         }
     });
     
-    // Mostrar avatar por defecto
+    // ⚠️ ELIMINADO: Ya no se crea ni se manipula #profileBadge
+    // Simplemente ocultamos el avatar si existe
     const avatarImg = document.getElementById('profileAvatar');
-    const badgeSpan = document.getElementById('profileBadge');
-    
     if (avatarImg) {
         avatarImg.style.display = 'none';
     }
-    if (badgeSpan) {
-        badgeSpan.style.display = 'flex';
-        badgeSpan.textContent = '?';
-        badgeSpan.style.width = '40px';
-        badgeSpan.style.height = '40px';
-        badgeSpan.style.borderRadius = '50%';
-        badgeSpan.style.background = 'var(--outlet-text-secondary, #666)';
-        badgeSpan.style.color = 'white';
-        badgeSpan.style.fontWeight = '700';
-        badgeSpan.style.fontSize = '16px';
-        badgeSpan.style.alignItems = 'center';
-        badgeSpan.style.justifyContent = 'center';
-        badgeSpan.style.display = 'flex';
-        badgeSpan.style.textTransform = 'uppercase';
-        badgeSpan.style.cursor = 'pointer';
+}
+
+/**
+ * Actualizar la foto de perfil en el navbar - SIN BADGE
+ */
+function updateProfileAvatar() {
+    try {
+        console.log('🔄 Actualizando avatar del navbar customer...');
+        
+        let session = null;
+        try {
+            session = JSON.parse(localStorage.getItem('outlet_customer'));
+        } catch (e) {
+            console.error('Error parseando sesión:', e);
+        }
+        
+        console.log('📦 Sesión en navbar customer:', session ? 'existe' : 'no existe');
+        if (session) {
+            console.log('📸 Foto en sesión:', session.fotoPerfil ? '✅ tiene foto' : '❌ sin foto');
+            console.log('📸 URL foto:', session.fotoPerfil);
+        }
+        
+        const avatarImg = document.getElementById('profileAvatar');
+        
+        if (!avatarImg) {
+            console.warn('⚠️ Elemento profileAvatar no encontrado');
+            return;
+        }
+        
+        if (!session) {
+            console.log('❌ No hay sesión, mostrando invitado');
+            avatarImg.style.display = 'none';
+            return;
+        }
+        
+        const tieneFoto = session.fotoPerfil && session.fotoPerfil.startsWith('http');
+        console.log('📸 ¿Tiene foto de perfil?', tieneFoto);
+        
+        if (tieneFoto) {
+            console.log('🖼️ Mostrando foto de perfil:', session.fotoPerfil.substring(0, 60) + '...');
+            avatarImg.src = session.fotoPerfil;
+            avatarImg.style.display = 'block';
+            avatarImg.style.width = '40px';
+            avatarImg.style.height = '40px';
+            avatarImg.style.borderRadius = '50%';
+            avatarImg.style.objectFit = 'cover';
+            avatarImg.style.border = '2px solid var(--outlet-gold, #c9a84c)';
+            avatarImg.style.cursor = 'pointer';
+            console.log('✅ Foto de perfil actualizada');
+        } else {
+            console.log('🔤 Sin foto, ocultando avatar');
+            avatarImg.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('❌ Error actualizando avatar:', error);
     }
 }
 
@@ -379,18 +242,15 @@ function handleWishlistClick(e) {
     
     console.log('❤️ Click en favoritos - navegando a wishlist');
     
-    // Verificar si el usuario está logueado
     const session = JSON.parse(localStorage.getItem('outlet_customer'));
     
     if (session) {
-        // Usuario logueado → wishlist de customer
         if (typeof window.navigateTo === 'function') {
             window.navigateTo('/wishlistCustomer');
         } else {
             window.location.href = '/wishlistCustomer';
         }
     } else {
-        // Usuario invitado → wishlist de visitor
         if (typeof window.navigateTo === 'function') {
             window.navigateTo('/wishlist');
         } else {
@@ -502,28 +362,15 @@ function updateCartBadge() {
 }
 
 /**
- * Configurar eventos del navbar customer
+ * Configurar eventos del navbar customer - SIN BADGE
  */
 function setupNavbarEvents() {
     console.log('🔧 Configurando eventos del Customer Navbar...');
     
-    // ===== PERFIL =====
-    let profileBtn = document.getElementById('profileBtn');
-    let profileAvatar = document.getElementById('profileAvatar');
-    let profileBadge = document.getElementById('profileBadge');
+    // ===== PERFIL - SOLO AVATAR =====
+    const profileBtn = document.getElementById('profileBtn');
+    const profileAvatar = document.getElementById('profileAvatar');
     
-    // Si no hay avatar, crearlo
-    if (!profileAvatar || !profileBadge) {
-        console.log('⚠️ No se encontraron elementos de avatar, creándolos...');
-        createAvatarElements();
-        // Reintentar después de crear
-        setTimeout(() => {
-            setupNavbarEvents();
-        }, 200);
-        return;
-    }
-    
-    // Configurar eventos de perfil
     if (profileBtn) {
         console.log('✅ Configurando #profileBtn customer');
         profileBtn.removeEventListener('click', handleProfileClick);
@@ -535,13 +382,6 @@ function setupNavbarEvents() {
         profileAvatar.style.cursor = 'pointer';
         profileAvatar.removeEventListener('click', handleProfileClick);
         profileAvatar.addEventListener('click', handleProfileClick);
-    }
-    
-    if (profileBadge) {
-        console.log('✅ Configurando #profileBadge customer');
-        profileBadge.style.cursor = 'pointer';
-        profileBadge.removeEventListener('click', handleProfileClick);
-        profileBadge.addEventListener('click', handleProfileClick);
     }
     
     // ===== WISHLIST (FAVORITOS) =====
@@ -634,13 +474,10 @@ function handleSearchClick(e) {
     }
     
     console.log('🔍 Click en búsqueda');
-    // Aquí puedes abrir el modal de búsqueda o redirigir a la página de búsqueda
-    // Por ahora solo mostramos un mensaje
     const searchInput = document.querySelector('.search-input') || document.getElementById('searchInput');
     if (searchInput) {
         searchInput.focus();
     } else {
-        // Si no hay input de búsqueda, podrías abrir un modal
         console.log('🔍 Abrir modal de búsqueda');
         showNotification('🔍 Buscar productos...', 'info');
     }
@@ -657,17 +494,14 @@ function handleThemeToggle(e) {
     
     console.log('🎨 [CUSTOMER NAVBAR] Click en botón de tema');
     
-    // Determinar nuevo tema
     const isDark = document.body.classList.contains('dark-mode');
     const newTheme = isDark ? 'light' : 'dark';
     
     console.log('🌓 Tema actual:', isDark ? 'oscuro' : 'claro');
     console.log('🌓 Nuevo tema:', newTheme);
     
-    // Aplicar nuevo tema CON PRIORIDAD
     applyThemeWithPriority(newTheme);
     
-    // 🔥 Forzar actualización en todos los botones de tema
     setTimeout(() => {
         const allThemeBtns = document.querySelectorAll('.theme-toggle-btn');
         allThemeBtns.forEach(btn => {
@@ -771,7 +605,7 @@ function showNotification(message, type = 'info') {
 }
 
 // ========================================
-// Sistema de foto de perfil
+// Sistema de foto de perfil - SIN BADGE
 // ========================================
 
 function initProfilePhotoSystem() {
@@ -793,40 +627,16 @@ function initProfilePhotoSystem() {
                     avatar.style.objectFit = 'cover';
                     avatar.style.border = '2px solid var(--outlet-gold, #c9a84c)';
                     avatar.style.cursor = 'pointer';
-                    
-                    const badge = document.getElementById('profileBadge');
-                    if (badge) badge.style.display = 'none';
-                    
                     console.log('✅ Foto de perfil actualizada desde sesión customer');
                     return true;
                 }
-            } else if (session) {
-                // Mostrar iniciales
+            } else {
                 const avatar = document.getElementById('profileAvatar');
-                const badge = document.getElementById('profileBadge');
-                if (avatar) avatar.style.display = 'none';
-                if (badge) {
-                    badge.style.display = 'flex';
-                    const iniciales = session.iniciales || 
-                                     (session.nombre ? session.nombre.charAt(0) : '') + 
-                                     (session.apellidoPa ? session.apellidoPa.charAt(0) : '') || 
-                                     'C';
-                    badge.textContent = iniciales.toUpperCase();
-                    badge.style.width = '40px';
-                    badge.style.height = '40px';
-                    badge.style.borderRadius = '50%';
-                    badge.style.background = 'var(--outlet-gold, #c9a84c)';
-                    badge.style.color = '#1a1a1a';
-                    badge.style.fontWeight = '700';
-                    badge.style.fontSize = '16px';
-                    badge.style.alignItems = 'center';
-                    badge.style.justifyContent = 'center';
-                    badge.style.display = 'flex';
-                    badge.style.textTransform = 'uppercase';
-                    badge.style.cursor = 'pointer';
+                if (avatar) {
+                    avatar.style.display = 'none';
+                    console.log('✅ Avatar ocultado (sin foto o sin sesión)');
+                    return true;
                 }
-                console.log('✅ Mostrando iniciales customer');
-                return true;
             }
         } catch (e) {
             console.error('Error actualizando foto customer:', e);
@@ -834,10 +644,8 @@ function initProfilePhotoSystem() {
         return false;
     }
     
-    // Ejecutar inmediatamente
     setTimeout(updateFromSession, 100);
     
-    // Escuchar eventos
     window.addEventListener('customer:authStateChanged', () => {
         setTimeout(updateFromSession, 100);
     });
@@ -848,7 +656,6 @@ function initProfilePhotoSystem() {
         }
     });
     
-    // Observador de DOM
     const observer = new MutationObserver(() => {
         if (document.getElementById('profileAvatar')) {
             updateFromSession();
@@ -882,7 +689,6 @@ export async function initCustomerNavbarController() {
     console.log('🔄 [CUSTOMER NAVBAR] Inicializando CON PRIORIDAD MÁXIMA...');
     
     try {
-        // Esperar a que el DOM esté listo
         await new Promise(resolve => {
             if (document.readyState === 'complete') {
                 resolve();
@@ -891,31 +697,22 @@ export async function initCustomerNavbarController() {
             }
         });
         
-        // Pequeño delay para asegurar que el DOM está renderizado
         await new Promise(resolve => setTimeout(resolve, 300));
         
-        // ===== FORZAR EL TEMA INICIAL =====
         const savedTheme = localStorage.getItem(THEME_KEY);
-        let initialTheme = 'light'; // POR DEFECTO CLARO
+        let initialTheme = 'light';
         
         if (savedTheme === 'dark') {
             initialTheme = 'dark';
         }
         
-        // FORZAR aplicación del tema
         applyThemeWithPriority(initialTheme);
         
-        // Cargar perfil del usuario
         await loadUserProfile();
-        
-        // Configurar eventos
         setupNavbarEvents();
-        
-        // Actualizar contadores
         updateWishlistBadge();
         updateCartBadge();
         
-        // Escuchar cambios en la autenticación
         window.addEventListener('customer:authStateChanged', async (event) => {
             console.log('🔄 Auth state changed en customer:', event.detail);
             await loadUserProfile();
@@ -924,7 +721,6 @@ export async function initCustomerNavbarController() {
             updateCartBadge();
         });
         
-        // Escuchar cambios en localStorage
         window.addEventListener('storage', (event) => {
             if (event.key === 'outlet_customer') {
                 console.log('🔄 Sesión actualizada desde otra pestaña');
@@ -945,17 +741,14 @@ export async function initCustomerNavbarController() {
             }
         });
         
-        // Escuchar cambios de tema desde otros componentes
         document.addEventListener('themeChanged', (event) => {
             console.log('🔄 ThemeChanged event recibido en customer:', event.detail);
             forceUpdateThemeIcon();
         });
         
-        // Escuchar eventos de wishlist
         document.addEventListener('wishlistUpdated', updateWishlistBadge);
         document.addEventListener('cartUpdated', updateCartBadge);
         
-        // Actualizaciones forzadas
         setTimeout(updateProfileAvatar, 300);
         setTimeout(updateProfileAvatar, 600);
         setTimeout(updateWishlistBadge, 500);
@@ -965,7 +758,6 @@ export async function initCustomerNavbarController() {
             applyThemeWithPriority(currentTheme);
         }, 500);
         
-        // 🔥 PREVENIR que otros navbars cambien el tema
         setTimeout(() => {
             const allThemeBtns = document.querySelectorAll('.theme-toggle-btn');
             if (allThemeBtns.length > 1) {
@@ -1012,4 +804,4 @@ export {
     handleSearchClick
 };
 
-console.log('📦 Customer Navbar Controller cargado CON PRIORIDAD - COMPLETO');
+console.log('📦 Customer Navbar Controller cargado CON PRIORIDAD - COMPLETO (SIN BADGE)');
