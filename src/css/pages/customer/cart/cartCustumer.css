@@ -1,6 +1,7 @@
 /* ========================================
    CART PAGE - OUTLET
    Estilos para página del carrito de compras
+   LOS BOTONES USAN buttons.css
    ======================================== */
 
 /* ===== CONTENEDOR PRINCIPAL ===== */
@@ -167,7 +168,7 @@
     flex-direction: column;
     justify-content: space-between;
     gap: var(--outlet-spacing-md);
-    min-width: 0; /* Para evitar overflow */
+    min-width: 0;
 }
 
 .outlet-cart-item-info {
@@ -262,16 +263,19 @@
     color: var(--outlet-text-primary);
 }
 
-/* Price and remove */
+/* Price */
 .outlet-cart-item-price {
     text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--outlet-spacing-xs);
 }
 
 .outlet-cart-price {
     font-size: 20px;
     font-weight: 700;
     color: var(--outlet-gold);
-    margin-bottom: var(--outlet-spacing-xs);
 }
 
 @media (min-width: 768px) {
@@ -280,24 +284,8 @@
     }
 }
 
-.outlet-cart-remove {
-    background: none;
-    border: none;
-    font-size: 11px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    cursor: pointer;
-    color: var(--outlet-text-secondary);
-    transition: color var(--outlet-transition-fast);
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 0;
-}
-
-.outlet-cart-remove:hover {
-    color: var(--outlet-danger);
-}
+/* ✅ LOS BOTONES DE ELIMINAR AHORA USAN .outlet-btn-danger DE buttons.css */
+/* .outlet-cart-remove ELIMINADO */
 
 /* Empty cart */
 .outlet-cart-empty {
@@ -321,24 +309,8 @@
     margin-bottom: var(--outlet-spacing-xl);
 }
 
-.outlet-cart-empty-btn {
-    background-color: var(--outlet-gold);
-    color: #1a1a1a;
-    border: none;
-    padding: 12px 32px;
-    font-size: 11px;
-    letter-spacing: 0.15em;
-    font-weight: 700;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all var(--outlet-transition-base);
-    border-radius: var(--outlet-radius-sm);
-}
-
-.outlet-cart-empty-btn:hover {
-    background-color: var(--outlet-gold-light);
-    transform: translateY(-2px);
-}
+/* ✅ EL BOTÓN DE CARRITO VACÍO AHORA USA .outlet-btn-primary DE buttons.css */
+/* .outlet-cart-empty-btn ELIMINADO */
 
 /* ===== ORDER SUMMARY ===== */
 .outlet-cart-summary {
@@ -434,58 +406,11 @@
     color: var(--outlet-text-disabled);
 }
 
-.outlet-cart-promo-input-group button {
-    background-color: var(--outlet-text-primary);
-    color: var(--outlet-bg-primary);
-    border: none;
-    padding: 0 var(--outlet-spacing-lg);
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    font-weight: 700;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all var(--outlet-transition-fast);
-    border-radius: var(--outlet-radius-sm);
-}
+/* ✅ EL BOTÓN DE APLICAR PROMO AHORA USA .outlet-btn-dark DE buttons.css */
+/* .outlet-cart-promo-input-group button ELIMINADO */
 
-.outlet-cart-promo-input-group button:hover {
-    background-color: var(--outlet-gold);
-    color: #1a1a1a;
-}
-
-.outlet-cart-checkout-btn {
-    width: 100%;
-    background-color: var(--outlet-text-primary);
-    color: var(--outlet-bg-primary);
-    border: none;
-    padding: 14px;
-    font-size: 11px;
-    letter-spacing: 0.2em;
-    font-weight: 700;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all var(--outlet-transition-base);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--outlet-spacing-sm);
-    border-radius: var(--outlet-radius-sm);
-}
-
-.outlet-cart-checkout-btn:hover {
-    background-color: var(--outlet-gold);
-    color: #1a1a1a;
-    transform: translateY(-2px);
-}
-
-.outlet-cart-checkout-btn i {
-    font-size: 12px;
-    transition: transform var(--outlet-transition-fast);
-}
-
-.outlet-cart-checkout-btn:hover i {
-    transform: translateX(4px);
-}
+/* ✅ EL BOTÓN DE CHECKOUT AHORA USA .outlet-btn-primary DE buttons.css */
+/* .outlet-cart-checkout-btn ELIMINADO */
 
 /* ===== UPSELL SECTION ===== */
 .outlet-cart-upsell {
@@ -667,10 +592,6 @@
     
     .outlet-cart-promo-input-group {
         flex-direction: column;
-    }
-    
-    .outlet-cart-promo-input-group button {
-        padding: 10px;
     }
     
     /* Imagen más grande en móvil */

@@ -3,6 +3,7 @@
    Controlador para listar y gestionar categorías
    CRUD completo con el mismo estilo que productos
    RESPONSIVE: Se adapta a cualquier tamaño
+   CON SWEETALERT2 INTEGRADO
    ======================================== */
 
 import { CategoryService } from '../../../../services/categoryService.js';
@@ -10,24 +11,141 @@ import { CategoryService } from '../../../../services/categoryService.js';
 // ========================================
 // Variables de estado
 // ========================================
-let categories = [];
-let deleteTarget = { type: null, id: null, name: null };
-let currentCategoryForSub = null;
+var categories = [];
+var deleteTarget = { type: null, id: null, name: null };
+var currentCategoryForSub = null;
 
 // ========================================
 // DOM Elements
 // ========================================
-let elements = {};
+var elements = {};
 
+// ========================================
+// UI Helpers - CON SWEETALERT2
+// ========================================
+
+/**
+ * Muestra un toast personalizado (estilo OUTLET)
+ */
+function mostrarToast(mensaje, tipo) {
+    tipo = tipo || 'info';
+    var toastExistente = document.querySelector('.outlet-toast');
+    if (toastExistente) toastExistente.remove();
+    
+    var toast = document.createElement('div');
+    toast.className = 'outlet-toast ' + tipo;
+    toast.textContent = mensaje;
+    document.body.appendChild(toast);
+    
+    requestAnimationFrame(function() {
+        toast.classList.add('show');
+    });
+    
+    setTimeout(function() {
+        toast.classList.remove('show');
+        setTimeout(function() { toast.remove(); }, 300);
+    }, 3200);
+}
+
+/**
+ * Muestra una SweetAlert2 personalizada
+ */
+function mostrarSweetAlert(options) {
+    var defaultOptions = {
+        buttonsStyling: false,
+        customClass: {
+            confirmButton: 'swal2-confirm',
+            cancelButton: 'swal2-cancel',
+            popup: 'swal2-popup'
+        }
+    };
+    
+    return Swal.fire(Object.assign({}, defaultOptions, options));
+}
+
+/**
+ * Muestra alerta de éxito
+ */
+function mostrarExito(titulo, mensaje) {
+    return mostrarSweetAlert({
+        icon: 'success',
+        title: titulo || '¡Perfecto!',
+        text: mensaje || 'La acción se completó con éxito.',
+        confirmButtonText: 'Aceptar'
+    });
+}
+
+/**
+ * Muestra alerta de error
+ */
+function mostrarError(titulo, mensaje) {
+    return mostrarSweetAlert({
+        icon: 'error',
+        title: titulo || '¡Oops!',
+        text: mensaje || 'Ocurrió un error inesperado.',
+        confirmButtonText: 'Entendido'
+    });
+}
+
+/**
+ * Muestra alerta de advertencia
+ */
+function mostrarAdvertencia(titulo, mensaje, confirmText) {
+    confirmText = confirmText || 'Continuar';
+    return mostrarSweetAlert({
+        icon: 'warning',
+        title: titulo || '¡Cuidado!',
+        text: mensaje || 'Estás a punto de realizar una acción importante.',
+        confirmButtonText: confirmText,
+        showCancelButton: true,
+        cancelButtonText: 'Cancelar'
+    });
+}
+
+/**
+ * Muestra alerta de confirmación
+ */
+function mostrarConfirmacion(titulo, mensaje, confirmText) {
+    confirmText = confirmText || 'Sí, confirmar';
+    return mostrarSweetAlert({
+        title: titulo || '¿Estás seguro?',
+        text: mensaje || 'Esta acción requiere tu confirmación.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: confirmText,
+        cancelButtonText: 'Cancelar'
+    });
+}
+
+/**
+ * Muestra un loading con SweetAlert2
+ */
+function mostrarLoading(mensaje) {
+    mensaje = mensaje || 'Procesando...';
+    return mostrarSweetAlert({
+        title: mensaje,
+        allowOutsideClick: false,
+        didOpen: function() {
+            Swal.showLoading();
+        }
+    });
+}
+
+/**
+ * Cierra la alerta de loading
+ */
+function cerrarLoading() {
+    Swal.close();
+}
+
+// ========================================
+// Cache de elementos DOM
+// ========================================
 function cacheElements() {
     elements = {
-        // Header
         addBtn: document.getElementById('addCategoryBtn'),
-        
-        // Tabla
         tableBody: document.getElementById('categoriesTableBody'),
         
-        // Modal de categoría
         categoryModal: document.getElementById('categoryModal'),
         modalTitle: document.getElementById('modalTitle'),
         categoryId: document.getElementById('categoryId'),
@@ -40,7 +158,6 @@ function cacheElements() {
         categoryForm: document.getElementById('categoryForm'),
         closeModalBtn: document.getElementById('closeModalBtn'),
         
-        // Modal de subcategorías
         subcategoryModal: document.getElementById('subcategoryModal'),
         submodalTitle: document.getElementById('submodalTitle'),
         currentCategoryName: document.getElementById('currentCategoryName'),
@@ -49,65 +166,28 @@ function cacheElements() {
         subcategoriesList: document.getElementById('subcategoriesList'),
         closeSubmodalBtn: document.getElementById('closeSubmodalBtn'),
         
-        // Modal de eliminación
         deleteModal: document.getElementById('deleteModal'),
         deleteItemName: document.getElementById('deleteItemName'),
         confirmDeleteBtn: document.getElementById('confirmDeleteBtn'),
         cancelDeleteBtn: document.getElementById('cancelDeleteBtn'),
         closeDeleteModalBtn: document.getElementById('closeDeleteModalBtn'),
         
-        // Toast
         toast: document.getElementById('categoriesToast')
     };
 }
 
 // ========================================
-// UI Helpers
+// Utilidades
 // ========================================
-function mostrarToast(mensaje, tipo = 'info') {
-    const toast = elements.toast;
-    if (!toast) {
-        console.warn('Toast element not found');
-        return;
-    }
-    
-    toast.textContent = mensaje;
-    toast.className = 'categorieslist-toast';
-    
-    if (tipo === 'success') {
-        toast.style.borderLeftColor = '#22c55e';
-    } else if (tipo === 'error') {
-        toast.style.borderLeftColor = '#ef4444';
-    } else {
-        toast.style.borderLeftColor = 'var(--outlet-gold, #ddab3b)';
-    }
-    
-    toast.style.display = 'block';
-    
-    setTimeout(() => {
-        toast.style.animation = 'categorieslistSlideOut 0.3s ease-out forwards';
-        setTimeout(() => {
-            toast.style.display = 'none';
-            toast.style.animation = '';
-        }, 300);
-    }, 2800);
+function escapeHtml(str) {
+    var safeStr = String(str || '');
+    return safeStr
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
-
-// Añadir animación de salida al CSS dinámicamente
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes categorieslistSlideOut {
-        from {
-            transform: translateX(0);
-            opacity: 1;
-        }
-        to {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-    }
-`;
-document.head.appendChild(style);
 
 function generarSlug(texto) {
     if (!texto) return '';
@@ -148,131 +228,101 @@ function renderTable() {
     if (!elements.tableBody) return;
     
     if (!categories || categories.length === 0) {
-        elements.tableBody.innerHTML = `
-            <tr>
-                <td colspan="8" class="categorieslist-loading">
-                    <div class="categorieslist-spinner"></div>
-                    <span>Cargando categorías...</span>
-                </td>
-            </tr>
-        `;
+        elements.tableBody.innerHTML = 
+            '<tr><td colspan="8" class="categorieslist-loading"><div class="categorieslist-spinner"></div><span>Cargando categorías...</span></td></tr>';
         return;
     }
     
-    elements.tableBody.innerHTML = categories.map(cat => {
-        // Asegurar que todos los valores sean strings
-        const safeId = cat.id || '';
-        const safeName = cat.name || '';
-        const safeSlug = cat.slug || '';
-        const safeIcon = cat.icon || 'category';
-        const safeOrder = cat.order || 0;
-        const safeStatus = cat.status || 'active';
-        const safeSubcategories = Array.isArray(cat.subcategories) ? cat.subcategories : [];
+    var html = '';
+    categories.forEach(function(cat) {
+        var safeId = cat.id || '';
+        var safeName = cat.name || '';
+        var safeSlug = cat.slug || '';
+        var safeIcon = cat.icon || 'category';
+        var safeOrder = cat.order || 0;
+        var safeStatus = cat.status || 'active';
+        var safeSubcategories = Array.isArray(cat.subcategories) ? cat.subcategories : [];
         
-        return `
-        <tr data-id="${escapeHtml(safeId)}">
-            <td>
-                <div class="categorieslist-icon">
-                    <i class="material-symbols-outlined">${escapeHtml(safeIcon)}</i>
-                </div>
-            </td>
-            <td><code style="font-size: 12px;">${escapeHtml(safeId)}</code></td>
-            <td><strong>${escapeHtml(safeName)}</strong></td>
-            <td><code style="font-size: 12px;">${escapeHtml(safeSlug)}</code></td>
-            <td>
-                <div class="categorieslist-subcategories">
-                    ${renderSubcategoriesPreview(safeSubcategories, safeId)}
-                </div>
-            </td>
-            <td>${safeOrder}</td>
-            <td>
-                <span class="categorieslist-status-badge ${safeStatus === 'active' ? 'categorieslist-status-active' : 'categorieslist-status-inactive'}">
-                    ${safeStatus === 'active' ? 'Activo' : 'Inactivo'}
-                </span>
-            </td>
-            <td>
-                <div class="categorieslist-actions-cell">
-                    <button class="categorieslist-btn-subcategories" data-id="${escapeHtml(safeId)}" data-name="${escapeHtml(safeName)}" title="Gestionar subcategorías">
-                        <i class="material-symbols-outlined">subdirectory_arrow_right</i>
-                        <span>Subcats</span>
-                    </button>
-                    <button class="categorieslist-btn-edit" data-id="${escapeHtml(safeId)}" title="Editar">
-                        <i class="material-symbols-outlined">edit</i>
-                        <span>Editar</span>
-                    </button>
-                    <button class="categorieslist-btn-delete" data-id="${escapeHtml(safeId)}" data-name="${escapeHtml(safeName)}" title="Eliminar">
-                        <i class="material-symbols-outlined">delete</i>
-                        <span>Eliminar</span>
-                    </button>
-                </div>
-            </td>
-        </tr>
-    `}).join('');
+        html += 
+            '<tr data-id="' + escapeHtml(safeId) + '">' +
+                '<td><div class="categorieslist-icon"><i class="material-symbols-outlined">' + escapeHtml(safeIcon) + '</i></div></td>' +
+                '<td><code style="font-size: 12px;">' + escapeHtml(safeId) + '</code></td>' +
+                '<td><strong>' + escapeHtml(safeName) + '</strong></td>' +
+                '<td><code style="font-size: 12px;">' + escapeHtml(safeSlug) + '</code></td>' +
+                '<td><div class="categorieslist-subcategories">' + renderSubcategoriesPreview(safeSubcategories, safeId) + '</div></td>' +
+                '<td>' + safeOrder + '</td>' +
+                '<td><span class="categorieslist-status-badge ' + (safeStatus === 'active' ? 'categorieslist-status-active' : 'categorieslist-status-inactive') + '">' + (safeStatus === 'active' ? 'Activo' : 'Inactivo') + '</span></td>' +
+                '<td><div class="categorieslist-actions-cell">' +
+                    '<button class="categorieslist-btn-subcategories" data-id="' + escapeHtml(safeId) + '" data-name="' + escapeHtml(safeName) + '" title="Gestionar subcategorías">' +
+                        '<i class="material-symbols-outlined">subdirectory_arrow_right</i><span>Subcats</span>' +
+                    '</button>' +
+                    '<button class="categorieslist-btn-edit" data-id="' + escapeHtml(safeId) + '" title="Editar">' +
+                        '<i class="material-symbols-outlined">edit</i><span>Editar</span>' +
+                    '</button>' +
+                    '<button class="categorieslist-btn-delete" data-id="' + escapeHtml(safeId) + '" data-name="' + escapeHtml(safeName) + '" title="Eliminar">' +
+                        '<i class="material-symbols-outlined">delete</i><span>Eliminar</span>' +
+                    '</button>' +
+                '</div></td>' +
+            '</tr>';
+    });
     
-    // Event listeners para botones de la tabla
-    document.querySelectorAll('.categorieslist-btn-subcategories').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const id = btn.dataset.id;
-            const name = btn.dataset.name;
+    elements.tableBody.innerHTML = html;
+    
+    document.querySelectorAll('.categorieslist-btn-subcategories').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var id = this.dataset.id;
+            var name = this.dataset.name;
             openSubcategoryModal(id, name);
         });
     });
     
-    document.querySelectorAll('.categorieslist-btn-edit').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const id = btn.dataset.id;
+    document.querySelectorAll('.categorieslist-btn-edit').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var id = this.dataset.id;
             editCategory(id);
         });
     });
     
-    document.querySelectorAll('.categorieslist-btn-delete').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const id = btn.dataset.id;
-            const name = btn.dataset.name;
+    document.querySelectorAll('.categorieslist-btn-delete').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var id = this.dataset.id;
+            var name = this.dataset.name;
             showDeleteModal('category', id, name);
         });
     });
 }
 
 function renderSubcategoriesPreview(subcategories, categoryId) {
-    // Validar que subcategories sea un array
     if (!subcategories || !Array.isArray(subcategories) || subcategories.length === 0) {
         return '<span style="color: #888; font-size: 12px;">—</span>';
     }
     
-    const maxShow = 3;
-    const visible = subcategories.slice(0, maxShow);
-    const remaining = subcategories.length - maxShow;
+    var maxShow = 3;
+    var visible = subcategories.slice(0, maxShow);
+    var remaining = subcategories.length - maxShow;
     
-    const tags = visible.map(sub => {
-        const safeName = sub.name || '';
-        return `
-            <span class="categorieslist-subcategory-tag" data-cat-id="${escapeHtml(categoryId)}" data-sub-name="${escapeHtml(safeName)}">
-                ${escapeHtml(safeName)}
-            </span>
-        `;
-    }).join('');
+    var tags = '';
+    visible.forEach(function(sub) {
+        var safeName = sub.name || '';
+        tags += '<span class="categorieslist-subcategory-tag" data-cat-id="' + escapeHtml(categoryId) + '" data-sub-name="' + escapeHtml(safeName) + '">' + escapeHtml(safeName) + '</span>';
+    });
     
-    const moreTag = remaining > 0 ? `
-        <span class="categorieslist-subcategory-tag more" data-cat-id="${escapeHtml(categoryId)}">
-            +${remaining}
-        </span>
-    ` : '';
+    var moreTag = remaining > 0 ? '<span class="categorieslist-subcategory-tag more" data-cat-id="' + escapeHtml(categoryId) + '">+' + remaining + '</span>' : '';
     
     return tags + moreTag;
 }
 
 // Event delegation para clics en subcategorías
-document.addEventListener('click', (e) => {
-    const tag = e.target.closest('.categorieslist-subcategory-tag');
+document.addEventListener('click', function(e) {
+    var tag = e.target.closest('.categorieslist-subcategory-tag');
     if (tag && !tag.classList.contains('more')) {
-        const catId = tag.dataset.catId;
-        const subName = tag.dataset.subName;
-        const category = categories.find(c => c.id === catId);
+        var catId = tag.dataset.catId;
+        var subName = tag.dataset.subName;
+        var category = categories.find(function(c) { return c.id === catId; });
         if (category) {
             openSubcategoryModal(catId, category.name);
-            setTimeout(() => {
-                const input = elements.newSubcategoryName;
+            setTimeout(function() {
+                var input = elements.newSubcategoryName;
                 if (input) {
                     input.value = subName || '';
                     input.focus();
@@ -281,24 +331,13 @@ document.addEventListener('click', (e) => {
             }, 200);
         }
     } else if (tag && tag.classList.contains('more')) {
-        const catId = tag.dataset.catId;
-        const category = categories.find(c => c.id === catId);
+        var catId = tag.dataset.catId;
+        var category = categories.find(function(c) { return c.id === catId; });
         if (category) {
             openSubcategoryModal(catId, category.name);
         }
     }
 });
-
-function escapeHtml(str) {
-    // Asegurar que str sea string
-    const safeStr = String(str || '');
-    return safeStr
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-}
 
 // ========================================
 // CRUD de Categorías
@@ -306,30 +345,22 @@ function escapeHtml(str) {
 async function loadCategories() {
     try {
         console.log('🔄 Cargando categorías...');
-        categories = await CategoryService.getAll({}, true); // forceRefresh = true
-        console.log(`✅ ${categories.length} categorías cargadas`);
+        categories = await CategoryService.getAll({}, true);
+        console.log('✅ ' + categories.length + ' categorías cargadas');
         renderTable();
     } catch (error) {
         console.error('Error al cargar categorías:', error);
-        mostrarToast('Error al cargar las categorías: ' + error.message, 'error');
+        await mostrarError('Error al cargar categorías', error.message || 'No se pudieron cargar las categorías.');
         categories = [];
         
-        // Mostrar error en la tabla
         if (elements.tableBody) {
-            elements.tableBody.innerHTML = `
-                <tr>
-                    <td colspan="8" style="text-align: center; padding: 40px; color: #ef4444;">
-                        <div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>
-                        <strong>Error al cargar categorías</strong>
-                        <br>
-                        <span style="font-size: 13px; color: #888;">${escapeHtml(error.message)}</span>
-                        <br><br>
-                        <button onclick="location.reload()" style="padding: 8px 24px; background: var(--outlet-gold, #ddab3b); border: none; border-radius: 8px; cursor: pointer; color: #1a1a1a; font-weight: 600;">
-                            Reintentar
-                        </button>
-                    </td>
-                </tr>
-            `;
+            elements.tableBody.innerHTML = 
+                '<tr><td colspan="8" style="text-align: center; padding: 40px; color: #ef4444;">' +
+                    '<div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>' +
+                    '<strong>Error al cargar categorías</strong><br>' +
+                    '<span style="font-size: 13px; color: #888;">' + escapeHtml(error.message) + '</span><br><br>' +
+                    '<button onclick="location.reload()" style="padding: 8px 24px; background: var(--outlet-gold, #ddab3b); border: none; border-radius: 8px; cursor: pointer; color: #1a1a1a; font-weight: 600;">Reintentar</button>' +
+                '</td></tr>';
         }
     }
 }
@@ -351,9 +382,9 @@ function openCreateModal() {
 }
 
 async function editCategory(id) {
-    const category = categories.find(c => c.id === id);
+    var category = categories.find(function(c) { return c.id === id; });
     if (!category) {
-        mostrarToast('Categoría no encontrada', 'error');
+        await mostrarError('Categoría no encontrada', 'No se encontró la categoría que deseas editar.');
         return;
     }
     
@@ -372,33 +403,33 @@ async function editCategory(id) {
 async function saveCategory(event) {
     event.preventDefault();
     
-    const name = elements.categoryName?.value?.trim() || '';
+    var name = elements.categoryName?.value?.trim() || '';
     if (!name) {
-        mostrarToast('El nombre de la categoría es obligatorio', 'error');
+        await mostrarError('Campo requerido', 'El nombre de la categoría es obligatorio.');
         if (elements.categoryName) elements.categoryName.focus();
         return;
     }
     
-    const categoryId = elements.categoryId?.value || '';
-    const isEditing = !!categoryId;
+    var categoryId = elements.categoryId?.value || '';
+    var isEditing = !!categoryId;
     
     if (!isEditing) {
-        let generatedId = generarIdDesdeNombre(name);
+        var generatedId = generarIdDesdeNombre(name);
         if (!generatedId) {
-            mostrarToast('No se pudo generar un ID válido desde el nombre', 'error');
+            await mostrarError('Error', 'No se pudo generar un ID válido desde el nombre.');
             return;
         }
         
-        const existingCategory = categories.find(c => c.id === generatedId);
+        var existingCategory = categories.find(function(c) { return c.id === generatedId; });
         if (existingCategory) {
-            mostrarToast(`Ya existe una categoría con el ID "${generatedId}". Por favor, usa un nombre diferente.`, 'error');
+            await mostrarError('ID duplicado', 'Ya existe una categoría con el ID "' + generatedId + '". Por favor, usa un nombre diferente.');
             return;
         }
         
         if (elements.categoryId) elements.categoryId.value = generatedId;
     }
     
-    const categoryData = {
+    var categoryData = {
         name: name,
         slug: elements.categorySlug?.value?.trim() || generarSlug(name),
         description: elements.categoryDescription?.value?.trim() || '',
@@ -411,14 +442,31 @@ async function saveCategory(event) {
         categoryData.id = elements.categoryId?.value || '';
     }
     
+    // Confirmación antes de guardar
+    var actionText = isEditing ? 'actualizar' : 'crear';
+    var confirmResult = await mostrarConfirmacion(
+        '¿' + (isEditing ? 'Actualizar' : 'Crear') + ' categoría?',
+        'Estás a punto de ' + actionText + ' la categoría "' + name + '".',
+        'Sí, ' + actionText
+    );
+    
+    if (!confirmResult.isConfirmed) {
+        mostrarToast('Operación cancelada', 'info');
+        return;
+    }
+    
+    mostrarLoading((isEditing ? 'Actualizando' : 'Creando') + ' categoría...');
+    
     try {
-        let savedCategory;
+        var savedCategory;
         if (isEditing) {
             savedCategory = await CategoryService.update(categoryId, categoryData);
-            mostrarToast(`Categoría "${savedCategory.name}" actualizada`, 'success');
+            cerrarLoading();
+            await mostrarExito('¡Categoría actualizada!', '✅ "' + savedCategory.name + '" actualizada correctamente.');
         } else {
             savedCategory = await CategoryService.create(categoryData);
-            mostrarToast(`Categoría "${savedCategory.name}" creada con ID: ${savedCategory.id}`, 'success');
+            cerrarLoading();
+            await mostrarExito('¡Categoría creada!', '✅ "' + savedCategory.name + '" creada con ID: ' + savedCategory.id);
         }
         
         await loadCategories();
@@ -426,19 +474,20 @@ async function saveCategory(event) {
         resetCategoryForm();
         
     } catch (error) {
+        cerrarLoading();
         console.error('Error al guardar categoría:', error);
-        mostrarToast(`Error: ${error.message}`, 'error');
+        await mostrarError('Error al guardar', error.message || 'Ocurrió un error al guardar la categoría.');
     }
 }
 
 async function deleteCategory(id) {
     try {
         await CategoryService.delete(id);
-        mostrarToast('Categoría eliminada correctamente', 'success');
+        await mostrarExito('¡Categoría eliminada!', 'La categoría ha sido eliminada correctamente.');
         await loadCategories();
     } catch (error) {
         console.error('Error al eliminar categoría:', error);
-        mostrarToast(`Error: ${error.message}`, 'error');
+        await mostrarError('Error al eliminar', error.message || 'No se pudo eliminar la categoría.');
     }
 }
 
@@ -446,15 +495,15 @@ async function deleteCategory(id) {
 // Gestión de Subcategorías
 // ========================================
 async function openSubcategoryModal(categoryId, categoryName) {
-    const category = categories.find(c => c.id === categoryId);
+    var category = categories.find(function(c) { return c.id === categoryId; });
     if (!category) {
-        mostrarToast('Categoría no encontrada', 'error');
+        await mostrarError('Categoría no encontrada', 'No se encontró la categoría seleccionada.');
         return;
     }
     
     currentCategoryForSub = category;
     if (elements.currentCategoryName) elements.currentCategoryName.textContent = category.name || '';
-    if (elements.submodalTitle) elements.submodalTitle.textContent = `Subcategorías de ${category.name}`;
+    if (elements.submodalTitle) elements.submodalTitle.textContent = 'Subcategorías de ' + category.name;
     
     renderSubcategoriesList(category.subcategories || []);
     showModal(elements.subcategoryModal);
@@ -468,57 +517,61 @@ function renderSubcategoriesList(subcategories) {
         return;
     }
     
-    elements.subcategoriesList.innerHTML = subcategories.map((sub, index) => {
-        const safeName = sub.name || '';
-        return `
-            <div class="categorieslist-subcategory-item" data-index="${index}">
-                <span class="categorieslist-subcategory-name">${escapeHtml(safeName)}</span>
-                <div class="categorieslist-subcategory-actions">
-                    <button class="categorieslist-subcategory-edit" data-index="${index}" data-name="${escapeHtml(safeName)}" title="Editar">
-                        <i class="material-symbols-outlined">edit</i>
-                    </button>
-                    <button class="categorieslist-subcategory-delete" data-index="${index}" data-name="${escapeHtml(safeName)}" title="Eliminar">
-                        <i class="material-symbols-outlined">delete</i>
-                    </button>
-                </div>
-            </div>
-        `;
-    }).join('');
+    var html = '';
+    subcategories.forEach(function(sub, index) {
+        var safeName = sub.name || '';
+        html += 
+            '<div class="categorieslist-subcategory-item" data-index="' + index + '">' +
+                '<span class="categorieslist-subcategory-name">' + escapeHtml(safeName) + '</span>' +
+                '<div class="categorieslist-subcategory-actions">' +
+                    '<button class="categorieslist-subcategory-edit" data-index="' + index + '" data-name="' + escapeHtml(safeName) + '" title="Editar">' +
+                        '<i class="material-symbols-outlined">edit</i>' +
+                    '</button>' +
+                    '<button class="categorieslist-subcategory-delete" data-index="' + index + '" data-name="' + escapeHtml(safeName) + '" title="Eliminar">' +
+                        '<i class="material-symbols-outlined">delete</i>' +
+                    '</button>' +
+                '</div>' +
+            '</div>';
+    });
     
-    document.querySelectorAll('.categorieslist-subcategory-edit').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const index = parseInt(btn.dataset.index);
-            const oldName = btn.dataset.name;
+    elements.subcategoriesList.innerHTML = html;
+    
+    document.querySelectorAll('.categorieslist-subcategory-edit').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var index = parseInt(this.dataset.index);
+            var oldName = this.dataset.name;
             editSubcategory(index, oldName);
         });
     });
     
-    document.querySelectorAll('.categorieslist-subcategory-delete').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const index = parseInt(btn.dataset.index);
-            const name = btn.dataset.name;
+    document.querySelectorAll('.categorieslist-subcategory-delete').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var index = parseInt(this.dataset.index);
+            var name = this.dataset.name;
             showDeleteModal('subcategory', index, name);
         });
     });
 }
 
 async function addSubcategory() {
-    const subcategoryName = elements.newSubcategoryName?.value?.trim() || '';
+    var subcategoryName = elements.newSubcategoryName?.value?.trim() || '';
     if (!subcategoryName) {
-        mostrarToast('Ingrese un nombre para la subcategoría', 'error');
+        await mostrarError('Campo requerido', 'Ingresa un nombre para la subcategoría.');
         if (elements.newSubcategoryName) elements.newSubcategoryName.focus();
         return;
     }
     
     if (!currentCategoryForSub) {
-        mostrarToast('Error: No hay categoría seleccionada', 'error');
+        await mostrarError('Error', 'No hay categoría seleccionada.');
         return;
     }
     
+    mostrarLoading('Añadiendo subcategoría...');
+    
     try {
-        const updatedCategory = await CategoryService.addSubcategory(currentCategoryForSub.id, subcategoryName);
+        var updatedCategory = await CategoryService.addSubcategory(currentCategoryForSub.id, subcategoryName);
         
-        const index = categories.findIndex(c => c.id === updatedCategory.id);
+        var index = categories.findIndex(function(c) { return c.id === updatedCategory.id; });
         if (index !== -1) {
             categories[index] = updatedCategory;
         }
@@ -527,35 +580,58 @@ async function addSubcategory() {
         renderSubcategoriesList(updatedCategory.subcategories || []);
         renderTable();
         if (elements.newSubcategoryName) elements.newSubcategoryName.value = '';
-        mostrarToast(`Subcategoría "${subcategoryName}" añadida`, 'success');
+        
+        cerrarLoading();
+        await mostrarExito('¡Subcategoría añadida!', '✅ "' + subcategoryName + '" añadida correctamente.');
         
     } catch (error) {
+        cerrarLoading();
         console.error('Error al añadir subcategoría:', error);
-        mostrarToast(`Error: ${error.message}`, 'error');
+        await mostrarError('Error al añadir', error.message || 'No se pudo añadir la subcategoría.');
     }
 }
 
 async function editSubcategory(index, oldName) {
-    const newName = prompt('Editar subcategoría:', oldName);
-    if (!newName || newName.trim() === oldName) return;
+    var result = await mostrarSweetAlert({
+        title: 'Editar subcategoría',
+        input: 'text',
+        inputValue: oldName,
+        inputPlaceholder: 'Nombre de la subcategoría',
+        showCancelButton: true,
+        confirmButtonText: 'Guardar',
+        cancelButtonText: 'Cancelar',
+        inputValidator: function(value) {
+            if (!value || !value.trim()) {
+                return 'El nombre es obligatorio';
+            }
+            return null;
+        }
+    });
     
-    const trimmedName = newName.trim();
-    if (!trimmedName) return;
+    if (!result.isConfirmed) return;
     
-    const subcategoryId = currentCategoryForSub?.subcategories?.[index]?.id;
-    if (!subcategoryId) {
-        mostrarToast('Subcategoría no encontrada', 'error');
+    var trimmedName = result.value.trim();
+    if (trimmedName === oldName) {
+        mostrarToast('Sin cambios', 'info');
         return;
     }
     
+    var subcategoryId = currentCategoryForSub?.subcategories?.[index]?.id;
+    if (!subcategoryId) {
+        await mostrarError('Error', 'Subcategoría no encontrada.');
+        return;
+    }
+    
+    mostrarLoading('Actualizando subcategoría...');
+    
     try {
-        const updatedCategory = await CategoryService.updateSubcategory(
+        var updatedCategory = await CategoryService.updateSubcategory(
             currentCategoryForSub.id,
             subcategoryId,
             trimmedName
         );
         
-        const catIndex = categories.findIndex(c => c.id === updatedCategory.id);
+        var catIndex = categories.findIndex(function(c) { return c.id === updatedCategory.id; });
         if (catIndex !== -1) {
             categories[catIndex] = updatedCategory;
         }
@@ -563,26 +639,29 @@ async function editSubcategory(index, oldName) {
         
         renderSubcategoriesList(updatedCategory.subcategories || []);
         renderTable();
-        mostrarToast('Subcategoría actualizada', 'success');
+        
+        cerrarLoading();
+        await mostrarExito('¡Subcategoría actualizada!', '✅ "' + trimmedName + '" actualizada correctamente.');
         
     } catch (error) {
+        cerrarLoading();
         console.error('Error al actualizar subcategoría:', error);
-        mostrarToast(`Error: ${error.message}`, 'error');
+        await mostrarError('Error al actualizar', error.message || 'No se pudo actualizar la subcategoría.');
     }
 }
 
 async function deleteSubcategory(subcategoryId) {
     if (!currentCategoryForSub) {
-        mostrarToast('No hay categoría seleccionada', 'error');
+        await mostrarError('Error', 'No hay categoría seleccionada.');
         return;
     }
     
-    const subName = currentCategoryForSub.subcategories?.find(sub => sub.id === subcategoryId)?.name || '';
+    var subName = currentCategoryForSub.subcategories?.find(function(sub) { return sub.id === subcategoryId; })?.name || '';
     
     try {
-        const updatedCategory = await CategoryService.deleteSubcategory(currentCategoryForSub.id, subcategoryId);
+        var updatedCategory = await CategoryService.deleteSubcategory(currentCategoryForSub.id, subcategoryId);
         
-        const catIndex = categories.findIndex(c => c.id === updatedCategory.id);
+        var catIndex = categories.findIndex(function(c) { return c.id === updatedCategory.id; });
         if (catIndex !== -1) {
             categories[catIndex] = updatedCategory;
         }
@@ -590,26 +669,32 @@ async function deleteSubcategory(subcategoryId) {
         
         renderSubcategoriesList(updatedCategory.subcategories || []);
         renderTable();
-        mostrarToast(`Subcategoría "${subName}" eliminada`, 'success');
+        
+        await mostrarExito('¡Subcategoría eliminada!', '✅ "' + subName + '" eliminada correctamente.');
         
     } catch (error) {
         console.error('Error al eliminar subcategoría:', error);
-        mostrarToast(`Error: ${error.message}`, 'error');
+        await mostrarError('Error al eliminar', error.message || 'No se pudo eliminar la subcategoría.');
     }
 }
 
 // ========================================
-// Modal de confirmación
+// Modal de confirmación CON SWEETALERT2
 // ========================================
-function showDeleteModal(type, id, name) {
-    deleteTarget = { type, id, name };
-    if (elements.deleteItemName) elements.deleteItemName.textContent = name || '';
-    showModal(elements.deleteModal);
-}
-
-function hideDeleteModal() {
-    hideModal(elements.deleteModal);
-    deleteTarget = null;
+async function showDeleteModal(type, id, name) {
+    var displayName = name || 'este elemento';
+    var entityType = type === 'category' ? 'categoría' : 'subcategoría';
+    
+    var result = await mostrarConfirmacion(
+        '¿Eliminar ' + entityType + '?',
+        '¿Estás seguro de que quieres eliminar "' + displayName + '"? Esta acción no se puede deshacer.',
+        'Sí, eliminar'
+    );
+    
+    if (result.isConfirmed) {
+        deleteTarget = { type: type, id: id, name: name };
+        await confirmDelete();
+    }
 }
 
 async function confirmDelete() {
@@ -621,7 +706,7 @@ async function confirmDelete() {
         await deleteSubcategory(deleteTarget.id);
     }
     
-    hideDeleteModal();
+    deleteTarget = null;
 }
 
 // ========================================
@@ -629,8 +714,8 @@ async function confirmDelete() {
 // ========================================
 function setupSlugGeneration() {
     if (elements.categoryName) {
-        elements.categoryName.addEventListener('input', () => {
-            const name = elements.categoryName.value;
+        elements.categoryName.addEventListener('input', function() {
+            var name = this.value;
             if (name && elements.categorySlug && !elements.categoryId?.value) {
                 elements.categorySlug.value = generarSlug(name);
             }
@@ -645,37 +730,36 @@ function initEventListeners() {
     elements.addBtn?.addEventListener('click', openCreateModal);
     
     elements.categoryForm?.addEventListener('submit', saveCategory);
-    elements.closeModalBtn?.addEventListener('click', () => hideModal(elements.categoryModal));
+    elements.closeModalBtn?.addEventListener('click', function() { hideModal(elements.categoryModal); });
     
     elements.addSubcategoryBtn?.addEventListener('click', addSubcategory);
-    elements.closeSubmodalBtn?.addEventListener('click', () => hideModal(elements.subcategoryModal));
-    elements.newSubcategoryName?.addEventListener('keypress', (e) => {
+    elements.closeSubmodalBtn?.addEventListener('click', function() { hideModal(elements.subcategoryModal); });
+    elements.newSubcategoryName?.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             e.preventDefault();
             addSubcategory();
         }
     });
     
+    // Los botones de confirmación del modal ya no son necesarios porque usamos SweetAlert
+    // Pero los mantenemos por compatibilidad
     elements.confirmDeleteBtn?.addEventListener('click', confirmDelete);
-    elements.cancelDeleteBtn?.addEventListener('click', hideDeleteModal);
-    elements.closeDeleteModalBtn?.addEventListener('click', hideDeleteModal);
+    elements.cancelDeleteBtn?.addEventListener('click', function() { deleteTarget = null; });
+    elements.closeDeleteModalBtn?.addEventListener('click', function() { deleteTarget = null; });
     
-    document.addEventListener('keydown', (e) => {
+    document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
-            if (elements.deleteModal?.style.display === 'flex') hideDeleteModal();
             if (elements.categoryModal?.style.display === 'flex') hideModal(elements.categoryModal);
             if (elements.subcategoryModal?.style.display === 'flex') hideModal(elements.subcategoryModal);
+            deleteTarget = null;
         }
     });
     
-    elements.categoryModal?.addEventListener('click', (e) => {
+    elements.categoryModal?.addEventListener('click', function(e) {
         if (e.target === elements.categoryModal) hideModal(elements.categoryModal);
     });
-    elements.subcategoryModal?.addEventListener('click', (e) => {
+    elements.subcategoryModal?.addEventListener('click', function(e) {
         if (e.target === elements.subcategoryModal) hideModal(elements.subcategoryModal);
-    });
-    elements.deleteModal?.addEventListener('click', (e) => {
-        if (e.target === elements.deleteModal) hideDeleteModal();
     });
     
     setupSlugGeneration();
@@ -686,7 +770,7 @@ function initEventListeners() {
 // ========================================
 function syncDarkMode() {
     if (window.OUTLETNav && typeof window.OUTLETNav.getTheme === 'function') {
-        const navDark = window.OUTLETNav.getTheme();
+        var navDark = window.OUTLETNav.getTheme();
         if (navDark && !document.body.classList.contains('dark-mode')) {
             document.body.classList.add('dark-mode');
         } else if (!navDark && document.body.classList.contains('dark-mode')) {
@@ -695,13 +779,13 @@ function syncDarkMode() {
     }
 }
 
-document.addEventListener('themeChanged', (e) => {
+document.addEventListener('themeChanged', function(e) {
     if (e.detail.isDarkMode) document.body.classList.add('dark-mode');
     else document.body.classList.remove('dark-mode');
 });
 
 // ========================================
-// Inicialización - Exportada para que el HTML la use
+// Inicialización
 // ========================================
 export async function readCategoriesController() {
     console.log('📋 Read Categories Controller - Listado de categorías');

@@ -3,26 +3,148 @@
    Controlador para editar categorías existentes
    Actualización completa de datos de categoría
    RESPONSIVE: Se adapta a cualquier tamaño
+   CON SWEETALERT2 INTEGRADO
    ======================================== */
+
+import { CategoryService } from '../../../../services/categoryService.js';
 
 // ========================================
 // Variables de estado
 // ========================================
-let categories = [];
-let currentCategoryId = null;
-let isSubmitting = false;
+var categories = [];
+var currentCategoryId = null;
+var isSubmitting = false;
 
 // ========================================
 // DOM Elements
 // ========================================
-let elements = {};
+var elements = {};
 
+// ========================================
+// UI Helpers - CON SWEETALERT2
+// ========================================
+
+/**
+ * Muestra un toast personalizado (estilo OUTLET)
+ */
+function mostrarToast(mensaje, tipo) {
+    tipo = tipo || 'info';
+    var toastExistente = document.querySelector('.outlet-toast');
+    if (toastExistente) toastExistente.remove();
+    
+    var toast = document.createElement('div');
+    toast.className = 'outlet-toast ' + tipo;
+    toast.textContent = mensaje;
+    document.body.appendChild(toast);
+    
+    requestAnimationFrame(function() {
+        toast.classList.add('show');
+    });
+    
+    setTimeout(function() {
+        toast.classList.remove('show');
+        setTimeout(function() { toast.remove(); }, 300);
+    }, 3200);
+}
+
+/**
+ * Muestra una SweetAlert2 personalizada
+ */
+function mostrarSweetAlert(options) {
+    var defaultOptions = {
+        buttonsStyling: false,
+        customClass: {
+            confirmButton: 'swal2-confirm',
+            cancelButton: 'swal2-cancel',
+            popup: 'swal2-popup'
+        }
+    };
+    
+    return Swal.fire(Object.assign({}, defaultOptions, options));
+}
+
+/**
+ * Muestra alerta de éxito
+ */
+function mostrarExito(titulo, mensaje) {
+    return mostrarSweetAlert({
+        icon: 'success',
+        title: titulo || '¡Perfecto!',
+        text: mensaje || 'La acción se completó con éxito.',
+        confirmButtonText: 'Aceptar'
+    });
+}
+
+/**
+ * Muestra alerta de error
+ */
+function mostrarError(titulo, mensaje) {
+    return mostrarSweetAlert({
+        icon: 'error',
+        title: titulo || '¡Oops!',
+        text: mensaje || 'Ocurrió un error inesperado.',
+        confirmButtonText: 'Entendido'
+    });
+}
+
+/**
+ * Muestra alerta de advertencia
+ */
+function mostrarAdvertencia(titulo, mensaje, confirmText) {
+    confirmText = confirmText || 'Continuar';
+    return mostrarSweetAlert({
+        icon: 'warning',
+        title: titulo || '¡Cuidado!',
+        text: mensaje || 'Estás a punto de realizar una acción importante.',
+        confirmButtonText: confirmText,
+        showCancelButton: true,
+        cancelButtonText: 'Cancelar'
+    });
+}
+
+/**
+ * Muestra alerta de confirmación
+ */
+function mostrarConfirmacion(titulo, mensaje, confirmText) {
+    confirmText = confirmText || 'Sí, confirmar';
+    return mostrarSweetAlert({
+        title: titulo || '¿Estás seguro?',
+        text: mensaje || 'Esta acción requiere tu confirmación.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: confirmText,
+        cancelButtonText: 'Cancelar'
+    });
+}
+
+/**
+ * Muestra un loading con SweetAlert2
+ */
+function mostrarLoading(mensaje) {
+    mensaje = mensaje || 'Procesando...';
+    return mostrarSweetAlert({
+        title: mensaje,
+        allowOutsideClick: false,
+        didOpen: function() {
+            Swal.showLoading();
+        }
+    });
+}
+
+/**
+ * Cierra la alerta de loading
+ */
+function cerrarLoading() {
+    Swal.close();
+}
+
+// ========================================
+// Cache de elementos DOM
+// ========================================
 function cacheElements() {
     elements = {
-        // Header
         backBtn: document.getElementById('backBtn'),
         
-        // Formulario
         categoryForm: document.getElementById('updateCategoryForm'),
         categorySelector: document.getElementById('categorySelector'),
         categoryId: document.getElementById('categoryId'),
@@ -34,67 +156,34 @@ function cacheElements() {
         categoryStatus: document.getElementById('categoryStatus'),
         categoryCreatedAt: document.getElementById('categoryCreatedAt'),
         
-        // Fieldset
         formFields: document.getElementById('formFields'),
         actionButtons: document.getElementById('actionButtons'),
         
-        // Botones
         saveBtn: document.getElementById('saveBtn'),
         cancelBtn: document.getElementById('cancelBtn'),
         
-        // Vista previa
         previewCard: document.getElementById('previewCard'),
         subcategoriesPreview: document.getElementById('subcategoriesPreview'),
         
-        // Toast
         toast: document.getElementById('updateToast')
     };
 }
 
 // ========================================
-// UI Helpers
+// Utilidades
 // ========================================
-function mostrarToast(mensaje, tipo = 'info') {
-    const toast = elements.toast;
-    toast.textContent = mensaje;
-    toast.className = 'updatecategory-toast';
-    
-    if (tipo === 'success') {
-        toast.style.borderLeftColor = '#22c55e';
-    } else if (tipo === 'error') {
-        toast.style.borderLeftColor = '#ef4444';
-    } else {
-        toast.style.borderLeftColor = 'var(--outlet-gold, #ddab3b)';
-    }
-    
-    toast.style.display = 'block';
-    
-    setTimeout(() => {
-        toast.style.animation = 'updatecategorySlideOut 0.3s ease-out forwards';
-        setTimeout(() => {
-            toast.style.display = 'none';
-            toast.style.animation = '';
-        }, 300);
-    }, 2800);
+function escapeHtml(str) {
+    if (!str) return '';
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
 
-// Añadir animación de salida
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes updatecategorySlideOut {
-        from {
-            transform: translateX(0);
-            opacity: 1;
-        }
-        to {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-    }
-`;
-document.head.appendChild(style);
-
 function generarSlug(texto) {
+    if (!texto) return '';
     return texto
         .toLowerCase()
         .normalize('NFD')
@@ -105,7 +194,7 @@ function generarSlug(texto) {
 
 function formatDate(dateString) {
     if (!dateString) return 'No disponible';
-    const date = new Date(dateString);
+    var date = new Date(dateString);
     return date.toLocaleDateString('es-ES', {
         year: 'numeric',
         month: 'long',
@@ -122,7 +211,7 @@ async function loadCategories() {
         populateCategorySelector();
     } catch (error) {
         console.error('Error al cargar categorías:', error);
-        mostrarToast('Error al cargar las categorías', 'error');
+        await mostrarError('Error al cargar categorías', error.message || 'No se pudieron cargar las categorías.');
         categories = [];
         populateCategorySelector();
     }
@@ -136,22 +225,20 @@ function populateCategorySelector() {
         return;
     }
     
-    elements.categorySelector.innerHTML = `
-        <option value="">-- Seleccione una categoría --</option>
-        ${categories.map(cat => `
-            <option value="${cat.id}">${escapeHtml(cat.name)} (ID: ${cat.id})</option>
-        `).join('')}
-    `;
+    var html = '<option value="">-- Seleccione una categoría --</option>';
+    categories.forEach(function(cat) {
+        html += '<option value="' + escapeHtml(cat.id) + '">' + escapeHtml(cat.name) + ' (ID: ' + escapeHtml(cat.id) + ')</option>';
+    });
+    elements.categorySelector.innerHTML = html;
 }
 
 // ========================================
 // Cargar datos de la categoría seleccionada
 // ========================================
 function onCategorySelect() {
-    const selectedId = elements.categorySelector.value;
+    var selectedId = elements.categorySelector.value;
     
     if (!selectedId) {
-        // Limpiar formulario y deshabilitar
         elements.formFields.disabled = true;
         elements.actionButtons.style.display = 'none';
         elements.previewCard.style.display = 'none';
@@ -159,12 +246,11 @@ function onCategorySelect() {
         return;
     }
     
-    const category = categories.find(c => c.id === selectedId);
+    var category = categories.find(function(c) { return c.id === selectedId; });
     if (!category) return;
     
     currentCategoryId = selectedId;
     
-    // Cargar datos en el formulario
     elements.categoryId.value = category.id;
     elements.categoryName.value = category.name;
     elements.categorySlug.value = category.slug;
@@ -174,11 +260,9 @@ function onCategorySelect() {
     elements.categoryStatus.value = category.status || 'active';
     elements.categoryCreatedAt.value = formatDate(category.createdAt);
     
-    // Habilitar formulario y mostrar botones
     elements.formFields.disabled = false;
     elements.actionButtons.style.display = 'flex';
     
-    // Mostrar preview de subcategorías
     renderSubcategoriesPreview(category.subcategories || []);
     elements.previewCard.style.display = 'block';
 }
@@ -202,19 +286,13 @@ function renderSubcategoriesPreview(subcategories) {
         return;
     }
     
-    elements.subcategoriesPreview.innerHTML = `
-        <div style="margin-bottom: 12px;">
-            <small style="color: #888;">Total: ${subcategories.length} subcategoría(s)</small>
-        </div>
-        <div>
-            ${subcategories.map(sub => `
-                <span class="updatecategory-subcategory-tag">
-                    <i class="material-symbols-outlined" style="font-size: 14px;">subdirectory_arrow_right</i>
-                    ${escapeHtml(sub.name)}
-                </span>
-            `).join('')}
-        </div>
-    `;
+    var html = '<div style="margin-bottom: 12px;"><small style="color: #888;">Total: ' + subcategories.length + ' subcategoría(s)</small></div><div>';
+    subcategories.forEach(function(sub) {
+        html += '<span class="updatecategory-subcategory-tag"><i class="material-symbols-outlined" style="font-size: 14px;">subdirectory_arrow_right</i>' + escapeHtml(sub.name) + '</span>';
+    });
+    html += '</div>';
+    
+    elements.subcategoriesPreview.innerHTML = html;
 }
 
 // ========================================
@@ -222,8 +300,8 @@ function renderSubcategoriesPreview(subcategories) {
 // ========================================
 function setupSlugGeneration() {
     if (elements.categoryName) {
-        elements.categoryName.addEventListener('input', () => {
-            const name = elements.categoryName.value;
+        elements.categoryName.addEventListener('input', function() {
+            var name = this.value;
             if (name && elements.formFields && !elements.formFields.disabled) {
                 elements.categorySlug.value = generarSlug(name);
             }
@@ -232,7 +310,7 @@ function setupSlugGeneration() {
 }
 
 // ========================================
-// Actualizar categoría
+// Actualizar categoría CON SWEETALERT2
 // ========================================
 async function updateCategory(event) {
     event.preventDefault();
@@ -240,24 +318,24 @@ async function updateCategory(event) {
     if (isSubmitting) return;
     
     if (!currentCategoryId) {
-        mostrarToast('Seleccione una categoría para actualizar', 'error');
+        await mostrarError('Sin categoría seleccionada', 'Seleccione una categoría para actualizar.');
         return;
     }
     
-    const name = elements.categoryName.value.trim();
+    var name = elements.categoryName.value.trim();
     if (!name) {
-        mostrarToast('El nombre de la categoría es obligatorio', 'error');
+        await mostrarError('Campo requerido', 'El nombre de la categoría es obligatorio.');
         elements.categoryName.focus();
         return;
     }
     
-    const slug = elements.categorySlug.value.trim();
+    var slug = elements.categorySlug.value.trim();
     if (!slug) {
-        mostrarToast('El slug es obligatorio', 'error');
+        await mostrarError('Campo requerido', 'El slug es obligatorio.');
         return;
     }
     
-    const categoryData = {
+    var categoryData = {
         name: name,
         slug: slug,
         description: elements.categoryDescription.value.trim(),
@@ -266,27 +344,44 @@ async function updateCategory(event) {
         status: elements.categoryStatus.value
     };
     
+    // Confirmación antes de actualizar
+    var confirmResult = await mostrarConfirmacion(
+        '¿Actualizar categoría?',
+        'Estás a punto de actualizar la categoría "' + name + '".',
+        'Sí, actualizar'
+    );
+    
+    if (!confirmResult.isConfirmed) {
+        mostrarToast('Actualización cancelada', 'info');
+        return;
+    }
+    
     isSubmitting = true;
-    const btn = elements.saveBtn;
-    const originalHTML = btn.innerHTML;
+    var btn = elements.saveBtn;
+    var originalHTML = btn.innerHTML;
     btn.innerHTML = '<i class="material-symbols-outlined">hourglass_empty</i> Actualizando...';
     btn.disabled = true;
     
+    mostrarLoading('Actualizando categoría...');
+    
     try {
-        const updatedCategory = await CategoryService.update(currentCategoryId, categoryData);
+        var updatedCategory = await CategoryService.update(currentCategoryId, categoryData);
         
-        mostrarToast(`✅ Categoría "${updatedCategory.name}" actualizada exitosamente`, 'success');
+        cerrarLoading();
+        await mostrarExito(
+            '¡Categoría actualizada!',
+            '✅ "' + updatedCategory.name + '" actualizada exitosamente.'
+        );
         
-        // Recargar categorías y actualizar selector
         await loadCategories();
         
-        // Mantener seleccionada la categoría actualizada
         elements.categorySelector.value = updatedCategory.id;
         onCategorySelect();
         
     } catch (error) {
+        cerrarLoading();
         console.error('Error al actualizar categoría:', error);
-        mostrarToast(`❌ Error: ${error.message}`, 'error');
+        await mostrarError('Error al actualizar', error.message || 'No se pudo actualizar la categoría.');
     } finally {
         isSubmitting = false;
         btn.innerHTML = originalHTML;
@@ -295,23 +390,33 @@ async function updateCategory(event) {
 }
 
 // ========================================
-// Cancelar / resetear formulario
+// Cancelar / resetear formulario CON SWEETALERT2
 // ========================================
-function resetForm() {
+async function resetForm() {
+    if (currentCategoryId) {
+        var result = await mostrarAdvertencia(
+            '¿Cancelar edición?',
+            'Se perderán los cambios no guardados. ¿Deseas continuar?',
+            'Sí, cancelar'
+        );
+        
+        if (!result.isConfirmed) return;
+    }
+    
     elements.categorySelector.value = '';
     elements.formFields.disabled = true;
     elements.actionButtons.style.display = 'none';
     elements.previewCard.style.display = 'none';
     clearForm();
     currentCategoryId = null;
+    mostrarToast('Formulario reseteado', 'info');
 }
 
 // ========================================
 // Event Listeners
 // ========================================
 function initEventListeners() {
-    // Botón volver
-    elements.backBtn?.addEventListener('click', () => {
+    elements.backBtn?.addEventListener('click', function() {
         if (typeof window.navigateTo === 'function') {
             window.navigateTo('/admin/categories');
         } else {
@@ -319,27 +424,13 @@ function initEventListeners() {
         }
     });
     
-    // Selector de categoría
     elements.categorySelector?.addEventListener('change', onCategorySelect);
     
-    // Botón cancelar
     elements.cancelBtn?.addEventListener('click', resetForm);
     
-    // Submit del formulario
     elements.categoryForm?.addEventListener('submit', updateCategory);
     
-    // Auto-generar slug
     setupSlugGeneration();
-}
-
-function escapeHtml(str) {
-    if (!str) return '';
-    return str
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
 }
 
 // ========================================
@@ -347,7 +438,7 @@ function escapeHtml(str) {
 // ========================================
 function syncDarkMode() {
     if (window.OUTLETNav && typeof window.OUTLETNav.getTheme === 'function') {
-        const navDark = window.OUTLETNav.getTheme();
+        var navDark = window.OUTLETNav.getTheme();
         if (navDark && !document.body.classList.contains('dark-mode')) {
             document.body.classList.add('dark-mode');
         } else if (!navDark && document.body.classList.contains('dark-mode')) {
@@ -356,7 +447,7 @@ function syncDarkMode() {
     }
 }
 
-document.addEventListener('themeChanged', (e) => {
+document.addEventListener('themeChanged', function(e) {
     if (e.detail.isDarkMode) document.body.classList.add('dark-mode');
     else document.body.classList.remove('dark-mode');
 });
@@ -371,7 +462,6 @@ export async function updateCategoryController() {
     syncDarkMode();
     initEventListeners();
     
-    // Inicialmente deshabilitar formulario
     if (elements.formFields) {
         elements.formFields.disabled = true;
     }
@@ -382,7 +472,6 @@ export async function updateCategoryController() {
         elements.previewCard.style.display = 'none';
     }
     
-    // Cargar categorías
     await loadCategories();
     
     console.log('✅ Update Category page loaded');

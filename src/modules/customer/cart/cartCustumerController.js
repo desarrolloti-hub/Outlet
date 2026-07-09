@@ -1,5 +1,6 @@
 /* ========================================
    CART CONTROLLER - CUSTOMER (COPIA EXACTA DEL VISITOR)
+   LOS BOTONES USAN buttons.css
    ======================================== */
 
 // Storage keys - USA LA MISMA CLAVE
@@ -150,6 +151,7 @@ function showNotification(message, isError = false) {
 
 /**
  * Render cart items - USA LOS IDS DEL CUSTOMER
+ * 🔥 BOTONES CON CLASES DE buttons.css
  */
 function renderCart() {
     const container = document.getElementById('cartItemsContainerCustomer');
@@ -163,7 +165,8 @@ function renderCart() {
             <div class="outlet-cart-empty">
                 <i class="fas fa-shopping-bag"></i>
                 <p>Tu carrito está vacío</p>
-                <button class="outlet-cart-empty-btn" id="continueShoppingBtnCustomer">SEGUIR COMPRANDO</button>
+                <!-- 🔥 BOTÓN CORREGIDO: outlet-btn-primary -->
+                <button class="outlet-btn outlet-btn-primary" id="continueShoppingBtnCustomer">SEGUIR COMPRANDO</button>
             </div>
         `;
         
@@ -201,7 +204,8 @@ function renderCart() {
                         </div>
                         <div class="outlet-cart-item-price">
                             <p class="outlet-cart-price">${formatMoney(item.price * item.quantity)}</p>
-                            <button class="outlet-cart-remove" data-id="${item.id}">
+                            <!-- 🔥 BOTÓN CORREGIDO: outlet-btn-danger -->
+                            <button class="outlet-btn outlet-btn-danger outlet-btn-sm" data-id="${item.id}">
                                 <i class="fas fa-trash-alt"></i> ELIMINAR
                             </button>
                         </div>
@@ -217,6 +221,7 @@ function renderCart() {
 
 /**
  * Render order summary - USA LOS IDS DEL CUSTOMER
+ * 🔥 BOTONES CON CLASES DE buttons.css
  */
 function renderSummary() {
     const container = document.getElementById('orderSummaryContainerCustomer');
@@ -258,12 +263,14 @@ function renderSummary() {
                 <label>¿TIENES UN CÓDIGO PROMOCIONAL?</label>
                 <div class="outlet-cart-promo-input-group">
                     <input type="text" id="promoCodeCustomer" placeholder="INGRESA TU CÓDIGO">
-                    <button id="applyPromoBtnCustomer">APLICAR</button>
+                    <!-- 🔥 BOTÓN CORREGIDO: outlet-btn-dark -->
+                    <button class="outlet-btn outlet-btn-dark outlet-btn-sm" id="applyPromoBtnCustomer">APLICAR</button>
                 </div>
             </div>
             
-            <button class="outlet-cart-checkout-btn" id="checkoutBtnCustomer">
-                FINALIZAR COMPRA <i class="fas fa-arrow-right"></i>
+            <!-- 🔥 BOTÓN CORREGIDO: outlet-btn-primary con hover-icon -->
+            <button class="outlet-btn outlet-btn-primary outlet-btn-block outlet-btn-hover-icon" id="checkoutBtnCustomer">
+                FINALIZAR COMPRA <i class="fas fa-arrow-right outlet-btn-icon outlet-btn-icon-right"></i>
             </button>
         </div>
     `;
@@ -361,6 +368,7 @@ function addToCart(product) {
 
 /**
  * Attach events to cart items (quantity, remove)
+ * 🔥 ACTUALIZADO PARA USAR outlet-btn-danger
  */
 function attachCartEvents() {
     // Increment quantity
@@ -375,8 +383,8 @@ function attachCartEvents() {
         btn.addEventListener('click', handleDecrement);
     });
     
-    // Remove item
-    document.querySelectorAll('.outlet-cart-remove').forEach(btn => {
+    // Remove item - 🔥 CORREGIDO: ahora usa .outlet-btn-danger
+    document.querySelectorAll('.outlet-btn-danger[data-id]').forEach(btn => {
         btn.removeEventListener('click', handleRemove);
         btn.addEventListener('click', handleRemove);
     });

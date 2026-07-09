@@ -1,10 +1,11 @@
 /* ========================================
    PRODUCTS CONTROLLER - OUTLET
    Controlador para página de detalle de producto
+   CON SWEETALERT2 INTEGRADO
    ======================================== */
 
 // Configuración de imágenes
-const THUMBNAILS = [
+var THUMBNAILS = [
     "https://lh3.googleusercontent.com/aida-public/AB6AXuA8g0Esh47Sv3yioog16MU7CKt8dLC1bT82o7Al5PeVetpq8PdqiOBE-wX6JP8tSUUIURV1TrNRgugKwi8OHPdbe1wRicQJ9LcpTnmOs9zTOzsc6dpLGDuF5ADvNgXx7qXJwpn33Xt83FE9HrCeK-wwQlH27lJOZSna1X7_d7O13JAQ8NZIIFTHUJHwg9bQL1ViRtKTAKPTkc1hqy7iEeJ216dPlGc_C-NrhPphR3LDYtNKqcYuCL0__IymvVZP6ie5VeR_aqekCOMM",
     "https://lh3.googleusercontent.comaida-public/AB6AXuDXKbGmxF_ZnSN8YwkdM_VCOsXreEUpaok5Ma7e_a1-yjoMEjIACknTwVEobJSld-Uh9T0_ei6Z6m8ILyGrMbHB8GWbuQk_MX3ncldI6Qs1ePGrXXwqMwH6PQ3QnZ-mE3TMXU2XKVf7DihMHqprHrEmWN05xih_ZQiDLU0uqHLZ6qzl5iY5yqg-M_OhjR8hhk7PDHVVJrQNlstC86YwT96Ok6HxB3SxoreY0FV-lQqG_nGpUu1aGZresjVFc21eR1t36REuTKYEukCQ",
     "https://lh3.googleusercontent.com/aida-public/AB6AXuAV-B0a2s9LK2WGhCBR53fEwpsR_tZHlVK9Z8TrDLcUx1F5z821jyqDRdU13qKwE-dVOIXIp2MK3MOfkvjsowqoLaYb1cLnFT0rkp62wZ8U_tj-Tne5jfW2gfUepX0i6Fh9e1eddLa6sWl7uvpI_NBxuBqC0wSiZ0ZB83STw-GqFwwYzR7ByKlBXBExlbuRVJehgsraWbuFUz2qeW0OkTRBSA3IP42BXtfCBP_8kycZzZArgH4YvnvHd4NDU4VkcuiaMAq70q_ju3Am",
@@ -12,135 +13,199 @@ const THUMBNAILS = [
 ];
 
 // Estado de la aplicación
-let selectedSize = 'S';
-let selectedColor = 'NOIR';
-let cart = [];
-let wishlist = [];
+var selectedSize = 'S';
+var selectedColor = 'NOIR';
+var cart = [];
+var wishlist = [];
 
 // Clave para localStorage
-const STORAGE_KEYS = {
+var STORAGE_KEYS = {
     CART: 'outlet_cart',
     WISHLIST: 'outlet_wishlist'
 };
 
+// ========================================
+// UI Helpers - CON SWEETALERT2
+// ========================================
+
 /**
- * Carga los estilos CSS de la página
+ * Muestra un toast personalizado (estilo OUTLET)
  */
+function mostrarToast(mensaje, tipo) {
+    tipo = tipo || 'info';
+    var toastExistente = document.querySelector('.outlet-toast');
+    if (toastExistente) toastExistente.remove();
+    
+    var toast = document.createElement('div');
+    toast.className = 'outlet-toast ' + tipo;
+    toast.textContent = mensaje;
+    document.body.appendChild(toast);
+    
+    requestAnimationFrame(function() {
+        toast.classList.add('show');
+    });
+    
+    setTimeout(function() {
+        toast.classList.remove('show');
+        setTimeout(function() { toast.remove(); }, 300);
+    }, 3200);
+}
+
+/**
+ * Muestra una SweetAlert2 personalizada
+ */
+function mostrarSweetAlert(options) {
+    var defaultOptions = {
+        buttonsStyling: false,
+        customClass: {
+            confirmButton: 'swal2-confirm',
+            cancelButton: 'swal2-cancel',
+            popup: 'swal2-popup'
+        }
+    };
+    
+    return Swal.fire(Object.assign({}, defaultOptions, options));
+}
+
+/**
+ * Muestra alerta de éxito
+ */
+function mostrarExito(titulo, mensaje) {
+    return mostrarSweetAlert({
+        icon: 'success',
+        title: titulo || '¡Perfecto!',
+        text: mensaje || 'La acción se completó con éxito.',
+        confirmButtonText: 'Aceptar'
+    });
+}
+
+/**
+ * Muestra alerta de error
+ */
+function mostrarError(titulo, mensaje) {
+    return mostrarSweetAlert({
+        icon: 'error',
+        title: titulo || '¡Oops!',
+        text: mensaje || 'Ocurrió un error inesperado.',
+        confirmButtonText: 'Entendido'
+    });
+}
+
+/**
+ * Muestra alerta de advertencia
+ */
+function mostrarAdvertencia(titulo, mensaje, confirmText) {
+    confirmText = confirmText || 'Continuar';
+    return mostrarSweetAlert({
+        icon: 'warning',
+        title: titulo || '¡Cuidado!',
+        text: mensaje || 'Estás a punto de realizar una acción importante.',
+        confirmButtonText: confirmText,
+        showCancelButton: true,
+        cancelButtonText: 'Cancelar'
+    });
+}
+
+/**
+ * Muestra alerta de confirmación
+ */
+function mostrarConfirmacion(titulo, mensaje, confirmText) {
+    confirmText = confirmText || 'Sí, confirmar';
+    return mostrarSweetAlert({
+        title: titulo || '¿Estás seguro?',
+        text: mensaje || 'Esta acción requiere tu confirmación.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: confirmText,
+        cancelButtonText: 'Cancelar'
+    });
+}
+
+// ========================================
+// Carga de estilos CSS
+// ========================================
 function loadStyles() {
-    // Verificar si ya está cargado
     if (document.querySelector('link[href*="products.css"]')) return;
     
-    const link = document.createElement('link');
+    var link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = '/src/css/pages/products.css';
     document.head.appendChild(link);
 }
 
-/**
- * Controller principal
- */
-export async function productsController() {
-    console.log('🛍️ Products Controller - Página de producto');
-    
-    // Cargar estilos específicos
-    loadStyles();
-    
-    // Cargar datos desde localStorage
-    loadStorage();
-    
-    // Cargar miniaturas
-    loadThumbnails();
-    
-    // Inicializar selección de tallas
-    initSizeSelection();
-    
-    // Inicializar selección de colores
-    initColorSelection();
-    
-    // Inicializar botones de acción
-    initActionButtons();
-    
-    // Inicializar cards de ensemble
-    initEnsembleCards();
-    
-    console.log('✅ Productos page cargada correctamente');
-}
-
-/**
- * Carga datos desde localStorage
- */
+// ========================================
+// Carga datos desde localStorage
+// ========================================
 function loadStorage() {
-    const savedCart = localStorage.getItem(STORAGE_KEYS.CART);
-    const savedWishlist = localStorage.getItem(STORAGE_KEYS.WISHLIST);
+    var savedCart = localStorage.getItem(STORAGE_KEYS.CART);
+    var savedWishlist = localStorage.getItem(STORAGE_KEYS.WISHLIST);
     
     if (savedCart) cart = JSON.parse(savedCart);
     if (savedWishlist) wishlist = JSON.parse(savedWishlist);
 }
 
-/**
- * Guarda el carrito en localStorage
- */
+// ========================================
+// Guarda el carrito en localStorage
+// ========================================
 function saveCart() {
     localStorage.setItem(STORAGE_KEYS.CART, JSON.stringify(cart));
     updateCartBadge();
 }
 
-/**
- * Guarda la wishlist en localStorage
- */
+// ========================================
+// Guarda la wishlist en localStorage
+// ========================================
 function saveWishlist() {
     localStorage.setItem(STORAGE_KEYS.WISHLIST, JSON.stringify(wishlist));
 }
 
-/**
- * Actualiza el badge del carrito en la navbar
- */
+// ========================================
+// Actualiza el badge del carrito en la navbar
+// ========================================
 function updateCartBadge() {
-    const badge = document.querySelector('.cart-count');
+    var badge = document.querySelector('.cart-count');
     if (badge) {
-        const total = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+        var total = cart.reduce(function(sum, item) { return sum + (item.quantity || 1); }, 0);
         badge.textContent = total;
         badge.style.opacity = total === 0 ? '0' : '1';
     }
 }
 
-/**
- * Muestra notificación toast
- */
-function showNotification(message, isError = false) {
-    const existingToast = document.querySelector('.toast-notification');
-    if (existingToast) existingToast.remove();
+// ========================================
+// Controller principal
+// ========================================
+export async function productsController() {
+    console.log('🛍️ Products Controller - Página de producto');
     
-    const notification = document.createElement('div');
-    notification.className = 'toast-notification';
-    notification.textContent = message;
-    document.body.appendChild(notification);
+    loadStyles();
+    loadStorage();
+    loadThumbnails();
+    initSizeSelection();
+    initColorSelection();
+    initActionButtons();
+    initEnsembleCards();
     
-    setTimeout(() => {
-        notification.style.opacity = '0';
-        notification.style.transform = 'translateX(100%)';
-        setTimeout(() => notification.remove(), 300);
-    }, 3000);
+    console.log('✅ Productos page cargada correctamente');
 }
 
-/**
- * Carga las miniaturas de imágenes
- */
+// ========================================
+// Carga las miniaturas de imágenes
+// ========================================
 function loadThumbnails() {
-    const container = document.getElementById('thumbnailContainer');
+    var container = document.getElementById('thumbnailContainer');
     if (!container) return;
     
     container.innerHTML = '';
     
-    THUMBNAILS.forEach((src, index) => {
-        const div = document.createElement('div');
+    THUMBNAILS.forEach(function(src, index) {
+        var div = document.createElement('div');
         div.className = 'thumbnail';
-        const img = document.createElement('img');
+        var img = document.createElement('img');
         img.src = src;
-        img.alt = `Thumbnail ${index + 1}`;
+        img.alt = 'Thumbnail ' + (index + 1);
         img.loading = 'lazy';
-        img.onclick = () => {
-            const mainImage = document.getElementById('mainImage');
+        img.onclick = function() {
+            var mainImage = document.getElementById('mainImage');
             if (mainImage) mainImage.src = src;
         };
         div.appendChild(img);
@@ -148,70 +213,70 @@ function loadThumbnails() {
     });
 }
 
-/**
- * Inicializa selección de tallas
- */
+// ========================================
+// Inicializa selección de tallas
+// ========================================
 function initSizeSelection() {
-    const sizeBtns = document.querySelectorAll('.size-btn');
-    const sizeLabel = document.getElementById('selectedSizeLabel');
+    var sizeBtns = document.querySelectorAll('.size-btn');
+    var sizeLabel = document.getElementById('selectedSizeLabel');
     
-    sizeBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            if (btn.classList.contains('disabled')) return;
+    sizeBtns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            if (this.classList.contains('disabled')) return;
             
-            const size = btn.getAttribute('data-size');
+            var size = this.getAttribute('data-size');
             selectedSize = size;
             
             if (sizeLabel) sizeLabel.textContent = size;
             
-            sizeBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+            sizeBtns.forEach(function(b) { b.classList.remove('active'); });
+            this.classList.add('active');
             
-            showNotification(`Talla ${size} seleccionada`);
+            mostrarToast('Talla ' + size + ' seleccionada', 'info');
         });
     });
 }
 
-/**
- * Inicializa selección de colores
- */
+// ========================================
+// Inicializa selección de colores
+// ========================================
 function initColorSelection() {
-    const colorBtns = document.querySelectorAll('.color-btn');
-    const colorLabel = document.getElementById('selectedColorLabel');
+    var colorBtns = document.querySelectorAll('.color-btn');
+    var colorLabel = document.getElementById('selectedColorLabel');
     
-    colorBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const color = btn.getAttribute('data-color');
+    colorBtns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var color = this.getAttribute('data-color');
             selectedColor = color;
             
             if (colorLabel) colorLabel.textContent = color;
             
-            colorBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+            colorBtns.forEach(function(b) { b.classList.remove('active'); });
+            this.classList.add('active');
             
-            showNotification(`Color ${color} seleccionado`);
+            mostrarToast('Color ' + color + ' seleccionado', 'info');
         });
     });
 }
 
-/**
- * Inicializa botones de acción
- */
+// ========================================
+// Inicializa botones de acción
+// ========================================
 function initActionButtons() {
-    const addToBagBtn = document.getElementById('addToBagBtn');
-    const wishlistBtn = document.getElementById('wishlistBtn');
-    const shareBtn = document.getElementById('shareBtn');
+    var addToBagBtn = document.getElementById('addToBagBtn');
+    var wishlistBtn = document.getElementById('wishlistBtn');
+    var shareBtn = document.getElementById('shareBtn');
     
     if (addToBagBtn) addToBagBtn.addEventListener('click', addToCart);
     if (wishlistBtn) wishlistBtn.addEventListener('click', addToWishlist);
     if (shareBtn) shareBtn.addEventListener('click', shareProduct);
 }
 
-/**
- * Agrega producto al carrito
- */
-function addToCart() {
-    const product = {
+// ========================================
+// Agrega producto al carrito CON SWEETALERT2
+// ========================================
+async function addToCart() {
+    var product = {
         id: Date.now(),
         name: 'The Noir Hierarchy Gown',
         size: selectedSize,
@@ -224,15 +289,20 @@ function addToCart() {
     
     cart.push(product);
     saveCart();
-    showNotification(`✨ Añadido: ${product.name} (${selectedSize}, ${selectedColor})`);
+    
+    await mostrarExito(
+        '¡Añadido al carrito!',
+        product.name + ' (' + selectedSize + ', ' + selectedColor + ') ha sido añadido correctamente.'
+    );
+    
     console.log('🛒 Carrito actualizado:', cart);
 }
 
-/**
- * Agrega producto a wishlist
- */
-function addToWishlist() {
-    const exists = wishlist.some(item => item.name === 'The Noir Hierarchy Gown');
+// ========================================
+// Agrega producto a wishlist CON SWEETALERT2
+// ========================================
+async function addToWishlist() {
+    var exists = wishlist.some(function(item) { return item.name === 'The Noir Hierarchy Gown'; });
     
     if (!exists) {
         wishlist.push({
@@ -244,19 +314,33 @@ function addToWishlist() {
             image: THUMBNAILS[0]
         });
         saveWishlist();
-        showNotification('❤️ Añadido a tu wishlist');
+        
+        await mostrarExito(
+            '¡Añadido a wishlist!',
+            'The Noir Hierarchy Gown ha sido añadido a tu lista de deseos. ❤️'
+        );
     } else {
-        showNotification('⚠️ Ya está en tu wishlist', true);
+        var result = await mostrarAdvertencia(
+            'Ya está en tu wishlist',
+            'Este producto ya está en tu lista de deseos. ¿Quieres eliminarlo?',
+            'Sí, eliminar'
+        );
+        
+        if (result.isConfirmed) {
+            wishlist = wishlist.filter(function(item) { return item.name !== 'The Noir Hierarchy Gown'; });
+            saveWishlist();
+            await mostrarExito('Eliminado', 'El producto ha sido eliminado de tu wishlist.');
+        }
     }
     console.log('💖 Wishlist actualizada:', wishlist);
 }
 
-/**
- * Comparte el producto
- */
+// ========================================
+// Comparte el producto CON SWEETALERT2
+// ========================================
 async function shareProduct() {
-    const url = window.location.href;
-    const text = 'The Noir Hierarchy Gown - OUTLET';
+    var url = window.location.href;
+    var text = 'The Noir Hierarchy Gown - OUTLET';
     
     if (navigator.share) {
         try {
@@ -275,36 +359,58 @@ async function shareProduct() {
     }
 }
 
-/**
- * Copia texto al portapapeles
- */
-function copyToClipboard(text) {
-    navigator.clipboard.writeText(text);
-    showNotification('📋 Enlace copiado al portapapeles');
+// ========================================
+// Copia texto al portapapeles CON SWEETALERT2
+// ========================================
+async function copyToClipboard(text) {
+    try {
+        await navigator.clipboard.writeText(text);
+        await mostrarExito(
+            '¡Enlace copiado!',
+            'El enlace del producto ha sido copiado al portapapeles. 📋'
+        );
+    } catch (error) {
+        await mostrarError(
+            'Error al copiar',
+            'No se pudo copiar el enlace. Intenta manualmente.'
+        );
+    }
 }
 
-/**
- * Inicializa las cards de ensemble
- */
+// ========================================
+// Inicializa las cards de ensemble CON SWEETALERT2
+// ========================================
 function initEnsembleCards() {
-    const ensembleCards = document.querySelectorAll('.ensemble-card');
+    var ensembleCards = document.querySelectorAll('.ensemble-card');
     
-    ensembleCards.forEach(card => {
-        card.addEventListener('click', () => {
-            const name = card.querySelector('.ensemble-name')?.textContent || 'Producto';
-            const priceText = card.querySelector('.ensemble-price')?.textContent || '$0';
-            const price = parseInt(priceText.replace('$', '').replace(',', ''));
+    ensembleCards.forEach(function(card) {
+        card.addEventListener('click', async function() {
+            var name = this.querySelector('.ensemble-name')?.textContent || 'Producto';
+            var priceText = this.querySelector('.ensemble-price')?.textContent || '$0';
+            var price = parseInt(priceText.replace('$', '').replace(',', ''));
             
-            const ensembleProduct = {
-                id: Date.now(),
-                name: name,
-                price: price,
-                quantity: 1,
-                dateAdded: new Date().toISOString()
-            };
-            cart.push(ensembleProduct);
-            saveCart();
-            showNotification(`✨ ${name} añadido al carrito`);
+            var result = await mostrarConfirmacion(
+                '¿Agregar al carrito?',
+                '¿Quieres añadir "' + name + '" a tu carrito por ' + priceText + '?',
+                'Sí, agregar'
+            );
+            
+            if (result.isConfirmed) {
+                var ensembleProduct = {
+                    id: Date.now(),
+                    name: name,
+                    price: price,
+                    quantity: 1,
+                    dateAdded: new Date().toISOString()
+                };
+                cart.push(ensembleProduct);
+                saveCart();
+                
+                await mostrarExito(
+                    '¡Añadido al carrito!',
+                    name + ' ha sido añadido correctamente. 🛒'
+                );
+            }
         });
     });
 }

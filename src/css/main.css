@@ -70,7 +70,7 @@
 @import url('./pages/admin/user/create/viewCustumer.css');
 @import url('./pages/admin/user/read/readAdmins.css');
 @import url('./pages/admin/user/update/updateAdmins.css');
-
+@import url('./components/sweetAlerts.css');
 /* Utils */
 
 

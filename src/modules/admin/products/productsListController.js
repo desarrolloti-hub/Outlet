@@ -1,59 +1,130 @@
 /* ========================================
    PRODUCT LIST CONTROLLER - OUTLET (SPA)
    Controlador para listado y gestión de productos - VERSIÓN CARDS
+   CON SWEETALERT2 INTEGRADO
    ======================================== */
 
-// Storage key (mismo que homeAdmin para consistencia)
-const PRODUCTS_STORAGE_KEY = 'outlet_admin_products';
+// Storage key
+var PRODUCTS_STORAGE_KEY = 'outlet_admin_products';
 
 // Array de productos
-let productListItems = [];
+var productListItems = [];
 
 // Elemento de edición
-let editingProductId = null;
+var editingProductId = null;
+
+// ========================================
+// UI Helpers - CON SWEETALERT2
+// ========================================
 
 /**
- * Cargar estilos CSS
+ * Muestra un toast personalizado (estilo OUTLET)
  */
+function mostrarToast(mensaje, tipo) {
+    tipo = tipo || 'info';
+    var toastExistente = document.querySelector('.outlet-toast');
+    if (toastExistente) toastExistente.remove();
+    
+    var toast = document.createElement('div');
+    toast.className = 'outlet-toast ' + tipo;
+    toast.textContent = mensaje;
+    document.body.appendChild(toast);
+    
+    requestAnimationFrame(function() {
+        toast.classList.add('show');
+    });
+    
+    setTimeout(function() {
+        toast.classList.remove('show');
+        setTimeout(function() { toast.remove(); }, 300);
+    }, 3200);
+}
+
+/**
+ * Muestra una SweetAlert2 personalizada
+ */
+function mostrarSweetAlert(options) {
+    var defaultOptions = {
+        buttonsStyling: false,
+        customClass: {
+            confirmButton: 'swal2-confirm',
+            cancelButton: 'swal2-cancel',
+            popup: 'swal2-popup'
+        }
+    };
+    
+    return Swal.fire(Object.assign({}, defaultOptions, options));
+}
+
+/**
+ * Muestra alerta de éxito
+ */
+function mostrarExito(titulo, mensaje) {
+    return mostrarSweetAlert({
+        icon: 'success',
+        title: titulo || '¡Perfecto!',
+        text: mensaje || 'La acción se completó con éxito.',
+        confirmButtonText: 'Aceptar'
+    });
+}
+
+/**
+ * Muestra alerta de error
+ */
+function mostrarError(titulo, mensaje) {
+    return mostrarSweetAlert({
+        icon: 'error',
+        title: titulo || '¡Oops!',
+        text: mensaje || 'Ocurrió un error inesperado.',
+        confirmButtonText: 'Entendido'
+    });
+}
+
+/**
+ * Muestra alerta de advertencia
+ */
+function mostrarAdvertencia(titulo, mensaje, confirmText) {
+    confirmText = confirmText || 'Continuar';
+    return mostrarSweetAlert({
+        icon: 'warning',
+        title: titulo || '¡Cuidado!',
+        text: mensaje || 'Estás a punto de realizar una acción importante.',
+        confirmButtonText: confirmText,
+        showCancelButton: true,
+        cancelButtonText: 'Cancelar'
+    });
+}
+
+/**
+ * Muestra alerta de confirmación
+ */
+function mostrarConfirmacion(titulo, mensaje, confirmText) {
+    confirmText = confirmText || 'Sí, confirmar';
+    return mostrarSweetAlert({
+        title: titulo || '¿Estás seguro?',
+        text: mensaje || 'Esta acción requiere tu confirmación.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: confirmText,
+        cancelButtonText: 'Cancelar'
+    });
+}
+
+// ========================================
+// Cargar estilos CSS
+// ========================================
 function loadProductListStyles() {
     if (document.querySelector('link[href*="productList.css"]')) return;
     
-    const link = document.createElement('link');
+    var link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = '/src/css/pages/productList.css';
     document.head.appendChild(link);
 }
 
-/**
- * Mostrar notificación
- */
-function showProductListNotification(message, isError = false) {
-    const toast = document.getElementById('productlistToast');
-    const messageSpan = document.getElementById('productlistToastMessage');
-    
-    if (!toast || !messageSpan) return;
-    
-    messageSpan.textContent = message;
-    toast.style.display = 'block';
-    
-    if (isError) {
-        toast.style.borderLeftColor = '#ef4444';
-    } else {
-        toast.style.borderLeftColor = 'var(--outlet-gold, #ddab3b)';
-    }
-    
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        setTimeout(() => {
-            toast.style.display = 'none';
-            toast.style.opacity = '1';
-        }, 300);
-    }, 3000);
-}
-
-/**
- * Formatear dinero
- */
+// ========================================
+// Formatear dinero
+// ========================================
 function formatProductListMoney(amount) {
     return new Intl.NumberFormat('es-ES', { 
         style: 'currency', 
@@ -62,15 +133,14 @@ function formatProductListMoney(amount) {
     }).format(amount);
 }
 
-/**
- * Cargar productos desde localStorage
- */
+// ========================================
+// Cargar productos desde localStorage
+// ========================================
 function loadProductListItems() {
-    const saved = localStorage.getItem(PRODUCTS_STORAGE_KEY);
+    var saved = localStorage.getItem(PRODUCTS_STORAGE_KEY);
     if (saved) {
         productListItems = JSON.parse(saved);
     } else {
-        // Datos iniciales por defecto
         productListItems = [
             {
                 id: 1,
@@ -119,84 +189,76 @@ function loadProductListItems() {
     }
 }
 
-/**
- * Guardar productos en localStorage
- */
+// ========================================
+// Guardar productos en localStorage
+// ========================================
 function saveProductListItems() {
     localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(productListItems));
 }
 
-/**
- * Agregar función de eliminar a un botón
- */
-function addDeleteFunction(button) {
-    button.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const row = button.closest('tr');
-        const id = parseInt(row.getAttribute('data-id'));
-        if (id) {
-            deleteProductItem(id);
-        } else {
-            row.remove();
-            showProductListNotification('🗑️ Producto eliminado');
-        }
-    });
+// ========================================
+// Escapar HTML
+// ========================================
+function escapeHtml(text) {
+    if (!text) return '';
+    var div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
-/**
- * Renderizar tarjetas (responsive)
- */
+// ========================================
+// Renderizar tarjetas
+// ========================================
 function renderProductListCards() {
-    const grid = document.getElementById('productlistCardsGrid');
+    var grid = document.getElementById('productlistCardsGrid');
     if (!grid) return;
 
     if (productListItems.length === 0) {
-        grid.innerHTML = `
-            <div class="productlist-empty-state" style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: var(--outlet-text-secondary, #6b6b6b);">
-                <i class="fa-regular fa-box-open" style="font-size: 48px; color: var(--outlet-gold, #ddab3b); opacity: 0.4; margin-bottom: 16px; display: block;"></i>
-                <p>No hay productos registrados</p>
-            </div>
-        `;
+        grid.innerHTML = 
+            '<div class="productlist-empty-state" style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: var(--outlet-text-secondary, #6b6b6b);">' +
+                '<i class="fa-regular fa-box-open" style="font-size: 48px; color: var(--outlet-gold, #ddab3b); opacity: 0.4; margin-bottom: 16px; display: block;"></i>' +
+                '<p>No hay productos registrados</p>' +
+            '</div>';
         return;
     }
 
-    grid.innerHTML = productListItems.map(product => `
-        <div class="productlist-card" data-id="${product.id}">
-            <div class="productlist-card-image">
-                <img src="${product.image}" alt="${escapeHtml(product.name)}" onerror="this.src='https://placehold.co/200x200?text=Error'">
-                <span class="productlist-card-badge">${escapeHtml(product.category)}</span>
-            </div>
-            <div class="productlist-card-body">
-                <h4 class="productlist-card-name">${escapeHtml(product.name)}</h4>
-                <p class="productlist-card-category">${escapeHtml(product.category)}</p>
-                <p class="productlist-card-price">${formatProductListMoney(product.price)}</p>
-                <div class="productlist-card-actions">
-                    <button class="productlist-btn-edit" data-id="${product.id}">
-                        <i class="fa-solid fa-pencil"></i>
-                        <span>Editar</span>
-                    </button>
-                    <button class="productlist-btn-delete" data-id="${product.id}">
-                        <i class="fa-solid fa-trash"></i>
-                        <span>Eliminar</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    `).join('');
+    var html = '';
+    productListItems.forEach(function(product) {
+        html += 
+            '<div class="productlist-card" data-id="' + product.id + '">' +
+                '<div class="productlist-card-image">' +
+                    '<img src="' + product.image + '" alt="' + escapeHtml(product.name) + '" onerror="this.src=\'https://placehold.co/200x200?text=Error\'">' +
+                    '<span class="productlist-card-badge">' + escapeHtml(product.category) + '</span>' +
+                '</div>' +
+                '<div class="productlist-card-body">' +
+                    '<h4 class="productlist-card-name">' + escapeHtml(product.name) + '</h4>' +
+                    '<p class="productlist-card-category">' + escapeHtml(product.category) + '</p>' +
+                    '<p class="productlist-card-price">' + formatProductListMoney(product.price) + '</p>' +
+                    '<div class="productlist-card-actions">' +
+                        '<button class="productlist-btn-edit" data-id="' + product.id + '">' +
+                            '<i class="fa-solid fa-pencil"></i><span>Editar</span>' +
+                        '</button>' +
+                        '<button class="productlist-btn-delete" data-id="' + product.id + '">' +
+                            '<i class="fa-solid fa-trash"></i><span>Eliminar</span>' +
+                        '</button>' +
+                    '</div>' +
+                '</div>' +
+            '</div>';
+    });
+    
+    grid.innerHTML = html;
 
-    // Eventos de edición en tarjetas
-    document.querySelectorAll('.productlist-card .productlist-btn-edit').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const id = parseInt(btn.getAttribute('data-id'));
+    document.querySelectorAll('.productlist-card .productlist-btn-edit').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var id = parseInt(this.getAttribute('data-id'));
             openEditProductModal(id);
         });
     });
 
-    // Eventos de eliminación en tarjetas
-    document.querySelectorAll('.productlist-card .productlist-btn-delete').forEach(btn => {
-        btn.addEventListener('click', (e) => {
+    document.querySelectorAll('.productlist-card .productlist-btn-delete').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
             e.stopPropagation();
-            const id = parseInt(btn.getAttribute('data-id'));
+            var id = parseInt(this.getAttribute('data-id'));
             if (id) {
                 deleteProductItem(id);
             }
@@ -204,81 +266,76 @@ function renderProductListCards() {
     });
 }
 
-/**
- * Renderizar tabla de productos (escritorio)
- */
+// ========================================
+// Renderizar tabla
+// ========================================
 function renderProductListTable() {
-    const tbody = document.getElementById('productlistTableBody');
+    var tbody = document.getElementById('productlistTableBody');
     if (!tbody) return;
 
     if (productListItems.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="5" style="text-align: center; padding: 40px; color: var(--outlet-text-secondary, #6b6b6b);">
-                    <i class="fa-regular fa-box-open" style="font-size: 28px; color: var(--outlet-gold, #ddab3b); opacity: 0.4; margin-bottom: 8px; display: block;"></i>
-                    No hay productos registrados
-                </td>
-            </tr>
-        `;
+        tbody.innerHTML = 
+            '<tr><td colspan="5" style="text-align: center; padding: 40px; color: var(--outlet-text-secondary, #6b6b6b);">' +
+                '<i class="fa-regular fa-box-open" style="font-size: 28px; color: var(--outlet-gold, #ddab3b); opacity: 0.4; margin-bottom: 8px; display: block;"></i>' +
+                'No hay productos registrados' +
+            '</td></tr>';
         return;
     }
 
-    tbody.innerHTML = productListItems.map(product => `
-        <tr data-id="${product.id}">
-            <td class="image-cell">
-                <img src="${product.image}" class="productlist-product-img" alt="${product.name}" onerror="this.src='https://placehold.co/100?text=Error'">
-            </td>
-            <td class="name-cell">${escapeHtml(product.name)}</td>
-            <td class="price-cell">${formatProductListMoney(product.price)}</td>
-            <td>${escapeHtml(product.category)}</td>
-            <td class="actions-cell">
-                <button class="productlist-btn-edit" data-id="${product.id}">
-                    <i class="fa-solid fa-pencil"></i>
-                    Editar
-                </button>
-                <button class="productlist-btn-delete" data-id="${product.id}">
-                    <i class="fa-solid fa-trash"></i>
-                    Eliminar
-                </button>
-            </td>
-        </tr>
-    `).join('');
+    var html = '';
+    productListItems.forEach(function(product) {
+        html += 
+            '<tr data-id="' + product.id + '">' +
+                '<td class="image-cell"><img src="' + product.image + '" class="productlist-product-img" alt="' + product.name + '" onerror="this.src=\'https://placehold.co/100?text=Error\'"></td>' +
+                '<td class="name-cell">' + escapeHtml(product.name) + '</td>' +
+                '<td class="price-cell">' + formatProductListMoney(product.price) + '</td>' +
+                '<td>' + escapeHtml(product.category) + '</td>' +
+                '<td class="actions-cell">' +
+                    '<button class="productlist-btn-edit" data-id="' + product.id + '"><i class="fa-solid fa-pencil"></i>Editar</button>' +
+                    '<button class="productlist-btn-delete" data-id="' + product.id + '"><i class="fa-solid fa-trash"></i>Eliminar</button>' +
+                '</td>' +
+            '</tr>';
+    });
+    
+    tbody.innerHTML = html;
 
-    // Eventos de edición en tabla
-    document.querySelectorAll('.productlist-table .productlist-btn-edit').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const id = parseInt(btn.getAttribute('data-id'));
+    document.querySelectorAll('.productlist-table .productlist-btn-edit').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var id = parseInt(this.getAttribute('data-id'));
             openEditProductModal(id);
         });
     });
 
-    // Eventos de eliminación en tabla
-    document.querySelectorAll('.productlist-table .productlist-btn-delete').forEach(btn => {
+    document.querySelectorAll('.productlist-table .productlist-btn-delete').forEach(function(btn) {
         addDeleteFunction(btn);
     });
 }
 
-/**
- * Renderizar ambos (tarjetas y tabla)
- */
+function addDeleteFunction(button) {
+    button.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var row = this.closest('tr');
+        var id = parseInt(row.getAttribute('data-id'));
+        if (id) {
+            deleteProductItem(id);
+        } else {
+            row.remove();
+            mostrarToast('🗑️ Producto eliminado', 'info');
+        }
+    });
+}
+
+// ========================================
+// Renderizar ambos
+// ========================================
 function renderProductList() {
     renderProductListCards();
     renderProductListTable();
 }
 
-/**
- * Escapar HTML para evitar XSS
- */
-function escapeHtml(text) {
-    if (!text) return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
-/**
- * Abrir modal para agregar producto
- */
+// ========================================
+// Abrir modal para agregar producto
+// ========================================
 function openAddProductModal() {
     editingProductId = null;
     document.getElementById('productlistModalTitle').textContent = 'Agregar Producto';
@@ -286,11 +343,11 @@ function openAddProductModal() {
     document.getElementById('productlistModal').style.display = 'flex';
 }
 
-/**
- * Abrir modal para editar producto
- */
+// ========================================
+// Abrir modal para editar producto
+// ========================================
 function openEditProductModal(id) {
-    const product = productListItems.find(p => p.id === id);
+    var product = productListItems.find(function(p) { return p.id === id; });
     if (!product) return;
     
     editingProductId = id;
@@ -302,137 +359,146 @@ function openEditProductModal(id) {
     document.getElementById('productlistModal').style.display = 'flex';
 }
 
-/**
- * Cerrar modal
- */
+// ========================================
+// Cerrar modal
+// ========================================
 function closeProductModal() {
     document.getElementById('productlistModal').style.display = 'none';
     editingProductId = null;
 }
 
-/**
- * Guardar producto (crear o editar)
- */
-function saveProductItem(e) {
+// ========================================
+// Guardar producto CON SWEETALERT2
+// ========================================
+async function saveProductItem(e) {
     e.preventDefault();
     
-    const name = document.getElementById('productlistName').value.trim();
-    const price = parseFloat(document.getElementById('productlistPrice').value);
-    const category = document.getElementById('productlistCategory').value.trim();
-    let image = document.getElementById('productlistImage').value.trim();
+    var name = document.getElementById('productlistName').value.trim();
+    var price = parseFloat(document.getElementById('productlistPrice').value);
+    var category = document.getElementById('productlistCategory').value.trim();
+    var image = document.getElementById('productlistImage').value.trim();
     
-    // Validaciones
     if (!name) {
-        showProductListNotification('⚠️ El nombre del producto es obligatorio', true);
+        await mostrarError('Campo requerido', 'El nombre del producto es obligatorio.');
         return;
     }
     
     if (isNaN(price) || price <= 0) {
-        showProductListNotification('⚠️ Ingrese un precio válido', true);
+        await mostrarError('Precio inválido', 'Ingrese un precio válido mayor a 0.');
         return;
     }
     
     if (!category) {
-        showProductListNotification('⚠️ La categoría es obligatoria', true);
+        await mostrarError('Campo requerido', 'La categoría es obligatoria.');
         return;
     }
     
     if (!image) {
-        showProductListNotification('⚠️ Ingrese una URL de imagen', true);
+        await mostrarError('Campo requerido', 'Ingrese una URL de imagen.');
         return;
     }
     
-    // Validar URL de imagen
     if (!image.startsWith('http')) {
         image = 'https://placehold.co/200x200?text=Producto';
     }
     
+    var accion = editingProductId ? 'actualizar' : 'crear';
+    var mensajeConfirmacion = editingProductId ? 
+        '¿Actualizar el producto "' + name + '"?': 
+        '¿Crear el nuevo producto "' + name + '"?';
+    
+    var confirmResult = await mostrarConfirmacion(
+        (editingProductId ? 'Actualizar' : 'Crear') + ' producto',
+        mensajeConfirmacion,
+        'Sí, ' + accion
+    );
+    
+    if (!confirmResult.isConfirmed) {
+        mostrarToast('Operación cancelada', 'info');
+        return;
+    }
+    
     if (editingProductId) {
-        // Editar producto existente
-        const index = productListItems.findIndex(p => p.id === editingProductId);
+        var index = productListItems.findIndex(function(p) { return p.id === editingProductId; });
         if (index !== -1) {
             productListItems[index] = {
-                ...productListItems[index],
-                name,
-                price,
-                category,
-                image
+                id: productListItems[index].id,
+                name: name,
+                price: price,
+                category: category,
+                image: image
             };
-            showProductListNotification(`✏️ Producto "${name}" actualizado`);
+            await mostrarExito('¡Producto actualizado!', '✅ "' + name + '" actualizado correctamente.');
         }
     } else {
-        // Crear nuevo producto
-        const newId = productListItems.length > 0 
-            ? Math.max(...productListItems.map(p => p.id)) + 1 
-            : 1;
+        var newId = productListItems.length > 0 ? Math.max.apply(null, productListItems.map(function(p) { return p.id; })) + 1 : 1;
         
         productListItems.push({
             id: newId,
-            name,
-            price,
-            category,
-            image
+            name: name,
+            price: price,
+            category: category,
+            image: image
         });
-        showProductListNotification(`✅ Producto "${name}" agregado`);
+        await mostrarExito('¡Producto agregado!', '✅ "' + name + '" agregado correctamente.');
     }
     
     saveProductListItems();
     renderProductList();
     closeProductModal();
-    
-    // Actualizar contador si existe en homeAdmin
     updateAdminStatsIfNeeded();
 }
 
-/**
- * Eliminar producto
- */
-function deleteProductItem(id) {
-    const product = productListItems.find(p => p.id === id);
+// ========================================
+// Eliminar producto CON SWEETALERT2
+// ========================================
+async function deleteProductItem(id) {
+    var product = productListItems.find(function(p) { return p.id === id; });
     if (!product) return;
     
-    if (confirm(`¿Eliminar "${product.name}" permanentemente?`)) {
-        productListItems = productListItems.filter(p => p.id !== id);
+    var result = await mostrarConfirmacion(
+        '¿Eliminar producto?',
+        '¿Estás seguro de que quieres eliminar "' + product.name + '" permanentemente? Esta acción no se puede deshacer.',
+        'Sí, eliminar'
+    );
+    
+    if (result.isConfirmed) {
+        productListItems = productListItems.filter(function(p) { return p.id !== id; });
         saveProductListItems();
         renderProductList();
-        showProductListNotification(`🗑️ "${product.name}" eliminado`);
-        
-        // Actualizar contador si existe en homeAdmin
+        await mostrarExito('¡Producto eliminado!', '🗑️ "' + product.name + '" eliminado correctamente.');
         updateAdminStatsIfNeeded();
     }
 }
 
-/**
- * Actualizar estadísticas del admin si existe el elemento
- */
+// ========================================
+// Actualizar estadísticas del admin
+// ========================================
 function updateAdminStatsIfNeeded() {
-    const productsCount = document.getElementById('productsCount');
+    var productsCount = document.getElementById('productsCount');
     if (productsCount) {
         productsCount.textContent = productListItems.length;
     }
 }
 
-/**
- * Inicializar eventos del modal
- */
+// ========================================
+// Inicializar eventos del modal
+// ========================================
 function initModalEvents() {
-    const modal = document.getElementById('productlistModal');
-    const openBtn = document.getElementById('openProductModalBtn');
-    const closeBtn = document.getElementById('closeProductModalBtn');
+    var modal = document.getElementById('productlistModal');
+    var openBtn = document.getElementById('openProductModalBtn');
+    var closeBtn = document.getElementById('closeProductModalBtn');
     
-    // Abrir modal
     if (openBtn) {
         openBtn.addEventListener('click', openAddProductModal);
     }
     
-    // Cerrar modal con botón
     if (closeBtn) {
         closeBtn.addEventListener('click', closeProductModal);
     }
     
-    // Cerrar modal si dan click afuera
     if (modal) {
-        modal.addEventListener('click', (e) => {
+        modal.addEventListener('click', function(e) {
             if (e.target === modal) {
                 closeProductModal();
             }
@@ -440,36 +506,27 @@ function initModalEvents() {
     }
 }
 
-/**
- * Inicializar eventos del formulario
- */
+// ========================================
+// Inicializar eventos del formulario
+// ========================================
 function initFormEvents() {
-    const form = document.getElementById('productlistForm');
+    var form = document.getElementById('productlistForm');
     if (form) {
-        // Eliminar event listener anterior si existe
-        const newForm = form.cloneNode(true);
+        var newForm = form.cloneNode(true);
         form.parentNode.replaceChild(newForm, form);
-        
         newForm.addEventListener('submit', saveProductItem);
     }
 }
 
-/**
- * Controlador principal
- */
+// ========================================
+// Controlador principal
+// ========================================
 export async function productListController() {
     console.log('📋 Product List Controller - Gestión de productos (Versión Cards)');
     
-    // Cargar estilos
     loadProductListStyles();
-    
-    // Cargar datos
     loadProductListItems();
-    
-    // Renderizar todo
     renderProductList();
-    
-    // Inicializar eventos
     initModalEvents();
     initFormEvents();
     

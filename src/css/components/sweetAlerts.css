@@ -1,0 +1,396 @@
+/* ========================================
+   SWEET ALERTS COMPONENT - OUTLET LUXURY
+   Personalización de SweetAlert2 + Toasts
+   Totalmente integrado con variables globales
+   ======================================== */
+
+/* ========================================
+   TOAST NOTIFICACIÓN PERSONALIZADA
+   ======================================== */
+.outlet-toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: var(--outlet-toast-bg, #1f1b13);
+    color: var(--outlet-toast-text, #fff8f2);
+    padding: 1rem 2rem;
+    border-radius: var(--outlet-radius-md, 8px);
+    font-size: 1rem;
+    font-weight: 500;
+    z-index: 9999;
+    animation: outletToastSlideIn 0.3s ease-out;
+    box-shadow: var(--outlet-shadow-md, 0 5px 15px rgba(0,0,0,0.08));
+    border-left: 4px solid var(--outlet-gold, #ddab3b);
+    max-width: 450px;
+    font-family: var(--outlet-font-primary, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif);
+    display: none;
+}
+
+.outlet-toast.show {
+    display: block;
+    animation: outletToastSlideIn 0.3s ease-out;
+}
+
+.outlet-toast.success {
+    border-left-color: var(--outlet-success, #2e7d32);
+}
+
+.outlet-toast.error {
+    border-left-color: var(--outlet-danger, #ba1a1a);
+}
+
+.outlet-toast.warning {
+    border-left-color: var(--outlet-warning, #ffc107);
+}
+
+.outlet-toast.info {
+    border-left-color: var(--outlet-info, #17a2b8);
+}
+
+@keyframes outletToastSlideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes outletToastFadeOut {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+}
+
+/* ========================================
+   SWEETALERT2 - PERSONALIZACIÓN COMPLETA
+   ======================================== */
+
+/* Contenedor principal de la alerta */
+.swal2-popup {
+    font-family: var(--outlet-font-primary, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif) !important;
+    background: var(--outlet-bg-surface, #ffffff) !important;
+    color: var(--outlet-text-primary, #1f1b13) !important;
+    border-radius: var(--outlet-radius-xl, 16px) !important;
+    box-shadow: var(--outlet-shadow-xl, 0 20px 40px rgba(0,0,0,0.15)) !important;
+    border: 1px solid var(--outlet-border-soft, #e2d9cc) !important;
+    padding: 2.5rem 2.5rem 2rem 2.5rem !important;
+    width: 520px !important;
+    max-width: 95vw !important;
+}
+
+/* Título */
+.swal2-title {
+    color: var(--outlet-text-primary, #1f1b13) !important;
+    font-weight: 700 !important;
+    font-size: 1.8rem !important;
+    font-family: var(--outlet-font-primary, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif) !important;
+}
+
+/* Contenido / mensaje */
+.swal2-html-container {
+    color: var(--outlet-text-secondary, #4f4635) !important;
+    font-size: 1.05rem !important;
+    font-family: var(--outlet-font-primary, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif) !important;
+}
+
+/* Botón de confirmación (principal) */
+.swal2-confirm {
+    background: var(--outlet-gold-gradient, linear-gradient(135deg, #c9a03d 0%, #f2d06b 20%, #fff2a8 40%, #e8c44c 60%, #d4af37 80%, #c9a03d 100%)) !important;
+    color: #1a1a1a !important;
+    font-weight: 700 !important;
+    border-radius: var(--outlet-radius-sm, 4px) !important;
+    box-shadow: none !important;
+    padding: 12px 32px !important;
+    font-size: 1rem !important;
+    min-width: 120px !important;
+    min-height: 48px !important;
+    border: none !important;
+    font-family: var(--outlet-font-primary, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif) !important;
+}
+
+.swal2-confirm:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: var(--outlet-shadow-gold, 0 0 20px rgba(221,171,59,0.3)) !important;
+}
+
+.swal2-confirm:active {
+    transform: scale(0.98) !important;
+}
+
+.swal2-confirm:disabled {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+}
+
+/* Botón de cancelación (secundario) */
+.swal2-cancel {
+    background: transparent !important;
+    color: var(--outlet-text-secondary, #4f4635) !important;
+    border: 1px solid var(--outlet-border-soft, #e2d9cc) !important;
+    border-radius: var(--outlet-radius-sm, 4px) !important;
+    padding: 12px 32px !important;
+    font-size: 1rem !important;
+    min-width: 120px !important;
+    min-height: 48px !important;
+    font-family: var(--outlet-font-primary, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif) !important;
+}
+
+.swal2-cancel:hover {
+    border-color: var(--outlet-gold, #ddab3b) !important;
+    color: var(--outlet-gold, #ddab3b) !important;
+    background: transparent !important;
+}
+
+/* Contenedor de botones (acciones) */
+.swal2-actions {
+    gap: 12px !important;
+}
+
+/* ===== ICONOS ===== */
+.swal2-icon {
+    border-color: var(--outlet-gold, #ddab3b) !important;
+    width: 80px !important;
+    height: 80px !important;
+    margin: 0 auto 1.5rem !important;
+}
+
+.swal2-icon .swal2-icon-content {
+    font-size: 3.5rem !important;
+}
+
+/* Icono de éxito */
+.swal2-icon.swal2-success {
+    border-color: var(--outlet-success, #2e7d32) !important;
+}
+
+.swal2-icon.swal2-success .swal2-success-ring {
+    border-color: var(--outlet-success, #2e7d32) !important;
+}
+
+.swal2-icon.swal2-success .swal2-icon-content {
+    color: var(--outlet-success, #2e7d32) !important;
+}
+
+/* Icono de error */
+.swal2-icon.swal2-error {
+    border-color: var(--outlet-danger, #ba1a1a) !important;
+}
+
+.swal2-icon.swal2-error .swal2-icon-content {
+    color: var(--outlet-danger, #ba1a1a) !important;
+}
+
+/* Icono de advertencia */
+.swal2-icon.swal2-warning {
+    border-color: var(--outlet-warning, #ffc107) !important;
+}
+
+.swal2-icon.swal2-warning .swal2-icon-content {
+    color: var(--outlet-warning, #ffc107) !important;
+}
+
+/* Icono de información */
+.swal2-icon.swal2-info {
+    border-color: var(--outlet-info, #17a2b8) !important;
+}
+
+.swal2-icon.swal2-info .swal2-icon-content {
+    color: var(--outlet-info, #17a2b8) !important;
+}
+
+/* Icono de pregunta */
+.swal2-icon.swal2-question {
+    border-color: var(--outlet-gold, #ddab3b) !important;
+}
+
+.swal2-icon.swal2-question .swal2-icon-content {
+    color: var(--outlet-gold, #ddab3b) !important;
+}
+
+/* ===== INPUTS ===== */
+.swal2-input {
+    border-radius: var(--outlet-radius-sm, 4px) !important;
+    border: 1px solid var(--outlet-border-soft, #e2d9cc) !important;
+    padding: 14px 16px !important;
+    font-size: 1rem !important;
+    background: var(--outlet-bg-container-low, #fcf2e5) !important;
+    color: var(--outlet-text-primary, #1f1b13) !important;
+    font-family: var(--outlet-font-primary, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif) !important;
+    width: 100% !important;
+}
+
+.swal2-input:focus {
+    border-color: var(--outlet-gold, #ddab3b) !important;
+    box-shadow: 0 0 0 3px rgba(221, 171, 59, 0.2) !important;
+}
+
+.swal2-input::placeholder {
+    color: var(--outlet-text-disabled, rgba(79, 70, 53, 0.4)) !important;
+}
+
+/* ===== VALIDACIÓN ===== */
+.swal2-validation-message {
+    background: rgba(186, 26, 26, 0.08) !important;
+    color: var(--outlet-danger, #ba1a1a) !important;
+    border-radius: var(--outlet-radius-sm, 4px) !important;
+    padding: 10px 16px !important;
+    font-size: 0.95rem !important;
+    font-family: var(--outlet-font-primary, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif) !important;
+}
+
+/* ===== TIMER PROGRESS BAR ===== */
+.swal2-timer-progress-bar {
+    background: var(--outlet-gold-gradient-horizontal, linear-gradient(90deg, #c9a03d 0%, #f2d06b 30%, #fff2a8 50%, #f2d06b 70%, #c9a03d 100%)) !important;
+}
+
+/* ===== LOADER (cuando está cargando) ===== */
+.swal2-loader {
+    border-color: var(--outlet-gold, #ddab3b) !important;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 768px) {
+    /* Toast */
+    .outlet-toast {
+        bottom: 1rem;
+        right: 1rem;
+        left: 1rem;
+        max-width: 100%;
+        text-align: center;
+        font-size: 0.9rem;
+        padding: 0.8rem 1.2rem;
+    }
+
+    /* SweetAlert2 */
+    .swal2-popup {
+        padding: 1.8rem 1.5rem 1.5rem 1.5rem !important;
+        width: 95vw !important;
+    }
+
+    .swal2-title {
+        font-size: 1.4rem !important;
+    }
+
+    .swal2-html-container {
+        font-size: 0.95rem !important;
+    }
+
+    .swal2-confirm,
+    .swal2-cancel {
+        padding: 10px 20px !important;
+        font-size: 0.9rem !important;
+        min-width: 100px !important;
+        min-height: 42px !important;
+    }
+
+    .swal2-icon {
+        width: 64px !important;
+        height: 64px !important;
+    }
+
+    .swal2-icon .swal2-icon-content {
+        font-size: 2.8rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .swal2-popup {
+        padding: 1.2rem 1rem 1.2rem 1rem !important;
+    }
+
+    .swal2-title {
+        font-size: 1.2rem !important;
+    }
+
+    .swal2-html-container {
+        font-size: 0.85rem !important;
+    }
+
+    .swal2-confirm,
+    .swal2-cancel {
+        padding: 8px 14px !important;
+        font-size: 0.8rem !important;
+        min-width: 80px !important;
+        min-height: 36px !important;
+    }
+
+    .swal2-icon {
+        width: 52px !important;
+        height: 52px !important;
+    }
+
+    .swal2-icon .swal2-icon-content {
+        font-size: 2.2rem !important;
+    }
+
+    .swal2-actions {
+        flex-direction: column !important;
+        gap: 8px !important;
+    }
+
+    .swal2-actions .swal2-confirm,
+    .swal2-actions .swal2-cancel {
+        width: 100% !important;
+    }
+}
+
+/* ========================================
+   MODO OSCURO - SOBRESCRITURAS ESPECÍFICAS
+   ======================================== */
+
+body.dark-mode .swal2-popup {
+    background: var(--outlet-bg-surface, #0f243d) !important;
+    border-color: var(--outlet-border-soft, #1e3a5a) !important;
+}
+
+body.dark-mode .swal2-title {
+    color: var(--outlet-text-primary, #d6e5f7) !important;
+}
+
+body.dark-mode .swal2-html-container {
+    color: var(--outlet-text-secondary, #b0c4de) !important;
+}
+
+body.dark-mode .swal2-input {
+    background: var(--outlet-bg-container-low, #0f243d) !important;
+    color: var(--outlet-text-primary, #d6e5f7) !important;
+    border-color: var(--outlet-border-color, #2a4a6e) !important;
+}
+
+body.dark-mode .swal2-input:focus {
+    border-color: var(--outlet-gold, #ddab3b) !important;
+    box-shadow: 0 0 0 3px rgba(221, 171, 59, 0.2) !important;
+}
+
+body.dark-mode .swal2-cancel {
+    color: var(--outlet-text-secondary, #b0c4de) !important;
+    border-color: var(--outlet-border-color, #2a4a6e) !important;
+}
+
+body.dark-mode .swal2-cancel:hover {
+    border-color: var(--outlet-gold, #ddab3b) !important;
+    color: var(--outlet-gold, #ddab3b) !important;
+}
+
+body.dark-mode .swal2-validation-message {
+    background: rgba(255, 107, 107, 0.12) !important;
+    color: var(--outlet-danger, #ff6b6b) !important;
+}
+
+/* Toast en modo oscuro */
+body.dark-mode .outlet-toast {
+    background: var(--outlet-toast-bg, #1a3a5c) !important;
+    color: var(--outlet-toast-text, #d6e5f7) !important;
+}

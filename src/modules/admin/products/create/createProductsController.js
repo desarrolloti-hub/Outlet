@@ -3,10 +3,11 @@
    Controlador para dar de alta nuevas prendas
    Wizard de 3 pasos | Botones de navegación abajo
    RESPONSIVE: Se adapta a cualquier tamaño
+   CON SWEETALERT2 INTEGRADO
    ======================================== */
 
 import { ProductService } from '../../../../services/productService.js';
-import { CategoryService } from '../../../../services/categoryService.js'; // 👈 NUEVA IMPORTACIÓN
+import { CategoryService } from '../../../../services/categoryService.js';
 
 // ========================================
 // Variables de estado
@@ -18,9 +19,9 @@ let tallasArray = [];
 let materialesArray = [];
 let galleryImages = [];
 let currentMainImage = null;
-let isLoading = false;  // Para evitar doble envío
+let isLoading = false;
 
-// 👈 NUEVAS VARIABLES PARA CATEGORÍAS
+// Variables para categorías
 let categoriesList = [];
 let subcategoriesMap = {};
 
@@ -98,51 +99,376 @@ function cacheElements() {
 }
 
 // ========================================
-// UI Helpers
+// UI Helpers - CON SWEETALERT2
 // ========================================
+
+/**
+ * Muestra un toast personalizado (estilo OUTLET)
+ * @param {string} mensaje - Texto a mostrar
+ * @param {string} tipo - 'success' | 'error' | 'warning' | 'info'
+ */
 function mostrarToast(mensaje, tipo = 'info') {
-    const toastExistente = document.querySelector('.outlet-toast-notification');
+    const toastExistente = document.querySelector('.outlet-toast');
     if (toastExistente) toastExistente.remove();
     
     const toast = document.createElement('div');
-    toast.className = 'outlet-toast-notification';
+    toast.className = 'outlet-toast ' + tipo;
     toast.textContent = mensaje;
-    if (tipo === 'success') toast.style.borderLeftColor = 'var(--outlet-success)';
-    if (tipo === 'error') toast.style.borderLeftColor = 'var(--outlet-danger)';
     document.body.appendChild(toast);
     
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateX(30px)';
-        setTimeout(() => toast.remove(), 300);
-    }, 2800);
+    // Mostrar con animación
+    requestAnimationFrame(function() {
+        toast.classList.add('show');
+    });
+    
+    setTimeout(function() {
+        toast.classList.remove('show');
+        setTimeout(function() { toast.remove(); }, 300);
+    }, 3200);
 }
 
-function actualizarPrecioFinal() {
-    const precioVenta = parseFloat(elements.precioVenta?.value) || 0;
-    const descuento = parseFloat(elements.descuento?.value) || 0;
-    let precioFinal = precioVenta;
-    if (descuento > 0 && descuento <= 90) {
-        precioFinal = precioVenta * (1 - descuento / 100);
+/**
+ * Muestra una SweetAlert2 personalizada
+ * @param {Object} options - Opciones de la alerta
+ */
+function mostrarSweetAlert(options) {
+    var defaultOptions = {
+        buttonsStyling: false,
+        customClass: {
+            confirmButton: 'swal2-confirm',
+            cancelButton: 'swal2-cancel',
+            popup: 'swal2-popup'
+        }
+    };
+    
+    return Swal.fire(Object.assign({}, defaultOptions, options));
+}
+
+/**
+ * Muestra alerta de éxito con SweetAlert2
+ */
+function mostrarExito(titulo, mensaje) {
+    return mostrarSweetAlert({
+        icon: 'success',
+        title: titulo || '¡Perfecto!',
+        text: mensaje || 'La acción se completó con éxito.',
+        confirmButtonText: 'Aceptar'
+    });
+}
+
+/**
+ * Muestra alerta de error con SweetAlert2
+ */
+function mostrarError(titulo, mensaje) {
+    return mostrarSweetAlert({
+        icon: 'error',
+        title: titulo || '¡Oops!',
+        text: mensaje || 'Ocurrió un error inesperado.',
+        confirmButtonText: 'Entendido'
+    });
+}
+
+/**
+ * Muestra alerta de advertencia con SweetAlert2
+ */
+function mostrarAdvertencia(titulo, mensaje, confirmText) {
+    confirmText = confirmText || 'Continuar';
+    return mostrarSweetAlert({
+        icon: 'warning',
+        title: titulo || '¡Cuidado!',
+        text: mensaje || 'Estás a punto de realizar una acción importante.',
+        confirmButtonText: confirmText,
+        showCancelButton: true,
+        cancelButtonText: 'Cancelar'
+    });
+}
+
+/**
+ * Muestra alerta de confirmación con SweetAlert2
+ */
+function mostrarConfirmacion(titulo, mensaje, confirmText) {
+    confirmText = confirmText || 'Sí, confirmar';
+    return mostrarSweetAlert({
+        title: titulo || '¿Estás seguro?',
+        text: mensaje || 'Esta acción requiere tu confirmación.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: confirmText,
+        cancelButtonText: 'Cancelar'
+    });
+}
+
+/**
+ * Muestra un loading con SweetAlert2
+ */
+function mostrarLoading(mensaje) {
+    mensaje = mensaje || 'Procesando...';
+    return mostrarSweetAlert({
+        title: mensaje,
+        allowOutsideClick: false,
+        didOpen: function() {
+            Swal.showLoading();
+        }
+    });
+}
+
+/**
+ * Cierra la alerta de loading
+ */
+function cerrarLoading() {
+    Swal.close();
+}
+
+// ========================================
+// FUNCIÓN ACTUALIZADA: limpiarFormulario CON CONFIRMACIÓN
+// ========================================
+function limpiarFormulario() {
+    // Verificar si hay datos para limpiar
+    var tieneDatos = elements.sku?.value || 
+                       elements.nombre?.value || 
+                       currentMainImage || 
+                       coloresArray.length > 0 || 
+                       tallasArray.length > 0 ||
+                       galleryImages.length > 0;
+    
+    if (!tieneDatos) {
+        mostrarToast('El formulario ya está vacío', 'info');
+        return;
     }
-    if (elements.precioFinal) {
-        elements.precioFinal.textContent = `€${precioFinal.toFixed(2)}`;
+    
+    mostrarAdvertencia(
+        '¿Limpiar formulario?',
+        'Se perderán todos los datos ingresados. ¿Deseas continuar?',
+        'Sí, limpiar'
+    ).then(function(result) {
+        if (result.isConfirmed) {
+            ejecutarLimpiarFormulario();
+        }
+    });
+}
+
+function ejecutarLimpiarFormulario() {
+    // Limpiar inputs
+    if (elements.sku) elements.sku.value = '';
+    if (elements.nombre) elements.nombre.value = '';
+    if (elements.descripcion) elements.descripcion.value = '';
+    if (elements.marca) elements.marca.value = '';
+    if (elements.genero) elements.genero.value = '';
+    
+    if (elements.precioCompra) elements.precioCompra.value = '';
+    if (elements.precioVenta) elements.precioVenta.value = '';
+    if (elements.descuento) elements.descuento.value = '0';
+    
+    if (elements.temporada) elements.temporada.value = '';
+    if (elements.tipoAjuste) elements.tipoAjuste.value = '';
+    if (elements.composicion) elements.composicion.value = '';
+    if (elements.peso) elements.peso.value = '';
+    if (elements.stock) elements.stock.value = '0';
+    if (elements.estado) elements.estado.value = 'activo';
+    if (elements.destacado) elements.destacado.checked = false;
+    
+    // Limpiar arrays y tags
+    coloresArray = [];
+    tallasArray = [];
+    materialesArray = [];
+    renderizarColores();
+    renderizarTallas();
+    renderizarMateriales();
+    
+    // Limpiar imágenes
+    ejecutarRemoveMainImage();
+    galleryImages = [];
+    renderGallery();
+    if (elements.galeriaImagenes) elements.galeriaImagenes.value = '';
+    
+    actualizarPrecioFinal();
+    
+    mostrarExito('Formulario limpiado', 'Todos los campos han sido restablecidos.');
+}
+
+// ========================================
+// FUNCIÓN ACTUALIZADA: guardarProducto CON SWEETALERT2
+// ========================================
+async function guardarProducto() {
+    // Evitar doble envío
+    if (isLoading) return;
+    
+    // ===== VALIDACIONES CON SWEETALERT =====
+    
+    // Verificar campos obligatorios del paso 1
+    if (!elements.sku?.value || !elements.nombre?.value || !elements.descripcion?.value || 
+        !elements.marca?.value || !elements.categoria?.value || !elements.genero?.value) {
+        
+        await mostrarError(
+            'Campos incompletos',
+            'Completa todos los campos del Paso 1 antes de guardar.'
+        );
+        
+        if (currentStep !== 1) {
+            // Ir al paso 1
+            while (currentStep > 1) cambiarPanel(-1);
+        }
+        return;
+    }
+    
+    // Verificar imagen principal
+    if (!currentMainImage) {
+        await mostrarError(
+            'Imagen principal requerida',
+            'Agrega una imagen principal para el producto.'
+        );
+        
+        if (currentStep !== 1) {
+            while (currentStep > 1) cambiarPanel(-1);
+        }
+        return;
+    }
+    
+    // Verificar precios
+    if (!elements.precioCompra?.value || !elements.precioVenta?.value) {
+        await mostrarError(
+            'Precios requeridos',
+            'Completa los precios del Paso 2.'
+        );
+        
+        if (currentStep !== 2) {
+            if (currentStep > 2) {
+                while (currentStep > 2) cambiarPanel(-1);
+            } else {
+                cambiarPanel(1);
+            }
+        }
+        return;
+    }
+    
+    // Verificar precio de venta > precio de compra
+    var precioCompra = parseFloat(elements.precioCompra.value) || 0;
+    var precioVenta = parseFloat(elements.precioVenta.value) || 0;
+    
+    if (precioVenta <= precioCompra) {
+        await mostrarError(
+            'Precio inválido',
+            'El precio de venta debe ser mayor que el precio de compra.'
+        );
+        if (currentStep !== 2) {
+            if (currentStep > 2) {
+                while (currentStep > 2) cambiarPanel(-1);
+            } else {
+                cambiarPanel(1);
+            }
+        }
+        return;
+    }
+    
+    // Verificar descuento
+    var descuento = parseFloat(elements.descuento?.value) || 0;
+    if (descuento > 90) {
+        await mostrarError(
+            'Descuento excesivo',
+            'El descuento no puede ser mayor al 90%.'
+        );
+        if (currentStep !== 2) {
+            if (currentStep > 2) {
+                while (currentStep > 2) cambiarPanel(-1);
+            } else {
+                cambiarPanel(1);
+            }
+        }
+        return;
+    }
+    
+    // ===== CONFIRMACIÓN ANTES DE GUARDAR =====
+    var nombreProducto = elements.nombre?.value || 'producto';
+    var skuProducto = elements.sku?.value || 'N/A';
+    
+    var confirmResult = await mostrarConfirmacion(
+        '¿Guardar producto?',
+        'Estás a punto de guardar "' + nombreProducto + '" con SKU: ' + skuProducto,
+        'Sí, guardar'
+    );
+    
+    if (!confirmResult.isConfirmed) {
+        mostrarToast('Guardado cancelado', 'info');
+        return;
+    }
+    
+    // ===== PROCESAR GUARDADO =====
+    isLoading = true;
+    var btn = elements.saveBtn;
+    var originalHTML = btn.innerHTML;
+    btn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> Guardando...';
+    btn.disabled = true;
+    
+    // Mostrar loading
+    mostrarLoading('Guardando producto...');
+    
+    try {
+        // Obtener datos del formulario
+        var productData = recolectarDatosProducto();
+        
+        // Guardar producto
+        var productoGuardado = await ProductService.create(productData);
+        
+        // Cerrar loading
+        cerrarLoading();
+        
+        // Mostrar éxito
+        await mostrarExito(
+            '¡Producto guardado!',
+            '✅ "' + productoGuardado.nombre + '" se ha guardado exitosamente.'
+        );
+        
+        // Limpiar formulario
+        ejecutarLimpiarFormulario();
+        
+        // Restaurar categorías
+        if (categoriesList.length > 0) {
+            var firstCat = categoriesList[0];
+            if (elements.categoria) {
+                elements.categoria.value = firstCat.id;
+                updateSubcategories(firstCat.id);
+            }
+        }
+        
+    } catch (error) {
+        // Cerrar loading
+        cerrarLoading();
+        
+        console.error('Error al guardar producto:', error);
+        
+        // Mostrar error detallado
+        await mostrarError(
+            'Error al guardar',
+            'No se pudo guardar el producto. ' + (error.message || 'Error desconocido.')
+        );
+        
+    } finally {
+        isLoading = false;
+        btn.innerHTML = originalHTML;
+        btn.disabled = false;
     }
 }
 
 // ========================================
-// 👈 NUEVA FUNCIÓN: CARGAR CATEGORÍAS DINÁMICAS
+// FUNCIÓN ACTUALIZADA: cargar categorías CON SWEETALERT
 // ========================================
 async function loadCategories() {
     try {
         console.log('🔄 Cargando categorías para el formulario...');
-        categoriesList = await CategoryService.getAll({}, true);
-        console.log(`✅ ${categoriesList.length} categorías cargadas`);
         
-        // Construir mapa de subcategorías por categoría
+        // Mostrar loading sutil
+        mostrarLoading('Cargando categorías...');
+        
+        categoriesList = await CategoryService.getAll({}, true);
+        console.log('✅ ' + categoriesList.length + ' categorías cargadas');
+        
+        // Cerrar loading
+        cerrarLoading();
+        
+        // Construir mapa de subcategorías
         subcategoriesMap = {};
-        categoriesList.forEach(cat => {
-            const subNames = (cat.subcategories || []).map(sub => sub.name);
+        categoriesList.forEach(function(cat) {
+            var subNames = (cat.subcategories || []).map(function(sub) { return sub.name; });
             subcategoriesMap[cat.id] = subNames;
         });
         
@@ -151,282 +477,51 @@ async function loadCategories() {
         
         // Si hay categorías, seleccionar la primera por defecto
         if (categoriesList.length > 0) {
-            const firstCat = categoriesList[0];
+            var firstCat = categoriesList[0];
             if (elements.categoria) {
                 elements.categoria.value = firstCat.id;
-                // Actualizar subcategorías para la primera categoría
                 updateSubcategories(firstCat.id);
             }
         }
         
+        // Mostrar toast de éxito
+        mostrarToast('✅ ' + categoriesList.length + ' categorías cargadas', 'success');
+        
     } catch (error) {
         console.error('Error al cargar categorías:', error);
-        mostrarToast('Error al cargar categorías: ' + error.message, 'error');
         
-        // Fallback: opciones estáticas por si falla la carga
+        // Cerrar loading
+        cerrarLoading();
+        
+        // Mostrar error con SweetAlert
+        await mostrarError(
+            'Error al cargar categorías',
+            'No se pudieron cargar las categorías. ' + (error.message || 'Error desconocido.')
+        );
+        
+        // Fallback: opciones estáticas
         populateCategorySelectFallback();
     }
 }
 
-// 👈 NUEVA FUNCIÓN: POBLAR SELECT DE CATEGORÍAS
-function populateCategorySelect() {
-    if (!elements.categoria) return;
-    
-    // Guardar el valor seleccionado actual (si existe)
-    const currentValue = elements.categoria.value;
-    
-    // Limpiar opciones existentes (excepto la primera opción vacía)
-    while (elements.categoria.options.length > 1) {
-        elements.categoria.remove(1);
-    }
-    
-    // Agregar las categorías dinámicas
-    categoriesList.forEach(cat => {
-        const option = document.createElement('option');
-        option.value = cat.id;
-        option.textContent = cat.name;
-        elements.categoria.appendChild(option);
-    });
-    
-    // Restaurar selección si era válida
-    if (currentValue && categoriesList.some(c => c.id === currentValue)) {
-        elements.categoria.value = currentValue;
-    } else if (categoriesList.length > 0) {
-        elements.categoria.value = categoriesList[0].id;
-    }
-}
-
-// 👈 NUEVA FUNCIÓN: FALLBACK ESTÁTICO
-function populateCategorySelectFallback() {
-    if (!elements.categoria) return;
-    
-    // Si ya hay opciones, no hacer nada
-    if (elements.categoria.options.length > 1) return;
-    
-    const fallbackOptions = [
-        { value: 'ropa', label: 'Ropa' },
-        { value: 'calzado', label: 'Calzado' },
-        { value: 'accesorios', label: 'Accesorios' }
-    ];
-    
-    fallbackOptions.forEach(opt => {
-        const option = document.createElement('option');
-        option.value = opt.value;
-        option.textContent = opt.label;
-        elements.categoria.appendChild(option);
-    });
-}
-
-// 👈 NUEVA FUNCIÓN: ACTUALIZAR SUBCATEGORÍAS
-function updateSubcategories(categoryId) {
-    if (!elements.subcategoria) return;
-    
-    const subNames = subcategoriesMap[categoryId] || [];
-    
-    // Limpiar opciones existentes (excepto la primera opción vacía)
-    while (elements.subcategoria.options.length > 1) {
-        elements.subcategoria.remove(1);
-    }
-    
-    // Agregar las subcategorías
-    subNames.forEach(name => {
-        const option = document.createElement('option');
-        option.value = name;
-        option.textContent = name;
-        elements.subcategoria.appendChild(option);
-    });
-    
-    // Si hay subcategorías, seleccionar la primera
-    if (subNames.length > 0) {
-        elements.subcategoria.value = subNames[0];
-    }
-}
-
-// 👈 NUEVA FUNCIÓN: MANEJAR CAMBIO DE CATEGORÍA
-function handleCategoryChange() {
-    const selectedCategory = elements.categoria?.value;
-    if (selectedCategory) {
-        updateSubcategories(selectedCategory);
-    }
-}
-
 // ========================================
-// Wizard / Carrusel
+// FUNCIÓN ACTUALIZADA: removeMainImage CON CONFIRMACIÓN
 // ========================================
-function updateWizardUI() {
-    elements.stepItems.forEach((step, idx) => {
-        if (idx + 1 === currentStep) step.classList.add('active');
-        else step.classList.remove('active');
-    });
-    if (elements.stepCurrent) elements.stepCurrent.textContent = currentStep;
-    
-    // ===== CAMBIOS AQUÍ =====
-    if (currentStep === 3) {
-        // En paso 3: ocultar botones de navegación y mostrar solo Guardar
-        if (elements.navButtons) {
-            elements.navButtons.style.display = 'none';
-        }
-        if (elements.actionButtons) {
-            elements.actionButtons.style.display = 'flex';
-        }
-    } else {
-        // En pasos 1 y 2: mostrar navegación, ocultar botón Guardar
-        if (elements.navButtons) {
-            elements.navButtons.style.display = 'flex';
-        }
-        if (elements.actionButtons) {
-            elements.actionButtons.style.display = 'none';
-        }
-    }
-    
-    if (elements.prevBtn) elements.prevBtn.disabled = currentStep === 1;
-}
-
-function cambiarPanel(direction) {
-    if (isTransitioning) return;
-    
-    const currentPanel = document.querySelector('.outlet-carousel-panel.active');
-    const currentIndex = Array.from(elements.panels).indexOf(currentPanel);
-    const newIndex = currentIndex + direction;
-    
-    if (newIndex < 0 || newIndex >= elements.panels.length) return;
-    
-    isTransitioning = true;
-    const newPanel = elements.panels[newIndex];
-    
-    currentPanel.style.animation = 'outletFadeOutDown 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards';
-    
-    setTimeout(() => {
-        currentPanel.classList.remove('active');
-        currentPanel.style.animation = '';
-        newPanel.classList.add('active');
-        newPanel.style.animation = 'outletFadeInUp 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards';
-        
-        currentStep = newIndex + 1;
-        updateWizardUI();
-        setTimeout(() => { isTransitioning = false; }, 300);
-    }, 300);
-}
-
-function nextStep() { if (currentStep < 3) {cambiarPanel(1);}}
-function prevStep() { if (currentStep > 1) cambiarPanel(-1); }
-
-// ========================================
-// Tags (Colores, Tallas, Materiales)
-// ========================================
-function renderizarColores() {
-    if (!elements.coloresList) return;
-    elements.coloresList.innerHTML = coloresArray.map((color, index) => `
-        <span class="outlet-tag">
-            ${color}
-            <span class="outlet-remove-tag" data-index="${index}" data-type="color">✕</span>
-        </span>
-    `).join('');
-    
-    document.querySelectorAll('.outlet-remove-tag[data-type="color"]').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const index = parseInt(btn.dataset.index);
-            coloresArray.splice(index, 1);
-            renderizarColores();
-            if (elements.coloresHidden) elements.coloresHidden.value = JSON.stringify(coloresArray);
-        });
-    });
-    if (elements.coloresHidden) elements.coloresHidden.value = JSON.stringify(coloresArray);
-}
-
-function addColor() {
-    const color = elements.colorInput?.value.trim();
-    if (!color) { mostrarToast('Ingrese un color', 'error'); return; }
-    if (coloresArray.includes(color)) { mostrarToast('Este color ya está agregado', 'error'); return; }
-    coloresArray.push(color);
-    renderizarColores();
-    if (elements.colorInput) elements.colorInput.value = '';
-    mostrarToast('Color agregado', 'success');
-}
-
-function renderizarTallas() {
-    if (!elements.tallasList) return;
-    elements.tallasList.innerHTML = tallasArray.map((talla, index) => `
-        <span class="outlet-tag">
-            ${talla}
-            <span class="outlet-remove-tag" data-index="${index}" data-type="talla">✕</span>
-        </span>
-    `).join('');
-    
-    document.querySelectorAll('.outlet-remove-tag[data-type="talla"]').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const index = parseInt(btn.dataset.index);
-            tallasArray.splice(index, 1);
-            renderizarTallas();
-            if (elements.tallasHidden) elements.tallasHidden.value = JSON.stringify(tallasArray);
-        });
-    });
-    if (elements.tallasHidden) elements.tallasHidden.value = JSON.stringify(tallasArray);
-}
-
-function addTalla() {
-    const talla = elements.tallaInput?.value.trim().toUpperCase();
-    if (!talla) { mostrarToast('Ingrese una talla', 'error'); return; }
-    if (tallasArray.includes(talla)) { mostrarToast('Esta talla ya está agregada', 'error'); return; }
-    tallasArray.push(talla);
-    renderizarTallas();
-    if (elements.tallaInput) elements.tallaInput.value = '';
-    mostrarToast('Talla agregada', 'success');
-}
-
-function renderizarMateriales() {
-    if (!elements.materialesList) return;
-    elements.materialesList.innerHTML = materialesArray.map((material, index) => `
-        <span class="outlet-tag">
-            ${material}
-            <span class="outlet-remove-tag" data-index="${index}" data-type="material">✕</span>
-        </span>
-    `).join('');
-    
-    document.querySelectorAll('.outlet-remove-tag[data-type="material"]').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const index = parseInt(btn.dataset.index);
-            materialesArray.splice(index, 1);
-            renderizarMateriales();
-            if (elements.materialesHidden) elements.materialesHidden.value = JSON.stringify(materialesArray);
-        });
-    });
-    if (elements.materialesHidden) elements.materialesHidden.value = JSON.stringify(materialesArray);
-}
-
-function addMaterial() {
-    const material = elements.materialInput?.value.trim();
-    if (!material) { mostrarToast('Ingrese un material', 'error'); return; }
-    if (materialesArray.includes(material)) { mostrarToast('Este material ya está agregado', 'error'); return; }
-    materialesArray.push(material);
-    renderizarMateriales();
-    if (elements.materialInput) elements.materialInput.value = '';
-    mostrarToast('Material agregado', 'success');
-}
-
-// ========================================
-// Imágenes
-// ========================================
-function handleMainImageUpload(file) {
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { mostrarToast('La imagen no puede superar los 5MB', 'error'); return; }
-    
-    const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
-    if (!validTypes.includes(file.type)) { mostrarToast('Formato no soportado. Use JPG, PNG o WEBP', 'error'); return; }
-    
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        if (elements.mainPreviewImg) elements.mainPreviewImg.src = e.target.result;
-        if (elements.mainImagePlaceholder) elements.mainImagePlaceholder.style.display = 'none';
-        if (elements.mainImagePreview) elements.mainImagePreview.style.display = 'flex';
-        currentMainImage = e.target.result;
-        if (elements.imagenPrincipal) elements.imagenPrincipal.value = currentMainImage;
-        mostrarToast('Imagen principal cargada', 'success');
-    };
-    reader.readAsDataURL(file);
-}
-
 function removeMainImage() {
+    if (!currentMainImage) return;
+    
+    mostrarConfirmacion(
+        '¿Eliminar imagen principal?',
+        'Esta acción eliminará la imagen principal del producto.',
+        'Sí, eliminar'
+    ).then(function(result) {
+        if (result.isConfirmed) {
+            ejecutarRemoveMainImage();
+        }
+    });
+}
+
+function ejecutarRemoveMainImage() {
     if (elements.mainImagePlaceholder) elements.mainImagePlaceholder.style.display = 'flex';
     if (elements.mainImagePreview) elements.mainImagePreview.style.display = 'none';
     if (elements.mainPreviewImg) elements.mainPreviewImg.src = '';
@@ -436,49 +531,387 @@ function removeMainImage() {
     mostrarToast('Imagen principal eliminada', 'info');
 }
 
-function addGalleryImage(file) {
-    if (galleryImages.length >= 8) { mostrarToast('Máximo 8 imágenes en la galería', 'error'); return; }
-    if (file.size > 5 * 1024 * 1024) { mostrarToast('La imagen no puede superar los 5MB', 'error'); return; }
+// ========================================
+// FUNCIÓN ACTUALIZADA: handleMainImageUpload CON VALIDACIÓN
+// ========================================
+function handleMainImageUpload(file) {
+    if (!file) return;
     
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        galleryImages.push(e.target.result);
-        renderGallery();
-        if (elements.galeriaImagenes) elements.galeriaImagenes.value = JSON.stringify(galleryImages);
-        mostrarToast('Imagen agregada a la galería', 'success');
+    // Validar tamaño
+    if (file.size > 5 * 1024 * 1024) {
+        mostrarError(
+            'Imagen demasiado grande',
+            'La imagen no puede superar los 5MB. Tamaño actual: ' + (file.size / 1024 / 1024).toFixed(2) + 'MB'
+        );
+        return;
+    }
+    
+    // Validar tipo
+    var validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+        mostrarError(
+            'Formato no soportado',
+            'Usa uno de estos formatos: JPG, PNG o WEBP.'
+        );
+        return;
+    }
+    
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        if (elements.mainPreviewImg) elements.mainPreviewImg.src = e.target.result;
+        if (elements.mainImagePlaceholder) elements.mainImagePlaceholder.style.display = 'none';
+        if (elements.mainImagePreview) elements.mainImagePreview.style.display = 'flex';
+        currentMainImage = e.target.result;
+        if (elements.imagenPrincipal) elements.imagenPrincipal.value = currentMainImage;
+        mostrarExito('Imagen cargada', 'La imagen principal se ha cargado correctamente.');
+    };
+    reader.onerror = function() {
+        mostrarError('Error al leer la imagen', 'No se pudo procesar la imagen. Intenta de nuevo.');
     };
     reader.readAsDataURL(file);
 }
 
-function renderGallery() {
-    if (!elements.galleryGrid) return;
-    
-    if (galleryImages.length === 0) {
-        elements.galleryGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 20px; color: var(--outlet-text-variant);">No hay imágenes en la galería</div>';
+// ========================================
+// FUNCIÓN ACTUALIZADA: addGalleryImage CON VALIDACIÓN
+// ========================================
+function addGalleryImage(file) {
+    if (galleryImages.length >= 8) {
+        mostrarError(
+            'Límite alcanzado',
+            'Máximo 8 imágenes en la galería.'
+        );
         return;
     }
     
-    elements.galleryGrid.innerHTML = galleryImages.map((img, index) => `
-        <div class="outlet-gallery-item">
-            <img src="${img}" alt="Gallery ${index + 1}">
-            <button type="button" class="outlet-remove-gallery-img" data-index="${index}">✕</button>
-        </div>
-    `).join('');
+    if (file.size > 5 * 1024 * 1024) {
+        mostrarError(
+            'Imagen demasiado grande',
+            'La imagen no puede superar los 5MB.'
+        );
+        return;
+    }
     
-    document.querySelectorAll('.outlet-remove-gallery-img').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const index = parseInt(btn.dataset.index);
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        galleryImages.push(e.target.result);
+        renderGallery();
+        if (elements.galeriaImagenes) elements.galeriaImagenes.value = JSON.stringify(galleryImages);
+        mostrarToast('🖼️ Imagen agregada a la galería', 'success');
+    };
+    reader.onerror = function() {
+        mostrarError('Error al leer la imagen', 'No se pudo procesar la imagen.');
+    };
+    reader.readAsDataURL(file);
+}
+
+// ========================================
+// FUNCIÓN ACTUALIZADA: removeGalleryImage CON CONFIRMACIÓN
+// ========================================
+function removeGalleryImage(index) {
+    mostrarConfirmacion(
+        '¿Eliminar imagen de galería?',
+        'Esta acción eliminará esta imagen de la galería.',
+        'Sí, eliminar'
+    ).then(function(result) {
+        if (result.isConfirmed) {
             galleryImages.splice(index, 1);
             renderGallery();
             if (elements.galeriaImagenes) elements.galeriaImagenes.value = JSON.stringify(galleryImages);
             mostrarToast('Imagen eliminada de la galería', 'info');
+        }
+    });
+}
+
+// ========================================
+// FUNCIÓN ACTUALIZADA: renderGallery CON BOTÓN DE ELIMINAR MEJORADO
+// ========================================
+function renderGallery() {
+    if (!elements.galleryGrid) return;
+    
+    if (galleryImages.length === 0) {
+        elements.galleryGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 30px 20px; color: var(--outlet-text-variant);"><span class="material-symbols-outlined" style="font-size: 40px; display: block; margin-bottom: 8px; opacity: 0.3;">image</span>No hay imágenes en la galería</div>';
+        return;
+    }
+    
+    var html = '';
+    galleryImages.forEach(function(img, index) {
+        html += '<div class="outlet-gallery-item">';
+        html += '<img src="' + img + '" alt="Gallery ' + (index + 1) + '">';
+        html += '<button type="button" class="outlet-remove-gallery-img" data-index="' + index + '" title="Eliminar imagen">';
+        html += '<span class="material-symbols-outlined" style="font-size: 14px;">close</span>';
+        html += '</button>';
+        html += '</div>';
+    });
+    elements.galleryGrid.innerHTML = html;
+    
+    document.querySelectorAll('.outlet-remove-gallery-img').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var index = parseInt(this.dataset.index);
+            removeGalleryImage(index);
         });
     });
 }
 
 // ========================================
-// Formulario - SOLO RECOLECTA DATOS, NO VALIDA
+// FUNCIÓN ACTUALIZADA: addColor, addTalla, addMaterial CON MEJORES MENSAJES
+// ========================================
+function addColor() {
+    var color = elements.colorInput?.value.trim();
+    if (!color) {
+        mostrarError('Campo vacío', 'Ingresa un color para agregarlo.');
+        return;
+    }
+    if (coloresArray.includes(color)) {
+        mostrarError('Color duplicado', 'El color "' + color + '" ya está agregado.');
+        return;
+    }
+    coloresArray.push(color);
+    renderizarColores();
+    if (elements.colorInput) elements.colorInput.value = '';
+    mostrarToast('🎨 ' + color + ' agregado', 'success');
+}
+
+function addTalla() {
+    var talla = elements.tallaInput?.value.trim().toUpperCase();
+    if (!talla) {
+        mostrarError('Campo vacío', 'Ingresa una talla para agregarla.');
+        return;
+    }
+    if (tallasArray.includes(talla)) {
+        mostrarError('Talla duplicada', 'La talla "' + talla + '" ya está agregada.');
+        return;
+    }
+    tallasArray.push(talla);
+    renderizarTallas();
+    if (elements.tallaInput) elements.tallaInput.value = '';
+    mostrarToast('📏 ' + talla + ' agregada', 'success');
+}
+
+function addMaterial() {
+    var material = elements.materialInput?.value.trim();
+    if (!material) {
+        mostrarError('Campo vacío', 'Ingresa un material para agregarlo.');
+        return;
+    }
+    if (materialesArray.includes(material)) {
+        mostrarError('Material duplicado', 'El material "' + material + '" ya está agregado.');
+        return;
+    }
+    materialesArray.push(material);
+    renderizarMateriales();
+    if (elements.materialInput) elements.materialInput.value = '';
+    mostrarToast('🧵 ' + material + ' agregado', 'success');
+}
+
+// ========================================
+// FUNCIÓN actualizarPrecioFinal
+// ========================================
+function actualizarPrecioFinal() {
+    var precioVenta = parseFloat(elements.precioVenta?.value) || 0;
+    var descuento = parseFloat(elements.descuento?.value) || 0;
+    var precioFinal = precioVenta;
+    if (descuento > 0 && descuento <= 90) {
+        precioFinal = precioVenta * (1 - descuento / 100);
+    }
+    if (elements.precioFinal) {
+        elements.precioFinal.textContent = '€' + precioFinal.toFixed(2);
+    }
+}
+
+// ========================================
+// FUNCIONES DE RENDERIZADO
+// ========================================
+function renderizarColores() {
+    if (!elements.coloresList) return;
+    var html = '';
+    coloresArray.forEach(function(color, index) {
+        html += '<span class="outlet-tag">';
+        html += color;
+        html += '<span class="outlet-remove-tag" data-index="' + index + '" data-type="color">✕</span>';
+        html += '</span>';
+    });
+    elements.coloresList.innerHTML = html;
+    
+    document.querySelectorAll('.outlet-remove-tag[data-type="color"]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var index = parseInt(this.dataset.index);
+            coloresArray.splice(index, 1);
+            renderizarColores();
+            if (elements.coloresHidden) elements.coloresHidden.value = JSON.stringify(coloresArray);
+        });
+    });
+    if (elements.coloresHidden) elements.coloresHidden.value = JSON.stringify(coloresArray);
+}
+
+function renderizarTallas() {
+    if (!elements.tallasList) return;
+    var html = '';
+    tallasArray.forEach(function(talla, index) {
+        html += '<span class="outlet-tag">';
+        html += talla;
+        html += '<span class="outlet-remove-tag" data-index="' + index + '" data-type="talla">✕</span>';
+        html += '</span>';
+    });
+    elements.tallasList.innerHTML = html;
+    
+    document.querySelectorAll('.outlet-remove-tag[data-type="talla"]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var index = parseInt(this.dataset.index);
+            tallasArray.splice(index, 1);
+            renderizarTallas();
+            if (elements.tallasHidden) elements.tallasHidden.value = JSON.stringify(tallasArray);
+        });
+    });
+    if (elements.tallasHidden) elements.tallasHidden.value = JSON.stringify(tallasArray);
+}
+
+function renderizarMateriales() {
+    if (!elements.materialesList) return;
+    var html = '';
+    materialesArray.forEach(function(material, index) {
+        html += '<span class="outlet-tag">';
+        html += material;
+        html += '<span class="outlet-remove-tag" data-index="' + index + '" data-type="material">✕</span>';
+        html += '</span>';
+    });
+    elements.materialesList.innerHTML = html;
+    
+    document.querySelectorAll('.outlet-remove-tag[data-type="material"]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var index = parseInt(this.dataset.index);
+            materialesArray.splice(index, 1);
+            renderizarMateriales();
+            if (elements.materialesHidden) elements.materialesHidden.value = JSON.stringify(materialesArray);
+        });
+    });
+    if (elements.materialesHidden) elements.materialesHidden.value = JSON.stringify(materialesArray);
+}
+
+// ========================================
+// WIZARD / CARRUSEL
+// ========================================
+function updateWizardUI() {
+    elements.stepItems.forEach(function(step, idx) {
+        if (idx + 1 === currentStep) step.classList.add('active');
+        else step.classList.remove('active');
+    });
+    if (elements.stepCurrent) elements.stepCurrent.textContent = currentStep;
+    
+    if (currentStep === 3) {
+        if (elements.navButtons) elements.navButtons.style.display = 'none';
+        if (elements.actionButtons) elements.actionButtons.style.display = 'flex';
+    } else {
+        if (elements.navButtons) elements.navButtons.style.display = 'flex';
+        if (elements.actionButtons) elements.actionButtons.style.display = 'none';
+    }
+    
+    if (elements.prevBtn) elements.prevBtn.disabled = currentStep === 1;
+}
+
+function cambiarPanel(direction) {
+    if (isTransitioning) return;
+    
+    var currentPanel = document.querySelector('.outlet-carousel-panel.active');
+    var currentIndex = Array.from(elements.panels).indexOf(currentPanel);
+    var newIndex = currentIndex + direction;
+    
+    if (newIndex < 0 || newIndex >= elements.panels.length) return;
+    
+    isTransitioning = true;
+    var newPanel = elements.panels[newIndex];
+    
+    currentPanel.style.animation = 'outletFadeOutDown 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards';
+    
+    setTimeout(function() {
+        currentPanel.classList.remove('active');
+        currentPanel.style.animation = '';
+        newPanel.classList.add('active');
+        newPanel.style.animation = 'outletFadeInUp 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards';
+        
+        currentStep = newIndex + 1;
+        updateWizardUI();
+        setTimeout(function() { isTransitioning = false; }, 300);
+    }, 300);
+}
+
+function nextStep() { if (currentStep < 3) cambiarPanel(1); }
+function prevStep() { if (currentStep > 1) cambiarPanel(-1); }
+
+// ========================================
+// FUNCIONES DE CATEGORÍAS
+// ========================================
+function populateCategorySelect() {
+    if (!elements.categoria) return;
+    
+    var currentValue = elements.categoria.value;
+    
+    while (elements.categoria.options.length > 1) {
+        elements.categoria.remove(1);
+    }
+    
+    categoriesList.forEach(function(cat) {
+        var option = document.createElement('option');
+        option.value = cat.id;
+        option.textContent = cat.name;
+        elements.categoria.appendChild(option);
+    });
+    
+    if (currentValue && categoriesList.some(function(c) { return c.id === currentValue; })) {
+        elements.categoria.value = currentValue;
+    } else if (categoriesList.length > 0) {
+        elements.categoria.value = categoriesList[0].id;
+    }
+}
+
+function populateCategorySelectFallback() {
+    if (!elements.categoria) return;
+    if (elements.categoria.options.length > 1) return;
+    
+    var fallbackOptions = [
+        { value: 'ropa', label: 'Ropa' },
+        { value: 'calzado', label: 'Calzado' },
+        { value: 'accesorios', label: 'Accesorios' }
+    ];
+    
+    fallbackOptions.forEach(function(opt) {
+        var option = document.createElement('option');
+        option.value = opt.value;
+        option.textContent = opt.label;
+        elements.categoria.appendChild(option);
+    });
+}
+
+function updateSubcategories(categoryId) {
+    if (!elements.subcategoria) return;
+    
+    var subNames = subcategoriesMap[categoryId] || [];
+    
+    while (elements.subcategoria.options.length > 1) {
+        elements.subcategoria.remove(1);
+    }
+    
+    subNames.forEach(function(name) {
+        var option = document.createElement('option');
+        option.value = name;
+        option.textContent = name;
+        elements.subcategoria.appendChild(option);
+    });
+    
+    if (subNames.length > 0) {
+        elements.subcategoria.value = subNames[0];
+    }
+}
+
+function handleCategoryChange() {
+    var selectedCategory = elements.categoria?.value;
+    if (selectedCategory) {
+        updateSubcategories(selectedCategory);
+    }
+}
+
+// ========================================
+// FUNCIÓN recolectarDatosProducto
 // ========================================
 function recolectarDatosProducto() {
     return {
@@ -507,123 +940,16 @@ function recolectarDatosProducto() {
     };
 }
 
-function limpiarFormulario() {
-    // Limpiar inputs
-    if (elements.sku) elements.sku.value = '';
-    if (elements.nombre) elements.nombre.value = '';
-    if (elements.descripcion) elements.descripcion.value = '';
-    if (elements.marca) elements.marca.value = '';
-    // 👈 NO LIMPIAMOS categoría y subcategoría para mantenerlas
-    if (elements.genero) elements.genero.value = '';
-    
-    if (elements.precioCompra) elements.precioCompra.value = '';
-    if (elements.precioVenta) elements.precioVenta.value = '';
-    if (elements.descuento) elements.descuento.value = '0';
-    
-    if (elements.temporada) elements.temporada.value = '';
-    if (elements.tipoAjuste) elements.tipoAjuste.value = '';
-    if (elements.composicion) elements.composicion.value = '';
-    if (elements.peso) elements.peso.value = '';
-    if (elements.stock) elements.stock.value = '0';
-    if (elements.estado) elements.estado.value = 'activo';
-    if (elements.destacado) elements.destacado.checked = false;
-    
-    // Limpiar arrays y tags
-    coloresArray = [];
-    tallasArray = [];
-    materialesArray = [];
-    renderizarColores();
-    renderizarTallas();
-    renderizarMateriales();
-    
-    // Limpiar imágenes
-    removeMainImage();
-    galleryImages = [];
-    renderGallery();
-    if (elements.galeriaImagenes) elements.galeriaImagenes.value = '';
-    
-    actualizarPrecioFinal();
-    mostrarToast('Formulario limpiado', 'success');
-}
-
 // ========================================
-// Guardar producto usando ProductService
-// ========================================
-async function guardarProducto() {
-    // Evitar doble envío
-    if (isLoading) return;
-    
-    // Verificar campos obligatorios SOLO a nivel de UI (para saber en qué paso está el usuario)
-    // NOTA: La validación REAL la hará el service
-    if (!elements.sku?.value || !elements.nombre?.value || !elements.descripcion?.value || 
-        !elements.marca?.value || !elements.categoria?.value || !elements.genero?.value) {
-        mostrarToast('Complete los campos del paso 1 antes de guardar', 'error');
-        if (currentStep !== 1) cambiarPanel(-(currentStep - 1));
-        return;
-    }
-    
-    if (!currentMainImage) {
-        mostrarToast('Agregue una imagen principal', 'error');
-        if (currentStep !== 1) cambiarPanel(-(currentStep - 1));
-        return;
-    }
-    
-    if (!elements.precioCompra?.value || !elements.precioVenta?.value) {
-        mostrarToast('Complete los precios del paso 2', 'error');
-        if (currentStep !== 2) {
-            if (currentStep > 2) cambiarPanel(-(currentStep - 2));
-            else cambiarPanel(1);
-        }
-        return;
-    }
-    
-    isLoading = true;
-    const btn = elements.saveBtn;
-    const originalHTML = btn.innerHTML;
-    btn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> Guardando...';
-    btn.disabled = true;
-    
-    try {
-        // Obtener datos del formulario
-        const productData = recolectarDatosProducto();
-        
-        // 👇 EL SERVICE VALIDA Y EL REPOSITORY GUARDA
-        const productoGuardado = await ProductService.create(productData);
-        
-        mostrarToast(`✅ Producto "${productoGuardado.nombre}" guardado exitosamente`, 'success');
-        
-        // Limpiar formulario para siguiente producto
-        limpiarFormulario();
-        
-        // Restaurar categorías después de limpiar
-        if (categoriesList.length > 0) {
-            const firstCat = categoriesList[0];
-            if (elements.categoria) {
-                elements.categoria.value = firstCat.id;
-                updateSubcategories(firstCat.id);
-            }
-        }
-        
-    } catch (error) {
-        console.error('Error al guardar producto:', error);
-        mostrarToast(`❌ ${error.message}`, 'error');
-    } finally {
-        isLoading = false;
-        btn.innerHTML = originalHTML;
-        btn.disabled = false;
-    }
-}
-
-// ========================================
-// Event Listeners
+// EVENT LISTENERS
 // ========================================
 function initEventListeners() {
     // Navegación
     elements.prevBtn?.addEventListener('click', prevStep);
     elements.nextBtn?.addEventListener('click', nextStep);
-    elements.stepItems?.forEach((step, idx) => {
-        step.addEventListener('click', () => {
-            const stepNum = parseInt(step.dataset.step);
+    elements.stepItems?.forEach(function(step, idx) {
+        step.addEventListener('click', function() {
+            var stepNum = parseInt(this.dataset.step);
             if (stepNum > currentStep) {
                 while (currentStep < stepNum) cambiarPanel(1);
             } else if (stepNum < currentStep) {
@@ -635,7 +961,7 @@ function initEventListeners() {
     // Botones de acción
     elements.clearBtn?.addEventListener('click', limpiarFormulario);
     elements.saveBtn?.addEventListener('click', guardarProducto);
-    elements.backBtn?.addEventListener('click', () => {
+    elements.backBtn?.addEventListener('click', function() {
         if (typeof window.navigateTo === 'function') {
             window.navigateTo('/admin/productos');
         } else {
@@ -643,38 +969,41 @@ function initEventListeners() {
         }
     });
     
-    // 👈 NUEVO: Event listener para cambio de categoría
+    // Event listener para cambio de categoría
     elements.categoria?.addEventListener('change', handleCategoryChange);
     
     // Imagen principal
-    elements.mainImageArea?.addEventListener('click', () => elements.mainImageInput?.click());
-    elements.mainImageInput?.addEventListener('change', (e) => {
+    elements.mainImageArea?.addEventListener('click', function() { elements.mainImageInput?.click(); });
+    elements.mainImageInput?.addEventListener('change', function(e) {
         if (e.target.files && e.target.files[0]) handleMainImageUpload(e.target.files[0]);
     });
     elements.removeMainImageBtn?.addEventListener('click', removeMainImage);
     
-    // Drag & drop para imagen principal
-    elements.mainImageArea?.addEventListener('dragover', (e) => {
+    // Drag & drop
+    elements.mainImageArea?.addEventListener('dragover', function(e) {
         e.preventDefault();
         if (elements.mainImageArea) elements.mainImageArea.style.borderColor = 'var(--outlet-gold)';
     });
-    elements.mainImageArea?.addEventListener('dragleave', (e) => {
+    elements.mainImageArea?.addEventListener('dragleave', function(e) {
         e.preventDefault();
         if (elements.mainImageArea) elements.mainImageArea.style.borderColor = '';
     });
-    elements.mainImageArea?.addEventListener('drop', (e) => {
+    elements.mainImageArea?.addEventListener('drop', function(e) {
         e.preventDefault();
         if (elements.mainImageArea) elements.mainImageArea.style.borderColor = '';
         if (e.dataTransfer.files && e.dataTransfer.files[0]) handleMainImageUpload(e.dataTransfer.files[0]);
     });
     
     // Galería
-    elements.addGalleryBtn?.addEventListener('click', () => {
-        const input = document.createElement('input');
+    elements.addGalleryBtn?.addEventListener('click', function() {
+        var input = document.createElement('input');
         input.type = 'file';
         input.accept = 'image/*';
-        input.onchange = (e) => {
-            if (e.target.files && e.target.files[0]) addGalleryImage(e.target.files[0]);
+        input.multiple = true;
+        input.onchange = function(e) {
+            if (e.target.files) {
+                Array.from(e.target.files).forEach(function(file) { addGalleryImage(file); });
+            }
         };
         input.click();
     });
@@ -684,9 +1013,9 @@ function initEventListeners() {
     elements.addTallaBtn?.addEventListener('click', addTalla);
     elements.addMaterialBtn?.addEventListener('click', addMaterial);
     
-    elements.colorInput?.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); addColor(); } });
-    elements.tallaInput?.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); addTalla(); } });
-    elements.materialInput?.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); addMaterial(); } });
+    elements.colorInput?.addEventListener('keypress', function(e) { if (e.key === 'Enter') { e.preventDefault(); addColor(); } });
+    elements.tallaInput?.addEventListener('keypress', function(e) { if (e.key === 'Enter') { e.preventDefault(); addTalla(); } });
+    elements.materialInput?.addEventListener('keypress', function(e) { if (e.key === 'Enter') { e.preventDefault(); addMaterial(); } });
     
     // Precios
     elements.precioVenta?.addEventListener('input', actualizarPrecioFinal);
@@ -694,11 +1023,11 @@ function initEventListeners() {
 }
 
 // ========================================
-// Dark mode sync
+// DARK MODE SYNC
 // ========================================
 function syncDarkMode() {
     if (window.OUTLETNav && typeof window.OUTLETNav.getTheme === 'function') {
-        const navDark = window.OUTLETNav.getTheme();
+        var navDark = window.OUTLETNav.getTheme();
         if (navDark && !document.body.classList.contains('dark-mode')) {
             document.body.classList.add('dark-mode');
         } else if (!navDark && document.body.classList.contains('dark-mode')) {
@@ -707,13 +1036,13 @@ function syncDarkMode() {
     }
 }
 
-document.addEventListener('themeChanged', (e) => {
+document.addEventListener('themeChanged', function(e) {
     if (e.detail.isDarkMode) document.body.classList.add('dark-mode');
     else document.body.classList.remove('dark-mode');
 });
 
 // ========================================
-// Inicialización
+// INICIALIZACIÓN
 // ========================================
 export async function productCreateController() {
     console.log('📝 Product Create Controller - Alta de prendas');
@@ -727,7 +1056,6 @@ export async function productCreateController() {
     syncDarkMode();
     updateWizardUI();
     
-    // 👈 CARGAR CATEGORÍAS DINÁMICAS ANTES DE LOS EVENT LISTENERS
     await loadCategories();
     
     initEventListeners();

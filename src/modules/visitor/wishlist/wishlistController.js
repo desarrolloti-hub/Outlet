@@ -1,10 +1,11 @@
 /* ========================================
    WISHLIST CONTROLLER - OUTLET
    Controlador para página de productos favoritos
+   CON SWEETALERT2 INTEGRADO
    ======================================== */
 
 // Sample product data
-const sampleProducts = [
+var sampleProducts = [
     {
         id: 1,
         brand: "VALENTINO",
@@ -62,27 +63,124 @@ const sampleProducts = [
 ];
 
 // Storage key
-const STORAGE_KEY = 'outlet_wishlist';
+var STORAGE_KEY = 'outlet_wishlist';
 
 // State
-let wishlistItems = [];
-let currentSort = 'newest';
+var wishlistItems = [];
+var currentSort = 'newest';
+
+// ========================================
+// UI Helpers - CON SWEETALERT2
+// ========================================
 
 /**
- * Load styles for wishlist page
+ * Muestra un toast personalizado (estilo OUTLET)
  */
+function mostrarToast(mensaje, tipo) {
+    tipo = tipo || 'info';
+    var toastExistente = document.querySelector('.outlet-toast');
+    if (toastExistente) toastExistente.remove();
+    
+    var toast = document.createElement('div');
+    toast.className = 'outlet-toast ' + tipo;
+    toast.textContent = mensaje;
+    document.body.appendChild(toast);
+    
+    requestAnimationFrame(function() {
+        toast.classList.add('show');
+    });
+    
+    setTimeout(function() {
+        toast.classList.remove('show');
+        setTimeout(function() { toast.remove(); }, 300);
+    }, 3200);
+}
+
+/**
+ * Muestra una SweetAlert2 personalizada
+ */
+function mostrarSweetAlert(options) {
+    var defaultOptions = {
+        buttonsStyling: false,
+        customClass: {
+            confirmButton: 'swal2-confirm',
+            cancelButton: 'swal2-cancel',
+            popup: 'swal2-popup'
+        }
+    };
+    
+    return Swal.fire(Object.assign({}, defaultOptions, options));
+}
+
+/**
+ * Muestra alerta de éxito
+ */
+function mostrarExito(titulo, mensaje) {
+    return mostrarSweetAlert({
+        icon: 'success',
+        title: titulo || '¡Perfecto!',
+        text: mensaje || 'La acción se completó con éxito.',
+        confirmButtonText: 'Aceptar'
+    });
+}
+
+/**
+ * Muestra alerta de error
+ */
+function mostrarError(titulo, mensaje) {
+    return mostrarSweetAlert({
+        icon: 'error',
+        title: titulo || '¡Oops!',
+        text: mensaje || 'Ocurrió un error inesperado.',
+        confirmButtonText: 'Entendido'
+    });
+}
+
+/**
+ * Muestra alerta de advertencia
+ */
+function mostrarAdvertencia(titulo, mensaje, confirmText) {
+    confirmText = confirmText || 'Continuar';
+    return mostrarSweetAlert({
+        icon: 'warning',
+        title: titulo || '¡Cuidado!',
+        text: mensaje || 'Estás a punto de realizar una acción importante.',
+        confirmButtonText: confirmText,
+        showCancelButton: true,
+        cancelButtonText: 'Cancelar'
+    });
+}
+
+/**
+ * Muestra alerta de confirmación
+ */
+function mostrarConfirmacion(titulo, mensaje, confirmText) {
+    confirmText = confirmText || 'Sí, confirmar';
+    return mostrarSweetAlert({
+        title: titulo || '¿Estás seguro?',
+        text: mensaje || 'Esta acción requiere tu confirmación.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: confirmText,
+        cancelButtonText: 'Cancelar'
+    });
+}
+
+// ========================================
+// Carga de estilos CSS
+// ========================================
 function loadStyles() {
     if (document.querySelector('link[href*="wishlist.css"]')) return;
     
-    const link = document.createElement('link');
+    var link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = '/src/css/pages/wishlist.css';
     document.head.appendChild(link);
 }
 
-/**
- * Format currency
- */
+// ========================================
+// Formateo de moneda
+// ========================================
 function formatMoney(amount) {
     return new Intl.NumberFormat('en-US', { 
         style: 'currency', 
@@ -91,151 +189,161 @@ function formatMoney(amount) {
     }).format(amount);
 }
 
-/**
- * Load wishlist from localStorage
- */
+// ========================================
+// Carga wishlist desde localStorage
+// ========================================
 function loadWishlist() {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    var saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
         wishlistItems = JSON.parse(saved);
     } else {
-        // Default sample products
-        wishlistItems = [...sampleProducts];
+        wishlistItems = sampleProducts.slice(0);
         saveWishlist();
     }
 }
 
-/**
- * Save wishlist to localStorage
- */
+// ========================================
+// Guarda wishlist en localStorage
+// ========================================
 function saveWishlist() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(wishlistItems));
 }
 
-/**
- * Render wishlist grid
- */
+// ========================================
+// Renderiza el grid de wishlist
+// ========================================
 function renderWishlist() {
-    const grid = document.getElementById('wishlistGrid');
-    const emptyState = document.getElementById('wishlistEmptyState');
-    const footer = document.getElementById('wishlistFooter');
-    const itemsCountSpan = document.getElementById('wishlistItemsCount');
+    var grid = document.getElementById('wishlistGrid');
+    var emptyState = document.getElementById('wishlistEmptyState');
+    var footer = document.getElementById('wishlistFooter');
+    var itemsCountSpan = document.getElementById('wishlistItemsCount');
     
     if (!grid) return;
     
-    const hasItems = wishlistItems.length > 0;
+    var hasItems = wishlistItems.length > 0;
     
-    // Show/hide elements
     grid.style.display = hasItems ? 'grid' : 'none';
     if (emptyState) emptyState.style.display = hasItems ? 'none' : 'block';
     if (footer) footer.style.display = hasItems ? 'block' : 'none';
-    if (itemsCountSpan) itemsCountSpan.textContent = `${wishlistItems.length} Item${wishlistItems.length !== 1 ? 's' : ''} Saved`;
+    if (itemsCountSpan) itemsCountSpan.textContent = wishlistItems.length + ' Item' + (wishlistItems.length !== 1 ? 's' : '') + ' Saved';
     
     if (!hasItems) return;
     
-    // Apply sorting
-    let sortedItems = [...wishlistItems];
+    var sortedItems = wishlistItems.slice(0);
     if (currentSort === 'price-asc') {
-        sortedItems.sort((a, b) => a.price - b.price);
+        sortedItems.sort(function(a, b) { return a.price - b.price; });
     } else if (currentSort === 'price-desc') {
-        sortedItems.sort((a, b) => b.price - a.price);
+        sortedItems.sort(function(a, b) { return b.price - a.price; });
     } else {
-        // newest (keep original order with newest first - by id descending)
-        sortedItems.sort((a, b) => b.id - a.id);
+        sortedItems.sort(function(a, b) { return b.id - a.id; });
     }
     
-    // Render grid
-    grid.innerHTML = sortedItems.map(product => `
-        <div class="wishlist-product-card" data-id="${product.id}">
-            <div class="wishlist-card-image">
-                <img src="${product.image}" alt="${product.name}" loading="lazy">
-                ${product.badge ? `
-                    <div class="wishlist-card-badge">
-                        <span class="wishlist-badge-${product.badgeType === 'danger' ? 'danger' : 'primary'}">${product.badge}</span>
-                    </div>
-                ` : ''}
-                <div class="wishlist-card-actions">
-                    <button class="wishlist-heart-btn active" data-id="${product.id}">
-                        <i class="fa-solid fa-heart"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="wishlist-card-content">
-                <p class="wishlist-card-brand">${product.brand}</p>
-                <h3 class="wishlist-card-title">${product.name}</h3>
-                <div class="wishlist-card-footer">
-                    <p class="wishlist-card-price">${formatMoney(product.price)}</p>
-                    <button class="wishlist-add-cart-btn" data-id="${product.id}">
-                        <i class="fa-solid fa-shopping-cart"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-    `).join('');
+    var html = '';
+    sortedItems.forEach(function(product) {
+        var badgeHtml = '';
+        if (product.badge) {
+            badgeHtml = '<div class="wishlist-card-badge"><span class="wishlist-badge-' + (product.badgeType === 'danger' ? 'danger' : 'primary') + '">' + product.badge + '</span></div>';
+        }
+        
+        html += 
+            '<div class="wishlist-product-card" data-id="' + product.id + '">' +
+                '<div class="wishlist-card-image">' +
+                    '<img src="' + product.image + '" alt="' + product.name + '" loading="lazy">' +
+                    badgeHtml +
+                    '<div class="wishlist-card-actions">' +
+                        '<button class="wishlist-heart-btn active" data-id="' + product.id + '">' +
+                            '<i class="fa-solid fa-heart"></i>' +
+                        '</button>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="wishlist-card-content">' +
+                    '<p class="wishlist-card-brand">' + product.brand + '</p>' +
+                    '<h3 class="wishlist-card-title">' + product.name + '</h3>' +
+                    '<div class="wishlist-card-footer">' +
+                        '<p class="wishlist-card-price">' + formatMoney(product.price) + '</p>' +
+                        '<button class="wishlist-add-cart-btn" data-id="' + product.id + '">' +
+                            '<i class="fa-solid fa-shopping-cart"></i>' +
+                        '</button>' +
+                    '</div>' +
+                '</div>' +
+            '</div>';
+    });
     
-    // Reattach events
+    grid.innerHTML = html;
     attachCardEvents();
 }
 
-/**
- * Attach events to dynamic elements
- */
+// ========================================
+// Adjunta eventos a elementos dinámicos
+// ========================================
 function attachCardEvents() {
-    // Remove from wishlist (heart button)
-    const heartBtns = document.querySelectorAll('.wishlist-heart-btn');
-    heartBtns.forEach(btn => {
-        btn.addEventListener('click', (e) => {
+    var heartBtns = document.querySelectorAll('.wishlist-heart-btn');
+    heartBtns.forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            const productId = parseInt(btn.getAttribute('data-id'));
+            var productId = parseInt(this.getAttribute('data-id'));
             removeFromWishlist(productId);
         });
     });
     
-    // Add to cart
-    const cartBtns = document.querySelectorAll('.wishlist-add-cart-btn');
-    cartBtns.forEach(btn => {
-        btn.addEventListener('click', (e) => {
+    var cartBtns = document.querySelectorAll('.wishlist-add-cart-btn');
+    cartBtns.forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            const productId = parseInt(btn.getAttribute('data-id'));
-            const product = wishlistItems.find(p => p.id === productId);
+            var productId = parseInt(this.getAttribute('data-id'));
+            var product = wishlistItems.find(function(p) { return p.id === productId; });
             if (product) {
                 addToCart(product);
             }
         });
     });
     
-    // Product card click (navigate to product detail)
-    const cards = document.querySelectorAll('.wishlist-product-card');
-    cards.forEach(card => {
-        card.addEventListener('click', (e) => {
+    var cards = document.querySelectorAll('.wishlist-product-card');
+    cards.forEach(function(card) {
+        card.addEventListener('click', function(e) {
             if (e.target.closest('.wishlist-heart-btn') || e.target.closest('.wishlist-add-cart-btn')) return;
-            const productId = card.getAttribute('data-id');
+            var productId = this.getAttribute('data-id');
             if (productId) {
-                window.navigateTo(`/product/${productId}`);
+                if (typeof window.navigateTo === 'function') {
+                    window.navigateTo('/product/' + productId);
+                } else {
+                    window.location.href = '/product/' + productId;
+                }
             }
         });
     });
 }
 
-/**
- * Remove product from wishlist
- */
-function removeFromWishlist(productId) {
-    wishlistItems = wishlistItems.filter(p => p.id !== productId);
-    saveWishlist();
-    renderWishlist();
-    showNotification('❤️ Removed from wishlist');
+// ========================================
+// Elimina producto de wishlist CON SWEETALERT2
+// ========================================
+async function removeFromWishlist(productId) {
+    var product = wishlistItems.find(function(p) { return p.id === productId; });
+    if (!product) return;
+    
+    var result = await mostrarConfirmacion(
+        '¿Eliminar de wishlist?',
+        '¿Estás seguro de que quieres eliminar "' + product.name + '" de tu lista de deseos?',
+        'Sí, eliminar'
+    );
+    
+    if (result.isConfirmed) {
+        wishlistItems = wishlistItems.filter(function(p) { return p.id !== productId; });
+        saveWishlist();
+        renderWishlist();
+        await mostrarExito('Eliminado', '"' + product.name + '" ha sido eliminado de tu wishlist.');
+    }
 }
 
-/**
- * Add product to cart
- */
-function addToCart(product) {
-    let cart = JSON.parse(localStorage.getItem('outlet_cart') || '[]');
+// ========================================
+// Agrega producto al carrito CON SWEETALERT2
+// ========================================
+async function addToCart(product) {
+    var cart = JSON.parse(localStorage.getItem('outlet_cart') || '[]');
     
-    const existingItem = cart.find(item => item.id === product.id);
+    var existingItem = cart.find(function(item) { return item.id === product.id; });
     if (existingItem) {
         existingItem.quantity = (existingItem.quantity || 1) + 1;
     } else {
@@ -252,22 +360,34 @@ function addToCart(product) {
     
     localStorage.setItem('outlet_cart', JSON.stringify(cart));
     updateCartBadge();
-    showNotification(`✨ ${product.name} added to cart`);
+    
+    await mostrarExito(
+        '¡Añadido al carrito!',
+        '"' + product.name + '" ha sido añadido correctamente. 🛒'
+    );
 }
 
-/**
- * Move all products to cart
- */
-function moveAllToCart() {
+// ========================================
+// Mueve todos los productos al carrito CON SWEETALERT2
+// ========================================
+async function moveAllToCart() {
     if (wishlistItems.length === 0) {
-        showNotification('⚠️ Your wishlist is empty');
+        await mostrarError('Wishlist vacía', 'No hay productos en tu wishlist para mover al carrito.');
         return;
     }
     
-    let cart = JSON.parse(localStorage.getItem('outlet_cart') || '[]');
+    var result = await mostrarConfirmacion(
+        '¿Mover todos al carrito?',
+        '¿Quieres mover los ' + wishlistItems.length + ' producto(s) de tu wishlist al carrito?',
+        'Sí, mover todos'
+    );
     
-    wishlistItems.forEach(product => {
-        const existingItem = cart.find(item => item.id === product.id);
+    if (!result.isConfirmed) return;
+    
+    var cart = JSON.parse(localStorage.getItem('outlet_cart') || '[]');
+    
+    wishlistItems.forEach(function(product) {
+        var existingItem = cart.find(function(item) { return item.id === product.id; });
         if (existingItem) {
             existingItem.quantity = (existingItem.quantity || 1) + 1;
         } else {
@@ -285,100 +405,81 @@ function moveAllToCart() {
     
     localStorage.setItem('outlet_cart', JSON.stringify(cart));
     updateCartBadge();
-    showNotification(`🛍️ ${wishlistItems.length} item(s) moved to cart`);
+    
+    await mostrarExito(
+        '¡Todos movidos al carrito!',
+        wishlistItems.length + ' producto(s) han sido movidos al carrito. 🛍️'
+    );
+    
+    // Opcional: vaciar wishlist después de mover
+    wishlistItems = [];
+    saveWishlist();
+    renderWishlist();
 }
 
-/**
- * Update cart badge in navbar
- */
+// ========================================
+// Actualiza el badge del carrito en el navbar
+// ========================================
 function updateCartBadge() {
-    const cart = JSON.parse(localStorage.getItem('outlet_cart') || '[]');
-    const badge = document.querySelector('.cart-count');
+    var cart = JSON.parse(localStorage.getItem('outlet_cart') || '[]');
+    var badge = document.querySelector('.cart-count');
     if (badge) {
-        const total = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+        var total = cart.reduce(function(sum, item) { return sum + (item.quantity || 1); }, 0);
         badge.textContent = total;
         badge.style.opacity = total === 0 ? '0' : '1';
     }
 }
 
-/**
- * Show toast notification
- */
-function showNotification(message) {
-    const existingToast = document.querySelector('.toast-notification');
-    if (existingToast) existingToast.remove();
-    
-    const toast = document.createElement('div');
-    toast.className = 'toast-notification';
-    toast.textContent = message;
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateX(100%)';
-        setTimeout(() => toast.remove(), 300);
-    }, 2500);
-}
-
-/**
- * Initialize event listeners
- */
+// ========================================
+// Inicializa event listeners
+// ========================================
 function initEventListeners() {
-    // Sort button
-    const sortBtn = document.getElementById('sortBtn');
+    var sortBtn = document.getElementById('sortBtn');
     if (sortBtn) {
-        sortBtn.addEventListener('click', () => {
-            // Cycle through sort options
+        sortBtn.addEventListener('click', function() {
             if (currentSort === 'newest') {
                 currentSort = 'price-asc';
-                showNotification('Sorting by: Price (Low to High)');
+                mostrarToast('Ordenando por: Precio (Menor a Mayor)', 'info');
             } else if (currentSort === 'price-asc') {
                 currentSort = 'price-desc';
-                showNotification('Sorting by: Price (High to Low)');
+                mostrarToast('Ordenando por: Precio (Mayor a Menor)', 'info');
             } else {
                 currentSort = 'newest';
-                showNotification('Sorting by: Newest');
+                mostrarToast('Ordenando por: Más reciente', 'info');
             }
             renderWishlist();
         });
     }
     
-    // Move all to cart button
-    const moveAllBtn = document.getElementById('moveAllToCartBtn');
+    var moveAllBtn = document.getElementById('moveAllToCartBtn');
     if (moveAllBtn) {
         moveAllBtn.addEventListener('click', moveAllToCart);
     }
     
-    // Explore buttons
-    const exploreBtns = document.querySelectorAll('#exploreMoreBtn, #exploreMoreFooterBtn');
-    exploreBtns.forEach(btn => {
+    var exploreBtns = document.querySelectorAll('#exploreMoreBtn, #exploreMoreFooterBtn');
+    exploreBtns.forEach(function(btn) {
         if (btn) {
-            btn.addEventListener('click', () => {
-                window.navigateTo('/collection');
+            btn.addEventListener('click', function() {
+                if (typeof window.navigateTo === 'function') {
+                    window.navigateTo('/collection');
+                } else {
+                    window.location.href = '/collection';
+                }
             });
         }
     });
 }
 
-/**
- * Main controller
- */
+// ========================================
+// Controller principal
+// ========================================
 export async function wishlistController() {
     console.log('💖 Wishlist Controller - Favorites page');
     
-    // Load styles
     loadStyles();
-    
-    // Load data
     loadWishlist();
-    
-    // Render UI
     renderWishlist();
-    
-    // Initialize events
     initEventListeners();
-    
-    // Update cart badge on load
     updateCartBadge();
     
     console.log('✅ Wishlist page loaded successfully');

@@ -1,64 +1,149 @@
 /* ========================================
    CREATE ADMIN CONTROLLER - OUTLET VAL
    Controlador para crear administradores (sin validación de roles)
+   CON SWEETALERT2 INTEGRADO
    ======================================== */
 
-// ✅ RUTAS CORREGIDAS
 import { AdminService } from '../../../services/adminService.js';
 
+// ========================================
+// UI Helpers - CON SWEETALERT2
+// ========================================
+
 /**
- * Mostrar notificación toast
+ * Muestra un toast personalizado (estilo OUTLET)
  */
-function showToast(message, isSuccess = true) {
-    const existingToast = document.querySelector('.admin-toast');
-    if (existingToast) existingToast.remove();
+function mostrarToast(mensaje, tipo) {
+    tipo = tipo || 'info';
+    var toastExistente = document.querySelector('.outlet-toast');
+    if (toastExistente) toastExistente.remove();
     
-    const toast = document.createElement('div');
-    toast.className = 'admin-toast';
-    toast.style.cssText = `
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: ${isSuccess ? '#10b981' : '#ef4444'};
-        color: white;
-        padding: 12px 20px;
-        border-radius: 8px;
-        font-size: 14px;
-        font-weight: 500;
-        z-index: 10000;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        animation: slideInRight 0.3s ease;
-    `;
-    toast.textContent = message;
+    var toast = document.createElement('div');
+    toast.className = 'outlet-toast ' + tipo;
+    toast.textContent = mensaje;
     document.body.appendChild(toast);
     
-    setTimeout(() => {
-        toast.style.animation = 'slideOutRight 0.3s ease';
-        setTimeout(() => toast.remove(), 300);
-    }, 4000);
+    requestAnimationFrame(function() {
+        toast.classList.add('show');
+    });
+    
+    setTimeout(function() {
+        toast.classList.remove('show');
+        setTimeout(function() { toast.remove(); }, 300);
+    }, 3200);
 }
 
 /**
- * Cargar estilos CSS específicos
+ * Muestra una SweetAlert2 personalizada
  */
+function mostrarSweetAlert(options) {
+    var defaultOptions = {
+        buttonsStyling: false,
+        customClass: {
+            confirmButton: 'swal2-confirm',
+            cancelButton: 'swal2-cancel',
+            popup: 'swal2-popup'
+        }
+    };
+    
+    return Swal.fire(Object.assign({}, defaultOptions, options));
+}
+
+/**
+ * Muestra alerta de éxito
+ */
+function mostrarExito(titulo, mensaje) {
+    return mostrarSweetAlert({
+        icon: 'success',
+        title: titulo || '¡Perfecto!',
+        text: mensaje || 'La acción se completó con éxito.',
+        confirmButtonText: 'Aceptar'
+    });
+}
+
+/**
+ * Muestra alerta de error
+ */
+function mostrarError(titulo, mensaje) {
+    return mostrarSweetAlert({
+        icon: 'error',
+        title: titulo || '¡Oops!',
+        text: mensaje || 'Ocurrió un error inesperado.',
+        confirmButtonText: 'Entendido'
+    });
+}
+
+/**
+ * Muestra alerta de advertencia
+ */
+function mostrarAdvertencia(titulo, mensaje, confirmText) {
+    confirmText = confirmText || 'Continuar';
+    return mostrarSweetAlert({
+        icon: 'warning',
+        title: titulo || '¡Cuidado!',
+        text: mensaje || 'Estás a punto de realizar una acción importante.',
+        confirmButtonText: confirmText,
+        showCancelButton: true,
+        cancelButtonText: 'Cancelar'
+    });
+}
+
+/**
+ * Muestra alerta de confirmación
+ */
+function mostrarConfirmacion(titulo, mensaje, confirmText) {
+    confirmText = confirmText || 'Sí, confirmar';
+    return mostrarSweetAlert({
+        title: titulo || '¿Estás seguro?',
+        text: mensaje || 'Esta acción requiere tu confirmación.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: confirmText,
+        cancelButtonText: 'Cancelar'
+    });
+}
+
+/**
+ * Muestra un loading con SweetAlert2
+ */
+function mostrarLoading(mensaje) {
+    mensaje = mensaje || 'Procesando...';
+    return mostrarSweetAlert({
+        title: mensaje,
+        allowOutsideClick: false,
+        didOpen: function() {
+            Swal.showLoading();
+        }
+    });
+}
+
+/**
+ * Cierra la alerta de loading
+ */
+function cerrarLoading() {
+    Swal.close();
+}
+
+// ========================================
+// Cargar estilos CSS específicos
+// ========================================
 function loadStyles() {
     if (document.querySelector('link[href*="createAccountAdmin.css"]')) return;
     
-    const link = document.createElement('link');
+    var link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = '/src/css/pages/admin/createAccount/createAccountAdmin.css';
     document.head.appendChild(link);
 }
 
-/**
- * Controlador principal (sin validación de roles)
- */
+// ========================================
+// Controlador principal
+// ========================================
 export async function createAccountAdminController() {
     console.log('📝 Create Account Admin Controller iniciado');
     
     loadStyles();
     
-    // Esperar a que el DOM esté listo
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {
@@ -67,39 +152,37 @@ export async function createAccountAdminController() {
     
     async function init() {
         // ========== ELEMENTOS DEL DOM ==========
-        const form = document.getElementById('createAdminForm');
-        const nombreInput = document.getElementById('nombre');
-        const apellidoPaInput = document.getElementById('apellidoPa');
-        const apellidoMaInput = document.getElementById('apellidoMa');
-        const emailInput = document.getElementById('email');
-        const roleSelect = document.getElementById('role');
-        const passwordInput = document.getElementById('password');
-        const confirmInput = document.getElementById('confirmPassword');
-        const termsCheckbox = document.getElementById('adminTerms');
-        const submitBtn = document.getElementById('submitBtn');
+        var form = document.getElementById('createAdminForm');
+        var nombreInput = document.getElementById('nombre');
+        var apellidoPaInput = document.getElementById('apellidoPa');
+        var apellidoMaInput = document.getElementById('apellidoMa');
+        var emailInput = document.getElementById('email');
+        var roleSelect = document.getElementById('role');
+        var passwordInput = document.getElementById('password');
+        var confirmInput = document.getElementById('confirmPassword');
+        var termsCheckbox = document.getElementById('adminTerms');
+        var submitBtn = document.getElementById('submitBtn');
         
-        // Elementos de error
-        const errorNombre = document.getElementById('errorNombre');
-        const errorEmail = document.getElementById('errorEmail');
-        const errorPassword = document.getElementById('errorPassword');
-        const errorConfirm = document.getElementById('errorConfirm');
+        var errorNombre = document.getElementById('errorNombre');
+        var errorEmail = document.getElementById('errorEmail');
+        var errorPassword = document.getElementById('errorPassword');
+        var errorConfirm = document.getElementById('errorConfirm');
         
-        // Requisitos de contraseña
-        const reqLength = document.getElementById('reqLength');
-        const reqUppercase = document.getElementById('reqUppercase');
-        const reqNumber = document.getElementById('reqNumber');
-        const reqSpecial = document.getElementById('reqSpecial');
+        var reqLength = document.getElementById('reqLength');
+        var reqUppercase = document.getElementById('reqUppercase');
+        var reqNumber = document.getElementById('reqNumber');
+        var reqSpecial = document.getElementById('reqSpecial');
         
         // ========== ESTADO DE VALIDACIÓN ==========
-        let isNombreValid = false;
-        let isEmailValid = false;
-        let isPasswordValid = false;
-        let isConfirmValid = false;
-        let isTermsAccepted = false;
+        var isNombreValid = false;
+        var isEmailValid = false;
+        var isPasswordValid = false;
+        var isConfirmValid = false;
+        var isTermsAccepted = false;
         
         // ========== FUNCIONES DE VALIDACIÓN ==========
         function validateNombre() {
-            const nombre = nombreInput?.value.trim() || '';
+            var nombre = nombreInput?.value.trim() || '';
             
             if (nombre.length < 2) {
                 if (errorNombre) errorNombre.textContent = 'El nombre debe tener al menos 2 caracteres';
@@ -112,8 +195,8 @@ export async function createAccountAdminController() {
         }
         
         function validateEmail() {
-            const email = emailInput?.value.trim() || '';
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            var email = emailInput?.value.trim() || '';
+            var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             
             if (!emailRegex.test(email)) {
                 if (errorEmail) errorEmail.textContent = 'Ingrese un correo electrónico válido';
@@ -126,14 +209,13 @@ export async function createAccountAdminController() {
         }
         
         function validatePassword() {
-            const password = passwordInput?.value || '';
+            var password = passwordInput?.value || '';
             
-            const hasMinLength = password.length >= 6;
-            const hasUppercase = /[A-Z]/.test(password);
-            const hasNumber = /[0-9]/.test(password);
-            const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+            var hasMinLength = password.length >= 6;
+            var hasUppercase = /[A-Z]/.test(password);
+            var hasNumber = /[0-9]/.test(password);
+            var hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
             
-            // Actualizar UI
             if (reqLength) {
                 reqLength.textContent = hasMinLength ? '✓ Mín. 6 caracteres' : '✗ Mín. 6 caracteres';
                 reqLength.classList.toggle('valid', hasMinLength);
@@ -168,8 +250,8 @@ export async function createAccountAdminController() {
         }
         
         function validateConfirm() {
-            const password = passwordInput?.value || '';
-            const confirm = confirmInput?.value || '';
+            var password = passwordInput?.value || '';
+            var confirm = confirmInput?.value || '';
             
             if (password !== confirm) {
                 if (errorConfirm) errorConfirm.textContent = 'Las contraseñas no coinciden';
@@ -190,7 +272,7 @@ export async function createAccountAdminController() {
         }
         
         function validateForm() {
-            const isValid = isNombreValid && isEmailValid && isPasswordValid && isConfirmValid && isTermsAccepted;
+            var isValid = isNombreValid && isEmailValid && isPasswordValid && isConfirmValid && isTermsAccepted;
             if (submitBtn) submitBtn.disabled = !isValid;
             return isValid;
         }
@@ -207,19 +289,34 @@ export async function createAccountAdminController() {
             e.preventDefault();
             
             if (!validateForm()) {
-                showToast('❌ Por favor complete todos los campos correctamente y acepte los términos', false);
+                await mostrarError('Formulario incompleto', 'Por favor, complete todos los campos correctamente y acepte los términos.');
                 return;
             }
             
-            // Cambiar estado del botón
+            // Confirmación antes de crear
+            var nombreCompleto = (nombreInput?.value.trim() || '') + ' ' + (apellidoPaInput?.value.trim() || '') + ' ' + (apellidoMaInput?.value.trim() || '');
+            var rolSeleccionado = roleSelect?.value || 'admin';
+            
+            var confirmResult = await mostrarConfirmacion(
+                '¿Crear administrador?',
+                'Estás a punto de crear un nuevo administrador con el rol "' + rolSeleccionado + '".\n\nNombre: ' + nombreCompleto.trim(),
+                'Sí, crear'
+            );
+            
+            if (!confirmResult.isConfirmed) {
+                mostrarToast('Creación cancelada', 'info');
+                return;
+            }
+            
             if (submitBtn) {
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<span>🔄 CREANDO...</span>';
             }
             
+            mostrarLoading('Creando administrador...');
+            
             try {
-                // Datos para el servicio
-                const adminData = {
+                var adminData = {
                     nombre: nombreInput?.value.trim() || '',
                     apellidoPa: apellidoPaInput?.value.trim() || '',
                     apellidoMa: apellidoMaInput?.value.trim() || '',
@@ -228,19 +325,20 @@ export async function createAccountAdminController() {
                     estado: 'activo'
                 };
                 
-                const password = passwordInput?.value || '';
+                var password = passwordInput?.value || '';
                 
                 console.log('📝 Enviando datos al servicio:', adminData);
                 
-                // LLAMADA AL SERVICE (sin validación de roles)
-                // Nota: AdminService.register espera 3 parámetros: adminData, password, currentAdminRole
-                // Como no tenemos validación, pasamos 'super_admin' como rol para que permita la creación
-                const result = await AdminService.register(adminData, password, 'super_admin');
+                var result = await AdminService.register(adminData, password, 'super_admin');
                 
+                cerrarLoading();
                 console.log('✅ Admin creado exitosamente:', result);
-                showToast(`✅ Administrador ${adminData.nombre} creado exitosamente`, true);
                 
-                // Resetear formulario
+                await mostrarExito(
+                    '¡Administrador creado!',
+                    '✅ ' + adminData.nombre + ' ha sido creado exitosamente con el rol "' + adminData.rol + '".'
+                );
+                
                 if (form) form.reset();
                 isNombreValid = false;
                 isEmailValid = false;
@@ -249,11 +347,9 @@ export async function createAccountAdminController() {
                 isTermsAccepted = false;
                 validateForm();
                 
-                // Limpiar campos de contraseña visualmente
                 if (passwordInput) passwordInput.value = '';
                 if (confirmInput) confirmInput.value = '';
                 
-                // Resetear requisitos de contraseña
                 if (reqLength) {
                     reqLength.textContent = '✗ Mín. 6 caracteres';
                     reqLength.classList.remove('valid');
@@ -276,8 +372,9 @@ export async function createAccountAdminController() {
                 }
                 
             } catch (error) {
+                cerrarLoading();
                 console.error('❌ Error al crear administrador:', error);
-                showToast(`❌ ${error.message}`, false);
+                await mostrarError('Error al crear administrador', error.message || 'Ocurrió un error inesperado.');
             } finally {
                 if (submitBtn) {
                     submitBtn.disabled = false;
@@ -288,20 +385,13 @@ export async function createAccountAdminController() {
         
         // Agregar estilos de animación si no existen
         if (!document.querySelector('#toast-styles')) {
-            const style = document.createElement('style');
+            var style = document.createElement('style');
             style.id = 'toast-styles';
-            style.textContent = `
-                @keyframes slideInRight {
-                    from { transform: translateX(100%); opacity: 0; }
-                    to { transform: translateX(0); opacity: 1; }
-                }
-                @keyframes slideOutRight {
-                    from { transform: translateX(0); opacity: 1; }
-                    to { transform: translateX(100%); opacity: 0; }
-                }
-                .outlet-admin-req.valid { color: #10b981; }
-                .outlet-admin-req.invalid { color: #ef4444; }
-            `;
+            style.textContent = 
+                '@keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } } ' +
+                '@keyframes slideOutRight { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } } ' +
+                '.outlet-admin-req.valid { color: #10b981; } ' +
+                '.outlet-admin-req.invalid { color: #ef4444; }';
             document.head.appendChild(style);
         }
     }

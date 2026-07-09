@@ -2,6 +2,7 @@
    LOGIN CONTROLLER - OUTLET
    Controlador para página de inicio de sesión
    Soporta login de Administradores y Clientes
+   CON SWEETALERT2 INTEGRADO
    ======================================== */
 
 import { CustomerService } from '../../../services/customerService.js';
@@ -11,64 +12,144 @@ import { AuthService } from '../../../services/authService.js';
 // Estado del controlador
 let isLoading = false;
 
+// ========================================
+// UI Helpers - CON SWEETALERT2
+// ========================================
+
 /**
- * Carga los estilos CSS de la página
+ * Muestra un toast personalizado (estilo OUTLET)
  */
+function mostrarToast(mensaje, tipo) {
+    tipo = tipo || 'info';
+    var toastExistente = document.querySelector('.outlet-toast');
+    if (toastExistente) toastExistente.remove();
+    
+    var toast = document.createElement('div');
+    toast.className = 'outlet-toast ' + tipo;
+    toast.textContent = mensaje;
+    document.body.appendChild(toast);
+    
+    requestAnimationFrame(function() {
+        toast.classList.add('show');
+    });
+    
+    setTimeout(function() {
+        toast.classList.remove('show');
+        setTimeout(function() { toast.remove(); }, 300);
+    }, 3200);
+}
+
+/**
+ * Muestra una SweetAlert2 personalizada
+ */
+function mostrarSweetAlert(options) {
+    var defaultOptions = {
+        buttonsStyling: false,
+        customClass: {
+            confirmButton: 'swal2-confirm',
+            cancelButton: 'swal2-cancel',
+            popup: 'swal2-popup'
+        }
+    };
+    
+    return Swal.fire(Object.assign({}, defaultOptions, options));
+}
+
+/**
+ * Muestra alerta de éxito
+ */
+function mostrarExito(titulo, mensaje) {
+    return mostrarSweetAlert({
+        icon: 'success',
+        title: titulo || '¡Perfecto!',
+        text: mensaje || 'La acción se completó con éxito.',
+        confirmButtonText: 'Aceptar'
+    });
+}
+
+/**
+ * Muestra alerta de error
+ */
+function mostrarError(titulo, mensaje) {
+    return mostrarSweetAlert({
+        icon: 'error',
+        title: titulo || '¡Oops!',
+        text: mensaje || 'Ocurrió un error inesperado.',
+        confirmButtonText: 'Entendido'
+    });
+}
+
+/**
+ * Muestra alerta de advertencia
+ */
+function mostrarAdvertencia(titulo, mensaje, confirmText) {
+    confirmText = confirmText || 'Continuar';
+    return mostrarSweetAlert({
+        icon: 'warning',
+        title: titulo || '¡Cuidado!',
+        text: mensaje || 'Estás a punto de realizar una acción importante.',
+        confirmButtonText: confirmText,
+        showCancelButton: true,
+        cancelButtonText: 'Cancelar'
+    });
+}
+
+/**
+ * Muestra un loading con SweetAlert2
+ */
+function mostrarLoading(mensaje) {
+    mensaje = mensaje || 'Procesando...';
+    return mostrarSweetAlert({
+        title: mensaje,
+        allowOutsideClick: false,
+        didOpen: function() {
+            Swal.showLoading();
+        }
+    });
+}
+
+/**
+ * Cierra la alerta de loading
+ */
+function cerrarLoading() {
+    Swal.close();
+}
+
+// ========================================
+// Carga de estilos CSS
+// ========================================
 function loadStyles() {
     if (document.querySelector('link[href*="login.css"]')) return;
     
-    const link = document.createElement('link');
+    var link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = '/src/css/pages/login.css';
     document.head.appendChild(link);
 }
 
-/**
- * Muestra notificación toast
- */
-function showNotification(message, isError = false) {
-    const existingToast = document.querySelector('.toast-notification');
-    if (existingToast) existingToast.remove();
-    
-    const notification = document.createElement('div');
-    notification.className = 'toast-notification';
-    notification.textContent = message;
-    
-    if (isError) {
-        notification.style.borderLeftColor = 'var(--outlet-danger)';
-    }
-    
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.style.opacity = '0';
-        notification.style.transform = 'translateX(100%)';
-        setTimeout(() => notification.remove(), 300);
-    }, 3000);
-}
-
-/**
- * Valida formato de email
- */
+// ========================================
+// Valida formato de email
+// ========================================
 function isValidEmail(email) {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    var re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return re.test(email);
 }
 
-/**
- * Determina el rol del usuario desde el resultado del login
- */
+// ========================================
+// Determina el rol del usuario desde el resultado del login
+// ========================================
 function getUserRoleFromLogin(result) {
     if (result.adminData) return 'admin';
     if (result.customerData) return 'customer';
     return 'unknown';
 }
 
-/**
- * Obtiene la URL de redirección según el rol del usuario
- */
-function getRedirectUrlByRole(role, defaultUrl = '/') {
-    const redirectMap = {
+// ========================================
+// Obtiene la URL de redirección según el rol del usuario
+// ========================================
+function getRedirectUrlByRole(role, defaultUrl) {
+    defaultUrl = defaultUrl || '/';
+    var redirectMap = {
         'admin': '/homeAdmin',
         'super_admin': '/admin/dashboard',
         'editor': '/admin/dashboard',
@@ -79,26 +160,29 @@ function getRedirectUrlByRole(role, defaultUrl = '/') {
     return redirectMap[role] || defaultUrl;
 }
 
-/**
- * Maneja el login con Google (soporta Admin y Customer)
- */
+// ========================================
+// Maneja el login con Google (soporta Admin y Customer)
+// ========================================
 async function handleGoogleLogin() {
     if (isLoading) return;
     
     isLoading = true;
     
-    const googleBtn = document.getElementById('googleLoginBtn');
-    const originalText = googleBtn?.innerHTML;
+    var googleBtn = document.getElementById('googleLoginBtn');
+    var originalText = googleBtn?.innerHTML;
     
     if (googleBtn) {
         googleBtn.innerHTML = '<span>⏳ CARGANDO...</span>';
         googleBtn.disabled = true;
     }
     
+    // Mostrar loading
+    mostrarLoading('Iniciando sesión con Google...');
+    
     try {
-        let result = null;
-        let userRole = null;
-        let loginSuccess = false;
+        var result = null;
+        var userRole = null;
+        var loginSuccess = false;
         
         // Intentar login como administrador con Google
         try {
@@ -108,20 +192,27 @@ async function handleGoogleLogin() {
             loginSuccess = true;
             console.log('✅ Login exitoso como ADMINISTRADOR con Google');
             
-            const session = AdminService.getCurrentSession();
+            var session = AdminService.getCurrentSession();
             console.log('📦 Sesión de admin guardada:', session);
-            showNotification('✅ ¡Bienvenido Administrador!');
+            
+            cerrarLoading();
+            await mostrarExito('¡Bienvenido Administrador!', 'Has iniciado sesión correctamente con Google.');
+            
         } catch (adminError) {
             console.log('⚠️ No es administrador, intentando como cliente...');
+            
             try {
                 result = await CustomerService.login(null, null, true);
                 userRole = 'customer';
                 loginSuccess = true;
                 console.log('✅ Login exitoso como CLIENTE con Google');
                 
-                const session = CustomerService.getCurrentSession();
+                var session = CustomerService.getCurrentSession();
                 console.log('📦 Sesión de cliente guardada:', session);
-                showNotification('✅ ¡Bienvenido! Sesión iniciada con Google');
+                
+                cerrarLoading();
+                await mostrarExito('¡Bienvenido!', 'Has iniciado sesión correctamente con Google.');
+                
             } catch (customerError) {
                 console.error('❌ Error en ambos intentos de login con Google:', customerError);
                 throw customerError;
@@ -133,16 +224,16 @@ async function handleGoogleLogin() {
         }
         
         // Obtener URL de redirección
-        let redirectUrl = sessionStorage.getItem('redirectAfterLogin') || getRedirectUrlByRole(userRole);
+        var redirectUrl = sessionStorage.getItem('redirectAfterLogin') || getRedirectUrlByRole(userRole);
         sessionStorage.removeItem('redirectAfterLogin');
         
-        const attemptedUrl = sessionStorage.getItem('attemptedUrl') || '';
+        var attemptedUrl = sessionStorage.getItem('attemptedUrl') || '';
         if (attemptedUrl.includes('/admin') && userRole !== 'admin') {
             redirectUrl = '/';
-            showNotification('⚠️ No tienes permisos de administrador', true);
+            mostrarToast('⚠️ No tienes permisos de administrador', 'warning');
         }
         
-        setTimeout(() => {
+        setTimeout(function() {
             if (typeof window.navigateTo === 'function') {
                 window.navigateTo(redirectUrl);
             } else {
@@ -152,15 +243,21 @@ async function handleGoogleLogin() {
         
     } catch (error) {
         console.error('Error en login con Google:', error);
-        let errorMessage = error.message;
+        
+        cerrarLoading();
+        
+        var errorMessage = error.message;
         
         if (errorMessage.includes('No tiene permisos de administrador')) {
             errorMessage = 'No tienes permisos de administrador. Intenta con otro correo.';
         } else if (errorMessage.includes('account-exists-with-different-credential')) {
             errorMessage = 'Ya existe una cuenta con este correo usando otro método. Inicia sesión con email y contraseña.';
+        } else if (errorMessage.includes('popup-closed-by-user')) {
+            errorMessage = 'Cerraste la ventana de Google. Intenta de nuevo.';
         }
         
-        showNotification(`❌ ${errorMessage}`, true);
+        await mostrarError('Error al iniciar sesión', errorMessage);
+        
     } finally {
         isLoading = false;
         if (googleBtn) {
@@ -170,30 +267,37 @@ async function handleGoogleLogin() {
     }
 }
 
-/**
- * Maneja el login con email/contraseña
- */
+// ========================================
+// Maneja el login con email/contraseña
+// ========================================
 async function handleLogin(e) {
     e.preventDefault();
     
     if (isLoading) return;
     
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value.trim();
-    const remember = document.getElementById('remember').checked;
+    var email = document.getElementById('email').value.trim();
+    var password = document.getElementById('password').value.trim();
+    var remember = document.getElementById('remember').checked;
+    
+    // ===== VALIDACIONES CON SWEETALERT =====
     
     if (!email) {
-        showNotification('❌ Ingresa tu correo electrónico', true);
+        await mostrarError('Campo requerido', 'Ingresa tu correo electrónico.');
         return;
     }
     
     if (!isValidEmail(email)) {
-        showNotification('❌ Ingresa un correo válido', true);
+        await mostrarError('Correo inválido', 'Ingresa un correo electrónico válido.');
         return;
     }
     
     if (!password) {
-        showNotification('❌ Ingresa tu contraseña', true);
+        await mostrarError('Campo requerido', 'Ingresa tu contraseña.');
+        return;
+    }
+    
+    if (password.length < 6) {
+        await mostrarError('Contraseña demasiado corta', 'La contraseña debe tener al menos 6 caracteres.');
         return;
     }
     
@@ -204,18 +308,21 @@ async function handleLogin(e) {
     }
     
     isLoading = true;
-    const submitBtn = document.querySelector('#loginForm button[type="submit"]');
-    const originalText = submitBtn?.textContent;
+    var submitBtn = document.querySelector('#loginForm button[type="submit"]');
+    var originalText = submitBtn?.textContent;
     
     if (submitBtn) {
         submitBtn.textContent = 'INGRESANDO...';
         submitBtn.disabled = true;
     }
     
+    // Mostrar loading
+    mostrarLoading('Iniciando sesión...');
+    
     try {
-        let result = null;
-        let userRole = null;
-        let loginSuccess = false;
+        var result = null;
+        var userRole = null;
+        var loginSuccess = false;
         
         // Intentar login como administrador
         try {
@@ -225,11 +332,12 @@ async function handleLogin(e) {
             loginSuccess = true;
             console.log('✅ Login exitoso como ADMINISTRADOR');
             
-            const session = AdminService.getCurrentSession();
+            var session = AdminService.getCurrentSession();
             console.log('📦 Contenido de outlet_admin:', session);
-            console.log('📦 Estructura JSON guardada:', JSON.stringify(session, null, 2));
             
-            showNotification('✅ ¡Bienvenido Administrador!');
+            cerrarLoading();
+            await mostrarExito('¡Bienvenido Administrador!', 'Has iniciado sesión correctamente.');
+            
         } catch (adminError) {
             console.log('⚠️ No es administrador, intentando como cliente...');
             console.log('Error de admin:', adminError.message);
@@ -240,10 +348,12 @@ async function handleLogin(e) {
                 loginSuccess = true;
                 console.log('✅ Login exitoso como CLIENTE');
                 
-                const session = CustomerService.getCurrentSession();
+                var session = CustomerService.getCurrentSession();
                 console.log('📦 Contenido de outlet_customer:', session);
                 
-                showNotification('✅ ¡Bienvenido de vuelta!');
+                cerrarLoading();
+                await mostrarExito('¡Bienvenido de vuelta!', 'Has iniciado sesión correctamente.');
+                
             } catch (customerError) {
                 console.error('❌ Error en ambos intentos:', customerError);
                 throw customerError;
@@ -266,16 +376,16 @@ async function handleLogin(e) {
         }
         
         // Obtener URL de redirección
-        let redirectUrl = sessionStorage.getItem('redirectAfterLogin') || getRedirectUrlByRole(userRole);
+        var redirectUrl = sessionStorage.getItem('redirectAfterLogin') || getRedirectUrlByRole(userRole);
         sessionStorage.removeItem('redirectAfterLogin');
         
-        const attemptedUrl = sessionStorage.getItem('attemptedUrl') || '';
+        var attemptedUrl = sessionStorage.getItem('attemptedUrl') || '';
         if (attemptedUrl.includes('/admin') && userRole !== 'admin') {
             redirectUrl = '/';
-            showNotification('⚠️ No tienes permisos de administrador', true);
+            mostrarToast('⚠️ No tienes permisos de administrador', 'warning');
         }
         
-        setTimeout(() => {
+        setTimeout(function() {
             if (typeof window.navigateTo === 'function') {
                 window.navigateTo(redirectUrl);
             } else {
@@ -286,23 +396,35 @@ async function handleLogin(e) {
     } catch (error) {
         console.error('Error en login:', error);
         
-        let errorMessage = error.message;
+        cerrarLoading();
+        
+        var errorMessage = error.message;
+        var errorTitle = 'Error al iniciar sesión';
         
         if (errorMessage.includes('auth/user-not-found')) {
-            errorMessage = 'No existe una cuenta con este correo electrónico';
+            errorMessage = 'No existe una cuenta con este correo electrónico.';
         } else if (errorMessage.includes('auth/wrong-password')) {
-            errorMessage = 'Contraseña incorrecta';
+            errorMessage = 'Contraseña incorrecta. Intenta de nuevo.';
+        } else if (errorMessage.includes('auth/too-many-requests')) {
+            errorMessage = 'Demasiados intentos fallidos. Espera unos minutos e intenta de nuevo.';
+            errorTitle = 'Demasiados intentos';
         } else if (errorMessage.includes('Cuenta bloqueada') || errorMessage.includes('bloqueada')) {
             errorMessage = error.message;
+            errorTitle = 'Cuenta bloqueada';
         } else if (errorMessage.includes('inactiva') || errorMessage.includes('suspendida')) {
             errorMessage = error.message;
+            errorTitle = 'Cuenta inactiva';
         } else if (errorMessage.includes('No tiene permisos de administrador')) {
-            errorMessage = 'Este correo no tiene permisos de administrador';
+            errorMessage = 'Este correo no tiene permisos de administrador.';
         } else if (errorMessage.includes('No existe una cuenta con este correo')) {
-            errorMessage = 'No existe una cuenta con este correo electrónico';
+            errorMessage = 'No existe una cuenta con este correo electrónico.';
+        } else if (errorMessage.includes('auth/network-request-failed')) {
+            errorMessage = 'Error de red. Verifica tu conexión a internet.';
+            errorTitle = 'Error de conexión';
         }
         
-        showNotification(`❌ ${errorMessage}`, true);
+        await mostrarError(errorTitle, errorMessage);
+        
     } finally {
         isLoading = false;
         if (submitBtn) {
@@ -312,17 +434,35 @@ async function handleLogin(e) {
     }
 }
 
-/**
- * Maneja "olvidé mi contraseña"
- */
-function handleForgotPassword(e) {
+// ========================================
+// Maneja "olvidé mi contraseña"
+// ========================================
+async function handleForgotPassword(e) {
     e.preventDefault();
-    showNotification('📧 Se ha enviado un enlace de recuperación a tu correo');
+    
+    var email = document.getElementById('email').value.trim();
+    
+    if (!email) {
+        await mostrarError('Correo requerido', 'Ingresa tu correo electrónico para recuperar tu contraseña.');
+        return;
+    }
+    
+    if (!isValidEmail(email)) {
+        await mostrarError('Correo inválido', 'Ingresa un correo electrónico válido.');
+        return;
+    }
+    
+    await mostrarSweetAlert({
+        icon: 'info',
+        title: 'Recuperación de contraseña',
+        text: 'Se ha enviado un enlace de recuperación a: ' + email,
+        confirmButtonText: 'Entendido'
+    });
 }
 
-/**
- * Maneja "crear cuenta"
- */
+// ========================================
+// Maneja "crear cuenta"
+// ========================================
 function handleSignup(e) {
     e.preventDefault();
     if (typeof window.navigateTo === 'function') {
@@ -332,40 +472,50 @@ function handleSignup(e) {
     }
 }
 
-/**
- * Carga email guardado
- */
+// ========================================
+// Carga email guardado
+// ========================================
 function loadSavedEmail() {
-    const savedEmail = localStorage.getItem('outlet_remember_email');
+    var savedEmail = localStorage.getItem('outlet_remember_email');
     if (savedEmail) {
-        const emailInput = document.getElementById('email');
+        var emailInput = document.getElementById('email');
         if (emailInput) {
             emailInput.value = savedEmail;
-            const rememberCheckbox = document.getElementById('remember');
+            var rememberCheckbox = document.getElementById('remember');
             if (rememberCheckbox) rememberCheckbox.checked = true;
         }
     }
 }
 
-/**
- * Verifica si ya hay una sesión activa
- */
+// ========================================
+// Verifica si ya hay una sesión activa
+// ========================================
 async function checkExistingSession() {
     // Verificar sesión de admin
-    const adminSession = localStorage.getItem('outlet_admin');
+    var adminSession = localStorage.getItem('outlet_admin');
     
     if (adminSession) {
         try {
-            const sessionData = JSON.parse(adminSession);
+            var sessionData = JSON.parse(adminSession);
             console.log('📦 Sesión de admin encontrada:', sessionData);
             
-            const currentAdmin = await AdminService.getCurrentAdmin(true);
+            var currentAdmin = await AdminService.getCurrentAdmin(true);
             if (currentAdmin && currentAdmin.isActive()) {
                 console.log('🔄 Sesión de administrador válida, redirigiendo...');
-                const redirectUrl = sessionStorage.getItem('redirectAfterLogin') || '/homeAdmin';
+                
+                await mostrarSweetAlert({
+                    icon: 'info',
+                    title: 'Sesión activa',
+                    text: 'Ya tienes una sesión de administrador activa. Redirigiendo...',
+                    timer: 2000,
+                    timerProgressBar: true,
+                    showConfirmButton: false
+                });
+                
+                var redirectUrl = sessionStorage.getItem('redirectAfterLogin') || '/homeAdmin';
                 sessionStorage.removeItem('redirectAfterLogin');
                 
-                setTimeout(() => {
+                setTimeout(function() {
                     if (typeof window.navigateTo === 'function') {
                         window.navigateTo(redirectUrl);
                     } else {
@@ -380,19 +530,29 @@ async function checkExistingSession() {
     }
     
     // Verificar sesión de cliente
-    const customerSession = localStorage.getItem('outlet_customer');
+    var customerSession = localStorage.getItem('outlet_customer');
     if (customerSession && !adminSession) {
         try {
-            const sessionData = JSON.parse(customerSession);
+            var sessionData = JSON.parse(customerSession);
             console.log('📦 Sesión de cliente encontrada:', sessionData);
             
-            const currentCustomer = await CustomerService.getCurrentCustomer(true);
+            var currentCustomer = await CustomerService.getCurrentCustomer(true);
             if (currentCustomer && currentCustomer.isActive()) {
                 console.log('🔄 Sesión de cliente válida, redirigiendo...');
-                const redirectUrl = sessionStorage.getItem('redirectAfterLogin') || '/';
+                
+                await mostrarSweetAlert({
+                    icon: 'info',
+                    title: 'Sesión activa',
+                    text: 'Ya tienes una sesión activa. Redirigiendo...',
+                    timer: 2000,
+                    timerProgressBar: true,
+                    showConfirmButton: false
+                });
+                
+                var redirectUrl = sessionStorage.getItem('redirectAfterLogin') || '/';
                 sessionStorage.removeItem('redirectAfterLogin');
                 
-                setTimeout(() => {
+                setTimeout(function() {
                     if (typeof window.navigateTo === 'function') {
                         window.navigateTo(redirectUrl);
                     } else {
@@ -409,14 +569,14 @@ async function checkExistingSession() {
     return false;
 }
 
-/**
- * Inicializa eventos del formulario
- */
+// ========================================
+// Inicializa eventos del formulario
+// ========================================
 function initFormEvents() {
-    const loginForm = document.getElementById('loginForm');
-    const forgotBtn = document.getElementById('forgotPassword');
-    const signupBtn = document.getElementById('signupBtn');
-    const googleLoginBtn = document.getElementById('googleLoginBtn');
+    var loginForm = document.getElementById('loginForm');
+    var forgotBtn = document.getElementById('forgotPassword');
+    var signupBtn = document.getElementById('signupBtn');
+    var googleLoginBtn = document.getElementById('googleLoginBtn');
     
     if (loginForm) loginForm.addEventListener('submit', handleLogin);
     if (forgotBtn) forgotBtn.addEventListener('click', handleForgotPassword);
@@ -424,9 +584,9 @@ function initFormEvents() {
     if (googleLoginBtn) googleLoginBtn.addEventListener('click', handleGoogleLogin);
 }
 
-/**
- * Controller principal
- */
+// ========================================
+// Controller principal
+// ========================================
 export async function loginController() {
     console.log('🔐 Login Controller - Página de inicio de sesión (Admin + Customer)');
     
@@ -440,14 +600,14 @@ export async function loginController() {
     
     loadStyles();
     
-    const hasRedirected = await checkExistingSession();
+    var hasRedirected = await checkExistingSession();
     if (hasRedirected) return;
     
     loadSavedEmail();
     initFormEvents();
     
-    const urlParams = new URLSearchParams(window.location.search);
-    const redirect = urlParams.get('redirect');
+    var urlParams = new URLSearchParams(window.location.search);
+    var redirect = urlParams.get('redirect');
     if (redirect) {
         sessionStorage.setItem('redirectAfterLogin', redirect);
     }

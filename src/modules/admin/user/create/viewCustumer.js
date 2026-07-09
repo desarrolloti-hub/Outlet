@@ -1,6 +1,7 @@
 // ========================================
 // READ CUSTOMERS CONTROLLER - OUTLET ADMIN
 // Controlador para listar, editar y eliminar clientes
+// CON SWEETALERT2 INTEGRADO
 // ========================================
 
 import { CustomerService } from '../../../../services/customerService.js';
@@ -8,15 +9,136 @@ import { CustomerService } from '../../../../services/customerService.js';
 // ========================================
 // Variables de estado
 // ========================================
-let customers = [];
-let deleteTarget = { type: null, id: null, name: null };
-let isEditMode = false;
+var customers = [];
+var deleteTarget = { type: null, id: null, name: null };
+var isEditMode = false;
 
 // ========================================
 // DOM Elements
 // ========================================
-let elements = {};
+var elements = {};
 
+// ========================================
+// UI Helpers - CON SWEETALERT2
+// ========================================
+
+/**
+ * Muestra un toast personalizado (estilo OUTLET)
+ */
+function mostrarToast(mensaje, tipo) {
+    tipo = tipo || 'info';
+    var toastExistente = document.querySelector('.outlet-toast');
+    if (toastExistente) toastExistente.remove();
+    
+    var toast = document.createElement('div');
+    toast.className = 'outlet-toast ' + tipo;
+    toast.textContent = mensaje;
+    document.body.appendChild(toast);
+    
+    requestAnimationFrame(function() {
+        toast.classList.add('show');
+    });
+    
+    setTimeout(function() {
+        toast.classList.remove('show');
+        setTimeout(function() { toast.remove(); }, 300);
+    }, 3200);
+}
+
+/**
+ * Muestra una SweetAlert2 personalizada
+ */
+function mostrarSweetAlert(options) {
+    var defaultOptions = {
+        buttonsStyling: false,
+        customClass: {
+            confirmButton: 'swal2-confirm',
+            cancelButton: 'swal2-cancel',
+            popup: 'swal2-popup'
+        }
+    };
+    
+    return Swal.fire(Object.assign({}, defaultOptions, options));
+}
+
+/**
+ * Muestra alerta de éxito
+ */
+function mostrarExito(titulo, mensaje) {
+    return mostrarSweetAlert({
+        icon: 'success',
+        title: titulo || '¡Perfecto!',
+        text: mensaje || 'La acción se completó con éxito.',
+        confirmButtonText: 'Aceptar'
+    });
+}
+
+/**
+ * Muestra alerta de error
+ */
+function mostrarError(titulo, mensaje) {
+    return mostrarSweetAlert({
+        icon: 'error',
+        title: titulo || '¡Oops!',
+        text: mensaje || 'Ocurrió un error inesperado.',
+        confirmButtonText: 'Entendido'
+    });
+}
+
+/**
+ * Muestra alerta de advertencia
+ */
+function mostrarAdvertencia(titulo, mensaje, confirmText) {
+    confirmText = confirmText || 'Continuar';
+    return mostrarSweetAlert({
+        icon: 'warning',
+        title: titulo || '¡Cuidado!',
+        text: mensaje || 'Estás a punto de realizar una acción importante.',
+        confirmButtonText: confirmText,
+        showCancelButton: true,
+        cancelButtonText: 'Cancelar'
+    });
+}
+
+/**
+ * Muestra alerta de confirmación
+ */
+function mostrarConfirmacion(titulo, mensaje, confirmText) {
+    confirmText = confirmText || 'Sí, confirmar';
+    return mostrarSweetAlert({
+        title: titulo || '¿Estás seguro?',
+        text: mensaje || 'Esta acción requiere tu confirmación.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: confirmText,
+        cancelButtonText: 'Cancelar'
+    });
+}
+
+/**
+ * Muestra un loading con SweetAlert2
+ */
+function mostrarLoading(mensaje) {
+    mensaje = mensaje || 'Procesando...';
+    return mostrarSweetAlert({
+        title: mensaje,
+        allowOutsideClick: false,
+        didOpen: function() {
+            Swal.showLoading();
+        }
+    });
+}
+
+/**
+ * Cierra la alerta de loading
+ */
+function cerrarLoading() {
+    Swal.close();
+}
+
+// ========================================
+// Cache de elementos DOM
+// ========================================
 function cacheElements() {
     elements = {
         totalCustomers: document.getElementById('totalCustomers'),
@@ -46,50 +168,10 @@ function cacheElements() {
 }
 
 // ========================================
-// UI Helpers
+// Utilidades
 // ========================================
-function mostrarToast(mensaje, tipo = 'info') {
-    const toast = elements.toast;
-    toast.textContent = mensaje;
-    toast.className = 'customerslist-toast';
-    
-    if (tipo === 'success') {
-        toast.style.borderLeftColor = '#22c55e';
-    } else if (tipo === 'error') {
-        toast.style.borderLeftColor = '#ef4444';
-    } else {
-        toast.style.borderLeftColor = 'var(--outlet-gold, #ddab3b)';
-    }
-    
-    toast.style.display = 'block';
-    
-    setTimeout(() => {
-        toast.style.animation = 'customerslistSlideOut 0.3s ease-out forwards';
-        setTimeout(() => {
-            toast.style.display = 'none';
-            toast.style.animation = '';
-        }, 300);
-    }, 2800);
-}
-
-// Añadir animación de salida
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes customerslistSlideOut {
-        from {
-            transform: translateX(0);
-            opacity: 1;
-        }
-        to {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-    }
-`;
-document.head.appendChild(style);
-
 function getStatusClass(status) {
-    const classes = {
+    var classes = {
         'activo': 'customerslist-status-active',
         'inactivo': 'customerslist-status-inactive',
         'suspendido': 'customerslist-status-suspended'
@@ -98,7 +180,7 @@ function getStatusClass(status) {
 }
 
 function getStatusLabel(status) {
-    const labels = {
+    var labels = {
         'activo': 'Activo',
         'inactivo': 'Inactivo',
         'suspendido': 'Suspendido'
@@ -108,7 +190,7 @@ function getStatusLabel(status) {
 
 function formatDate(dateString) {
     if (!dateString) return 'No disponible';
-    const date = new Date(dateString);
+    var date = new Date(dateString);
     return date.toLocaleDateString('es-ES', {
         year: 'numeric',
         month: 'long',
@@ -139,10 +221,9 @@ function hideModal(modal) {
 }
 
 // ========================================
-// FUNCIÓN PARA TRANSFORMAR DATOS DEL MODELO
+// Transformar datos del modelo
 // ========================================
 function transformCustomerForDisplay(customer) {
-    // El customer puede venir del repository o del service
     return {
         id: customer.id,
         name: customer.nombre || customer.name || 'Sin nombre',
@@ -150,12 +231,11 @@ function transformCustomerForDisplay(customer) {
         phone: customer.telefono || customer.phone || 
                (customer.direccion?.telefono1 || ''),
         address: customer.direccion ? 
-            `${customer.direccion.calle || ''} ${customer.direccion.numeroExterior || ''}`.trim() :
+            (customer.direccion.calle || '') + ' ' + (customer.direccion.numeroExterior || '') : 
             customer.address || '',
         status: customer.estado || customer.status || 'inactivo',
         icon: customer.icon || 'person',
         createdAt: customer.fechaRegistro || customer.createdAt || null,
-        // Guardamos el objeto completo para edición
         _raw: customer
     };
 }
@@ -167,73 +247,48 @@ function renderTable() {
     if (!elements.tableBody) return;
     
     if (customers.length === 0) {
-        elements.tableBody.innerHTML = `
-            <tr>
-                <td colspan="8" class="customerslist-loading">
-                    <div class="customerslist-spinner"></div>
-                    <span>Cargando clientes...</span>
-                </td>
-            </tr>
-        `;
+        elements.tableBody.innerHTML = 
+            '<tr><td colspan="8" class="customerslist-loading"><div class="customerslist-spinner"></div><span>Cargando clientes...</span></td></tr>';
         if (elements.totalCustomers) elements.totalCustomers.textContent = '0';
         return;
     }
     
-    elements.tableBody.innerHTML = customers.map(customer => {
-        const display = transformCustomerForDisplay(customer);
-        return `
-        <tr data-id="${display.id}">
-            <td>
-                <div class="customerslist-avatar">
-                    <i class="material-symbols-outlined">${display.icon}</i>
-                </div>
-            </td>
-            <td><code style="font-size: 12px;">${escapeHtml(display.id.substring(0, 8))}</code></td>
-            <td><strong>${escapeHtml(display.name)}</strong></td>
-            <td>${escapeHtml(display.email)}</td>
-            <td>${escapeHtml(display.phone) || '—'}</td>
-            <td>
-                <span class="customerslist-address" title="${escapeHtml(display.address || '')}">
-                    ${display.address ? escapeHtml(display.address) : '—'}
-                </span>
-            </td>
-            <td>
-                <span class="customerslist-status-badge ${getStatusClass(display.status)}">
-                    ${getStatusLabel(display.status)}
-                </span>
-            </td>
-            <td>
-                <div class="customerslist-actions-cell">
-                    <button class="customerslist-btn-edit" data-id="${display.id}" title="Editar cliente">
-                        <i class="material-symbols-outlined">edit</i>
-                        <span>Editar</span>
-                    </button>
-                    <button class="customerslist-btn-delete" data-id="${display.id}" data-name="${escapeHtml(display.name)}" title="Eliminar cliente">
-                        <i class="material-symbols-outlined">delete</i>
-                        <span>Eliminar</span>
-                    </button>
-                </div>
-            </td>
-        </tr>
-    `}).join('');
+    var html = '';
+    customers.forEach(function(customer) {
+        var display = transformCustomerForDisplay(customer);
+        html += 
+            '<tr data-id="' + display.id + '">' +
+                '<td><div class="customerslist-avatar"><i class="material-symbols-outlined">' + display.icon + '</i></div></td>' +
+                '<td><code style="font-size: 12px;">' + escapeHtml(display.id.substring(0, 8)) + '</code></td>' +
+                '<td><strong>' + escapeHtml(display.name) + '</strong></td>' +
+                '<td>' + escapeHtml(display.email) + '</td>' +
+                '<td>' + (escapeHtml(display.phone) || '—') + '</td>' +
+                '<td><span class="customerslist-address" title="' + escapeHtml(display.address || '') + '">' + (display.address ? escapeHtml(display.address) : '—') + '</span></td>' +
+                '<td><span class="customerslist-status-badge ' + getStatusClass(display.status) + '">' + getStatusLabel(display.status) + '</span></td>' +
+                '<td><div class="customerslist-actions-cell">' +
+                    '<button class="customerslist-btn-edit" data-id="' + display.id + '" title="Editar cliente"><i class="material-symbols-outlined">edit</i><span>Editar</span></button>' +
+                    '<button class="customerslist-btn-delete" data-id="' + display.id + '" data-name="' + escapeHtml(display.name) + '" title="Eliminar cliente"><i class="material-symbols-outlined">delete</i><span>Eliminar</span></button>' +
+                '</div></td>' +
+            '</tr>';
+    });
     
-    // Actualizar contador
+    elements.tableBody.innerHTML = html;
+    
     if (elements.totalCustomers) {
         elements.totalCustomers.textContent = customers.length;
     }
     
-    // Event listeners para botones
-    document.querySelectorAll('.customerslist-btn-edit').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const id = btn.dataset.id;
+    document.querySelectorAll('.customerslist-btn-edit').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var id = this.dataset.id;
             editCustomer(id);
         });
     });
     
-    document.querySelectorAll('.customerslist-btn-delete').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const id = btn.dataset.id;
-            const name = btn.dataset.name;
+    document.querySelectorAll('.customerslist-btn-delete').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var id = this.dataset.id;
+            var name = this.dataset.name;
             showDeleteModal('customer', id, name);
         });
     });
@@ -244,12 +299,11 @@ function renderTable() {
 // ========================================
 async function loadCustomers() {
     try {
-        // ✅ CORRECCIÓN: Usar getAllCustomers() en lugar de getAll()
         customers = await CustomerService.getAllCustomers();
         renderTable();
     } catch (error) {
         console.error('Error al cargar clientes:', error);
-        mostrarToast(`Error al cargar los clientes: ${error.message}`, 'error');
+        await mostrarError('Error al cargar clientes', error.message || 'No se pudieron cargar los clientes.');
         customers = [];
         renderTable();
     }
@@ -270,10 +324,9 @@ function resetCustomerForm() {
 
 async function editCustomer(id) {
     try {
-        // Obtener el cliente completo desde el repository
-        const customer = await CustomerService.getCustomerById(id);
+        var customer = await CustomerService.getCustomerById(id);
         if (!customer) {
-            mostrarToast('Cliente no encontrado', 'error');
+            await mostrarError('Cliente no encontrado', 'No se encontró el cliente que deseas editar.');
             return;
         }
         
@@ -283,7 +336,7 @@ async function editCustomer(id) {
         elements.customerEmail.value = customer.email || '';
         elements.customerPhone.value = customer.direccion?.telefono1 || '';
         elements.customerAddress.value = customer.direccion ? 
-            `${customer.direccion.calle || ''} ${customer.direccion.numeroExterior || ''} ${customer.direccion.colonia || ''} ${customer.direccion.ciudad || ''} ${customer.direccion.estado || ''}`.trim() : '';
+            (customer.direccion.calle || '') + ' ' + (customer.direccion.numeroExterior || '') + ' ' + (customer.direccion.colonia || '') + ' ' + (customer.direccion.ciudad || '') + ' ' + (customer.direccion.estado || '') : '';
         elements.customerStatus.value = customer.estado || 'activo';
         elements.customerIcon.value = customer.icon || 'person';
         elements.customerCreatedAt.value = formatDate(customer.fechaRegistro);
@@ -292,80 +345,93 @@ async function editCustomer(id) {
         showModal(elements.customerModal);
     } catch (error) {
         console.error('Error al cargar cliente para editar:', error);
-        mostrarToast(`Error: ${error.message}`, 'error');
+        await mostrarError('Error', error.message || 'No se pudo cargar el cliente.');
     }
 }
 
 async function saveCustomer(event) {
     event.preventDefault();
     
-    const name = elements.customerName.value.trim();
+    var name = elements.customerName.value.trim();
     if (!name) {
-        mostrarToast('El nombre es obligatorio', 'error');
+        await mostrarError('Campo requerido', 'El nombre es obligatorio.');
         elements.customerName.focus();
         return;
     }
     
-    const email = elements.customerEmail.value.trim();
+    var email = elements.customerEmail.value.trim();
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        mostrarToast('Ingrese un correo electrónico válido', 'error');
+        await mostrarError('Email inválido', 'Ingrese un correo electrónico válido.');
         elements.customerEmail.focus();
         return;
     }
     
-    const customerId = elements.customerId.value;
+    var customerId = elements.customerId.value;
     
-    // ✅ CORRECCIÓN: Usar la estructura correcta del modelo
-    const customerData = {
+    var customerData = {
         nombre: name,
         email: email,
-        // La dirección se guarda como objeto anidado
         direccion: {
             telefono1: elements.customerPhone.value.trim(),
             calle: elements.customerAddress.value.trim().split(' ')[0] || '',
-            // Podrías agregar más campos de dirección si tu formulario los tiene
         },
         estado: elements.customerStatus.value,
         icon: elements.customerIcon.value.trim() || 'person'
     };
     
+    // Confirmación antes de guardar
+    var confirmResult = await mostrarConfirmacion(
+        '¿Guardar cambios?',
+        'Estás a punto de actualizar el cliente "' + name + '".',
+        'Sí, guardar'
+    );
+    
+    if (!confirmResult.isConfirmed) {
+        mostrarToast('Edición cancelada', 'info');
+        return;
+    }
+    
+    mostrarLoading('Actualizando cliente...');
+    
     try {
-        // ✅ CORRECCIÓN: Usar updateProfile() en lugar de update()
-        const updatedCustomer = await CustomerService.updateProfile(customerId, customerData);
-        mostrarToast(`✅ Cliente "${updatedCustomer.nombre}" actualizado exitosamente`, 'success');
+        var updatedCustomer = await CustomerService.updateProfile(customerId, customerData);
+        cerrarLoading();
+        await mostrarExito('¡Cliente actualizado!', '✅ "' + updatedCustomer.nombre + '" actualizado exitosamente.');
         await loadCustomers();
         hideModal(elements.customerModal);
         resetCustomerForm();
     } catch (error) {
+        cerrarLoading();
         console.error('Error al actualizar cliente:', error);
-        mostrarToast(`❌ Error: ${error.message}`, 'error');
+        await mostrarError('Error al actualizar', error.message || 'No se pudo actualizar el cliente.');
     }
 }
 
 async function deleteCustomer(id) {
     try {
-        // ✅ CORRECCIÓN: Usar deactivateCustomer() en lugar de delete()
         await CustomerService.deactivateCustomer(id);
-        mostrarToast('Cliente desactivado correctamente', 'success');
+        await mostrarExito('¡Cliente desactivado!', 'El cliente ha sido desactivado correctamente.');
         await loadCustomers();
     } catch (error) {
         console.error('Error al eliminar cliente:', error);
-        mostrarToast(`❌ Error: ${error.message}`, 'error');
+        await mostrarError('Error al eliminar', error.message || 'No se pudo eliminar el cliente.');
     }
 }
 
 // ========================================
-// Modal de confirmación
+// Modal de confirmación CON SWEETALERT2
 // ========================================
-function showDeleteModal(type, id, name) {
-    deleteTarget = { type, id, name };
-    elements.deleteItemName.textContent = name;
-    showModal(elements.deleteModal);
-}
-
-function hideDeleteModal() {
-    hideModal(elements.deleteModal);
-    deleteTarget = { type: null, id: null, name: null };
+async function showDeleteModal(type, id, name) {
+    var result = await mostrarConfirmacion(
+        '¿Eliminar cliente?',
+        '¿Estás seguro de que quieres eliminar a "' + name + '"? Esta acción no se puede deshacer.',
+        'Sí, eliminar'
+    );
+    
+    if (result.isConfirmed) {
+        deleteTarget = { type: type, id: id, name: name };
+        await confirmDelete();
+    }
 }
 
 async function confirmDelete() {
@@ -373,7 +439,7 @@ async function confirmDelete() {
     if (deleteTarget.type === 'customer') {
         await deleteCustomer(deleteTarget.id);
     }
-    hideDeleteModal();
+    deleteTarget = { type: null, id: null, name: null };
 }
 
 // ========================================
@@ -381,26 +447,30 @@ async function confirmDelete() {
 // ========================================
 function initEventListeners() {
     elements.customerForm?.addEventListener('submit', saveCustomer);
-    elements.closeModalBtn?.addEventListener('click', () => hideModal(elements.customerModal));
+    elements.closeModalBtn?.addEventListener('click', function() { hideModal(elements.customerModal); });
     
     elements.confirmDeleteBtn?.addEventListener('click', confirmDelete);
-    elements.cancelDeleteBtn?.addEventListener('click', hideDeleteModal);
-    elements.closeDeleteModalBtn?.addEventListener('click', hideDeleteModal);
+    elements.cancelDeleteBtn?.addEventListener('click', function() { deleteTarget = { type: null, id: null, name: null }; });
+    elements.closeDeleteModalBtn?.addEventListener('click', function() { deleteTarget = { type: null, id: null, name: null }; });
     
-    // Cerrar modales con ESC
-    document.addEventListener('keydown', (e) => {
+    document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
-            if (elements.deleteModal?.style.display === 'flex') hideDeleteModal();
+            if (elements.deleteModal?.style.display === 'flex') {
+                deleteTarget = { type: null, id: null, name: null };
+                hideModal(elements.deleteModal);
+            }
             if (elements.customerModal?.style.display === 'flex') hideModal(elements.customerModal);
         }
     });
     
-    // Cerrar modales al hacer clic fuera
-    elements.customerModal?.addEventListener('click', (e) => {
+    elements.customerModal?.addEventListener('click', function(e) {
         if (e.target === elements.customerModal) hideModal(elements.customerModal);
     });
-    elements.deleteModal?.addEventListener('click', (e) => {
-        if (e.target === elements.deleteModal) hideDeleteModal();
+    elements.deleteModal?.addEventListener('click', function(e) {
+        if (e.target === elements.deleteModal) {
+            deleteTarget = { type: null, id: null, name: null };
+            hideModal(elements.deleteModal);
+        }
     });
 }
 
@@ -409,7 +479,7 @@ function initEventListeners() {
 // ========================================
 function syncDarkMode() {
     if (window.OUTLETNav && typeof window.OUTLETNav.getTheme === 'function') {
-        const navDark = window.OUTLETNav.getTheme();
+        var navDark = window.OUTLETNav.getTheme();
         if (navDark && !document.body.classList.contains('dark-mode')) {
             document.body.classList.add('dark-mode');
         } else if (!navDark && document.body.classList.contains('dark-mode')) {
@@ -418,7 +488,7 @@ function syncDarkMode() {
     }
 }
 
-document.addEventListener('themeChanged', (e) => {
+document.addEventListener('themeChanged', function(e) {
     if (e.detail.isDarkMode) document.body.classList.add('dark-mode');
     else document.body.classList.remove('dark-mode');
 });

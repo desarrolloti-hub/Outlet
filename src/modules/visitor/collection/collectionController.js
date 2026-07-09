@@ -1,10 +1,11 @@
 /* ========================================
    COLECCIÓN CONTROLLER - OUTLET
    Controlador para página de listado de productos
+   CON SWEETALERT2 INTEGRADO
    ======================================== */
 
 // Datos de productos
-const products = [
+var products = [
     {
         id: 1,
         brand: "MAISON LUXE",
@@ -74,76 +75,113 @@ const products = [
 ];
 
 // Configuración de la vista
-let currentProducts = [...products];
-let currentPage = 1;
-const productsPerPage = 6;
-let activeFilters = {
+var currentProducts = products.slice(0);
+var currentPage = 1;
+var productsPerPage = 6;
+var activeFilters = {
     size: "S",
     color: null,
     designers: [],
     maxPrice: 5000
 };
 
+// ========================================
+// UI Helpers - CON SWEETALERT2
+// ========================================
+
 /**
- * Carga los estilos CSS de la página
+ * Muestra un toast personalizado (estilo OUTLET)
  */
+function mostrarToast(mensaje, tipo) {
+    tipo = tipo || 'info';
+    var toastExistente = document.querySelector('.outlet-toast');
+    if (toastExistente) toastExistente.remove();
+    
+    var toast = document.createElement('div');
+    toast.className = 'outlet-toast ' + tipo;
+    toast.textContent = mensaje;
+    document.body.appendChild(toast);
+    
+    requestAnimationFrame(function() {
+        toast.classList.add('show');
+    });
+    
+    setTimeout(function() {
+        toast.classList.remove('show');
+        setTimeout(function() { toast.remove(); }, 300);
+    }, 3200);
+}
+
+/**
+ * Muestra una SweetAlert2 personalizada
+ */
+function mostrarSweetAlert(options) {
+    var defaultOptions = {
+        buttonsStyling: false,
+        customClass: {
+            confirmButton: 'swal2-confirm',
+            cancelButton: 'swal2-cancel',
+            popup: 'swal2-popup'
+        }
+    };
+    
+    return Swal.fire(Object.assign({}, defaultOptions, options));
+}
+
+/**
+ * Muestra alerta de éxito
+ */
+function mostrarExito(titulo, mensaje) {
+    return mostrarSweetAlert({
+        icon: 'success',
+        title: titulo || '¡Perfecto!',
+        text: mensaje || 'La acción se completó con éxito.',
+        confirmButtonText: 'Aceptar'
+    });
+}
+
+/**
+ * Muestra alerta de error
+ */
+function mostrarError(titulo, mensaje) {
+    return mostrarSweetAlert({
+        icon: 'error',
+        title: titulo || '¡Oops!',
+        text: mensaje || 'Ocurrió un error inesperado.',
+        confirmButtonText: 'Entendido'
+    });
+}
+
+/**
+ * Muestra alerta de advertencia
+ */
+function mostrarAdvertencia(titulo, mensaje, confirmText) {
+    confirmText = confirmText || 'Continuar';
+    return mostrarSweetAlert({
+        icon: 'warning',
+        title: titulo || '¡Cuidado!',
+        text: mensaje || 'Estás a punto de realizar una acción importante.',
+        confirmButtonText: confirmText,
+        showCancelButton: true,
+        cancelButtonText: 'Cancelar'
+    });
+}
+
+// ========================================
+// Carga de estilos CSS
+// ========================================
 function loadStyles() {
     if (document.querySelector('link[href*="coleccion.css"]')) return;
     
-    const link = document.createElement('link');
+    var link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = '/src/css/pages/coleccion.css';
     document.head.appendChild(link);
 }
 
-/**
- * Controller principal
- */
-export async function coleccionController() {
-    console.log('🛍️ Colección Controller - Página de listado');
-    
-    // Cargar estilos específicos
-    loadStyles();
-    
-    // Inicializar hero dinámico
-    initHero();
-    
-    // Renderizar productos
-    renderProducts();
-    
-    // Inicializar filtros
-    initSizeFilters();
-    initColorFilters();
-    initDesignerFilters();
-    initPriceFilter();
-    initSorting();
-    initPaginationButtons();
-    
-    // Inicializar eventos de productos
-    initProductEvents();
-}
-
-/**
- * Inicializa hero dinámico (para cambiar entre Mujer/Hombre)
- */
-function initHero() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const category = urlParams.get('category');
-    const heroTitle = document.getElementById('heroTitle');
-    const heroImage = document.getElementById('heroImage');
-    
-    if (category === 'hombre') {
-        if (heroTitle) heroTitle.textContent = "COLECCIÓN HOMBRE";
-        // Opcional: cambiar imagen también
-        // if (heroImage) heroImage.src = "url-de-imagen-hombre";
-    } else {
-        if (heroTitle) heroTitle.textContent = "COLECCIÓN MUJER";
-    }
-}
-
-/**
- * Formatear dinero
- */
+// ========================================
+// Formatear dinero
+// ========================================
 function formatMoney(amount) {
     return new Intl.NumberFormat('es-ES', { 
         style: 'currency', 
@@ -152,85 +190,116 @@ function formatMoney(amount) {
     }).format(amount);
 }
 
-/**
- * Aplicar todos los filtros
- */
+// ========================================
+// Controller principal
+// ========================================
+export async function coleccionController() {
+    console.log('🛍️ Colección Controller - Página de listado');
+    
+    loadStyles();
+    initHero();
+    renderProducts();
+    initSizeFilters();
+    initColorFilters();
+    initDesignerFilters();
+    initPriceFilter();
+    initSorting();
+    initPaginationButtons();
+    initProductEvents();
+}
+
+// ========================================
+// Inicializar hero dinámico
+// ========================================
+function initHero() {
+    var urlParams = new URLSearchParams(window.location.search);
+    var category = urlParams.get('category');
+    var heroTitle = document.getElementById('heroTitle');
+    
+    if (category === 'hombre') {
+        if (heroTitle) heroTitle.textContent = "COLECCIÓN HOMBRE";
+    } else {
+        if (heroTitle) heroTitle.textContent = "COLECCIÓN MUJER";
+    }
+}
+
+// ========================================
+// Aplicar todos los filtros
+// ========================================
 function applyFilters() {
-    let filtered = [...products];
+    var filtered = products.slice(0);
     
-    // Filtro de talla
     if (activeFilters.size && activeFilters.size !== 'Única') {
-        filtered = filtered.filter(p => p.size.includes(activeFilters.size));
+        filtered = filtered.filter(function(p) { return p.size.includes(activeFilters.size); });
     }
     
-    // Filtro de color
     if (activeFilters.color) {
-        filtered = filtered.filter(p => p.color === activeFilters.color);
+        filtered = filtered.filter(function(p) { return p.color === activeFilters.color; });
     }
     
-    // Filtro de diseñadores
     if (activeFilters.designers.length > 0) {
-        filtered = filtered.filter(p => activeFilters.designers.includes(p.designer));
+        filtered = filtered.filter(function(p) { return activeFilters.designers.includes(p.designer); });
     }
     
-    // Filtro de precio
-    filtered = filtered.filter(p => p.price <= activeFilters.maxPrice);
+    filtered = filtered.filter(function(p) { return p.price <= activeFilters.maxPrice; });
     
     currentProducts = filtered;
     currentPage = 1;
     renderProducts();
 }
 
-/**
- * Renderizar productos
- */
+// ========================================
+// Renderizar productos
+// ========================================
 function renderProducts() {
-    const grid = document.getElementById('productGrid');
+    var grid = document.getElementById('productGrid');
     if (!grid) return;
 
-    // Paginación
-    const totalProducts = currentProducts.length;
-    const totalPages = Math.ceil(totalProducts / productsPerPage);
-    const start = (currentPage - 1) * productsPerPage;
-    const end = start + productsPerPage;
-    const paginatedProducts = currentProducts.slice(start, end);
+    var totalProducts = currentProducts.length;
+    var totalPages = Math.ceil(totalProducts / productsPerPage);
+    var start = (currentPage - 1) * productsPerPage;
+    var end = start + productsPerPage;
+    var paginatedProducts = currentProducts.slice(start, end);
     
-    // Actualizar contador
-    const resultsCount = document.getElementById('resultsCount');
+    var resultsCount = document.getElementById('resultsCount');
     if (resultsCount) {
-        resultsCount.textContent = `Mostrando ${paginatedProducts.length} de ${totalProducts} productos`;
+        resultsCount.textContent = 'Mostrando ' + paginatedProducts.length + ' de ' + totalProducts + ' productos';
     }
     
-    // Renderizar grid
-    grid.innerHTML = paginatedProducts.map(product => `
-        <div class="coleccion-product-card" data-id="${product.id}">
-            <div class="coleccion-product-image-container">
-                <img class="coleccion-product-image" src="${product.image}" alt="${product.name}">
-                ${product.badge ? `<span class="coleccion-product-badge ${product.badge === 'EXCLUSIVO' ? 'exclusive' : ''}">${product.badge}</span>` : ''}
-                <button class="coleccion-product-wishlist" data-id="${product.id}">
-                    <span class="material-symbols-outlined">favorite</span>
-                </button>
-            </div>
-            <div class="coleccion-product-info">
-                <p class="coleccion-product-brand">${product.brand}</p>
-                <h4 class="coleccion-product-name">${product.name}</h4>
-                <p class="coleccion-product-price">${formatMoney(product.price)}</p>
-            </div>
-        </div>
-    `).join('');
+    var html = '';
+    paginatedProducts.forEach(function(product) {
+        var badgeHtml = '';
+        if (product.badge) {
+            badgeHtml = '<span class="coleccion-product-badge ' + (product.badge === 'EXCLUSIVO' ? 'exclusive' : '') + '">' + product.badge + '</span>';
+        }
+        
+        html += 
+            '<div class="coleccion-product-card" data-id="' + product.id + '">' +
+                '<div class="coleccion-product-image-container">' +
+                    '<img class="coleccion-product-image" src="' + product.image + '" alt="' + product.name + '">' +
+                    badgeHtml +
+                    '<button class="coleccion-product-wishlist" data-id="' + product.id + '">' +
+                        '<span class="material-symbols-outlined">favorite</span>' +
+                    '</button>' +
+                '</div>' +
+                '<div class="coleccion-product-info">' +
+                    '<p class="coleccion-product-brand">' + product.brand + '</p>' +
+                    '<h4 class="coleccion-product-name">' + product.name + '</h4>' +
+                    '<p class="coleccion-product-price">' + formatMoney(product.price) + '</p>' +
+                '</div>' +
+            '</div>';
+    });
     
-    // Renderizar paginación
+    grid.innerHTML = html;
     renderPagination(totalPages);
-    
-    // Reinicializar eventos de productos
     initProductEvents();
 }
 
-/**
- * Renderizar paginación
- */
+// ========================================
+// Renderizar paginación
+// ========================================
 function renderPagination(totalPages) {
-    const paginationNumbers = document.getElementById('paginationNumbers');
+    var paginationNumbers = document.getElementById('paginationNumbers');
     if (!paginationNumbers) return;
     
     if (totalPages <= 1) {
@@ -238,37 +307,36 @@ function renderPagination(totalPages) {
         return;
     }
     
-    let html = '';
-    for (let i = 1; i <= Math.min(totalPages, 3); i++) {
-        html += `<button class="coleccion-page-number ${i === currentPage ? 'active' : ''}" data-page="${i}">${i}</button>`;
+    var html = '';
+    for (var i = 1; i <= Math.min(totalPages, 3); i++) {
+        html += '<button class="coleccion-page-number ' + (i === currentPage ? 'active' : '') + '" data-page="' + i + '">' + i + '</button>';
     }
     
     if (totalPages > 3) {
-        html += `<span class="coleccion-page-dots">...</span>`;
-        html += `<button class="coleccion-page-number" data-page="${totalPages}">${totalPages}</button>`;
+        html += '<span class="coleccion-page-dots">...</span>';
+        html += '<button class="coleccion-page-number" data-page="' + totalPages + '">' + totalPages + '</button>';
     }
     
     paginationNumbers.innerHTML = html;
     
-    // Eventos de paginación
-    document.querySelectorAll('.coleccion-page-number').forEach(btn => {
-        btn.addEventListener('click', () => {
-            currentPage = parseInt(btn.getAttribute('data-page'));
+    document.querySelectorAll('.coleccion-page-number').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            currentPage = parseInt(this.getAttribute('data-page'));
             renderProducts();
         });
     });
 }
 
-/**
- * Inicializar botones de paginación (anterior/siguiente)
- */
+// ========================================
+// Inicializar botones de paginación
+// ========================================
 function initPaginationButtons() {
-    const prevBtn = document.getElementById('prevPage');
-    const nextBtn = document.getElementById('nextPage');
+    var prevBtn = document.getElementById('prevPage');
+    var nextBtn = document.getElementById('nextPage');
     
     if (prevBtn) {
-        prevBtn.addEventListener('click', () => {
-            const totalPages = Math.ceil(currentProducts.length / productsPerPage);
+        prevBtn.addEventListener('click', function() {
+            var totalPages = Math.ceil(currentProducts.length / productsPerPage);
             if (currentPage > 1) {
                 currentPage--;
                 renderProducts();
@@ -277,8 +345,8 @@ function initPaginationButtons() {
     }
     
     if (nextBtn) {
-        nextBtn.addEventListener('click', () => {
-            const totalPages = Math.ceil(currentProducts.length / productsPerPage);
+        nextBtn.addEventListener('click', function() {
+            var totalPages = Math.ceil(currentProducts.length / productsPerPage);
             if (currentPage < totalPages) {
                 currentPage++;
                 renderProducts();
@@ -287,98 +355,97 @@ function initPaginationButtons() {
     }
 }
 
-/**
- * Inicializar filtros de talla
- */
+// ========================================
+// Inicializar filtros de talla
+// ========================================
 function initSizeFilters() {
-    const sizeBtns = document.querySelectorAll('.coleccion-size-btn');
-    sizeBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            sizeBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            activeFilters.size = btn.getAttribute('data-size');
+    var sizeBtns = document.querySelectorAll('.coleccion-size-btn');
+    sizeBtns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            sizeBtns.forEach(function(b) { b.classList.remove('active'); });
+            this.classList.add('active');
+            activeFilters.size = this.getAttribute('data-size');
             applyFilters();
         });
     });
 }
 
-/**
- * Inicializar filtros de color
- */
+// ========================================
+// Inicializar filtros de color
+// ========================================
 function initColorFilters() {
-    const colorSwatches = document.querySelectorAll('.coleccion-color-swatch');
-    colorSwatches.forEach(swatch => {
-        swatch.addEventListener('click', () => {
-            const color = swatch.getAttribute('data-color');
+    var colorSwatches = document.querySelectorAll('.coleccion-color-swatch');
+    colorSwatches.forEach(function(swatch) {
+        swatch.addEventListener('click', function() {
+            var color = this.getAttribute('data-color');
             if (activeFilters.color === color) {
                 activeFilters.color = null;
-                swatch.style.transform = 'scale(1)';
+                this.style.transform = 'scale(1)';
             } else {
                 activeFilters.color = color;
-                colorSwatches.forEach(s => s.style.transform = 'scale(1)');
-                swatch.style.transform = 'scale(1.1)';
+                colorSwatches.forEach(function(s) { s.style.transform = 'scale(1)'; });
+                this.style.transform = 'scale(1.1)';
             }
             applyFilters();
         });
     });
 }
 
-/**
- * Inicializar filtros de diseñador
- */
+// ========================================
+// Inicializar filtros de diseñador
+// ========================================
 function initDesignerFilters() {
-    const checkboxes = document.querySelectorAll('.coleccion-checkbox');
-    checkboxes.forEach(cb => {
-        cb.addEventListener('change', () => {
-            const value = cb.value;
-            if (cb.checked) {
+    var checkboxes = document.querySelectorAll('.coleccion-checkbox');
+    checkboxes.forEach(function(cb) {
+        cb.addEventListener('change', function() {
+            var value = this.value;
+            if (this.checked) {
                 activeFilters.designers.push(value);
             } else {
-                activeFilters.designers = activeFilters.designers.filter(d => d !== value);
+                activeFilters.designers = activeFilters.designers.filter(function(d) { return d !== value; });
             }
             applyFilters();
         });
     });
 }
 
-/**
- * Inicializar filtro de precio
- */
+// ========================================
+// Inicializar filtro de precio
+// ========================================
 function initPriceFilter() {
-    const priceRange = document.querySelector('.coleccion-price-range');
+    var priceRange = document.querySelector('.coleccion-price-range');
     if (priceRange) {
-        priceRange.addEventListener('input', (e) => {
+        priceRange.addEventListener('input', function(e) {
             activeFilters.maxPrice = parseInt(e.target.value);
             applyFilters();
         });
     }
 }
 
-/**
- * Inicializar ordenamiento
- */
+// ========================================
+// Inicializar ordenamiento
+// ========================================
 function initSorting() {
-    const sortSelect = document.getElementById('sortSelect');
+    var sortSelect = document.getElementById('sortSelect');
     if (sortSelect) {
-        sortSelect.addEventListener('change', () => {
-            const value = sortSelect.value;
+        sortSelect.addEventListener('change', function() {
+            var value = this.value;
             if (value === 'price-asc') {
-                currentProducts.sort((a, b) => a.price - b.price);
+                currentProducts.sort(function(a, b) { return a.price - b.price; });
             } else if (value === 'price-desc') {
-                currentProducts.sort((a, b) => b.price - a.price);
+                currentProducts.sort(function(a, b) { return b.price - a.price; });
             } else {
-                // Novedad: revertir a orden original con filtros aplicados
-                let filtered = [...products];
+                var filtered = products.slice(0);
                 if (activeFilters.size && activeFilters.size !== 'Única') {
-                    filtered = filtered.filter(p => p.size.includes(activeFilters.size));
+                    filtered = filtered.filter(function(p) { return p.size.includes(activeFilters.size); });
                 }
                 if (activeFilters.color) {
-                    filtered = filtered.filter(p => p.color === activeFilters.color);
+                    filtered = filtered.filter(function(p) { return p.color === activeFilters.color; });
                 }
                 if (activeFilters.designers.length > 0) {
-                    filtered = filtered.filter(p => activeFilters.designers.includes(p.designer));
+                    filtered = filtered.filter(function(p) { return activeFilters.designers.includes(p.designer); });
                 }
-                filtered = filtered.filter(p => p.price <= activeFilters.maxPrice);
+                filtered = filtered.filter(function(p) { return p.price <= activeFilters.maxPrice; });
                 currentProducts = filtered;
             }
             currentPage = 1;
@@ -387,32 +454,32 @@ function initSorting() {
     }
 }
 
-/**
- * Inicializar eventos de productos (click, wishlist)
- */
+// ========================================
+// Inicializar eventos de productos
+// ========================================
 function initProductEvents() {
-    // Click en producto para ver detalle
-    const productCards = document.querySelectorAll('.coleccion-product-card');
-    productCards.forEach(card => {
-        card.addEventListener('click', (e) => {
-            // Evitar que el click en wishlist dispare la navegación
+    var productCards = document.querySelectorAll('.coleccion-product-card');
+    productCards.forEach(function(card) {
+        card.addEventListener('click', function(e) {
             if (e.target.closest('.coleccion-product-wishlist')) return;
             
-            const productId = card.getAttribute('data-id');
+            var productId = this.getAttribute('data-id');
             if (productId) {
-                // Navegar a detalle del producto
-                window.navigateTo(`/product/${productId}`);
+                if (typeof window.navigateTo === 'function') {
+                    window.navigateTo('/product/' + productId);
+                } else {
+                    window.location.href = '/product/' + productId;
+                }
             }
         });
     });
     
-    // Wishlist
-    const wishlistBtns = document.querySelectorAll('.coleccion-product-wishlist');
-    wishlistBtns.forEach(btn => {
-        btn.addEventListener('click', (e) => {
+    var wishlistBtns = document.querySelectorAll('.coleccion-product-wishlist');
+    wishlistBtns.forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
             e.stopPropagation();
-            const productId = btn.getAttribute('data-id');
-            const product = products.find(p => p.id == productId);
+            var productId = this.getAttribute('data-id');
+            var product = products.find(function(p) { return p.id == productId; });
             if (product) {
                 addToWishlist(product);
             }
@@ -420,12 +487,12 @@ function initProductEvents() {
     });
 }
 
-/**
- * Agregar a wishlist
- */
-function addToWishlist(product) {
-    let wishlist = JSON.parse(localStorage.getItem('outlet_wishlist') || '[]');
-    const exists = wishlist.some(item => item.id === product.id);
+// ========================================
+// Agregar a wishlist CON SWEETALERT2
+// ========================================
+async function addToWishlist(product) {
+    var wishlist = JSON.parse(localStorage.getItem('outlet_wishlist') || '[]');
+    var exists = wishlist.some(function(item) { return item.id === product.id; });
     
     if (!exists) {
         wishlist.push({
@@ -436,26 +503,22 @@ function addToWishlist(product) {
             image: product.image
         });
         localStorage.setItem('outlet_wishlist', JSON.stringify(wishlist));
-        showNotification(`❤️ ${product.name} añadido a wishlist`);
+        
+        await mostrarExito(
+            '¡Añadido a wishlist!',
+            product.name + ' ha sido añadido a tu lista de deseos. ❤️'
+        );
     } else {
-        showNotification(`⚠️ ${product.name} ya está en tu wishlist`);
+        var result = await mostrarAdvertencia(
+            'Ya está en tu wishlist',
+            product.name + ' ya está en tu lista de deseos. ¿Quieres eliminarlo?',
+            'Sí, eliminar'
+        );
+        
+        if (result.isConfirmed) {
+            wishlist = wishlist.filter(function(item) { return item.id !== product.id; });
+            localStorage.setItem('outlet_wishlist', JSON.stringify(wishlist));
+            await mostrarExito('Eliminado', product.name + ' ha sido eliminado de tu wishlist.');
+        }
     }
-}
-
-/**
- * Mostrar notificación
- */
-function showNotification(message) {
-    const existingToast = document.querySelector('.toast-notification');
-    if (existingToast) existingToast.remove();
-    
-    const notification = document.createElement('div');
-    notification.className = 'toast-notification';
-    notification.textContent = message;
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.style.opacity = '0';
-        setTimeout(() => notification.remove(), 300);
-    }, 3000);
 }
