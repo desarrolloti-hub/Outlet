@@ -1,7 +1,7 @@
 // ========================================
 // CREATE CATEGORIES CONTROLLER - OUTLET ADMIN
 // Controlador para CREAR categorías con subcategorías
-// CON SWEETALERT2 INTEGRADO
+// CON SWEETALERT2 INTEGRADO Y SINCRONIZACIÓN CON FIREBASE
 // ========================================
 
 import { CategoryService } from '../../../../services/categoryService.js';
@@ -12,6 +12,7 @@ import { CategoryService } from '../../../../services/categoryService.js';
 var isSubmitting = false;
 var subcategories = [];
 var categoriesList = [];
+var currentSelectedCategoryId = null; // Para rastrear la categoría seleccionada
 
 // ========================================
 // DOM Elements
@@ -307,9 +308,11 @@ function renderSubcategories() {
 }
 
 // ========================================
-// CRUD de Subcategorías (local)
+// CRUD de Subcategorías CON FIREBASE
 // ========================================
-function addSubcategory() {
+
+// AGREGAR subcategoría
+async function addSubcategory() {
     var name = elements.subcategoryName?.value?.trim() || '';
     var description = elements.subcategoryDescription?.value?.trim() || '';
     
@@ -319,22 +322,80 @@ function addSubcategory() {
         return;
     }
     
-    var exists = subcategories.some(function(sub) { return sub.name.toLowerCase() === name.toLowerCase(); });
-    if (exists) {
-        mostrarError('Subcategoría duplicada', 'La subcategoría "' + name + '" ya existe.');
+    // Verificar si hay una categoría seleccionada o creada
+    var categoryId = elements.categoryId?.value?.trim() || '';
+    var categoryName = elements.categoryName?.value?.trim() || '';
+    
+    // Si no hay ID de categoría, pero hay nombre, generar uno
+    if (!categoryId && categoryName) {
+        categoryId = generarIdDesdeNombre(categoryName);
+        // Actualizar el campo ID
+        if (elements.categoryId) elements.categoryId.value = categoryId;
+    }
+    
+    if (!categoryId) {
+        mostrarError('Categoría requerida', 'Debes ingresar un ID y nombre de categoría antes de agregar subcategorías.');
+        if (elements.categoryName) elements.categoryName.focus();
         return;
     }
     
-    subcategories.push({ name: name, description: description });
-    renderSubcategories();
+    // Verificar duplicado en la lista local
+    var exists = subcategories.some(function(sub) { 
+        return sub.name.toLowerCase() === name.toLowerCase(); 
+    });
     
-    if (elements.subcategoryName) elements.subcategoryName.value = '';
-    if (elements.subcategoryDescription) elements.subcategoryDescription.value = '';
-    if (elements.subcategoryName) elements.subcategoryName.focus();
+    if (exists) {
+        mostrarError('Subcategoría duplicada', 'La subcategoría "' + name + '" ya existe en la lista.');
+        return;
+    }
     
-    mostrarToast('Subcategoría "' + name + '" agregada', 'success');
+    // Crear objeto de subcategoría
+    var newSubcategory = { 
+        name: name, 
+        description: description,
+        slug: generarSlug(name)
+    };
+    
+    try {
+        // Mostrar loading
+        var loadingResult = mostrarLoading('Guardando subcategoría...');
+        
+        // Si hay una categoría existente seleccionada, guardar en Firebase
+        if (currentSelectedCategoryId) {
+            // Usar el servicio para agregar subcategoría a categoría existente
+            await CategoryService.addSubcategory(currentSelectedCategoryId, name, description);
+            
+            // Recargar la categoría actualizada
+            await loadCategoryData(currentSelectedCategoryId);
+            
+            // Recargar lista de categorías
+            await loadExistingCategories();
+            
+            mostrarToast('Subcategoría "' + name + '" agregada a la categoría', 'success');
+        } else {
+            // Si es una categoría nueva, solo agregar a la lista local
+            // (se guardará cuando se cree la categoría)
+            subcategories.push(newSubcategory);
+            renderSubcategories();
+            mostrarToast('Subcategoría "' + name + '" agregada (se guardará al crear la categoría)', 'success');
+        }
+        
+        // Limpiar campos
+        if (elements.subcategoryName) elements.subcategoryName.value = '';
+        if (elements.subcategoryDescription) elements.subcategoryDescription.value = '';
+        if (elements.subcategoryName) elements.subcategoryName.focus();
+        
+        // Cerrar loading
+        cerrarLoading();
+        
+    } catch (error) {
+        cerrarLoading();
+        console.error('Error al agregar subcategoría:', error);
+        await mostrarError('Error al guardar', error.message || 'No se pudo agregar la subcategoría.');
+    }
 }
 
+// EDITAR subcategoría
 async function editSubcategory(index) {
     var sub = subcategories[index];
     if (!sub) return;
@@ -375,12 +436,43 @@ async function editSubcategory(index) {
     });
     
     if (result.isConfirmed && result.value) {
-        subcategories[index] = result.value;
-        renderSubcategories();
-        mostrarToast('Subcategoría actualizada', 'success');
+        try {
+            var updatedSub = result.value;
+            
+            // Si hay una categoría existente seleccionada, actualizar en Firebase
+            if (currentSelectedCategoryId && sub.id) {
+                await CategoryService.updateSubcategory(
+                    currentSelectedCategoryId, 
+                    sub.id, 
+                    updatedSub.name, 
+                    updatedSub.description
+                );
+                
+                // Recargar la categoría actualizada
+                await loadCategoryData(currentSelectedCategoryId);
+                await loadExistingCategories();
+                
+                mostrarToast('Subcategoría actualizada en Firebase', 'success');
+            } else {
+                // Solo actualizar local
+                subcategories[index] = { 
+                    ...sub, 
+                    name: updatedSub.name, 
+                    description: updatedSub.description,
+                    slug: generarSlug(updatedSub.name)
+                };
+                renderSubcategories();
+                mostrarToast('Subcategoría actualizada', 'success');
+            }
+            
+        } catch (error) {
+            console.error('Error al actualizar subcategoría:', error);
+            await mostrarError('Error al actualizar', error.message || 'No se pudo actualizar la subcategoría.');
+        }
     }
 }
 
+// ELIMINAR subcategoría
 async function deleteSubcategory(index) {
     var sub = subcategories[index];
     if (!sub) return;
@@ -392,9 +484,27 @@ async function deleteSubcategory(index) {
     );
     
     if (result.isConfirmed) {
-        subcategories.splice(index, 1);
-        renderSubcategories();
-        mostrarToast('Subcategoría "' + sub.name + '" eliminada', 'success');
+        try {
+            // Si hay una categoría existente seleccionada y la subcategoría tiene ID, eliminar de Firebase
+            if (currentSelectedCategoryId && sub.id) {
+                await CategoryService.deleteSubcategory(currentSelectedCategoryId, sub.id);
+                
+                // Recargar la categoría actualizada
+                await loadCategoryData(currentSelectedCategoryId);
+                await loadExistingCategories();
+                
+                mostrarToast('Subcategoría "' + sub.name + '" eliminada de Firebase', 'success');
+            } else {
+                // Solo eliminar local
+                subcategories.splice(index, 1);
+                renderSubcategories();
+                mostrarToast('Subcategoría "' + sub.name + '" eliminada', 'success');
+            }
+            
+        } catch (error) {
+            console.error('Error al eliminar subcategoría:', error);
+            await mostrarError('Error al eliminar', error.message || 'No se pudo eliminar la subcategoría.');
+        }
     }
 }
 
@@ -416,27 +526,47 @@ function setupAutoGeneration() {
 // ========================================
 // Cargar datos de categoría existente
 // ========================================
-function loadCategoryData(categoryId) {
-    var category = categoriesList.find(function(c) { return c.id === categoryId; });
-    if (!category) return;
-    
-    if (elements.categoryId) elements.categoryId.value = category.id || '';
-    if (elements.categoryName) elements.categoryName.value = category.name || '';
-    if (elements.categoryDescription) elements.categoryDescription.value = category.description || '';
-    
-    subcategories = (category.subcategories || []).map(function(sub) {
-        return {
-            name: sub.name || '',
-            description: sub.description || ''
-        };
-    });
-    renderSubcategories();
-    
-    mostrarToast('Cargada categoría "' + category.name + '"', 'success');
+async function loadCategoryData(categoryId) {
+    try {
+        var category = categoriesList.find(function(c) { return c.id === categoryId; });
+        if (!category) {
+            // Si no está en la lista, intentar obtener directamente
+            category = await CategoryService.getById(categoryId, true);
+            if (!category) {
+                mostrarError('Categoría no encontrada', 'No se pudo cargar la categoría seleccionada.');
+                return;
+            }
+        }
+        
+        // Guardar el ID de la categoría seleccionada
+        currentSelectedCategoryId = categoryId;
+        
+        // Llenar el formulario con los datos de la categoría
+        if (elements.categoryId) elements.categoryId.value = category.id || '';
+        if (elements.categoryName) elements.categoryName.value = category.name || '';
+        if (elements.categoryDescription) elements.categoryDescription.value = category.description || '';
+        
+        // Cargar subcategorías (con sus IDs)
+        subcategories = (category.subcategories || []).map(function(sub) {
+            return {
+                id: sub.id || sub._id || null,
+                name: sub.name || '',
+                description: sub.description || '',
+                slug: sub.slug || generarSlug(sub.name)
+            };
+        });
+        renderSubcategories();
+        
+        mostrarToast('Cargada categoría "' + category.name + '"', 'success');
+        
+    } catch (error) {
+        console.error('Error al cargar categoría:', error);
+        await mostrarError('Error al cargar', error.message || 'No se pudo cargar la categoría.');
+    }
 }
 
 // ========================================
-// Guardar categoría CON SWEETALERT2
+// Guardar categoría CON SWEETALERT2 Y FIREBASE
 // ========================================
 async function saveCategory() {
     if (isSubmitting) return;
@@ -461,15 +591,20 @@ async function saveCategory() {
         return;
     }
     
-    try {
-        var existing = await CategoryService.getById(categoryId);
-        if (existing) {
-            await mostrarError('ID duplicado', 'Ya existe una categoría con el ID "' + categoryId + '".');
-            if (elements.categoryId) elements.categoryId.focus();
-            return;
+    // Verificar si es una categoría existente o nueva
+    var isExisting = currentSelectedCategoryId === categoryId;
+    
+    if (!isExisting) {
+        try {
+            var existing = await CategoryService.getById(categoryId);
+            if (existing) {
+                await mostrarError('ID duplicado', 'Ya existe una categoría con el ID "' + categoryId + '".');
+                if (elements.categoryId) elements.categoryId.focus();
+                return;
+            }
+        } catch (error) {
+            console.warn('Error verificando ID:', error);
         }
-    } catch (error) {
-        console.warn('Error verificando ID:', error);
     }
     
     var categoryData = {
@@ -480,23 +615,26 @@ async function saveCategory() {
         order: categoriesList.length,
         subcategories: subcategories.map(function(sub) {
             return {
+                id: sub.id || null,
                 name: sub.name,
                 description: sub.description || '',
-                slug: generarSlug(sub.name),
-                createdAt: new Date().toISOString()
+                slug: sub.slug || generarSlug(sub.name),
+                createdAt: sub.createdAt || new Date().toISOString()
             };
         })
     };
     
     // Confirmación antes de guardar
     var confirmResult = await mostrarConfirmacion(
-        '¿Crear categoría?',
-        'Estás a punto de crear la categoría "' + name + '" con ' + subcategories.length + ' subcategoría(s).',
-        'Sí, crear'
+        isExisting ? '¿Actualizar categoría?' : '¿Crear categoría?',
+        isExisting 
+            ? 'Estás a punto de actualizar la categoría "' + name + '" con ' + subcategories.length + ' subcategoría(s).' 
+            : 'Estás a punto de crear la categoría "' + name + '" con ' + subcategories.length + ' subcategoría(s).',
+        isExisting ? 'Sí, actualizar' : 'Sí, crear'
     );
     
     if (!confirmResult.isConfirmed) {
-        mostrarToast('Creación cancelada', 'info');
+        mostrarToast('Operación cancelada', 'info');
         return;
     }
     
@@ -504,34 +642,76 @@ async function saveCategory() {
     var btn = elements.saveBtn;
     if (btn) {
         btn.disabled = true;
-        btn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> Creando...';
+        btn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> ' + (isExisting ? 'Actualizando...' : 'Creando...');
     }
     
-    mostrarLoading('Creando categoría...');
+    mostrarLoading(isExisting ? 'Actualizando categoría...' : 'Creando categoría...');
     
     try {
-        var savedCategory = await CategoryService.create(categoryData);
+        var savedCategory;
+        
+        if (isExisting && currentSelectedCategoryId) {
+            // Actualizar categoría existente
+            var updateData = {
+                name: categoryData.name,
+                slug: categoryData.slug,
+                description: categoryData.description,
+                subcategories: categoryData.subcategories
+            };
+            savedCategory = await CategoryService.update(currentSelectedCategoryId, updateData);
+        } else {
+            // Crear nueva categoría
+            savedCategory = await CategoryService.create(categoryData);
+        }
         
         cerrarLoading();
         await mostrarExito(
-            '¡Categoría creada!',
-            '✅ "' + savedCategory.name + '" creada con ' + savedCategory.subcategories.length + ' subcategoría(s).'
+            isExisting ? '¡Categoría actualizada!' : '¡Categoría creada!',
+            '✅ "' + savedCategory.name + '" ' + (isExisting ? 'actualizada' : 'creada') + ' con ' + savedCategory.subcategories.length + ' subcategoría(s).'
         );
         
-        resetForm();
+        // Resetear formulario y recargar lista
+        resetFormLocal();
         await loadExistingCategories();
+        
+        // Si actualizamos, mantener la categoría seleccionada
+        if (isExisting && elements.existingCategorySelect) {
+            elements.existingCategorySelect.value = categoryId;
+            await loadCategoryData(categoryId);
+        }
         
     } catch (error) {
         cerrarLoading();
-        console.error('Error al crear categoría:', error);
-        await mostrarError('Error al crear categoría', error.message || 'Ocurrió un error inesperado.');
+        console.error('Error al guardar categoría:', error);
+        await mostrarError('Error al guardar', error.message || 'Ocurrió un error inesperado.');
     } finally {
         isSubmitting = false;
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = '<span class="material-symbols-outlined">save</span> Crear Categoría';
+            btn.innerHTML = '<span class="material-symbols-outlined">save</span> ' + (isExisting ? 'Actualizar Categoría' : 'Crear Categoría');
         }
     }
+}
+
+// ========================================
+// Resetear formulario (local, sin confirmación)
+// ========================================
+function resetFormLocal() {
+    if (elements.categoryId) elements.categoryId.value = '';
+    if (elements.categoryName) elements.categoryName.value = '';
+    if (elements.categoryDescription) elements.categoryDescription.value = '';
+    if (elements.subcategoryName) elements.subcategoryName.value = '';
+    if (elements.subcategoryDescription) elements.subcategoryDescription.value = '';
+    
+    subcategories = [];
+    currentSelectedCategoryId = null;
+    renderSubcategories();
+    
+    if (elements.existingCategorySelect) {
+        elements.existingCategorySelect.value = '';
+    }
+    
+    if (elements.categoryName) elements.categoryName.focus();
 }
 
 // ========================================
@@ -552,16 +732,7 @@ async function resetForm() {
         if (!result.isConfirmed) return;
     }
     
-    if (elements.categoryId) elements.categoryId.value = '';
-    if (elements.categoryName) elements.categoryName.value = '';
-    if (elements.categoryDescription) elements.categoryDescription.value = '';
-    if (elements.subcategoryName) elements.subcategoryName.value = '';
-    if (elements.subcategoryDescription) elements.subcategoryDescription.value = '';
-    
-    subcategories = [];
-    renderSubcategories();
-    
-    if (elements.categoryName) elements.categoryName.focus();
+    resetFormLocal();
     mostrarToast('Formulario reseteado', 'info');
 }
 
@@ -598,6 +769,24 @@ function initEventListeners() {
         var selectedId = e.target.value;
         if (selectedId) {
             loadCategoryData(selectedId);
+        } else {
+            // Limpiar formulario al seleccionar "Seleccionar categoría"
+            resetFormLocal();
+            currentSelectedCategoryId = null;
+        }
+    });
+    
+    // Cuando el nombre cambia, resetear el estado de categoría existente
+    elements.categoryId?.addEventListener('input', function() {
+        var currentId = this.value.trim();
+        var selectValue = elements.existingCategorySelect?.value || '';
+        
+        // Si el ID manual no coincide con el seleccionado, desvincular
+        if (selectValue && currentId !== selectValue) {
+            currentSelectedCategoryId = null;
+            if (elements.existingCategorySelect) {
+                elements.existingCategorySelect.value = '';
+            }
         }
     });
     
@@ -634,15 +823,15 @@ export async function categoriesCreateController() {
     initEventListeners();
     
     // Resetear formulario inicial
-    if (elements.categoryId) elements.categoryId.value = '';
-    if (elements.categoryName) elements.categoryName.value = '';
-    if (elements.categoryDescription) elements.categoryDescription.value = '';
-    if (elements.subcategoryName) elements.subcategoryName.value = '';
-    if (elements.subcategoryDescription) elements.subcategoryDescription.value = '';
-    subcategories = [];
-    renderSubcategories();
+    resetFormLocal();
     
     await loadExistingCategories();
+    
+    // Si hay categorías, seleccionar la primera por defecto (opcional)
+    // if (categoriesList.length > 0 && elements.existingCategorySelect) {
+    //     elements.existingCategorySelect.value = categoriesList[0].id;
+    //     await loadCategoryData(categoriesList[0].id);
+    // }
     
     console.log('✅ Create Categories page loaded');
 }
