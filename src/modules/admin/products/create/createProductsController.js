@@ -248,26 +248,30 @@ function limpiarFormulario() {
 }
 
 function ejecutarLimpiarFormulario() {
-    // Limpiar inputs
-    if (elements.sku) elements.sku.value = '';
-    if (elements.nombre) elements.nombre.value = '';
-    if (elements.descripcion) elements.descripcion.value = '';
-    if (elements.marca) elements.marca.value = '';
-    if (elements.genero) elements.genero.value = '';
+    // Limpiar inputs de texto y números
+    const inputsToClear = [
+        'sku', 'nombre', 'descripcion', 'marca', 'genero',
+        'precioCompra', 'precioVenta', 'descuento',
+        'temporada', 'tipoAjuste', 'composicion', 'peso', 'stock'
+    ];
     
-    if (elements.precioCompra) elements.precioCompra.value = '';
-    if (elements.precioVenta) elements.precioVenta.value = '';
-    if (elements.descuento) elements.descuento.value = '0';
+    inputsToClear.forEach(function(id) {
+        const element = elements[id];
+        if (element) {
+            element.value = '';
+        }
+    });
     
-    if (elements.temporada) elements.temporada.value = '';
-    if (elements.tipoAjuste) elements.tipoAjuste.value = '';
-    if (elements.composicion) elements.composicion.value = '';
-    if (elements.peso) elements.peso.value = '';
-    if (elements.stock) elements.stock.value = '0';
+    // Restablecer selectores
+    if (elements.categoria && categoriesList.length > 0) {
+        elements.categoria.value = categoriesList[0].id;
+        updateSubcategories(categoriesList[0].id);
+    }
+    
     if (elements.estado) elements.estado.value = 'activo';
     if (elements.destacado) elements.destacado.checked = false;
     
-    // Limpiar arrays y tags
+    // Limpiar arrays
     coloresArray = [];
     tallasArray = [];
     materialesArray = [];
@@ -275,15 +279,26 @@ function ejecutarLimpiarFormulario() {
     renderizarTallas();
     renderizarMateriales();
     
+    // Limpiar hidden fields
+    if (elements.coloresHidden) elements.coloresHidden.value = '[]';
+    if (elements.tallasHidden) elements.tallasHidden.value = '[]';
+    if (elements.materialesHidden) elements.materialesHidden.value = '[]';
+    
     // Limpiar imágenes
     ejecutarRemoveMainImage();
     galleryImages = [];
     renderGallery();
-    if (elements.galeriaImagenes) elements.galeriaImagenes.value = '';
+    if (elements.galeriaImagenes) elements.galeriaImagenes.value = '[]';
+    if (elements.imagenPrincipal) elements.imagenPrincipal.value = '';
     
     actualizarPrecioFinal();
     
-    mostrarExito('Formulario limpiado', 'Todos los campos han sido restablecidos.');
+    // Limpiar inputs de tags
+    if (elements.colorInput) elements.colorInput.value = '';
+    if (elements.tallaInput) elements.tallaInput.value = '';
+    if (elements.materialInput) elements.materialInput.value = '';
+    
+    mostrarToast('Formulario limpiado completamente', 'success');
 }
 
 // ========================================
