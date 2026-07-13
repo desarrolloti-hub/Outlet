@@ -3,7 +3,7 @@
    Operaciones CRUD directas con Firebase
    ======================================== */
 
-import { db } from '/config/firebaseConfig.js';
+import { db } from '../../config/firebaseConfig.js';
 import { 
     collection, 
     doc, 
@@ -14,9 +14,7 @@ import {
     deleteDoc,
     query,
     where,
-    orderBy,
-    limit,
-    startAfter
+    limit
 } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
 
 const PRODUCTS_COLLECTION = 'productos';
@@ -79,13 +77,14 @@ export const ProductRepository = {
     
     /**
      * Obtener todos los productos (con filtros opcionales)
+     * ✅ VERSIÓN SIN ÍNDICES COMPUESTOS
      */
     async getAll(filters = {}, sortBy = 'createdAt', sortDir = 'desc', limitCount = 50) {
         try {
-            let q = collection(db, PRODUCTS_COLLECTION);
             let constraints = [];
+            const collectionRef = collection(db, PRODUCTS_COLLECTION);
             
-            // Aplicar filtros
+            // ✅ SOLO filtros simples que NO requieren índices compuestos
             if (filters.categoria) {
                 constraints.push(where('categoria', '==', filters.categoria));
             }
@@ -98,15 +97,12 @@ export const ProductRepository = {
             if (filters.destacado !== undefined) {
                 constraints.push(where('destacado', '==', filters.destacado));
             }
-            if (filters.enOferta) {
-                constraints.push(where('porcentajeDescuento', '>', 0));
-            }
             
-            // Ordenamiento
-            constraints.push(orderBy(sortBy, sortDir));
-            constraints.push(limit(limitCount));
+            // ✅ SIN orderBy para evitar índices compuestos
+            // Traemos más datos para filtrar/ordenar en memoria
+            constraints.push(limit(limitCount * 3));
             
-            q = query(collection(db, PRODUCTS_COLLECTION), ...constraints);
+            const q = query(collectionRef, ...constraints);
             const querySnapshot = await getDocs(q);
             
             const productos = [];
@@ -114,10 +110,67 @@ export const ProductRepository = {
                 productos.push({ id: doc.id, ...doc.data() });
             });
             
-            return productos;
+            console.log(`📦 Productos obtenidos de Firestore (sin filtrar): ${productos.length}`);
+            
+            // ✅ FILTRAR en memoria
+            let filteredProducts = productos;
+            
+            // Filtrar por enOferta (porcentajeDescuento > 0)
+            if (filters.enOferta) {
+                filteredProducts = filteredProducts.filter(p => p.porcentajeDescuento > 0);
+                console.log(`📦 Productos con descuento: ${filteredProducts.length}`);
+            }
+            
+            // ✅ ORDENAR en memoria
+            filteredProducts.sort((a, b) => {
+                let valA = a[sortBy];
+                let valB = b[sortBy];
+                
+                // Manejar valores null/undefined
+                if (valA === null || valA === undefined) valA = '';
+                if (valB === null || valB === undefined) valB = '';
+                
+                if (typeof valA === 'string' && typeof valB === 'string') {
+                    return sortDir === 'desc' ? valB.localeCompare(valA) : valA.localeCompare(valB);
+                }
+                
+                if (typeof valA === 'number' && typeof valB === 'number') {
+                    return sortDir === 'desc' ? valB - valA : valA - valB;
+                }
+                
+                // Fechas (strings ISO)
+                if (typeof valA === 'string' && typeof valB === 'string' && 
+                    !isNaN(Date.parse(valA)) && !isNaN(Date.parse(valB))) {
+                    const dateA = new Date(valA).getTime();
+                    const dateB = new Date(valB).getTime();
+                    return sortDir === 'desc' ? dateB - dateA : dateA - dateB;
+                }
+                
+                return 0;
+            });
+            
+            // ✅ LIMITAR en memoria
+            const result = filteredProducts.slice(0, limitCount);
+            console.log(`📦 Productos finales: ${result.length}`);
+            
+            return result;
+            
         } catch (error) {
             console.error('Error obteniendo productos:', error);
-            throw new Error(`Error al obtener productos: ${error.message}`);
+            
+            // ✅ FALLBACK: Si hay error, intentar obtener todos sin filtros
+            try {
+                console.log('🔄 Intentando fallback sin filtros...');
+                const q = query(collection(db, PRODUCTS_COLLECTION), limit(limitCount * 3));
+                const querySnapshot = await getDocs(q);
+                const productos = [];
+                querySnapshot.forEach((doc) => {
+                    productos.push({ id: doc.id, ...doc.data() });
+                });
+                return productos;
+            } catch (fallbackError) {
+                throw new Error(`Error al obtener productos: ${error.message}`);
+            }
         }
     },
     
@@ -126,12 +179,11 @@ export const ProductRepository = {
      */
     async getDestacados(limitCount = 10) {
         try {
+            // ✅ Consulta SIN índices compuestos
             const q = query(
                 collection(db, PRODUCTS_COLLECTION),
                 where('destacado', '==', true),
-                where('estado', '==', 'activo'),
-                orderBy('createdAt', 'desc'),
-                limit(limitCount)
+                where('estado', '==', 'activo')
             );
             const querySnapshot = await getDocs(q);
             
@@ -140,7 +192,14 @@ export const ProductRepository = {
                 productos.push({ id: doc.id, ...doc.data() });
             });
             
-            return productos;
+            // Ordenar en memoria por fecha
+            productos.sort((a, b) => {
+                const dateA = a.createdAt || '';
+                const dateB = b.createdAt || '';
+                return dateB.localeCompare(dateA);
+            });
+            
+            return productos.slice(0, limitCount);
         } catch (error) {
             console.error('Error obteniendo productos destacados:', error);
             throw new Error(`Error al obtener productos destacados: ${error.message}`);
@@ -152,12 +211,11 @@ export const ProductRepository = {
      */
     async getByCategoria(categoria, limitCount = 20) {
         try {
+            // ✅ Consulta SIN índices compuestos
             const q = query(
                 collection(db, PRODUCTS_COLLECTION),
                 where('categoria', '==', categoria),
-                where('estado', '==', 'activo'),
-                orderBy('createdAt', 'desc'),
-                limit(limitCount)
+                where('estado', '==', 'activo')
             );
             const querySnapshot = await getDocs(q);
             
@@ -166,7 +224,14 @@ export const ProductRepository = {
                 productos.push({ id: doc.id, ...doc.data() });
             });
             
-            return productos;
+            // Ordenar en memoria por fecha
+            productos.sort((a, b) => {
+                const dateA = a.createdAt || '';
+                const dateB = b.createdAt || '';
+                return dateB.localeCompare(dateA);
+            });
+            
+            return productos.slice(0, limitCount);
         } catch (error) {
             console.error('Error obteniendo productos por categoría:', error);
             throw new Error(`Error al obtener productos: ${error.message}`);
@@ -229,7 +294,6 @@ export const ProductRepository = {
                 await deleteDoc(productRef);
                 return true;
             } else {
-                // Soft delete: solo cambiar estado
                 return await this.update(productId, { estado: 'inactivo' });
             }
         } catch (error) {
@@ -243,15 +307,10 @@ export const ProductRepository = {
      */
     async search(termino, limitCount = 20) {
         try {
-            // Firestore no soporta búsqueda de texto completo nativamente
-            // Esta es una búsqueda simple por coincidencia exacta
-            // Para búsqueda avanzada, considera Algolia o ElasticSearch
-            
+            // ✅ Consulta SIN índices compuestos
             const q = query(
                 collection(db, PRODUCTS_COLLECTION),
-                where('estado', '==', 'activo'),
-                orderBy('createdAt', 'desc'),
-                limit(limitCount * 2)
+                where('estado', '==', 'activo')
             );
             const querySnapshot = await getDocs(q);
             

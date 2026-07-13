@@ -82,7 +82,6 @@ export const ProductService = {
         product.id = `${product.sku}_${Date.now()}`;
         
         // ========== CONVERTIR A OBJETO PLANO ==========
-        // ✅ Esto es CRUCIAL - Firebase no acepta objetos con métodos/getters
         const productPlain = {
             id: product.id,
             sku: product.sku,
@@ -116,6 +115,15 @@ export const ProductService = {
         
         // Limpiar caché de productos
         await CacheService.clearCache(STORES.PRODUCTS);
+        
+        // ✅ NOTIFICAR QUE HUBO CAMBIOS
+        window.dispatchEvent(new CustomEvent('products:updated', {
+            detail: { 
+                action: 'create', 
+                productId: product.id,
+                productName: product.nombre
+            }
+        }));
         
         return new Product(result);
     },
@@ -152,19 +160,20 @@ export const ProductService = {
     /**
      * Obtener todos los productos
      */
-    async getAll(filters = {}, forceRefresh = false) {
-        if (!forceRefresh) {
-            const cacheKey = `products_list_${JSON.stringify(filters)}`;
-            const cached = await CacheService.getCache(STORES.PRODUCTS, cacheKey);
-            if (cached) {
-                return cached.map(p => new Product(p));
-            }
+    async getAll(filters = {}, sortBy = 'createdAt', sortDir = 'desc', limitCount = 50) {
+        // Generar clave de caché basada en los filtros
+        const cacheKey = `products_list_${JSON.stringify(filters)}_${sortBy}_${sortDir}_${limitCount}`;
+        
+        // Intentar obtener de caché
+        const cached = await CacheService.getCache(STORES.PRODUCTS, cacheKey);
+        if (cached) {
+            return cached.map(p => new Product(p));
         }
         
-        const productsData = await ProductRepository.getAll(filters);
+        const productsData = await ProductRepository.getAll(filters, sortBy, sortDir, limitCount);
         const products = productsData.map(p => new Product(p));
         
-        const cacheKey = `products_list_${JSON.stringify(filters)}`;
+        // Guardar en caché (30 minutos)
         await CacheService.setCache(STORES.PRODUCTS, cacheKey, productsData, 1800000);
         
         return products;
@@ -174,16 +183,38 @@ export const ProductService = {
      * Obtener productos destacados
      */
     async getDestacados(limit = 10) {
+        const cacheKey = `destacados_${limit}`;
+        
+        const cached = await CacheService.getCache(STORES.PRODUCTS, cacheKey);
+        if (cached) {
+            return cached.map(p => new Product(p));
+        }
+        
         const productsData = await ProductRepository.getDestacados(limit);
-        return productsData.map(p => new Product(p));
+        const products = productsData.map(p => new Product(p));
+        
+        await CacheService.setCache(STORES.PRODUCTS, cacheKey, productsData, 1800000);
+        
+        return products;
     },
     
     /**
      * Obtener productos por categoría
      */
     async getByCategoria(categoria, limit = 20) {
+        const cacheKey = `categoria_${categoria}_${limit}`;
+        
+        const cached = await CacheService.getCache(STORES.PRODUCTS, cacheKey);
+        if (cached) {
+            return cached.map(p => new Product(p));
+        }
+        
         const productsData = await ProductRepository.getByCategoria(categoria, limit);
-        return productsData.map(p => new Product(p));
+        const products = productsData.map(p => new Product(p));
+        
+        await CacheService.setCache(STORES.PRODUCTS, cacheKey, productsData, 1800000);
+        
+        return products;
     },
     
     /**
@@ -212,7 +243,16 @@ export const ProductService = {
         
         const updated = await ProductRepository.update(productId, updateData);
         
+        // Limpiar caché de productos
         await CacheService.clearCache(STORES.PRODUCTS);
+        
+        // ✅ NOTIFICAR QUE HUBO CAMBIOS
+        window.dispatchEvent(new CustomEvent('products:updated', {
+            detail: { 
+                action: 'update', 
+                productId: productId
+            }
+        }));
         
         return new Product(updated);
     },
@@ -225,6 +265,15 @@ export const ProductService = {
         
         await CacheService.clearCache(STORES.PRODUCTS);
         
+        // ✅ NOTIFICAR QUE HUBO CAMBIOS
+        window.dispatchEvent(new CustomEvent('products:updated', {
+            detail: { 
+                action: 'updateStock', 
+                productId: productId,
+                cantidad: cantidad
+            }
+        }));
+        
         return updated ? new Product(updated) : null;
     },
     
@@ -235,6 +284,15 @@ export const ProductService = {
         const result = await ProductRepository.delete(productId, hardDelete);
         
         await CacheService.clearCache(STORES.PRODUCTS);
+        
+        // ✅ NOTIFICAR QUE HUBO CAMBIOS
+        window.dispatchEvent(new CustomEvent('products:updated', {
+            detail: { 
+                action: 'delete', 
+                productId: productId,
+                hardDelete: hardDelete
+            }
+        }));
         
         return result;
     },
@@ -275,10 +333,34 @@ export const ProductService = {
      * Obtener productos en oferta
      */
     async getOfertas(limit = 20) {
-        const products = await this.getAll({ enOferta: true });
-        return products
-            .sort((a, b) => b.porcentajeDescuento - a.porcentajeDescuento)
-            .slice(0, limit);
+        const cacheKey = `ofertas_${limit}`;
+        
+        const cached = await CacheService.getCache(STORES.PRODUCTS, cacheKey);
+        if (cached) {
+            return cached.map(p => new Product(p));
+        }
+        
+        const products = await this.getAll({ enOferta: true }, 'porcentajeDescuento', 'desc', limit);
+        
+        // Guardar en caché
+        const productsData = products.map(p => ({
+            id: p.id,
+            sku: p.sku,
+            nombre: p.nombre,
+            marca: p.marca,
+            categoria: p.categoria,
+            precioVenta: p.precioVenta,
+            porcentajeDescuento: p.porcentajeDescuento,
+            precioFinal: p.precioFinal,
+            imagenPrincipal: p.imagenPrincipal,
+            stock: p.stock,
+            estado: p.estado,
+            destacado: p.destacado
+        }));
+        
+        await CacheService.setCache(STORES.PRODUCTS, cacheKey, productsData, 1800000);
+        
+        return products;
     },
     
     /**
