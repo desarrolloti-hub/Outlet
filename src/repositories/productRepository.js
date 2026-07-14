@@ -1,6 +1,7 @@
 /* ========================================
    PRODUCT REPOSITORY - Outlet Val
    Operaciones CRUD directas con Firebase
+   ✅ VERSIÓN CON ÍNDICES OPTIMIZADOS
    ======================================== */
 
 import { db } from '../../config/firebaseConfig.js';
@@ -14,7 +15,8 @@ import {
     deleteDoc,
     query,
     where,
-    limit
+    limit,
+    orderBy
 } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
 
 const PRODUCTS_COLLECTION = 'productos';
@@ -77,14 +79,14 @@ export const ProductRepository = {
     
     /**
      * Obtener todos los productos (con filtros opcionales)
-     * ✅ VERSIÓN SIN ÍNDICES COMPUESTOS
+     * ✅ VERSIÓN OPTIMIZADA CON ÍNDICES
      */
     async getAll(filters = {}, sortBy = 'createdAt', sortDir = 'desc', limitCount = 50) {
         try {
             let constraints = [];
             const collectionRef = collection(db, PRODUCTS_COLLECTION);
             
-            // ✅ SOLO filtros simples que NO requieren índices compuestos
+            // ✅ FILTROS SIMPLES (indexados)
             if (filters.categoria) {
                 constraints.push(where('categoria', '==', filters.categoria));
             }
@@ -98,8 +100,62 @@ export const ProductRepository = {
                 constraints.push(where('destacado', '==', filters.destacado));
             }
             
-            // ✅ SIN orderBy para evitar índices compuestos
-            // Traemos más datos para filtrar/ordenar en memoria
+            // ✅ FILTRO POR DESCUENTO (indexado)
+            if (filters.enOferta) {
+                constraints.push(where('porcentajeDescuento', '>', 0));
+            }
+            
+            // ✅ ORDENAMIENTO (requiere índices compuestos)
+            // Los índices deben crearse en Firebase Console
+            const orderDirection = sortDir === 'desc' ? 'desc' : 'asc';
+            constraints.push(orderBy(sortBy, orderDirection));
+            
+            // ✅ LÍMITE
+            constraints.push(limit(limitCount));
+            
+            const q = query(collectionRef, ...constraints);
+            const querySnapshot = await getDocs(q);
+            
+            const productos = [];
+            querySnapshot.forEach((doc) => {
+                productos.push({ id: doc.id, ...doc.data() });
+            });
+            
+            console.log(`📦 Productos obtenidos con índices: ${productos.length}`);
+            return productos;
+            
+        } catch (error) {
+            console.error('Error obteniendo productos:', error);
+            
+            // ✅ FALLBACK: Si hay error (falta índice), usar versión sin índices
+            console.log('🔄 Intentando fallback sin índices compuestos...');
+            return await this._getAllFallback(filters, sortBy, sortDir, limitCount);
+        }
+    },
+    
+    /**
+     * FALLBACK: Versión sin índices compuestos (más lenta pero funciona)
+     */
+    async _getAllFallback(filters = {}, sortBy = 'createdAt', sortDir = 'desc', limitCount = 50) {
+        try {
+            let constraints = [];
+            const collectionRef = collection(db, PRODUCTS_COLLECTION);
+            
+            // Solo filtros simples
+            if (filters.categoria) {
+                constraints.push(where('categoria', '==', filters.categoria));
+            }
+            if (filters.genero) {
+                constraints.push(where('genero', '==', filters.genero));
+            }
+            if (filters.estado) {
+                constraints.push(where('estado', '==', filters.estado));
+            }
+            if (filters.destacado !== undefined) {
+                constraints.push(where('destacado', '==', filters.destacado));
+            }
+            
+            // Traer más datos para filtrar en memoria
             constraints.push(limit(limitCount * 3));
             
             const q = query(collectionRef, ...constraints);
@@ -110,76 +166,74 @@ export const ProductRepository = {
                 productos.push({ id: doc.id, ...doc.data() });
             });
             
-            console.log(`📦 Productos obtenidos de Firestore (sin filtrar): ${productos.length}`);
-            
-            // ✅ FILTRAR en memoria
+            // Filtrar en memoria
             let filteredProducts = productos;
-            
-            // Filtrar por enOferta (porcentajeDescuento > 0)
             if (filters.enOferta) {
                 filteredProducts = filteredProducts.filter(p => p.porcentajeDescuento > 0);
-                console.log(`📦 Productos con descuento: ${filteredProducts.length}`);
             }
             
-            // ✅ ORDENAR en memoria
+            // Ordenar en memoria
             filteredProducts.sort((a, b) => {
                 let valA = a[sortBy];
                 let valB = b[sortBy];
                 
-                // Manejar valores null/undefined
                 if (valA === null || valA === undefined) valA = '';
                 if (valB === null || valB === undefined) valB = '';
                 
                 if (typeof valA === 'string' && typeof valB === 'string') {
                     return sortDir === 'desc' ? valB.localeCompare(valA) : valA.localeCompare(valB);
                 }
-                
                 if (typeof valA === 'number' && typeof valB === 'number') {
                     return sortDir === 'desc' ? valB - valA : valA - valB;
                 }
-                
-                // Fechas (strings ISO)
-                if (typeof valA === 'string' && typeof valB === 'string' && 
-                    !isNaN(Date.parse(valA)) && !isNaN(Date.parse(valB))) {
-                    const dateA = new Date(valA).getTime();
-                    const dateB = new Date(valB).getTime();
-                    return sortDir === 'desc' ? dateB - dateA : dateA - dateB;
-                }
-                
                 return 0;
             });
             
-            // ✅ LIMITAR en memoria
             const result = filteredProducts.slice(0, limitCount);
-            console.log(`📦 Productos finales: ${result.length}`);
-            
+            console.log(`📦 Productos fallback: ${result.length}`);
             return result;
             
-        } catch (error) {
-            console.error('Error obteniendo productos:', error);
-            
-            // ✅ FALLBACK: Si hay error, intentar obtener todos sin filtros
-            try {
-                console.log('🔄 Intentando fallback sin filtros...');
-                const q = query(collection(db, PRODUCTS_COLLECTION), limit(limitCount * 3));
-                const querySnapshot = await getDocs(q);
-                const productos = [];
-                querySnapshot.forEach((doc) => {
-                    productos.push({ id: doc.id, ...doc.data() });
-                });
-                return productos;
-            } catch (fallbackError) {
-                throw new Error(`Error al obtener productos: ${error.message}`);
-            }
+        } catch (fallbackError) {
+            console.error('Error en fallback:', fallbackError);
+            throw new Error(`Error al obtener productos: ${fallbackError.message}`);
         }
     },
     
     /**
      * Obtener productos destacados
+     * ✅ OPTIMIZADO CON ÍNDICES
      */
     async getDestacados(limitCount = 10) {
         try {
-            // ✅ Consulta SIN índices compuestos
+            const q = query(
+                collection(db, PRODUCTS_COLLECTION),
+                where('destacado', '==', true),
+                where('estado', '==', 'activo'),
+                orderBy('createdAt', 'desc'),
+                limit(limitCount)
+            );
+            const querySnapshot = await getDocs(q);
+            
+            const productos = [];
+            querySnapshot.forEach((doc) => {
+                productos.push({ id: doc.id, ...doc.data() });
+            });
+            
+            console.log(`📦 Productos destacados: ${productos.length}`);
+            return productos;
+            
+        } catch (error) {
+            console.error('Error obteniendo productos destacados:', error);
+            // Fallback sin índices
+            return await this._getDestacadosFallback(limitCount);
+        }
+    },
+    
+    /**
+     * FALLBACK: Productos destacados sin índices compuestos
+     */
+    async _getDestacadosFallback(limitCount = 10) {
+        try {
             const q = query(
                 collection(db, PRODUCTS_COLLECTION),
                 where('destacado', '==', true),
@@ -192,7 +246,6 @@ export const ProductRepository = {
                 productos.push({ id: doc.id, ...doc.data() });
             });
             
-            // Ordenar en memoria por fecha
             productos.sort((a, b) => {
                 const dateA = a.createdAt || '';
                 const dateB = b.createdAt || '';
@@ -201,17 +254,46 @@ export const ProductRepository = {
             
             return productos.slice(0, limitCount);
         } catch (error) {
-            console.error('Error obteniendo productos destacados:', error);
+            console.error('Error en fallback destacados:', error);
             throw new Error(`Error al obtener productos destacados: ${error.message}`);
         }
     },
     
     /**
      * Obtener productos por categoría
+     * ✅ OPTIMIZADO CON ÍNDICES
      */
     async getByCategoria(categoria, limitCount = 20) {
         try {
-            // ✅ Consulta SIN índices compuestos
+            const q = query(
+                collection(db, PRODUCTS_COLLECTION),
+                where('categoria', '==', categoria),
+                where('estado', '==', 'activo'),
+                orderBy('createdAt', 'desc'),
+                limit(limitCount)
+            );
+            const querySnapshot = await getDocs(q);
+            
+            const productos = [];
+            querySnapshot.forEach((doc) => {
+                productos.push({ id: doc.id, ...doc.data() });
+            });
+            
+            console.log(`📦 Productos por categoría ${categoria}: ${productos.length}`);
+            return productos;
+            
+        } catch (error) {
+            console.error('Error obteniendo productos por categoría:', error);
+            // Fallback sin índices
+            return await this._getByCategoriaFallback(categoria, limitCount);
+        }
+    },
+    
+    /**
+     * FALLBACK: Productos por categoría sin índices compuestos
+     */
+    async _getByCategoriaFallback(categoria, limitCount = 20) {
+        try {
             const q = query(
                 collection(db, PRODUCTS_COLLECTION),
                 where('categoria', '==', categoria),
@@ -224,7 +306,6 @@ export const ProductRepository = {
                 productos.push({ id: doc.id, ...doc.data() });
             });
             
-            // Ordenar en memoria por fecha
             productos.sort((a, b) => {
                 const dateA = a.createdAt || '';
                 const dateB = b.createdAt || '';
@@ -233,8 +314,65 @@ export const ProductRepository = {
             
             return productos.slice(0, limitCount);
         } catch (error) {
-            console.error('Error obteniendo productos por categoría:', error);
+            console.error('Error en fallback categoría:', error);
             throw new Error(`Error al obtener productos: ${error.message}`);
+        }
+    },
+    
+    /**
+     * Obtener productos en oferta
+     * ✅ NUEVO MÉTODO OPTIMIZADO CON ÍNDICES
+     */
+    async getOfertas(limitCount = 20) {
+        try {
+            const q = query(
+                collection(db, PRODUCTS_COLLECTION),
+                where('estado', '==', 'activo'),
+                where('porcentajeDescuento', '>', 0),
+                orderBy('porcentajeDescuento', 'desc'),
+                limit(limitCount)
+            );
+            const querySnapshot = await getDocs(q);
+            
+            const productos = [];
+            querySnapshot.forEach((doc) => {
+                productos.push({ id: doc.id, ...doc.data() });
+            });
+            
+            console.log(`📦 Productos en oferta: ${productos.length}`);
+            return productos;
+            
+        } catch (error) {
+            console.error('Error obteniendo productos en oferta:', error);
+            // Fallback sin índices
+            return await this._getOfertasFallback(limitCount);
+        }
+    },
+    
+    /**
+     * FALLBACK: Productos en oferta sin índices compuestos
+     */
+    async _getOfertasFallback(limitCount = 20) {
+        try {
+            const q = query(
+                collection(db, PRODUCTS_COLLECTION),
+                where('estado', '==', 'activo')
+            );
+            const querySnapshot = await getDocs(q);
+            
+            const productos = [];
+            querySnapshot.forEach((doc) => {
+                const data = { id: doc.id, ...doc.data() };
+                if (data.porcentajeDescuento > 0) {
+                    productos.push(data);
+                }
+            });
+            
+            productos.sort((a, b) => b.porcentajeDescuento - a.porcentajeDescuento);
+            return productos.slice(0, limitCount);
+        } catch (error) {
+            console.error('Error en fallback ofertas:', error);
+            throw new Error(`Error al obtener productos en oferta: ${error.message}`);
         }
     },
     
@@ -307,7 +445,40 @@ export const ProductRepository = {
      */
     async search(termino, limitCount = 20) {
         try {
-            // ✅ Consulta SIN índices compuestos
+            // ✅ Usar índices para búsqueda básica
+            const q = query(
+                collection(db, PRODUCTS_COLLECTION),
+                where('estado', '==', 'activo'),
+                orderBy('nombre'),
+                limit(limitCount * 2)
+            );
+            const querySnapshot = await getDocs(q);
+            
+            const terminoLower = termino.toLowerCase();
+            const productos = [];
+            
+            querySnapshot.forEach((doc) => {
+                const data = { id: doc.id, ...doc.data() };
+                if (data.nombre?.toLowerCase().includes(terminoLower) ||
+                    data.descripcion?.toLowerCase().includes(terminoLower) ||
+                    data.marca?.toLowerCase().includes(terminoLower)) {
+                    productos.push(data);
+                }
+            });
+            
+            return productos.slice(0, limitCount);
+        } catch (error) {
+            console.error('Error buscando productos:', error);
+            // Fallback sin índices
+            return await this._searchFallback(termino, limitCount);
+        }
+    },
+    
+    /**
+     * FALLBACK: Búsqueda sin índices
+     */
+    async _searchFallback(termino, limitCount = 20) {
+        try {
             const q = query(
                 collection(db, PRODUCTS_COLLECTION),
                 where('estado', '==', 'activo')
@@ -328,7 +499,7 @@ export const ProductRepository = {
             
             return productos.slice(0, limitCount);
         } catch (error) {
-            console.error('Error buscando productos:', error);
+            console.error('Error en fallback búsqueda:', error);
             throw new Error(`Error al buscar productos: ${error.message}`);
         }
     }

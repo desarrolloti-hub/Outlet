@@ -1,6 +1,7 @@
 /* ========================================
    PRODUCT SERVICE - Outlet Val
    Lógica de negocio para productos
+   ✅ VERSIÓN OPTIMIZADA CON ÍNDICES
    ======================================== */
 
 import { Product } from '../classes/productModel.js';
@@ -159,6 +160,7 @@ export const ProductService = {
     
     /**
      * Obtener todos los productos
+     * ✅ OPTIMIZADO CON ÍNDICES
      */
     async getAll(filters = {}, sortBy = 'createdAt', sortDir = 'desc', limitCount = 50) {
         // Generar clave de caché basada en los filtros
@@ -181,6 +183,7 @@ export const ProductService = {
     
     /**
      * Obtener productos destacados
+     * ✅ OPTIMIZADO CON ÍNDICES
      */
     async getDestacados(limit = 10) {
         const cacheKey = `destacados_${limit}`;
@@ -199,7 +202,28 @@ export const ProductService = {
     },
     
     /**
+     * Obtener productos en oferta
+     * ✅ NUEVO MÉTODO OPTIMIZADO CON ÍNDICES
+     */
+    async getOfertas(limit = 20) {
+        const cacheKey = `ofertas_${limit}`;
+        
+        const cached = await CacheService.getCache(STORES.PRODUCTS, cacheKey);
+        if (cached) {
+            return cached.map(p => new Product(p));
+        }
+        
+        const productsData = await ProductRepository.getOfertas(limit);
+        const products = productsData.map(p => new Product(p));
+        
+        await CacheService.setCache(STORES.PRODUCTS, cacheKey, productsData, 1800000);
+        
+        return products;
+    },
+    
+    /**
      * Obtener productos por categoría
+     * ✅ OPTIMIZADO CON ÍNDICES
      */
     async getByCategoria(categoria, limit = 20) {
         const cacheKey = `categoria_${categoria}_${limit}`;
@@ -299,6 +323,7 @@ export const ProductService = {
     
     /**
      * Buscar productos
+     * ✅ OPTIMIZADO CON ÍNDICES
      */
     async search(termino, limit = 20) {
         if (!termino || termino.trim().length < 2) {
@@ -327,40 +352,6 @@ export const ProductService = {
     validateForPublish(productData) {
         const product = new Product(productData);
         return product.validarParaPublicar();
-    },
-    
-    /**
-     * Obtener productos en oferta
-     */
-    async getOfertas(limit = 20) {
-        const cacheKey = `ofertas_${limit}`;
-        
-        const cached = await CacheService.getCache(STORES.PRODUCTS, cacheKey);
-        if (cached) {
-            return cached.map(p => new Product(p));
-        }
-        
-        const products = await this.getAll({ enOferta: true }, 'porcentajeDescuento', 'desc', limit);
-        
-        // Guardar en caché
-        const productsData = products.map(p => ({
-            id: p.id,
-            sku: p.sku,
-            nombre: p.nombre,
-            marca: p.marca,
-            categoria: p.categoria,
-            precioVenta: p.precioVenta,
-            porcentajeDescuento: p.porcentajeDescuento,
-            precioFinal: p.precioFinal,
-            imagenPrincipal: p.imagenPrincipal,
-            stock: p.stock,
-            estado: p.estado,
-            destacado: p.destacado
-        }));
-        
-        await CacheService.setCache(STORES.PRODUCTS, cacheKey, productsData, 1800000);
-        
-        return products;
     },
     
     /**

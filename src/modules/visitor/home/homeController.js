@@ -1,13 +1,13 @@
 /* ========================================
-   HOME CONTROLLER - OUTLET (CON PRODUCTOS DE FIRESTORE)
+   HOME CONTROLLER - OUTLET (SIN RECARGAS)
+   ✅ ANIMACIÓN SOLO UNA VEZ
    ======================================== */
 
-import { ProductRepository } from '../../../repositories/productRepository.js';
+import { ProductService } from '../../../services/productService.js';
 import { CacheService, STORES } from '../../../services/cacheService.js';
 
-// URLs de imágenes ORIGINALES (SOLO para categorías y hero - NO TOCAR)
+// URLs de imágenes ORIGINALES
 const IMAGES = {
-    // Categorías - imágenes circulares (NO MODIFICAR)
     categories: [
         "https://lh3.googleusercontent.com/aida-public/AB6AXuCLtfxBJHzGNyW7S2r8PW8UQEHi3Z95AiwvvvFcgXN_hNFljU5xDClu2lssWY6IbYEC4edbKUKNLGf7qG2g2XSS4FKM6nBHZywoiZuPnRqFcOkZlGNNFXKBx-BOGn6ur_pJ3V2ou-YtZhJS9jasGgca3Zn3XDpIif4NDtVf20VhbnwMPBays54-jz3tg7jaRI521AMak_IjSPuW2oGrwBe4CRuUM9Nd0nNJhP3FAVFYozcs1fUdWID0FIqEoDpFZM8y7uhZGL5WyTPA",
         "https://lh3.googleusercontent.com/aida-public/AB6AXuDyrTXSUlcmOYzW27UEkvX2vqNni8uwPo95DIHp7MKUTmqkwuf-xcE1Cfdw98tztp8CBY3lAizz1mDcgp2yOOb0MorWuE5Q4ejnmw3LIwW8ECiWkgCclFwhlZyflfDlz-JXRQkQU4q2WpHwqKPla73kSktxwSVds1R6AjRYI79O8MCVS2xiHFz_ixrDHa7DQnvhzcuswyE0Qs7kgpUq4M66-9xZtuttgvpNz1BVU2Pqpc6nI9IFlPUzdEOJpR79Wsq24K_JtU0j_pnL",
@@ -16,7 +16,6 @@ const IMAGES = {
         "https://lh3.googleusercontent.com/aida-public/AB6AXuAPFf8lNofT1q78NB41yKwRRLZIH_2qgXBAq41knEh1IRAOTYVtb5pSj9uC_BoSANE_vvL3NjBudbzdDs_rK2a7D47lzs_EM4Y009_X_9fBNVt_kk4fjm7_oZrdpBloAlZ7iTl6-QuSIn4dbbo_N2_IxU6MwtcKkXO8dIUgym2_jP3TUkYQ8fxSu4-JO3fysyRCGjF6667mopg-nCZTmAEl9dZaOCfy5BKxqMbFnJhtKdEsBfxbTsegNRRZHpyHwlJrIQV6YnTpmQ_b",
         "https://lh3.googleusercontent.com/aida-public/AB6AXuAMLUpsb4z_kmPPRr7SNFmJzhQca6vRy9f6mYTZXfeN2DveISlKOiLdPMR9YXJs76KL_XkI_IGvLMIbAycg5TV0TqRM9lGKCaIsYioaInmOMgayFC_p68Lgqn5rtzqcfFpBJG4a-9SYRXh8lROsm5UCwfNulB9Q7TlSNr09Cys6e-9ply60QBkaCJ-33WcZuT6AV7HVOYWj-dH0cQyvpdnuuEC54nq40GNV72x2B34D_mfuANqKA4XKWXjM0DgACe5ThWYMCqnC2j51"
     ],
-    // ✅ GALERÍA - Agregamos las imágenes de galería
     gallery: [
         "https://lh3.googleusercontent.com/aida-public/AB6AXuDZqg3PhiQcyPx9qvbvfRC7iQUY952pX3kM5GkXqJXvUdnbSGwDAOUdqna-ep1_T6oRUpFfk8bfIfOD_y0Ux9cQj-zbgL8GWutPS_fBYwWEMNoDF0GJ2tI5X-1hmVWVAVrzredmlqqQ2VJ05aYRgCYFx8uz5JWXwf12Nmzw6w-ZU6LDThAOCZVruPAxD72MY9PVJDC-nX_Pjt8syhhFzqz2CHSKem0ME6wcYcNizQ948Dv5vOWrgqBgnp89rvOw3Yrv-Ll4uTmZeuXJ",
         "https://lh3.googleusercontent.com/aida-public/AB6AXuCLtfxBJHzGNyW7S2r8PW8UQEHi3Z95AiwvvvFcgXN_hNFljU5xDClu2lssWY6IbYEC4edbKUKNLGf7qG2g2XSS4FKM6nBHZywoiZuPnRqFcOkZlGNNFXKBx-BOGn6ur_pJ3V2ou-YtZhJS9jasGgca3Zn3XDpIif4NDtVf20VhbnwMPBays54-jz3tg7jaRI521AMak_IjSPuW2oGrwBe4CRuUM9Nd0nNJhP3FAVFYozcs1fUdWID0FIqEoDpFZM8y7uhZGL5WyTPA",
@@ -26,7 +25,6 @@ const IMAGES = {
     hero: "https://lh3.googleusercontent.com/aida-public/AB6AXuDBtNHClCvXICohUTSHXDeCbNbys5DdAaT7Q-uEaHIWRwxLm9yovNIk2a5I35QNryWCMgMx7jW6-OcTq9Xx0tLOSAVolnEbxKWfFWFlKQdyKr_xAuMLnSUkYK7nrKWtka7eHTgkVPsuAe7qa8I44o1OHxQcIIfkGjmwdgeWxV_lshwAJ4AxzMiiTbZlXQeODlvTckTjwJep1vka771QFHUaRX9ea8g-plsgl7sxU6J7ojEjJjV5GBf7pMwBzOwOVmWysLX8FRQef6ev"
 };
 
-// Datos de categorías y galería (estáticos - NO TOCAR)
 const staticData = {
     categories: [
         { name: "MUJER", url: "women", imgIndex: 0 },
@@ -42,10 +40,10 @@ const staticData = {
 };
 
 // ============================================
-// FUNCIÓN PRINCIPAL
+// FUNCIÓN PRINCIPAL - EXPORTADA
 // ============================================
 export async function homeController() {
-    console.log('🏠 Home Controller - Cargando productos desde Firebase...');
+    console.log('🏠 Home Controller - SIN RECARGAS');
     
     loadHeroImage();
     loadCategories();
@@ -63,11 +61,11 @@ export async function homeController() {
     initRefreshButton();
     setupRealtimeUpdates();
     
-    console.log('✅ Home Controller listo');
+    console.log('✅ Home Controller listo - Animación solo una vez');
 }
 
 // ============================================
-// FUNCIONES ESTÁTICAS (NO TOCAR)
+// FUNCIONES ESTÁTICAS
 // ============================================
 
 function loadHeroImage() {
@@ -107,8 +105,11 @@ function loadGallery() {
 }
 
 // ============================================
-// FUNCIONES CON PRODUCTOS DE FIRESTORE (CORREGIDAS)
+// FUNCIONES CON PRODUCTOS - SIN RECARGAS
 // ============================================
+
+// ✅ Bandera para controlar si ya se animó la primera carga
+let isFirstLoad = true;
 
 async function loadFlashSale() {
     const container = document.getElementById('flash-sale-container');
@@ -118,49 +119,43 @@ async function loadFlashSale() {
     }
 
     try {
-        container.innerHTML = `
-            <div class="loading-state" style="grid-column: 1/-1; text-align: center; padding: 40px;">
-                <p class="body-sm" style="color: var(--gray-500);">Cargando productos...</p>
-            </div>
-        `;
+        // ✅ Mostrar estado de carga (solo la primera vez)
+        if (!container.hasAttribute('data-loaded')) {
+            container.innerHTML = `
+                <div class="loading-state" style="grid-column: 1/-1; text-align: center; padding: 40px;">
+                    <p class="body-sm" style="color: var(--gray-500);">Cargando productos...</p>
+                </div>
+            `;
+        }
 
-        // ✅ LIMPIAR CACHÉ ANTES DE CARGAR
-        await CacheService.clearCache(STORES.PRODUCTS);
+        const flashProducts = await ProductService.getOfertas(6);
         
-        // ✅ OBTENER TODOS LOS PRODUCTOS ACTIVOS
-        const allProducts = await ProductRepository.getAll({ 
-            estado: 'activo'
-        });
+        console.log('📦 Productos en oferta:', flashProducts.length);
         
-        console.log('📦 Todos los productos obtenidos:', allProducts.length);
-        
-        // ✅ FILTRAR PRODUCTOS CON DESCUENTO (> 0)
-        const productsWithDiscount = allProducts.filter(p => p.porcentajeDescuento > 0);
-        
-        console.log('📦 Productos con descuento:', productsWithDiscount.length);
-        
-        if (!productsWithDiscount || productsWithDiscount.length === 0) {
+        if (!flashProducts || flashProducts.length === 0) {
             container.innerHTML = `
                 <div class="empty-state" style="grid-column: 1/-1; text-align: center; padding: 40px;">
                     <p class="body-sm" style="color: var(--gray-500);">No hay productos en oferta disponibles</p>
                 </div>
             `;
+            container.setAttribute('data-loaded', 'true');
             return;
         }
 
-        // ✅ ORDENAR POR MAYOR DESCUENTO
-        productsWithDiscount.sort((a, b) => b.porcentajeDescuento - a.porcentajeDescuento);
+        // ✅ Generar HTML sin animaciones para actualizaciones
+        const shouldAnimate = isFirstLoad;
         
-        const flashProducts = productsWithDiscount.slice(0, 6);
-
-        container.innerHTML = flashProducts.map((p) => {
+        const newHTML = flashProducts.map((p) => {
             const discount = p.porcentajeDescuento || 0;
             const finalPrice = p.precioFinal || p.precioVenta * (1 - discount / 100);
             const soldPercent = p.soldPercent || Math.floor(Math.random() * 60) + 20;
             const imgSrc = p.imagenPrincipal || '/images/placeholder.jpg';
 
+            // ✅ Si es la primera carga, agregar estilos para animación
+            const animStyles = shouldAnimate ? 'opacity: 0; transform: translateY(20px);' : '';
+            
             return `
-                <div class="product-card" data-id="${p.id}">
+                <div class="product-card" data-id="${p.id}" style="${animStyles}">
                     <div class="product-img">
                         <img src="${imgSrc}" alt="${p.nombre || 'Producto'}" loading="lazy"/>
                         <div class="sale-tag">-${discount}%</div>
@@ -178,8 +173,28 @@ async function loadFlashSale() {
             `;
         }).join('');
 
+        // ✅ Reemplazar sin recargar la página
+        container.innerHTML = newHTML;
+        container.setAttribute('data-loaded', 'true');
+
+        // ✅ ANIMACIÓN SOLO EN LA PRIMERA CARGA
+        if (shouldAnimate) {
+            const newCards = container.querySelectorAll('.product-card');
+            newCards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 50);
+            });
+            
+            // ✅ Marcar que ya se hizo la animación
+            isFirstLoad = false;
+        }
+
+        // ✅ Animar barras de progreso siempre
         setTimeout(() => {
-            document.querySelectorAll('#flash-sale-container .progress-fill').forEach((bar, index) => {
+            container.querySelectorAll('.progress-fill').forEach((bar, index) => {
                 const product = flashProducts[index];
                 const soldPercent = product?.soldPercent || Math.floor(Math.random() * 60) + 20;
                 animateProgressBar(bar, soldPercent);
@@ -190,11 +205,13 @@ async function loadFlashSale() {
 
     } catch (error) {
         console.error('❌ Error cargando productos en oferta:', error);
-        container.innerHTML = `
-            <div class="error-state" style="grid-column: 1/-1; text-align: center; padding: 40px;">
-                <p class="body-sm" style="color: var(--red-500);">Error al cargar productos: ${error.message}</p>
-            </div>
-        `;
+        if (!container.hasAttribute('data-loaded')) {
+            container.innerHTML = `
+                <div class="error-state" style="grid-column: 1/-1; text-align: center; padding: 40px;">
+                    <p class="body-sm" style="color: var(--red-500);">Error al cargar productos: ${error.message}</p>
+                </div>
+            `;
+        }
     }
 }
 
@@ -206,35 +223,29 @@ async function loadTrending() {
     }
 
     try {
-        container.innerHTML = `
-            <div class="loading-state" style="grid-column: 1/-1; text-align: center; padding: 40px;">
-                <p class="body-sm" style="color: var(--gray-500);">Cargando productos...</p>
-            </div>
-        `;
-
-        // ✅ LIMPIAR CACHÉ ANTES DE CARGAR
-        await CacheService.clearCache(STORES.PRODUCTS);
-        
-        // ✅ OBTENER TODOS LOS PRODUCTOS ACTIVOS
-        let products = await ProductRepository.getAll({ 
-            estado: 'activo'
-        });
-        
-        // ✅ ORDENAR: primero destacados, luego por fecha de creación
-        if (products && products.length > 0) {
-            products.sort((a, b) => {
-                // Primero destacados
-                if (a.destacado && !b.destacado) return -1;
-                if (!a.destacado && b.destacado) return 1;
-                // Luego por fecha (más reciente primero)
-                const dateA = a.createdAt || '';
-                const dateB = b.createdAt || '';
-                return dateB.localeCompare(dateA);
-            });
+        // ✅ Mostrar estado de carga (solo la primera vez)
+        if (!container.hasAttribute('data-loaded')) {
+            container.innerHTML = `
+                <div class="loading-state" style="grid-column: 1/-1; text-align: center; padding: 40px;">
+                    <p class="body-sm" style="color: var(--gray-500);">Cargando productos...</p>
+                </div>
+            `;
         }
+
+        let products = await ProductService.getDestacados(5);
         
-        // ✅ LIMITAR A 5 PRODUCTOS
-        products = products.slice(0, 5);
+        if (products.length < 5) {
+            const allProducts = await ProductService.getAll({ 
+                estado: 'activo'
+            }, 'createdAt', 'desc', 10);
+            
+            const destacadosIds = new Set(products.map(p => p.id));
+            const adicionales = allProducts
+                .filter(p => !destacadosIds.has(p.id))
+                .slice(0, 5 - products.length);
+            
+            products = [...products, ...adicionales];
+        }
         
         console.log('📦 Productos para trending:', products.length);
         
@@ -244,10 +255,14 @@ async function loadTrending() {
                     <p class="body-sm" style="color: var(--gray-500);">No hay productos disponibles</p>
                 </div>
             `;
+            container.setAttribute('data-loaded', 'true');
             return;
         }
 
-        container.innerHTML = products.map(p => {
+        // ✅ Generar HTML sin animaciones para actualizaciones
+        const shouldAnimate = isFirstLoad;
+        
+        const newHTML = products.map(p => {
             let badge = '';
             if (p.destacado) {
                 badge = '<span class="new-badge" style="background: var(--gold);">DESTACADO</span>';
@@ -260,8 +275,11 @@ async function loadTrending() {
             const imgSrc = p.imagenPrincipal || '/images/placeholder.jpg';
             const finalPrice = p.precioFinal || p.precioVenta;
 
+            // ✅ Si es la primera carga, agregar estilos para animación
+            const animStyles = shouldAnimate ? 'opacity: 0; transform: translateY(20px);' : '';
+
             return `
-                <div class="trending-item" data-id="${p.id}">
+                <div class="trending-item" data-id="${p.id}" style="${animStyles}">
                     <div class="trending-img">
                         ${badge}
                         <img src="${imgSrc}" alt="${p.nombre || 'Producto'}" loading="lazy"/>
@@ -277,15 +295,35 @@ async function loadTrending() {
             `;
         }).join('');
 
+        container.innerHTML = newHTML;
+        container.setAttribute('data-loaded', 'true');
+
+        // ✅ ANIMACIÓN SOLO EN LA PRIMERA CARGA
+        if (shouldAnimate) {
+            const newItems = container.querySelectorAll('.trending-item');
+            newItems.forEach((item, index) => {
+                setTimeout(() => {
+                    item.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                    item.style.opacity = '1';
+                    item.style.transform = 'translateY(0)';
+                }, index * 50);
+            });
+            
+            // ✅ Marcar que ya se hizo la animación
+            isFirstLoad = false;
+        }
+
         console.log(`✅ ${products.length} productos de tendencias cargados`);
 
     } catch (error) {
         console.error('❌ Error cargando productos destacados:', error);
-        container.innerHTML = `
-            <div class="error-state" style="grid-column: 1/-1; text-align: center; padding: 40px;">
-                <p class="body-sm" style="color: var(--red-500);">Error al cargar productos: ${error.message}</p>
-            </div>
-        `;
+        if (!container.hasAttribute('data-loaded')) {
+            container.innerHTML = `
+                <div class="error-state" style="grid-column: 1/-1; text-align: center; padding: 40px;">
+                    <p class="body-sm" style="color: var(--red-500);">Error al cargar productos: ${error.message}</p>
+                </div>
+            `;
+        }
     }
 }
 
@@ -365,12 +403,14 @@ function initCartEvents() {
         const productCard = e.target.closest('.product-card');
         const trendingCard = e.target.closest('.trending-item');
         
-        if (productCard && !e.target.closest('.add-cart')) {
-            showToast(`🔍 Ver detalles del producto`);
+        if (productCard && !e.target.closest('.add-cart') && !e.target.closest('button')) {
+            const productId = productCard.dataset.id;
+            showToast(`🔍 Ver detalles del producto ${productId}`);
         }
         
-        if (trendingCard && !e.target.closest('.add-cart')) {
-            showToast(`🔍 Ver detalles del producto`);
+        if (trendingCard && !e.target.closest('.add-cart') && !e.target.closest('button')) {
+            const productId = trendingCard.dataset.id;
+            showToast(`🔍 Ver detalles del producto ${productId}`);
         }
     });
 }
@@ -409,9 +449,11 @@ function initScrollReveal() {
     const revealElements = document.querySelectorAll('.product-card, .trending-item, .gallery-item, .category-item');
     
     revealElements.forEach((el, index) => {
-        el.style.opacity = '0';
-        el.style.transform = 'translateY(30px)';
-        el.style.transition = `opacity 0.6s ease ${index * 0.03}s, transform 0.6s ease ${index * 0.03}s`;
+        if (!el.style.opacity || el.style.opacity === '0') {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = `opacity 0.6s ease ${index * 0.03}s, transform 0.6s ease ${index * 0.03}s`;
+        }
     });
     
     const observer = new IntersectionObserver((entries) => {
@@ -550,32 +592,27 @@ function initMobileCategoryCarousel() {
 }
 
 // ============================================
-// ✅ NUEVAS FUNCIONES PARA ACTUALIZACIÓN EN TIEMPO REAL
+// ✅ ACTUALIZACIONES EN VIVO - SIN RECARGAR
 // ============================================
 
-/**
- * ✅ Botón de recarga manual
- */
 function initRefreshButton() {
     const refreshBtn = document.getElementById('refreshProductsBtn');
     if (!refreshBtn) return;
     
     refreshBtn.addEventListener('click', async () => {
-        // Rotar ícono
         const icon = refreshBtn.querySelector('i');
         if (icon) {
             icon.style.transform = 'rotate(360deg)';
             icon.style.transition = 'transform 0.5s';
         }
         
-        // Recargar productos
+        // ✅ Actualizar sin recargar y sin animación
         await CacheService.clearCache(STORES.PRODUCTS);
         await loadFlashSale();
         await loadTrending();
         
         showToast('✅ Productos actualizados');
         
-        // Restaurar ícono
         setTimeout(() => {
             if (icon) {
                 icon.style.transform = 'rotate(0deg)';
@@ -584,25 +621,23 @@ function initRefreshButton() {
     });
 }
 
-/**
- * ✅ Escucha cambios en Firestore y recarga automáticamente
- */
 function setupRealtimeUpdates() {
-    // Escuchar evento personalizado para recargar
+    // ✅ Escuchar cambios y actualizar sin recargar y sin animación
     window.addEventListener('products:updated', async (event) => {
-        console.log('🔄 Productos actualizados - Recargando...', event.detail);
+        console.log('🔄 Actualizando productos en vivo...', event.detail);
         await CacheService.clearCache(STORES.PRODUCTS);
         await loadFlashSale();
         await loadTrending();
-        showToast('🔄 Productos actualizados automáticamente');
+        showToast(`🔄 ${event.detail?.productName || 'Productos'} actualizados`);
     });
     
-    // ✅ Recargar cada 60 segundos (opcional - para asegurar que siempre estén actualizados)
+    // ✅ Recarga automática cada 60 segundos (sin recargar la página)
     setInterval(async () => {
-        console.log('🔄 Recarga automática cada 60 segundos...');
+        console.log('🔄 Actualización automática en vivo...');
         await CacheService.clearCache(STORES.PRODUCTS);
         await loadFlashSale();
         await loadTrending();
+        // No mostrar toast en actualizaciones automáticas para no molestar
     }, 60000);
 }
 
@@ -629,6 +664,9 @@ if (!document.querySelector('#outlet-styles')) {
         .btn-refresh:hover {
             transform: scale(1.1);
             transition: transform 0.3s;
+        }
+        .product-card, .trending-item {
+            transition: opacity 0.3s ease, transform 0.3s ease;
         }
     `;
     document.head.appendChild(style);

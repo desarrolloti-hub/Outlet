@@ -376,11 +376,22 @@ function resetCategoryForm() {
     if (elements.modalTitle) elements.modalTitle.textContent = 'Nueva Categoría';
 }
 
-function openCreateModal() {
-    resetCategoryForm();
-    showModal(elements.categoryModal);
+// ========================================
+// NUEVA FUNCIÓN: Redirigir a la página de creación
+// ========================================
+function openCreatePage() {
+    // Si estás usando un sistema de routing SPA
+    if (typeof window.navigateTo === 'function') {
+        window.navigateTo('/createCategories');
+    } else {
+        // Navegación tradicional
+        window.location.href = 'createCategories.html';
+    }
 }
 
+// ========================================
+// EDITAR CATEGORÍA (mantiene el modal)
+// ========================================
 async function editCategory(id) {
     var category = categories.find(function(c) { return c.id === id; });
     if (!category) {
@@ -727,7 +738,8 @@ function setupSlugGeneration() {
 // Event Listeners
 // ========================================
 function initEventListeners() {
-    elements.addBtn?.addEventListener('click', openCreateModal);
+    // CAMBIO: Redirige a createCategories en lugar de abrir modal
+    elements.addBtn?.addEventListener('click', openCreatePage);
     
     elements.categoryForm?.addEventListener('submit', saveCategory);
     elements.closeModalBtn?.addEventListener('click', function() { hideModal(elements.categoryModal); });
