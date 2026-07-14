@@ -263,6 +263,14 @@ function populateCategorySelector() {
 }
 
 // ========================================
+// Obtener ID de la URL
+// ========================================
+function getCategoryIdFromUrl() {
+    var urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('id');
+}
+
+// ========================================
 // Cargar datos de la categoría seleccionada
 // ========================================
 function onCategorySelect() {
@@ -448,16 +456,22 @@ async function resetForm() {
 }
 
 // ========================================
+// NUEVA FUNCIÓN: Redirigir a la página de lectura
+// ========================================
+function goBackToList() {
+    if (typeof window.navigateTo === 'function') {
+        window.navigateTo('/readCategories');
+    } else {
+        window.location.href = 'readCategories.html';
+    }
+}
+
+// ========================================
 // Event Listeners
 // ========================================
 function initEventListeners() {
-    elements.backBtn?.addEventListener('click', function() {
-        if (typeof window.navigateTo === 'function') {
-            window.navigateTo('/admin/categories');
-        } else {
-            window.history.back();
-        }
-    });
+    // CAMBIO: Redirige a readCategories en lugar de history.back()
+    elements.backBtn?.addEventListener('click', goBackToList);
     
     elements.categorySelector?.addEventListener('change', onCategorySelect);
     
@@ -508,6 +522,21 @@ export async function updateCategoryController() {
     }
     
     await loadCategories();
+    
+    // Si hay un ID en la URL, seleccionar automáticamente esa categoría
+    var categoryIdFromUrl = getCategoryIdFromUrl();
+    if (categoryIdFromUrl && elements.categorySelector) {
+        // Verificar que la categoría existe
+        var categoryExists = categories.some(function(c) { return c.id === categoryIdFromUrl; });
+        if (categoryExists) {
+            elements.categorySelector.value = categoryIdFromUrl;
+            onCategorySelect();
+            console.log('✅ Categoría cargada automáticamente desde URL: ' + categoryIdFromUrl);
+        } else {
+            console.warn('⚠️ Categoría no encontrada: ' + categoryIdFromUrl);
+            mostrarToast('La categoría solicitada no existe', 'error');
+        }
+    }
     
     console.log('✅ Update Category page loaded');
 }
