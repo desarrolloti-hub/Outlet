@@ -1,6 +1,7 @@
 /* ========================================
    CATEGORY SERVICE - Outlet Val
    Lógica de negocio para categorías
+   CON SOPORTE PARA IMÁGENES EN BASE64
    ======================================== */
 
 import { Category } from '../classes/categoryModel.js';
@@ -17,7 +18,6 @@ export const CategoryService = {
             throw new Error('El nombre de la categoría debe tener al menos 2 caracteres');
         }
         
-        // Validar ID
         if (!categoryData.id || categoryData.id.trim() === '') {
             throw new Error('El ID de la categoría es requerido');
         }
@@ -26,44 +26,36 @@ export const CategoryService = {
             throw new Error('El ID solo puede contener letras minúsculas, números, guiones bajos (_) y guiones (-)');
         }
         
-        // Generar slug si no viene
         const category = new Category(categoryData);
         if (!categoryData.slug) {
             category.slug = category.generateSlug(categoryData.name);
         }
         
-        // Verificar que el ID no exista ya
         const existingById = await CategoryRepository.getById(category.id);
         if (existingById) {
             throw new Error(`Ya existe una categoría con el ID "${category.id}"`);
         }
         
-        // Verificar que el nombre no exista ya
         const exists = await CategoryRepository.existsByName(category.name);
         if (exists) {
             throw new Error(`Ya existe una categoría con el nombre "${category.name}"`);
         }
         
-        // Verificar que el slug no exista
         const existingBySlug = await CategoryRepository.getBySlug(category.slug);
         if (existingBySlug) {
             throw new Error(`Ya existe una categoría con el slug "${category.slug}"`);
         }
         
-        // Validar categoría
         const validation = category.validate();
         if (!validation.isValid) {
             throw new Error(validation.errors.join(', '));
         }
-        
-        // ========== CREAR MODELO ==========
+
         category.createdBy = adminUserId;
         category.subcategories = categoryData.subcategories || [];
         
-        // ========== GUARDAR EN FIRESTORE ==========
         const result = await CategoryRepository.save(category.toPlainObject());
         
-        // Limpiar caché de categorías
         try {
             await CacheService.clearCache(STORES.CATEGORIES);
         } catch (cacheError) {
@@ -112,7 +104,6 @@ export const CategoryService = {
     
     /**
      * Obtener todas las categorías
-     * ✅ MODIFICADO: Ya no filtra por status
      */
     async getAll(filters = {}, forceRefresh = false) {
         const cacheKey = `categories_list_${JSON.stringify(filters)}`;
@@ -145,7 +136,6 @@ export const CategoryService = {
     
     /**
      * Obtener solo categorías activas (para tienda)
-     * ✅ MODIFICADO: Como no tenemos status, devolvemos todas
      */
     async getActiveCategories(forceRefresh = false) {
         const cacheKey = 'active_categories_list';
@@ -161,7 +151,6 @@ export const CategoryService = {
             }
         }
         
-        // Como no tenemos status, devolvemos todas
         const categoriesData = await CategoryRepository.getActiveCategories();
         const categories = categoriesData.map(c => new Category(c));
         
@@ -184,12 +173,10 @@ export const CategoryService = {
             throw new Error('Categoría no encontrada');
         }
         
-        // No permitir cambiar el ID
         if (updateData.id && updateData.id !== categoryId) {
             throw new Error('No se puede cambiar el ID de la categoría');
         }
         
-        // Validar nombre si se está actualizando
         if (updateData.name && updateData.name !== currentCategory.name) {
             if (updateData.name.trim().length < 2) {
                 throw new Error('El nombre de la categoría debe tener al menos 2 caracteres');
@@ -201,7 +188,6 @@ export const CategoryService = {
             }
         }
         
-        // Validar slug si se está actualizando
         if (updateData.slug && updateData.slug !== currentCategory.slug) {
             const existingBySlug = await CategoryRepository.getBySlug(updateData.slug);
             if (existingBySlug && existingBySlug.id !== categoryId) {
@@ -211,7 +197,6 @@ export const CategoryService = {
         
         const updated = await CategoryRepository.update(categoryId, updateData);
         
-        // Limpiar caché
         try {
             await CacheService.clearCache(STORES.CATEGORIES);
         } catch (cacheError) {
@@ -219,6 +204,117 @@ export const CategoryService = {
         }
         
         return new Category(updated);
+    },
+    
+    /**
+     * 🖼️ SUBIR IMAGEN EN BASE64 (similar a productos)
+     */
+    async uploadCategoryImage(categoryId, file) {
+        try {
+            console.log('📸 Iniciando conversión a Base64 para categoría:', categoryId);
+            
+            if (!file) {
+                throw new Error('No se proporcionó ningún archivo');
+            }
+            
+            if (!file.type || !file.type.startsWith('image/')) {
+                throw new Error('El archivo debe ser una imagen válida');
+            }
+            
+            // Límite de 5MB para Base64
+            const maxSize = 5 * 1024 * 1024;
+            if (file.size > maxSize) {
+                throw new Error('La imagen no puede superar los 5MB');
+            }
+            
+            // Verificar que la categoría existe
+            const category = await this.getById(categoryId, true);
+            if (!category) {
+                throw new Error(`Categoría con ID "${categoryId}" no encontrada`);
+            }
+            
+            // Convertir a Base64
+            const base64String = await this.fileToBase64(file);
+            
+            console.log('✅ Imagen convertida a Base64');
+            console.log('📏 Tamaño Base64:', (base64String.length / 1024 / 1024).toFixed(2), 'MB');
+            
+            // Actualizar la categoría con la imagen Base64
+            const updateData = {
+                imageBase64: base64String,
+                imageType: file.type,
+                imageName: file.name,
+                imageSize: file.size
+            };
+            
+            const updated = await this.update(categoryId, updateData);
+            
+            // Limpiar caché
+            try {
+                await CacheService.clearCache(STORES.CATEGORIES);
+            } catch (cacheError) {
+                console.warn('⚠️ No se pudo limpiar caché:', cacheError.message);
+            }
+            
+            return {
+                url: base64String,
+                path: null,
+                fileName: file.name,
+                size: file.size,
+                type: file.type
+            };
+            
+        } catch (error) {
+            console.error('❌ Error en uploadCategoryImage:', error);
+            throw error;
+        }
+    },
+    
+    /**
+     * Convertir archivo a Base64
+     */
+    fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = (error) => reject(error);
+        });
+    },
+    
+    /**
+     * 🗑️ Eliminar imagen de categoría
+     */
+    async deleteCategoryImage(categoryId) {
+        try {
+            const category = await this.getById(categoryId, true);
+            
+            if (!category) {
+                throw new Error('Categoría no encontrada');
+            }
+            
+            if (!category.imageBase64) {
+                throw new Error('La categoría no tiene imagen para eliminar');
+            }
+            
+            await this.update(categoryId, {
+                imageBase64: '',
+                imageType: '',
+                imageName: '',
+                imageSize: null
+            });
+            
+            try {
+                await CacheService.clearCache(STORES.CATEGORIES);
+            } catch (cacheError) {
+                console.warn('⚠️ No se pudo limpiar caché:', cacheError.message);
+            }
+            
+            return true;
+        } catch (error) {
+            console.error('Error eliminando imagen de categoría:', error);
+            throw new Error(`Error al eliminar imagen: ${error.message}`);
+        }
     },
     
     /**
@@ -235,15 +331,12 @@ export const CategoryService = {
             throw new Error('Categoría no encontrada');
         }
         
-        // Usar el método del modelo para agregar con descripción
         const newSubcategory = category.addSubcategory(subcategoryName, description);
         
-        // Guardar cambios
         await CategoryRepository.update(categoryId, { 
             subcategories: category.subcategories 
         });
         
-        // Limpiar caché
         try {
             await CacheService.clearCache(STORES.CATEGORIES);
         } catch (cacheError) {
@@ -267,22 +360,18 @@ export const CategoryService = {
             throw new Error('Categoría no encontrada');
         }
         
-        // Encontrar la subcategoría por ID
         const subIndex = category.subcategories.findIndex(sub => sub.id === subcategoryId);
         
         if (subIndex === -1) {
             throw new Error('Subcategoría no encontrada');
         }
         
-        // Actualizar usando el método del modelo con descripción
         category.updateSubcategory(subIndex, newName, newDescription);
         
-        // Guardar cambios
         await CategoryRepository.update(categoryId, { 
             subcategories: category.subcategories 
         });
         
-        // Limpiar caché
         try {
             await CacheService.clearCache(STORES.CATEGORIES);
         } catch (cacheError) {
@@ -302,22 +391,18 @@ export const CategoryService = {
             throw new Error('Categoría no encontrada');
         }
         
-        // Encontrar la subcategoría por ID
         const subIndex = category.subcategories.findIndex(sub => sub.id === subcategoryId);
         
         if (subIndex === -1) {
             throw new Error('Subcategoría no encontrada');
         }
         
-        // Eliminar usando el método del modelo
         category.deleteSubcategory(subIndex);
         
-        // Guardar cambios
         await CategoryRepository.update(categoryId, { 
             subcategories: category.subcategories 
         });
         
-        // Limpiar caché
         try {
             await CacheService.clearCache(STORES.CATEGORIES);
         } catch (cacheError) {
@@ -339,7 +424,6 @@ export const CategoryService = {
         
         const result = await CategoryRepository.delete(categoryId, hardDelete);
         
-        // Limpiar caché
         try {
             await CacheService.clearCache(STORES.CATEGORIES);
         } catch (cacheError) {
@@ -380,6 +464,6 @@ export const CategoryService = {
      * Validar categoría para uso en tienda
      */
     validateForStore(category) {
-        return true; // Todas las categorías son válidas
+        return true;
     }
 };

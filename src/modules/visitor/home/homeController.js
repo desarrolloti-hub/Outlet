@@ -1,52 +1,39 @@
 /* ========================================
    HOME CONTROLLER - OUTLET (SIN RECARGAS)
-   ✅ ANIMACIÓN SOLO UNA VEZ
+   ✅ CATEGORÍAS DINÁMICAS DESDE FIREBASE
    ======================================== */
 
 import { ProductService } from '../../../services/productService.js';
+import { CategoryService } from '../../../services/categoryService.js';
 import { CacheService, STORES } from '../../../services/cacheService.js';
 
-// URLs de imágenes ORIGINALES
-const IMAGES = {
-    categories: [
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuCLtfxBJHzGNyW7S2r8PW8UQEHi3Z95AiwvvvFcgXN_hNFljU5xDClu2lssWY6IbYEC4edbKUKNLGf7qG2g2XSS4FKM6nBHZywoiZuPnRqFcOkZlGNNFXKBx-BOGn6ur_pJ3V2ou-YtZhJS9jasGgca3Zn3XDpIif4NDtVf20VhbnwMPBays54-jz3tg7jaRI521AMak_IjSPuW2oGrwBe4CRuUM9Nd0nNJhP3FAVFYozcs1fUdWID0FIqEoDpFZM8y7uhZGL5WyTPA",
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuDyrTXSUlcmOYzW27UEkvX2vqNni8uwPo95DIHp7MKUTmqkwuf-xcE1Cfdw98tztp8CBY3lAizz1mDcgp2yOOb0MorWuE5Q4ejnmw3LIwW8ECiWkgCclFwhlZyflfDlz-JXRQkQU4q2WpHwqKPla73kSktxwSVds1R6AjRYI79O8MCVS2xiHFz_ixrDHa7DQnvhzcuswyE0Qs7kgpUq4M66-9xZtuttgvpNz1BVU2Pqpc6nI9IFlPUzdEOJpR79Wsq24K_JtU0j_pnL",
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuDZqg3PhiQcyPx9qvbvfRC7iQUY952pX3kM5GkXqJXvUdnbSGwDAOUdqna-ep1_T6oRUpFfk8bfIfOD_y0Ux9cQj-zbgL8GWutPS_fBYwWEMNoDF0GJ2tI5X-1hmVWVAVrzredmlqqQ2VJ05aYRgCYFx8uz5JWXwf12Nmzw6w-ZU6LDThAOCZVruPAxD72MY9PVJDC-nX_Pjt8syhhFzqz2CHSKem0ME6wcYcNizQ948Dv5vOWrgqBgnp89rvOw3Yrv-Ll4uTmZeuXJ",
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuD_3Ij40424nqgJFCW2yBcK53AfVxMBGiMbJQYwtb7TXulhSxa7uQsKmiF0wk44t4Wq1fw2V_fgTaDPBt3zp4euiIQEylGLlfZE1ZugUSpH48o1KyxbRUqYknBEQwIKa73Py03gadN-tdKIrgtqDDLlBOCcYLvBpQL6fgyS0c9a6jdQE7mA2JGU_QnCD8KxV6RWFxeWcgKKRQfXexsVEDkNnkqVzkyWRugED0o306tf4TyKNqZg59KDes7wAtJ02Q9xUXk8dcHit2GF",
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuAPFf8lNofT1q78NB41yKwRRLZIH_2qgXBAq41knEh1IRAOTYVtb5pSj9uC_BoSANE_vvL3NjBudbzdDs_rK2a7D47lzs_EM4Y009_X_9fBNVt_kk4fjm7_oZrdpBloAlZ7iTl6-QuSIn4dbbo_N2_IxU6MwtcKkXO8dIUgym2_jP3TUkYQ8fxSu4-JO3fysyRCGjF6667mopg-nCZTmAEl9dZaOCfy5BKxqMbFnJhtKdEsBfxbTsegNRRZHpyHwlJrIQV6YnTpmQ_b",
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuAMLUpsb4z_kmPPRr7SNFmJzhQca6vRy9f6mYTZXfeN2DveISlKOiLdPMR9YXJs76KL_XkI_IGvLMIbAycg5TV0TqRM9lGKCaIsYioaInmOMgayFC_p68Lgqn5rtzqcfFpBJG4a-9SYRXh8lROsm5UCwfNulB9Q7TlSNr09Cys6e-9ply60QBkaCJ-33WcZuT6AV7HVOYWj-dH0cQyvpdnuuEC54nq40GNV72x2B34D_mfuANqKA4XKWXjM0DgACe5ThWYMCqnC2j51"
-    ],
-    gallery: [
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuDZqg3PhiQcyPx9qvbvfRC7iQUY952pX3kM5GkXqJXvUdnbSGwDAOUdqna-ep1_T6oRUpFfk8bfIfOD_y0Ux9cQj-zbgL8GWutPS_fBYwWEMNoDF0GJ2tI5X-1hmVWVAVrzredmlqqQ2VJ05aYRgCYFx8uz5JWXwf12Nmzw6w-ZU6LDThAOCZVruPAxD72MY9PVJDC-nX_Pjt8syhhFzqz2CHSKem0ME6wcYcNizQ948Dv5vOWrgqBgnp89rvOw3Yrv-Ll4uTmZeuXJ",
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuCLtfxBJHzGNyW7S2r8PW8UQEHi3Z95AiwvvvFcgXN_hNFljU5xDClu2lssWY6IbYEC4edbKUKNLGf7qG2g2XSS4FKM6nBHZywoiZuPnRqFcOkZlGNNFXKBx-BOGn6ur_pJ3V2ou-YtZhJS9jasGgca3Zn3XDpIif4NDtVf20VhbnwMPBays54-jz3tg7jaRI521AMak_IjSPuW2oGrwBe4CRuUM9Nd0nNJhP3FAVFYozcs1fUdWID0FIqEoDpFZM8y7uhZGL5WyTPA",
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuAMLUpsb4z_kmPPRr7SNFmJzhQca6vRy9f6mYTZXfeN2DveISlKOiLdPMR9YXJs76KL_XkI_IGvLMIbAycg5TV0TqRM9lGKCaIsYioaInmOMgayFC_p68Lgqn5rtzqcfFpBJG4a-9SYRXh8lROsm5UCwfNulB9Q7TlSNr09Cys6e-9ply60QBkaCJ-33WcZuT6AV7HVOYWj-dH0cQyvpdnuuEC54nq40GNV72x2B34D_mfuANqKA4XKWXjM0DgACe5ThWYMCqnC2j51",
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuDBtNHClCvXICohUTSHXDeCbNbys5DdAaT7Q-uEaHIWRwxLm9yovNIk2a5I35QNryWCMgMx7jW6-OcTq9Xx0tLOSAVolnEbxKWfFWFlKQdyKr_xAuMLnSUkYK7nrKWtka7eHTgkVPsuAe7qa8I44o1OHxQcIIfkGjmwdgeWxV_lshwAJ4AxzMiiTbZlXQeODlvTckTjwJep1vka771QFHUaRX9ea8g-plsgl7sxU6J7ojEjJjV5GBf7pMwBzOwOVmWysLX8FRQef6ev"
-    ],
-    hero: "https://lh3.googleusercontent.com/aida-public/AB6AXuDBtNHClCvXICohUTSHXDeCbNbys5DdAaT7Q-uEaHIWRwxLm9yovNIk2a5I35QNryWCMgMx7jW6-OcTq9Xx0tLOSAVolnEbxKWfFWFlKQdyKr_xAuMLnSUkYK7nrKWtka7eHTgkVPsuAe7qa8I44o1OHxQcIIfkGjmwdgeWxV_lshwAJ4AxzMiiTbZlXQeODlvTckTjwJep1vka771QFHUaRX9ea8g-plsgl7sxU6J7ojEjJjV5GBf7pMwBzOwOVmWysLX8FRQef6ev"
-};
+// URLs de imágenes de respaldo (para categorías sin imagen)
+const FALLBACK_IMAGES = [
+    "https://lh3.googleusercontent.com/aida-public/AB6AXuCLtfxBJHzGNyW7S2r8PW8UQEHi3Z95AiwvvvFcgXN_hNFljU5xDClu2lssWY6IbYEC4edbKUKNLGf7qG2g2XSS4FKM6nBHZywoiZuPnRqFcOkZlGNNFXKBx-BOGn6ur_pJ3V2ou-YtZhJS9jasGgca3Zn3XDpIif4NDtVf20VhbnwMPBays54-jz3tg7jaRI521AMak_IjSPuW2oGrwBe4CRuUM9Nd0nNJhP3FAVFYozcs1fUdWID0FIqEoDpFZM8y7uhZGL5WyTPA",
+    "https://lh3.googleusercontent.com/aida-public/AB6AXuDyrTXSUlcmOYzW27UEkvX2vqNni8uwPo95DIHp7MKUTmqkwuf-xcE1Cfdw98tztp8CBY3lAizz1mDcgp2yOOb0MorWuE5Q4ejnmw3LIwW8ECiWkgCclFwhlZyflfDlz-JXRQkQU4q2WpHwqKPla73kSktxwSVds1R6AjRYI79O8MCVS2xiHFz_ixrDHa7DQnvhzcuswyE0Qs7kgpUq4M66-9xZtuttgvpNz1BVU2Pqpc6nI9IFlPUzdEOJpR79Wsq24K_JtU0j_pnL",
+    "https://lh3.googleusercontent.com/aida-public/AB6AXuDZqg3PhiQcyPx9qvbvfRC7iQUY952pX3kM5GkXqJXvUdnbSGwDAOUdqna-ep1_T6oRUpFfk8bfIfOD_y0Ux9cQj-zbgL8GWutPS_fBYwWEMNoDF0GJ2tI5X-1hmVWVAVrzredmlqqQ2VJ05aYRgCYFx8uz5JWXwf12Nmzw6w-ZU6LDThAOCZVruPAxD72MY9PVJDC-nX_Pjt8syhhFzqz2CHSKem0ME6wcYcNizQ948Dv5vOWrgqBgnp89rvOw3Yrv-Ll4uTmZeuXJ",
+    "https://lh3.googleusercontent.com/aida-public/AB6AXuD_3Ij40424nqgJFCW2yBcK53AfVxMBGiMbJQYwtb7TXulhSxa7uQsKmiF0wk44t4Wq1fw2V_fgTaDPBt3zp4euiIQEylGLlfZE1ZugUSpH48o1KyxbRUqYknBEQwIKa73Py03gadN-tdKIrgtqDDLlBOCcYLvBpQL6fgyS0c9a6jdQE7mA2JGU_QnCD8KxV6RWFxeWcgKKRQfXexsVEDkNnkqVzkyWRugED0o306tf4TyKNqZg59KDes7wAtJ02Q9xUXk8dcHit2GF",
+    "https://lh3.googleusercontent.com/aida-public/AB6AXuAPFf8lNofT1q78NB41yKwRRLZIH_2qgXBAq41knEh1IRAOTYVtb5pSj9uC_BoSANE_vvL3NjBudbzdDs_rK2a7D47lzs_EM4Y009_X_9fBNVt_kk4fjm7_oZrdpBloAlZ7iTl6-QuSIn4dbbo_N2_IxU6MwtcKkXO8dIUgym2_jP3TUkYQ8fxSu4-JO3fysyRCGjF6667mopg-nCZTmAEl9dZaOCfy5BKxqMbFnJhtKdEsBfxbTsegNRRZHpyHwlJrIQV6YnTpmQ_b",
+    "https://lh3.googleusercontent.com/aida-public/AB6AXuAMLUpsb4z_kmPPRr7SNFmJzhQca6vRy9f6mYTZXfeN2DveISlKOiLdPMR9YXJs76KL_XkI_IGvLMIbAycg5TV0TqRM9lGKCaIsYioaInmOMgayFC_p68Lgqn5rtzqcfFpBJG4a-9SYRXh8lROsm5UCwfNulB9Q7TlSNr09Cys6e-9ply60QBkaCJ-33WcZuT6AV7HVOYWj-dH0cQyvpdnuuEC54nq40GNV72x2B34D_mfuANqKA4XKWXjM0DgACe5ThWYMCqnC2j51"
+];
 
-const staticData = {
-    categories: [
-        { name: "MUJER", url: "women", imgIndex: 0 },
-        { name: "HOMBRE", url: "men", imgIndex: 1 },
-        { name: "NIÑOS", url: "curve", imgIndex: 2 },
-        { name: "ZAPATOS", url: "shoes", imgIndex: 3 },
-        { name: "BOLSOS", url: "bags", imgIndex: 4 },
-        { name: "JOYERIA", url: "jewelry", imgIndex: 5 }
-    ],
-    gallery: [
-        { imgIndex: 0 }, { imgIndex: 1 }, { imgIndex: 2 }, { imgIndex: 3 }
-    ]
-};
+const GALLERY_IMAGES = [
+    "https://lh3.googleusercontent.com/aida-public/AB6AXuDZqg3PhiQcyPx9qvbvfRC7iQUY952pX3kM5GkXqJXvUdnbSGwDAOUdqna-ep1_T6oRUpFfk8bfIfOD_y0Ux9cQj-zbgL8GWutPS_fBYwWEMNoDF0GJ2tI5X-1hmVWVAVrzredmlqqQ2VJ05aYRgCYFx8uz5JWXwf12Nmzw6w-ZU6LDThAOCZVruPAxD72MY9PVJDC-nX_Pjt8syhhFzqz2CHSKem0ME6wcYcNizQ948Dv5vOWrgqBgnp89rvOw3Yrv-Ll4uTmZeuXJ",
+    "https://lh3.googleusercontent.com/aida-public/AB6AXuCLtfxBJHzGNyW7S2r8PW8UQEHi3Z95AiwvvvFcgXN_hNFljU5xDClu2lssWY6IbYEC4edbKUKNLGf7qG2g2XSS4FKM6nBHZywoiZuPnRqFcOkZlGNNFXKBx-BOGn6ur_pJ3V2ou-YtZhJS9jasGgca3Zn3XDpIif4NDtVf20VhbnwMPBays54-jz3tg7jaRI521AMak_IjSPuW2oGrwBe4CRuUM9Nd0nNJhP3FAVFYozcs1fUdWID0FIqEoDpFZM8y7uhZGL5WyTPA",
+    "https://lh3.googleusercontent.com/aida-public/AB6AXuAMLUpsb4z_kmPPRr7SNFmJzhQca6vRy9f6mYTZXfeN2DveISlKOiLdPMR9YXJs76KL_XkI_IGvLMIbAycg5TV0TqRM9lGKCaIsYioaInmOMgayFC_p68Lgqn5rtzqcfFpBJG4a-9SYRXh8lROsm5UCwfNulB9Q7TlSNr09Cys6e-9ply60QBkaCJ-33WcZuT6AV7HVOYWj-dH0cQyvpdnuuEC54nq40GNV72x2B34D_mfuANqKA4XKWXjM0DgACe5ThWYMCqnC2j51",
+    "https://lh3.googleusercontent.com/aida-public/AB6AXuDBtNHClCvXICohUTSHXDeCbNbys5DdAaT7Q-uEaHIWRwxLm9yovNIk2a5I35QNryWCMgMx7jW6-OcTq9Xx0tLOSAVolnEbxKWfFWFlKQdyKr_xAuMLnSUkYK7nrKWtka7eHTgkVPsuAe7qa8I44o1OHxQcIIfkGjmwdgeWxV_lshwAJ4AxzMiiTbZlXQeODlvTckTjwJep1vka771QFHUaRX9ea8g-plsgl7sxU6J7ojEjJjV5GBf7pMwBzOwOVmWysLX8FRQef6ev"
+];
+
+const HERO_IMAGE = "https://lh3.googleusercontent.com/aida-public/AB6AXuDBtNHClCvXICohUTSHXDeCbNbys5DdAaT7Q-uEaHIWRwxLm9yovNIk2a5I35QNryWCMgMx7jW6-OcTq9Xx0tLOSAVolnEbxKWfFWFlKQdyKr_xAuMLnSUkYK7nrKWtka7eHTgkVPsuAe7qa8I44o1OHxQcIIfkGjmwdgeWxV_lshwAJ4AxzMiiTbZlXQeODlvTckTjwJep1vka771QFHUaRX9ea8g-plsgl7sxU6J7ojEjJjV5GBf7pMwBzOwOVmWysLX8FRQef6ev";
 
 // ============================================
 // FUNCIÓN PRINCIPAL - EXPORTADA
 // ============================================
 export async function homeController() {
-    console.log('🏠 Home Controller - SIN RECARGAS');
+    console.log('🏠 Home Controller - CATEGORÍAS DINÁMICAS DESDE FIREBASE');
     
     loadHeroImage();
-    loadCategories();
+    await loadCategories(); // ✅ Carga las 6 categorías desde Firebase
     await loadFlashSale();
     await loadTrending();
     loadGallery();
@@ -57,11 +44,11 @@ export async function homeController() {
     initNumberGlow();
     initCouponButton();
     initShopButtons();
-    initMobileCategoryCarousel();
+    initCategoryScroll();
     initRefreshButton();
     setupRealtimeUpdates();
     
-    console.log('✅ Home Controller listo - Animación solo una vez');
+    console.log('✅ Home Controller listo');
 }
 
 // ============================================
@@ -71,32 +58,80 @@ export async function homeController() {
 function loadHeroImage() {
     const heroImg = document.querySelector('.hero img');
     if (heroImg) {
-        heroImg.src = IMAGES.hero;
+        heroImg.src = HERO_IMAGE;
         heroImg.alt = "Hero Fashion";
     }
 }
 
-function loadCategories() {
+// ============================================
+// ✅ CARGAR CATEGORÍAS DINÁMICAS DESDE FIREBASE
+// ============================================
+async function loadCategories() {
     const container = document.getElementById('categories-container');
     if (!container) return;
-    
-    container.innerHTML = staticData.categories.map((cat, idx) => `
-        <a class="category-item" href="/category/${cat.url}" data-link>
-            <div class="circle-img">
-                <img alt="${cat.name}" src="${IMAGES.categories[cat.imgIndex]}"/>
+
+    try {
+        console.log('🔄 Cargando categorías desde Firebase...');
+        
+        // Obtener categorías de Firebase (sin caché para forzar actualización)
+        const categories = await CategoryService.getAll({}, true);
+        
+        console.log('✅ Categorías cargadas desde Firebase:', categories.length);
+        
+        // Verificar que tenemos categorías
+        if (!categories || categories.length === 0) {
+            console.warn('⚠️ No hay categorías en Firebase');
+            container.innerHTML = `
+                <div class="category-empty" style="grid-column: 1/-1; text-align: center; padding: 20px; color: var(--text-secondary);">
+                    <p>No hay categorías disponibles</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Tomar SOLO las primeras 6 categorías (o menos si hay menos)
+        const displayCategories = categories.slice(0, 6);
+        
+        console.log(`📋 Mostrando ${displayCategories.length} categorías:`);
+        displayCategories.forEach((cat, i) => console.log(`  ${i+1}. ${cat.name} (${cat.id})`));
+
+        // Generar HTML para las categorías
+        container.innerHTML = displayCategories.map((cat, idx) => {
+            // Usar imagen en Base64 si existe, o fallback
+            const imgSrc = cat.imageBase64 || FALLBACK_IMAGES[idx % FALLBACK_IMAGES.length];
+            const urlSlug = cat.slug || cat.id;
+            
+            return `
+                <a class="category-item" href="/category/${urlSlug}" data-link>
+                    <div class="circle-img">
+                        <img alt="${cat.name}" src="${imgSrc}" loading="lazy"/>
+                    </div>
+                    <span>${cat.name}</span>
+                </a>
+            `;
+        }).join('');
+
+        console.log('✅ Categorías renderizadas en el home');
+
+    } catch (error) {
+        console.error('❌ Error cargando categorías desde Firebase:', error);
+        
+        // Mostrar mensaje de error
+        container.innerHTML = `
+            <div class="category-error" style="grid-column: 1/-1; text-align: center; padding: 20px; color: var(--error);">
+                <p>Error al cargar categorías: ${error.message}</p>
             </div>
-            <span>${cat.name}</span>
-        </a>
-    `).join('');
+        `;
+    }
 }
 
 function loadGallery() {
     const container = document.getElementById('gallery-container');
     if (!container) return;
     
-    container.innerHTML = staticData.gallery.map((item, idx) => `
+    container.innerHTML = GALLERY_IMAGES.map((img, idx) => `
         <div class="gallery-item">
-            <img alt="Galería ${idx + 1}" src="${IMAGES.gallery[item.imgIndex]}"/>
+            <img alt="Galería ${idx + 1}" src="${img}" loading="lazy"/>
             <div class="gallery-overlay">
                 <span class="label-caps">COMPRA ESTE LOOK</span>
             </div>
@@ -108,7 +143,6 @@ function loadGallery() {
 // FUNCIONES CON PRODUCTOS - SIN RECARGAS
 // ============================================
 
-// ✅ Bandera para controlar si ya se animó la primera carga
 let isFirstLoad = true;
 
 async function loadFlashSale() {
@@ -119,7 +153,6 @@ async function loadFlashSale() {
     }
 
     try {
-        // ✅ Mostrar estado de carga (solo la primera vez)
         if (!container.hasAttribute('data-loaded')) {
             container.innerHTML = `
                 <div class="loading-state" style="grid-column: 1/-1; text-align: center; padding: 40px;">
@@ -142,7 +175,6 @@ async function loadFlashSale() {
             return;
         }
 
-        // ✅ Generar HTML sin animaciones para actualizaciones
         const shouldAnimate = isFirstLoad;
         
         const newHTML = flashProducts.map((p) => {
@@ -150,8 +182,6 @@ async function loadFlashSale() {
             const finalPrice = p.precioFinal || p.precioVenta * (1 - discount / 100);
             const soldPercent = p.soldPercent || Math.floor(Math.random() * 60) + 20;
             const imgSrc = p.imagenPrincipal || '/images/placeholder.jpg';
-
-            // ✅ Si es la primera carga, agregar estilos para animación
             const animStyles = shouldAnimate ? 'opacity: 0; transform: translateY(20px);' : '';
             
             return `
@@ -173,11 +203,9 @@ async function loadFlashSale() {
             `;
         }).join('');
 
-        // ✅ Reemplazar sin recargar la página
         container.innerHTML = newHTML;
         container.setAttribute('data-loaded', 'true');
 
-        // ✅ ANIMACIÓN SOLO EN LA PRIMERA CARGA
         if (shouldAnimate) {
             const newCards = container.querySelectorAll('.product-card');
             newCards.forEach((card, index) => {
@@ -187,12 +215,9 @@ async function loadFlashSale() {
                     card.style.transform = 'translateY(0)';
                 }, index * 50);
             });
-            
-            // ✅ Marcar que ya se hizo la animación
             isFirstLoad = false;
         }
 
-        // ✅ Animar barras de progreso siempre
         setTimeout(() => {
             container.querySelectorAll('.progress-fill').forEach((bar, index) => {
                 const product = flashProducts[index];
@@ -223,7 +248,6 @@ async function loadTrending() {
     }
 
     try {
-        // ✅ Mostrar estado de carga (solo la primera vez)
         if (!container.hasAttribute('data-loaded')) {
             container.innerHTML = `
                 <div class="loading-state" style="grid-column: 1/-1; text-align: center; padding: 40px;">
@@ -259,7 +283,6 @@ async function loadTrending() {
             return;
         }
 
-        // ✅ Generar HTML sin animaciones para actualizaciones
         const shouldAnimate = isFirstLoad;
         
         const newHTML = products.map(p => {
@@ -274,8 +297,6 @@ async function loadTrending() {
             const reviews = Math.floor(Math.random() * 200) + 10;
             const imgSrc = p.imagenPrincipal || '/images/placeholder.jpg';
             const finalPrice = p.precioFinal || p.precioVenta;
-
-            // ✅ Si es la primera carga, agregar estilos para animación
             const animStyles = shouldAnimate ? 'opacity: 0; transform: translateY(20px);' : '';
 
             return `
@@ -298,7 +319,6 @@ async function loadTrending() {
         container.innerHTML = newHTML;
         container.setAttribute('data-loaded', 'true');
 
-        // ✅ ANIMACIÓN SOLO EN LA PRIMERA CARGA
         if (shouldAnimate) {
             const newItems = container.querySelectorAll('.trending-item');
             newItems.forEach((item, index) => {
@@ -308,8 +328,6 @@ async function loadTrending() {
                     item.style.transform = 'translateY(0)';
                 }, index * 50);
             });
-            
-            // ✅ Marcar que ya se hizo la animación
             isFirstLoad = false;
         }
 
@@ -517,82 +535,106 @@ function initShopButtons() {
     }
 }
 
-function initMobileCategoryCarousel() {
-    function isMobile() { return window.innerWidth < 768; }
+// ============================================
+// SCROLL SUAVE PARA CATEGORÍAS
+// ============================================
+function initCategoryScroll() {
+    const nav = document.querySelector('.category-nav');
+    if (!nav) return;
     
-    function initCarousel() {
-        if (!isMobile()) return;
-        const categoryGrid = document.querySelector('.category-grid');
-        if (!categoryGrid) return;
-        
-        const originalItems = Array.from(categoryGrid.children);
-        if (originalItems.length <= 3) return;
-        
-        let currentIndex = 0, intervalId = null, isAnimating = false;
-        const groups = [];
-        
-        for (let i = 0; i < originalItems.length; i += 3) {
-            groups.push(originalItems.slice(i, i + 3));
+    // Scroll suave con rueda
+    nav.addEventListener('wheel', (e) => {
+        if (e.target.closest('.category-grid')) {
+            e.preventDefault();
+            nav.scrollLeft += e.deltaY * 0.5;
         }
+    }, { passive: false });
+    
+    const grid = document.querySelector('.category-grid');
+    if (!grid) return;
+    
+    function checkOverflow() {
+        const hasOverflow = grid.scrollWidth > grid.clientWidth;
+        nav.style.position = 'relative';
         
-        if (groups[groups.length - 1].length < 3) {
-            const lastGroup = groups[groups.length - 1];
-            const needed = 3 - lastGroup.length;
-            for (let i = 0; i < needed; i++) {
-                lastGroup.push(originalItems[i % originalItems.length]);
-            }
+        // Eliminar indicadores previos
+        const existingLeft = nav.querySelector('.scroll-indicator-left');
+        const existingRight = nav.querySelector('.scroll-indicator-right');
+        if (existingLeft) existingLeft.remove();
+        if (existingRight) existingRight.remove();
+        
+        if (hasOverflow) {
+            // Indicador derecho
+            const rightInd = document.createElement('div');
+            rightInd.className = 'scroll-indicator-right';
+            rightInd.innerHTML = '→';
+            rightInd.style.cssText = `
+                position: absolute;
+                right: 0;
+                top: 50%;
+                transform: translateY(-50%);
+                background: var(--gold);
+                color: white;
+                width: 28px;
+                height: 28px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 14px;
+                cursor: pointer;
+                opacity: 0.7;
+                z-index: 5;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+                transition: opacity 0.2s;
+            `;
+            rightInd.addEventListener('click', () => {
+                nav.scrollBy({ left: 200, behavior: 'smooth' });
+            });
+            rightInd.addEventListener('mouseenter', () => rightInd.style.opacity = '1');
+            rightInd.addEventListener('mouseleave', () => rightInd.style.opacity = '0.7');
+            nav.appendChild(rightInd);
+            
+            // Indicador izquierdo
+            const leftInd = document.createElement('div');
+            leftInd.className = 'scroll-indicator-left';
+            leftInd.innerHTML = '←';
+            leftInd.style.cssText = `
+                position: absolute;
+                left: 0;
+                top: 50%;
+                transform: translateY(-50%);
+                background: var(--gold);
+                color: white;
+                width: 28px;
+                height: 28px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 14px;
+                cursor: pointer;
+                opacity: 0.7;
+                z-index: 5;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+                transition: opacity 0.2s;
+            `;
+            leftInd.addEventListener('click', () => {
+                nav.scrollBy({ left: -200, behavior: 'smooth' });
+            });
+            leftInd.addEventListener('mouseenter', () => leftInd.style.opacity = '1');
+            leftInd.addEventListener('mouseleave', () => leftInd.style.opacity = '0.7');
+            nav.appendChild(leftInd);
         }
-        
-        function showGroup(index) {
-            if (isAnimating) return;
-            isAnimating = true;
-            const group = groups[index % groups.length];
-            categoryGrid.style.transition = 'opacity 0.2s ease';
-            categoryGrid.style.opacity = '0';
-            setTimeout(() => {
-                categoryGrid.innerHTML = '';
-                group.forEach(item => categoryGrid.appendChild(item.cloneNode(true)));
-                categoryGrid.style.opacity = '1';
-                setTimeout(() => { isAnimating = false; }, 50);
-            }, 150);
-        }
-        
-        function startCarousel() {
-            if (intervalId) clearInterval(intervalId);
-            intervalId = setInterval(() => {
-                if (!isMobile()) { stopCarousel(); resetToOriginal(); return; }
-                currentIndex = (currentIndex + 1) % groups.length;
-                showGroup(currentIndex);
-            }, 4000);
-        }
-        
-        function stopCarousel() { if (intervalId) { clearInterval(intervalId); intervalId = null; } }
-        function resetToOriginal() {
-            categoryGrid.style.transition = '';
-            categoryGrid.style.opacity = '1';
-            categoryGrid.innerHTML = '';
-            originalItems.forEach(item => categoryGrid.appendChild(item.cloneNode(true)));
-            currentIndex = 0;
-        }
-        
-        let resizeTimeout;
-        window.addEventListener('resize', () => {
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(() => {
-                if (isMobile()) { if (!intervalId) { resetToOriginal(); startCarousel(); } }
-                else { stopCarousel(); resetToOriginal(); }
-            }, 150);
-        });
-        
-        if (isMobile()) { showGroup(0); startCarousel(); }
     }
     
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initCarousel);
-    else initCarousel();
+    checkOverflow();
+    window.addEventListener('resize', checkOverflow);
+    setTimeout(checkOverflow, 500);
 }
 
 // ============================================
-// ✅ ACTUALIZACIONES EN VIVO - SIN RECARGAR
+// ACTUALIZACIONES EN VIVO
 // ============================================
 
 function initRefreshButton() {
@@ -606,7 +648,6 @@ function initRefreshButton() {
             icon.style.transition = 'transform 0.5s';
         }
         
-        // ✅ Actualizar sin recargar y sin animación
         await CacheService.clearCache(STORES.PRODUCTS);
         await loadFlashSale();
         await loadTrending();
@@ -622,7 +663,6 @@ function initRefreshButton() {
 }
 
 function setupRealtimeUpdates() {
-    // ✅ Escuchar cambios y actualizar sin recargar y sin animación
     window.addEventListener('products:updated', async (event) => {
         console.log('🔄 Actualizando productos en vivo...', event.detail);
         await CacheService.clearCache(STORES.PRODUCTS);
@@ -631,17 +671,17 @@ function setupRealtimeUpdates() {
         showToast(`🔄 ${event.detail?.productName || 'Productos'} actualizados`);
     });
     
-    // ✅ Recarga automática cada 60 segundos (sin recargar la página)
     setInterval(async () => {
         console.log('🔄 Actualización automática en vivo...');
         await CacheService.clearCache(STORES.PRODUCTS);
         await loadFlashSale();
         await loadTrending();
-        // No mostrar toast en actualizaciones automáticas para no molestar
     }, 60000);
 }
 
-// Agregar estilos base
+// ============================================
+// ESTILOS BASE
+// ============================================
 if (!document.querySelector('#outlet-styles')) {
     const style = document.createElement('style');
     style.id = 'outlet-styles';
@@ -667,6 +707,9 @@ if (!document.querySelector('#outlet-styles')) {
         }
         .product-card, .trending-item {
             transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .category-empty, .category-error {
+            grid-column: 1 / -1 !important;
         }
     `;
     document.head.appendChild(style);

@@ -151,7 +151,6 @@ function cacheElements() {
         categoryName: document.getElementById('categoryName'),
         categorySlug: document.getElementById('categorySlug'),
         categoryDescription: document.getElementById('categoryDescription'),
-        categoryIcon: document.getElementById('categoryIcon'),
         categoryOrder: document.getElementById('categoryOrder'),
         categoryStatus: document.getElementById('categoryStatus'),
         categoryCreatedAt: document.getElementById('categoryCreatedAt'),
@@ -164,6 +163,10 @@ function cacheElements() {
         
         previewCard: document.getElementById('previewCard'),
         subcategoriesPreview: document.getElementById('subcategoriesPreview'),
+        
+        // 🖼️ Elementos de imagen
+        updateImageDisplay: document.getElementById('updateImageDisplay'),
+        updateImagePlaceholder: document.getElementById('updateImagePlaceholder'),
         
         toast: document.getElementById('updateToast')
     };
@@ -200,6 +203,33 @@ function formatDate(dateString) {
         month: 'long',
         day: 'numeric'
     });
+}
+
+// ========================================
+// 🖼️ Funciones de imagen
+// ========================================
+function clearImagePreview() {
+    if (elements.updateImageDisplay) {
+        elements.updateImageDisplay.src = '';
+        elements.updateImageDisplay.style.display = 'none';
+    }
+    if (elements.updateImagePlaceholder) {
+        elements.updateImagePlaceholder.style.display = 'flex';
+    }
+}
+
+function showImagePreview(imageBase64) {
+    if (imageBase64 && imageBase64.startsWith('data:image')) {
+        if (elements.updateImageDisplay) {
+            elements.updateImageDisplay.src = imageBase64;
+            elements.updateImageDisplay.style.display = 'block';
+        }
+        if (elements.updateImagePlaceholder) {
+            elements.updateImagePlaceholder.style.display = 'none';
+        }
+    } else {
+        clearImagePreview();
+    }
 }
 
 // ========================================
@@ -255,10 +285,16 @@ function onCategorySelect() {
     elements.categoryName.value = category.name;
     elements.categorySlug.value = category.slug;
     elements.categoryDescription.value = category.description || '';
-    elements.categoryIcon.value = category.icon || '';
     elements.categoryOrder.value = category.order || 0;
     elements.categoryStatus.value = category.status || 'active';
     elements.categoryCreatedAt.value = formatDate(category.createdAt);
+    
+    // 🖼️ Mostrar imagen
+    if (category.imageBase64 && category.imageBase64.startsWith('data:image')) {
+        showImagePreview(category.imageBase64);
+    } else {
+        clearImagePreview();
+    }
     
     elements.formFields.disabled = false;
     elements.actionButtons.style.display = 'flex';
@@ -272,10 +308,10 @@ function clearForm() {
     elements.categoryName.value = '';
     elements.categorySlug.value = '';
     elements.categoryDescription.value = '';
-    elements.categoryIcon.value = '';
     elements.categoryOrder.value = '0';
     elements.categoryStatus.value = 'active';
     elements.categoryCreatedAt.value = '';
+    clearImagePreview();
 }
 
 function renderSubcategoriesPreview(subcategories) {
@@ -339,7 +375,6 @@ async function updateCategory(event) {
         name: name,
         slug: slug,
         description: elements.categoryDescription.value.trim(),
-        icon: elements.categoryIcon.value.trim(),
         order: parseInt(elements.categoryOrder.value) || 0,
         status: elements.categoryStatus.value
     };

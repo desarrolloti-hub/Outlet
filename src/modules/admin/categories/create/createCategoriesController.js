@@ -1,6 +1,6 @@
 // ========================================
 // CREATE CATEGORIES CONTROLLER - OUTLET ADMIN
-// Controlador para CREAR categorías con subcategorías
+// Controlador para CREAR categorías con subcategorías e imágenes
 // CON SWEETALERT2 INTEGRADO Y SINCRONIZACIÓN CON FIREBASE
 // ========================================
 
@@ -12,7 +12,10 @@ import { CategoryService } from '../../../../services/categoryService.js';
 var isSubmitting = false;
 var subcategories = [];
 var categoriesList = [];
-var currentSelectedCategoryId = null; // Para rastrear la categoría seleccionada
+var currentSelectedCategoryId = null;
+// 🖼️ Variables para imagen
+var selectedImageFile = null;
+var currentImageBase64 = '';
 
 // ========================================
 // DOM Elements
@@ -23,9 +26,6 @@ var elements = {};
 // UI Helpers - CON SWEETALERT2
 // ========================================
 
-/**
- * Muestra un toast personalizado (estilo OUTLET)
- */
 function mostrarToast(mensaje, tipo) {
     tipo = tipo || 'info';
     var toastExistente = document.querySelector('.outlet-toast');
@@ -46,9 +46,6 @@ function mostrarToast(mensaje, tipo) {
     }, 3200);
 }
 
-/**
- * Muestra una SweetAlert2 personalizada
- */
 function mostrarSweetAlert(options) {
     var defaultOptions = {
         buttonsStyling: false,
@@ -58,13 +55,9 @@ function mostrarSweetAlert(options) {
             popup: 'swal2-popup'
         }
     };
-    
     return Swal.fire(Object.assign({}, defaultOptions, options));
 }
 
-/**
- * Muestra alerta de éxito
- */
 function mostrarExito(titulo, mensaje) {
     return mostrarSweetAlert({
         icon: 'success',
@@ -74,9 +67,6 @@ function mostrarExito(titulo, mensaje) {
     });
 }
 
-/**
- * Muestra alerta de error
- */
 function mostrarError(titulo, mensaje) {
     return mostrarSweetAlert({
         icon: 'error',
@@ -86,9 +76,6 @@ function mostrarError(titulo, mensaje) {
     });
 }
 
-/**
- * Muestra alerta de advertencia
- */
 function mostrarAdvertencia(titulo, mensaje, confirmText) {
     confirmText = confirmText || 'Continuar';
     return mostrarSweetAlert({
@@ -101,9 +88,6 @@ function mostrarAdvertencia(titulo, mensaje, confirmText) {
     });
 }
 
-/**
- * Muestra alerta de confirmación
- */
 function mostrarConfirmacion(titulo, mensaje, confirmText) {
     confirmText = confirmText || 'Sí, confirmar';
     return mostrarSweetAlert({
@@ -116,9 +100,6 @@ function mostrarConfirmacion(titulo, mensaje, confirmText) {
     });
 }
 
-/**
- * Muestra un loading con SweetAlert2
- */
 function mostrarLoading(mensaje) {
     mensaje = mensaje || 'Procesando...';
     return mostrarSweetAlert({
@@ -130,9 +111,6 @@ function mostrarLoading(mensaje) {
     });
 }
 
-/**
- * Cierra la alerta de loading
- */
 function cerrarLoading() {
     Swal.close();
 }
@@ -152,6 +130,14 @@ function cacheElements() {
         saveBtn: document.getElementById('saveCategoryBtn'),
         resetBtn: document.getElementById('resetBtn'),
         
+        // 🖼️ Elementos de imagen
+        imageUploadArea: document.getElementById('imageUploadArea'),
+        imageInput: document.getElementById('categoryImageInput'),
+        uploadPlaceholder: document.getElementById('uploadPlaceholder'),
+        imagePreviewWrapper: document.getElementById('imagePreviewWrapper'),
+        imagePreview: document.getElementById('imagePreview'),
+        removeImageBtn: document.getElementById('removeImageBtn'),
+        
         subcategoryName: document.getElementById('subcategoryName'),
         subcategoryDescription: document.getElementById('subcategoryDescription'),
         addSubBtn: document.getElementById('addSubcategoryBtn'),
@@ -159,6 +145,138 @@ function cacheElements() {
         
         toast: document.getElementById('categoriesToast')
     };
+}
+
+// ========================================
+// 🖼️ MANEJO DE IMAGEN
+// ========================================
+
+function setupImageUpload() {
+    if (!elements.imageUploadArea || !elements.imageInput) return;
+    
+    // Click en el área para abrir el selector
+    elements.imageUploadArea.addEventListener('click', function(e) {
+        // Evitar que el click en el botón de eliminar dispare el selector
+        if (e.target.closest('.outlet-remove-image-btn')) return;
+        elements.imageInput.click();
+    });
+    
+    // Manejar selección de archivo
+    elements.imageInput.addEventListener('change', function(e) {
+        const file = this.files[0];
+        if (file) {
+            handleImageFile(file);
+        }
+    });
+    
+    // Drag and drop
+    elements.imageUploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.classList.add('drag-over');
+    });
+    
+    elements.imageUploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        this.classList.remove('drag-over');
+    });
+    
+    elements.imageUploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('drag-over');
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) {
+            handleImageFile(file);
+        } else {
+            mostrarError('Formato no válido', 'Por favor, sube un archivo de imagen válido.');
+        }
+    });
+    
+    // Botón para eliminar imagen
+    if (elements.removeImageBtn) {
+        elements.removeImageBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            removeImage();
+        });
+    }
+}
+
+function handleImageFile(file) {
+    // Validar tipo
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'];
+    if (!allowedTypes.includes(file.type) && !file.type.startsWith('image/')) {
+        mostrarError('Formato no permitido', 'Usa JPG, PNG, WEBP, GIF o SVG.');
+        elements.imageInput.value = '';
+        return;
+    }
+    
+    // Límite de 5MB para Base64
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+        mostrarError('Imagen demasiado grande', 'La imagen no puede superar los 5MB.');
+        elements.imageInput.value = '';
+        return;
+    }
+    
+    selectedImageFile = file;
+    showImagePreview(file);
+    mostrarToast(`Imagen seleccionada: ${file.name}`, 'success');
+}
+
+function showImagePreview(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        if (elements.imagePreview) {
+            elements.imagePreview.src = e.target.result;
+        }
+        if (elements.uploadPlaceholder) {
+            elements.uploadPlaceholder.style.display = 'none';
+        }
+        if (elements.imagePreviewWrapper) {
+            elements.imagePreviewWrapper.style.display = 'flex';
+        }
+        if (elements.imageUploadArea) {
+            elements.imageUploadArea.style.minHeight = 'auto';
+        }
+    };
+    reader.readAsDataURL(file);
+}
+
+function removeImage() {
+    selectedImageFile = null;
+    currentImageBase64 = '';
+    
+    if (elements.imagePreview) {
+        elements.imagePreview.src = '';
+    }
+    if (elements.uploadPlaceholder) {
+        elements.uploadPlaceholder.style.display = 'flex';
+    }
+    if (elements.imagePreviewWrapper) {
+        elements.imagePreviewWrapper.style.display = 'none';
+    }
+    if (elements.imageUploadArea) {
+        elements.imageUploadArea.style.minHeight = '180px';
+        elements.imageUploadArea.classList.remove('drag-over');
+    }
+    if (elements.imageInput) {
+        elements.imageInput.value = '';
+    }
+}
+
+function setCategoryImage(imageBase64) {
+    currentImageBase64 = imageBase64;
+    if (elements.imagePreview) {
+        elements.imagePreview.src = imageBase64;
+    }
+    if (elements.uploadPlaceholder) {
+        elements.uploadPlaceholder.style.display = 'none';
+    }
+    if (elements.imagePreviewWrapper) {
+        elements.imagePreviewWrapper.style.display = 'flex';
+    }
+    if (elements.imageUploadArea) {
+        elements.imageUploadArea.style.minHeight = 'auto';
+    }
 }
 
 // ========================================
@@ -198,6 +316,26 @@ function validarIdFormato(id) {
     if (!id || id.trim() === '') return false;
     var regex = /^[a-z0-9_\-]+$/;
     return regex.test(id);
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// ========================================
+// Convertir archivo a Base64
+// ========================================
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = (error) => reject(error);
+    });
 }
 
 // ========================================
@@ -251,7 +389,8 @@ function populateExistingCategories() {
         var option = document.createElement('option');
         option.value = cat.id;
         var subCount = cat.subcategories?.length || 0;
-        option.textContent = cat.name + ' (' + subCount + ' subcategorías)';
+        var hasImage = cat.imageBase64 ? ' 📷' : '';
+        option.textContent = cat.name + ' (' + subCount + ' subcategorías)' + hasImage;
         elements.existingCategorySelect.appendChild(option);
     });
 }
@@ -308,10 +447,9 @@ function renderSubcategories() {
 }
 
 // ========================================
-// CRUD de Subcategorías CON FIREBASE
+// CRUD de Subcategorías
 // ========================================
 
-// AGREGAR subcategoría
 async function addSubcategory() {
     var name = elements.subcategoryName?.value?.trim() || '';
     var description = elements.subcategoryDescription?.value?.trim() || '';
@@ -322,14 +460,11 @@ async function addSubcategory() {
         return;
     }
     
-    // Verificar si hay una categoría seleccionada o creada
     var categoryId = elements.categoryId?.value?.trim() || '';
     var categoryName = elements.categoryName?.value?.trim() || '';
     
-    // Si no hay ID de categoría, pero hay nombre, generar uno
     if (!categoryId && categoryName) {
         categoryId = generarIdDesdeNombre(categoryName);
-        // Actualizar el campo ID
         if (elements.categoryId) elements.categoryId.value = categoryId;
     }
     
@@ -339,7 +474,6 @@ async function addSubcategory() {
         return;
     }
     
-    // Verificar duplicado en la lista local
     var exists = subcategories.some(function(sub) { 
         return sub.name.toLowerCase() === name.toLowerCase(); 
     });
@@ -349,7 +483,6 @@ async function addSubcategory() {
         return;
     }
     
-    // Crear objeto de subcategoría
     var newSubcategory = { 
         name: name, 
         description: description,
@@ -357,35 +490,23 @@ async function addSubcategory() {
     };
     
     try {
-        // Mostrar loading
         var loadingResult = mostrarLoading('Guardando subcategoría...');
         
-        // Si hay una categoría existente seleccionada, guardar en Firebase
         if (currentSelectedCategoryId) {
-            // Usar el servicio para agregar subcategoría a categoría existente
             await CategoryService.addSubcategory(currentSelectedCategoryId, name, description);
-            
-            // Recargar la categoría actualizada
             await loadCategoryData(currentSelectedCategoryId);
-            
-            // Recargar lista de categorías
             await loadExistingCategories();
-            
             mostrarToast('Subcategoría "' + name + '" agregada a la categoría', 'success');
         } else {
-            // Si es una categoría nueva, solo agregar a la lista local
-            // (se guardará cuando se cree la categoría)
             subcategories.push(newSubcategory);
             renderSubcategories();
             mostrarToast('Subcategoría "' + name + '" agregada (se guardará al crear la categoría)', 'success');
         }
         
-        // Limpiar campos
         if (elements.subcategoryName) elements.subcategoryName.value = '';
         if (elements.subcategoryDescription) elements.subcategoryDescription.value = '';
         if (elements.subcategoryName) elements.subcategoryName.focus();
         
-        // Cerrar loading
         cerrarLoading();
         
     } catch (error) {
@@ -395,7 +516,6 @@ async function addSubcategory() {
     }
 }
 
-// EDITAR subcategoría
 async function editSubcategory(index) {
     var sub = subcategories[index];
     if (!sub) return;
@@ -439,7 +559,6 @@ async function editSubcategory(index) {
         try {
             var updatedSub = result.value;
             
-            // Si hay una categoría existente seleccionada, actualizar en Firebase
             if (currentSelectedCategoryId && sub.id) {
                 await CategoryService.updateSubcategory(
                     currentSelectedCategoryId, 
@@ -448,13 +567,11 @@ async function editSubcategory(index) {
                     updatedSub.description
                 );
                 
-                // Recargar la categoría actualizada
                 await loadCategoryData(currentSelectedCategoryId);
                 await loadExistingCategories();
                 
                 mostrarToast('Subcategoría actualizada en Firebase', 'success');
             } else {
-                // Solo actualizar local
                 subcategories[index] = { 
                     ...sub, 
                     name: updatedSub.name, 
@@ -472,7 +589,6 @@ async function editSubcategory(index) {
     }
 }
 
-// ELIMINAR subcategoría
 async function deleteSubcategory(index) {
     var sub = subcategories[index];
     if (!sub) return;
@@ -485,17 +601,12 @@ async function deleteSubcategory(index) {
     
     if (result.isConfirmed) {
         try {
-            // Si hay una categoría existente seleccionada y la subcategoría tiene ID, eliminar de Firebase
             if (currentSelectedCategoryId && sub.id) {
                 await CategoryService.deleteSubcategory(currentSelectedCategoryId, sub.id);
-                
-                // Recargar la categoría actualizada
                 await loadCategoryData(currentSelectedCategoryId);
                 await loadExistingCategories();
-                
                 mostrarToast('Subcategoría "' + sub.name + '" eliminada de Firebase', 'success');
             } else {
-                // Solo eliminar local
                 subcategories.splice(index, 1);
                 renderSubcategories();
                 mostrarToast('Subcategoría "' + sub.name + '" eliminada', 'success');
@@ -530,7 +641,6 @@ async function loadCategoryData(categoryId) {
     try {
         var category = categoriesList.find(function(c) { return c.id === categoryId; });
         if (!category) {
-            // Si no está en la lista, intentar obtener directamente
             category = await CategoryService.getById(categoryId, true);
             if (!category) {
                 mostrarError('Categoría no encontrada', 'No se pudo cargar la categoría seleccionada.');
@@ -538,15 +648,19 @@ async function loadCategoryData(categoryId) {
             }
         }
         
-        // Guardar el ID de la categoría seleccionada
         currentSelectedCategoryId = categoryId;
         
-        // Llenar el formulario con los datos de la categoría
         if (elements.categoryId) elements.categoryId.value = category.id || '';
         if (elements.categoryName) elements.categoryName.value = category.name || '';
         if (elements.categoryDescription) elements.categoryDescription.value = category.description || '';
         
-        // Cargar subcategorías (con sus IDs)
+        // 🖼️ Cargar imagen si existe
+        if (category.imageBase64) {
+            setCategoryImage(category.imageBase64);
+        } else {
+            removeImage();
+        }
+        
         subcategories = (category.subcategories || []).map(function(sub) {
             return {
                 id: sub.id || sub._id || null,
@@ -566,7 +680,7 @@ async function loadCategoryData(categoryId) {
 }
 
 // ========================================
-// Guardar categoría CON SWEETALERT2 Y FIREBASE
+// Guardar categoría CON SWEETALERT2
 // ========================================
 async function saveCategory() {
     if (isSubmitting) return;
@@ -591,7 +705,6 @@ async function saveCategory() {
         return;
     }
     
-    // Verificar si es una categoría existente o nueva
     var isExisting = currentSelectedCategoryId === categoryId;
     
     if (!isExisting) {
@@ -604,6 +717,29 @@ async function saveCategory() {
             }
         } catch (error) {
             console.warn('Error verificando ID:', error);
+        }
+    }
+    
+    var hasNewImage = !!selectedImageFile;
+    var hasCurrentImage = !!currentImageBase64;
+    
+    // 🔥 Convertir imagen a Base64 si hay una nueva
+    let imageBase64 = '';
+    let imageType = '';
+    let imageName = '';
+    let imageSize = null;
+    
+    if (hasNewImage && selectedImageFile) {
+        try {
+            imageBase64 = await fileToBase64(selectedImageFile);
+            imageType = selectedImageFile.type;
+            imageName = selectedImageFile.name;
+            imageSize = selectedImageFile.size;
+            console.log('✅ Imagen convertida a Base64');
+        } catch (error) {
+            console.error('❌ Error convirtiendo imagen:', error);
+            await mostrarError('Error con la imagen', 'No se pudo procesar la imagen.');
+            return;
         }
     }
     
@@ -624,12 +760,23 @@ async function saveCategory() {
         })
     };
     
-    // Confirmación antes de guardar
+    // 🖼️ Agregar imagen Base64 si existe
+    if (hasNewImage && imageBase64) {
+        categoryData.imageBase64 = imageBase64;
+        categoryData.imageType = imageType;
+        categoryData.imageName = imageName;
+        categoryData.imageSize = imageSize;
+    } else if (hasCurrentImage) {
+        categoryData.imageBase64 = currentImageBase64;
+    }
+    
     var confirmResult = await mostrarConfirmacion(
         isExisting ? '¿Actualizar categoría?' : '¿Crear categoría?',
         isExisting 
-            ? 'Estás a punto de actualizar la categoría "' + name + '" con ' + subcategories.length + ' subcategoría(s).' 
-            : 'Estás a punto de crear la categoría "' + name + '" con ' + subcategories.length + ' subcategoría(s).',
+            ? 'Estás a punto de actualizar la categoría "' + name + '" con ' + subcategories.length + ' subcategoría(s).' +
+              (hasNewImage ? ' Se subirá una nueva imagen.' : hasCurrentImage ? ' Se mantendrá la imagen actual.' : ' Sin imagen.')
+            : 'Estás a punto de crear la categoría "' + name + '" con ' + subcategories.length + ' subcategoría(s).' +
+              (hasNewImage ? ' Se subirá una imagen.' : ' Sin imagen.'),
         isExisting ? 'Sí, actualizar' : 'Sí, crear'
     );
     
@@ -651,30 +798,46 @@ async function saveCategory() {
         var savedCategory;
         
         if (isExisting && currentSelectedCategoryId) {
-            // Actualizar categoría existente
             var updateData = {
                 name: categoryData.name,
                 slug: categoryData.slug,
                 description: categoryData.description,
                 subcategories: categoryData.subcategories
             };
+            
+            // 🖼️ Agregar imagen Base64 si existe
+            if (hasNewImage && imageBase64) {
+                updateData.imageBase64 = imageBase64;
+                updateData.imageType = imageType;
+                updateData.imageName = imageName;
+                updateData.imageSize = imageSize;
+            } else if (hasCurrentImage) {
+                updateData.imageBase64 = currentImageBase64;
+            }
+            
             savedCategory = await CategoryService.update(currentSelectedCategoryId, updateData);
         } else {
-            // Crear nueva categoría
             savedCategory = await CategoryService.create(categoryData);
+        }
+        
+        console.log('✅ Categoría guardada:', savedCategory);
+        
+        // Limpiar imagen seleccionada
+        if (hasNewImage) {
+            removeImage();
         }
         
         cerrarLoading();
         await mostrarExito(
             isExisting ? '¡Categoría actualizada!' : '¡Categoría creada!',
-            '✅ "' + savedCategory.name + '" ' + (isExisting ? 'actualizada' : 'creada') + ' con ' + savedCategory.subcategories.length + ' subcategoría(s).'
+            '✅ "' + savedCategory.name + '" ' + (isExisting ? 'actualizada' : 'creada') + 
+            ' con ' + savedCategory.subcategories.length + ' subcategoría(s).' +
+            (savedCategory.imageBase64 ? ' 🖼️ Imagen incluida.' : '')
         );
         
-        // Resetear formulario y recargar lista
         resetFormLocal();
         await loadExistingCategories();
         
-        // Si actualizamos, mantener la categoría seleccionada
         if (isExisting && elements.existingCategorySelect) {
             elements.existingCategorySelect.value = categoryId;
             await loadCategoryData(categoryId);
@@ -682,7 +845,7 @@ async function saveCategory() {
         
     } catch (error) {
         cerrarLoading();
-        console.error('Error al guardar categoría:', error);
+        console.error('❌ Error al guardar categoría:', error);
         await mostrarError('Error al guardar', error.message || 'Ocurrió un error inesperado.');
     } finally {
         isSubmitting = false;
@@ -694,7 +857,7 @@ async function saveCategory() {
 }
 
 // ========================================
-// Resetear formulario (local, sin confirmación)
+// Resetear formulario
 // ========================================
 function resetFormLocal() {
     if (elements.categoryId) elements.categoryId.value = '';
@@ -705,6 +868,7 @@ function resetFormLocal() {
     
     subcategories = [];
     currentSelectedCategoryId = null;
+    removeImage();
     renderSubcategories();
     
     if (elements.existingCategorySelect) {
@@ -714,13 +878,12 @@ function resetFormLocal() {
     if (elements.categoryName) elements.categoryName.focus();
 }
 
-// ========================================
-// Resetear formulario CON SWEETALERT2
-// ========================================
 async function resetForm() {
     var hasData = elements.categoryName?.value?.trim() || 
                   elements.categoryDescription?.value?.trim() || 
-                  subcategories.length > 0;
+                  subcategories.length > 0 ||
+                  selectedImageFile ||
+                  currentImageBase64;
     
     if (hasData) {
         var result = await mostrarAdvertencia(
@@ -770,18 +933,15 @@ function initEventListeners() {
         if (selectedId) {
             loadCategoryData(selectedId);
         } else {
-            // Limpiar formulario al seleccionar "Seleccionar categoría"
             resetFormLocal();
             currentSelectedCategoryId = null;
         }
     });
     
-    // Cuando el nombre cambia, resetear el estado de categoría existente
     elements.categoryId?.addEventListener('input', function() {
         var currentId = this.value.trim();
         var selectValue = elements.existingCategorySelect?.value || '';
         
-        // Si el ID manual no coincide con el seleccionado, desvincular
         if (selectValue && currentId !== selectValue) {
             currentSelectedCategoryId = null;
             if (elements.existingCategorySelect) {
@@ -791,6 +951,7 @@ function initEventListeners() {
     });
     
     setupAutoGeneration();
+    setupImageUpload();
 }
 
 // ========================================
@@ -816,22 +977,14 @@ document.addEventListener('themeChanged', function(e) {
 // Inicialización
 // ========================================
 export async function categoriesCreateController() {
-    console.log('📝 Create Categories Controller - Crear categorías con subcategorías');
+    console.log('📝 Create Categories Controller - Crear categorías con subcategorías e imágenes');
     
     cacheElements();
     syncDarkMode();
     initEventListeners();
     
-    // Resetear formulario inicial
     resetFormLocal();
-    
     await loadExistingCategories();
-    
-    // Si hay categorías, seleccionar la primera por defecto (opcional)
-    // if (categoriesList.length > 0 && elements.existingCategorySelect) {
-    //     elements.existingCategorySelect.value = categoriesList[0].id;
-    //     await loadCategoryData(categoriesList[0].id);
-    // }
     
     console.log('✅ Create Categories page loaded');
 }

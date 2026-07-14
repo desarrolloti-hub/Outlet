@@ -152,7 +152,6 @@ function cacheElements() {
         categoryName: document.getElementById('categoryName'),
         categorySlug: document.getElementById('categorySlug'),
         categoryDescription: document.getElementById('categoryDescription'),
-        categoryIcon: document.getElementById('categoryIcon'),
         categoryOrder: document.getElementById('categoryOrder'),
         categoryStatus: document.getElementById('categoryStatus'),
         categoryForm: document.getElementById('categoryForm'),
@@ -238,14 +237,21 @@ function renderTable() {
         var safeId = cat.id || '';
         var safeName = cat.name || '';
         var safeSlug = cat.slug || '';
-        var safeIcon = cat.icon || 'category';
         var safeOrder = cat.order || 0;
         var safeStatus = cat.status || 'active';
         var safeSubcategories = Array.isArray(cat.subcategories) ? cat.subcategories : [];
         
+        // 🖼️ IMAGEN
+        var imageHtml = '';
+        if (cat.imageBase64 && cat.imageBase64.startsWith('data:image')) {
+            imageHtml = '<img src="' + escapeHtml(cat.imageBase64) + '" alt="' + escapeHtml(safeName) + '" style="width:40px;height:40px;object-fit:cover;border-radius:8px;border:1px solid #eaeaea;">';
+        } else {
+            imageHtml = '<span style="color:#ccc;font-size:12px;">Sin imagen</span>';
+        }
+        
         html += 
             '<tr data-id="' + escapeHtml(safeId) + '">' +
-                '<td><div class="categorieslist-icon"><i class="material-symbols-outlined">' + escapeHtml(safeIcon) + '</i></div></td>' +
+                '<td><div style="display:flex;align-items:center;justify-content:center;width:50px;height:50px;">' + imageHtml + '</div></td>' +
                 '<td><code style="font-size: 12px;">' + escapeHtml(safeId) + '</code></td>' +
                 '<td><strong>' + escapeHtml(safeName) + '</strong></td>' +
                 '<td><code style="font-size: 12px;">' + escapeHtml(safeSlug) + '</code></td>' +
@@ -370,7 +376,6 @@ function resetCategoryForm() {
     if (elements.categoryName) elements.categoryName.value = '';
     if (elements.categorySlug) elements.categorySlug.value = '';
     if (elements.categoryDescription) elements.categoryDescription.value = '';
-    if (elements.categoryIcon) elements.categoryIcon.value = '';
     if (elements.categoryOrder) elements.categoryOrder.value = '0';
     if (elements.categoryStatus) elements.categoryStatus.value = 'active';
     if (elements.modalTitle) elements.modalTitle.textContent = 'Nueva Categoría';
@@ -380,11 +385,9 @@ function resetCategoryForm() {
 // NUEVA FUNCIÓN: Redirigir a la página de creación
 // ========================================
 function openCreatePage() {
-    // Si estás usando un sistema de routing SPA
     if (typeof window.navigateTo === 'function') {
         window.navigateTo('/createCategories');
     } else {
-        // Navegación tradicional
         window.location.href = 'createCategories.html';
     }
 }
@@ -403,7 +406,6 @@ async function editCategory(id) {
     if (elements.categoryName) elements.categoryName.value = category.name || '';
     if (elements.categorySlug) elements.categorySlug.value = category.slug || '';
     if (elements.categoryDescription) elements.categoryDescription.value = category.description || '';
-    if (elements.categoryIcon) elements.categoryIcon.value = category.icon || '';
     if (elements.categoryOrder) elements.categoryOrder.value = category.order || 0;
     if (elements.categoryStatus) elements.categoryStatus.value = category.status || 'active';
     if (elements.modalTitle) elements.modalTitle.textContent = 'Editar Categoría';
@@ -444,7 +446,6 @@ async function saveCategory(event) {
         name: name,
         slug: elements.categorySlug?.value?.trim() || generarSlug(name),
         description: elements.categoryDescription?.value?.trim() || '',
-        icon: elements.categoryIcon?.value?.trim() || '',
         order: parseInt(elements.categoryOrder?.value) || 0,
         status: elements.categoryStatus?.value || 'active'
     };
@@ -453,7 +454,6 @@ async function saveCategory(event) {
         categoryData.id = elements.categoryId?.value || '';
     }
     
-    // Confirmación antes de guardar
     var actionText = isEditing ? 'actualizar' : 'crear';
     var confirmResult = await mostrarConfirmacion(
         '¿' + (isEditing ? 'Actualizar' : 'Crear') + ' categoría?',
@@ -738,7 +738,6 @@ function setupSlugGeneration() {
 // Event Listeners
 // ========================================
 function initEventListeners() {
-    // CAMBIO: Redirige a createCategories en lugar de abrir modal
     elements.addBtn?.addEventListener('click', openCreatePage);
     
     elements.categoryForm?.addEventListener('submit', saveCategory);
@@ -753,8 +752,6 @@ function initEventListeners() {
         }
     });
     
-    // Los botones de confirmación del modal ya no son necesarios porque usamos SweetAlert
-    // Pero los mantenemos por compatibilidad
     elements.confirmDeleteBtn?.addEventListener('click', confirmDelete);
     elements.cancelDeleteBtn?.addEventListener('click', function() { deleteTarget = null; });
     elements.closeDeleteModalBtn?.addEventListener('click', function() { deleteTarget = null; });

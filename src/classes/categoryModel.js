@@ -1,6 +1,7 @@
 /* ========================================
    CATEGORY MODEL - Outlet Val
    Estructura de datos de categorías y subcategorías
+   CON SOPORTE PARA IMÁGENES EN BASE64
    ======================================== */
 
 export class Category {
@@ -13,6 +14,12 @@ export class Category {
         this.slug = data.slug || '';
         this.description = data.description || '';
         
+        // 🖼️ IMAGEN EN BASE64 (como en productos)
+        this.imageBase64 = data.imageBase64 || '';
+        this.imageType = data.imageType || '';
+        this.imageName = data.imageName || '';
+        this.imageSize = data.imageSize || null;
+        
         // Subcategorías (con descripción)
         this.subcategories = data.subcategories || [];
         
@@ -20,6 +27,7 @@ export class Category {
         this.createdAt = data.createdAt || new Date().toISOString();
         this.updatedAt = data.updatedAt || null;
         this.createdBy = data.createdBy || null;
+        this.order = data.order || 0;
     }
     
     // ========== GETTERS ==========
@@ -32,12 +40,22 @@ export class Category {
         return this.subcategories.filter(sub => sub.status !== 'inactive');
     }
     
+    get hasImage() {
+        return !!this.imageBase64 && this.imageBase64.trim() !== '';
+    }
+    
+    // Para compatibilidad con el código existente
+    get imageUrl() {
+        return this.imageBase64;
+    }
+    
     get summary() {
         return {
             id: this.id,
             name: this.name,
             slug: this.slug,
-            subcategoriesCount: this.subcategoriesCount
+            subcategoriesCount: this.subcategoriesCount,
+            hasImage: this.hasImage
         };
     }
     
@@ -49,7 +67,6 @@ export class Category {
             throw new Error('El nombre de la subcategoría es requerido');
         }
         
-        // Verificar si ya existe
         const exists = this.subcategories.some(
             sub => sub.name.toLowerCase() === subcategoryName.trim().toLowerCase()
         );
@@ -63,7 +80,8 @@ export class Category {
             name: subcategoryName.trim(),
             description: description.trim() || '',
             slug: this.generateSlug(subcategoryName),
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            status: 'active'
         };
         
         this.subcategories.push(newSubcategory);
@@ -82,7 +100,6 @@ export class Category {
             throw new Error('El nombre de la subcategoría es requerido');
         }
         
-        // Verificar duplicado excluyendo la actual
         const exists = this.subcategories.some((sub, idx) => 
             idx !== index && sub.name.toLowerCase() === newName.trim().toLowerCase()
         );
@@ -161,10 +178,16 @@ export class Category {
             name: this.name,
             slug: this.slug,
             description: this.description || '',
+            // 🖼️ Imagen en Base64
+            imageBase64: this.imageBase64 || '',
+            imageType: this.imageType || '',
+            imageName: this.imageName || '',
+            imageSize: this.imageSize || null,
             subcategories: this.subcategories.map(sub => ({ ...sub })),
             createdAt: this.createdAt,
-            updatedAt: this.updatedAt,
-            createdBy: this.createdBy
+            updatedAt: this.updatedAt || new Date().toISOString(),
+            createdBy: this.createdBy,
+            order: this.order || 0
         };
     }
 }

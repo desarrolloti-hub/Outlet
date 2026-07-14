@@ -212,6 +212,25 @@
     color: var(--outlet-text-primary, #1a1a1a);
 }
 
+/* ====== IMAGEN PREVIEW ====== */
+.updatecategory-image-preview {
+    margin-top: 8px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--outlet-bg-secondary, #f8f8f8);
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.updatecategory-image-preview img {
+    max-width: 100%;
+    max-height: 150px;
+    object-fit: contain;
+    padding: 8px;
+}
+
 /* Fieldset deshabilitado */
 fieldset:disabled {
     opacity: 0.6;
@@ -446,6 +465,14 @@ body.dark-mode .updatecategory-preview-note {
     color: #7a8ea8;
 }
 
+body.dark-mode .updatecategory-image-preview {
+    background: var(--outlet-bg-container-low, #0a1c2c);
+}
+
+body.dark-mode .updatecategory-image-preview img {
+    border-color: var(--outlet-border-color, #2a4a6e);
+}
+
 /* ====== RESPONSIVE ====== */
 
 @media (max-width: 768px) {
@@ -528,6 +555,7 @@ body.dark-mode .updatecategory-preview-note {
         padding: 0.6rem 1rem;
     }
 }
+
 /* ========================================
    INTEGRACIÓN CON NAVBAR LATERAL - VERSIÓN OPTIMIZADA
    ======================================== */
@@ -701,6 +729,7 @@ body:has(.OUTLET-admin-nav.collapsed) .updatecategory-container {
 .updatecategory-container {
     transition: margin-left 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
 }
+
 /* ========================================
    MENÚ HAMBURGUESA - ESTILOS GLOBALES
    ======================================== */

@@ -1,6 +1,7 @@
 <!-- ========================================
    CREATE CATEGORIES - OUTLET ADMIN
    Página para CREAR categorías con subcategorías
+   CON SOPORTE PARA IMÁGENES EN BASE64
    ======================================== -->
 
 <main class="outlet-categories-container">
@@ -8,7 +9,7 @@
     <div class="outlet-categories-header">
         <div>
             <h1 class="outlet-text-gold">Crear Categoría</h1>
-            <p class="outlet-header-desc">Crea una nueva categoría con sus subcategorías</p>
+            <p class="outlet-header-desc">Crea una nueva categoría con imagen y subcategorías</p>
         </div>
         <button class="outlet-btn-outline" id="backBtn">
             <span class="material-symbols-outlined">arrow_back</span>
@@ -16,7 +17,7 @@
         </button>
     </div>
 
-    <!-- ===== NUEVO: Selector de categorías existentes ===== -->
+    <!-- Selector de categorías existentes -->
     <div class="outlet-categories-grid" style="margin-bottom: 20px;">
         <div class="outlet-categories-panel" style="background: var(--outlet-bg-secondary);">
             <div class="outlet-form-section">
@@ -30,7 +31,7 @@
                         <select id="existingCategorySelect" class="outlet-form-control">
                             <option value="">Cargando categorías...</option>
                         </select>
-                        <small>Selecciona una categoría para ver sus subcategorías o crear una nueva</small>
+                        <small>Selecciona una categoría para editarla o crear una nueva</small>
                     </div>
                 </div>
             </div>
@@ -48,6 +49,26 @@
                 </div>
 
                 <div class="outlet-form-grid">
+                    <!-- 🖼️ IMAGEN DE LA CATEGORÍA -->
+                    <div class="outlet-input-group outlet-full-width">
+                        <label>Imagen de la Categoría</label>
+                        <div class="outlet-image-upload" id="imageUploadArea">
+                            <input type="file" accept="image/*" id="categoryImageInput" style="display:none">
+                            <div class="outlet-upload-placeholder" id="uploadPlaceholder">
+                                <span class="material-symbols-outlined" style="font-size: 40px;">image</span>
+                                <p>Haz clic para subir una imagen</p>
+                                <small>Formatos: JPG, PNG, WEBP (máx. 5MB)</small>
+                            </div>
+                            <div class="outlet-image-preview-wrapper" id="imagePreviewWrapper" style="display:none;">
+                                <img id="imagePreview" src="" alt="Vista previa">
+                                <button type="button" class="outlet-remove-image-btn" id="removeImageBtn">
+                                    <span class="material-symbols-outlined">close</span>
+                                </button>
+                            </div>
+                        </div>
+                        <small>La imagen se guardará en Base64 (similar a productos)</small>
+                    </div>
+
                     <!-- ID de la categoría -->
                     <div class="outlet-input-group outlet-full-width">
                         <label>ID de la Categoría <span class="outlet-required">*</span></label>

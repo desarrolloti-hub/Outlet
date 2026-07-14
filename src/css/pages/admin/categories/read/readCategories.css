@@ -108,20 +108,26 @@
     vertical-align: middle;
 }
 
-/* Icono de categoría */
-.categorieslist-icon {
-    width: 40px;
-    height: 40px;
+/* ====== IMAGEN ====== */
+.categorieslist-image-cell {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(221, 171, 59, 0.1);
-    border-radius: 12px;
-    color: var(--outlet-gold, #ddab3b);
+    width: 50px;
+    height: 50px;
 }
 
-.categorieslist-icon i {
-    font-size: 22px;
+.categorieslist-image-cell img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #eaeaea;
+}
+
+.categorieslist-image-cell .no-image {
+    color: #ccc;
+    font-size: 12px;
 }
 
 /* Badge de estado */
@@ -638,6 +644,10 @@ body.dark-mode .categorieslist-subcategory-info {
     background: rgba(221, 171, 59, 0.1);
 }
 
+body.dark-mode .categorieslist-image-cell img {
+    border-color: var(--outlet-border-color, #2a4a6e);
+}
+
 /* ====== RESPONSIVE ====== */
 
 /* Tablets (768px - 1024px) */
@@ -739,15 +749,6 @@ body.dark-mode .categorieslist-subcategory-info {
         padding: 10px 16px;
     }
     
-    .categorieslist-icon {
-        width: 32px;
-        height: 32px;
-    }
-    
-    .categorieslist-icon i {
-        font-size: 18px;
-    }
-    
     .categorieslist-table th {
         padding: 10px 8px;
         font-size: 10px;
@@ -840,6 +841,7 @@ body.dark-mode .categorieslist-subcategory-info {
         padding: 3px 8px;
     }
 }
+
 /* ========================================
    INTEGRACIÓN CON NAVBAR LATERAL - VERSIÓN OPTIMIZADA
    ======================================== */
@@ -991,6 +993,7 @@ body:has(.OUTLET-admin-nav.collapsed) .categorieslist-container {
 .categorieslist-container {
     transition: margin-left 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
 }
+
 /* ========================================
    MENÚ HAMBURGUESA - ESTILOS GLOBALES
    ======================================== */

@@ -61,22 +61,27 @@
                         <textarea id="categoryDescription" rows="4" placeholder="Descripción detallada de la categoría..."></textarea>
                         <span class="updatecategory-input-line"></span>
                     </div>
+
+                    <!-- 🖼️ IMAGEN DE LA CATEGORÍA (SOLO LECTURA) -->
+                    <div class="updatecategory-form-group">
+                        <label>Imagen de la Categoría</label>
+                        <div class="updatecategory-image-preview" id="updateImagePreview">
+                            <div id="updateImagePlaceholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;border:1px dashed #ccc;border-radius:12px;min-height:120px;">
+                                <span class="material-symbols-outlined" style="font-size:32px;color:#ccc;">image</span>
+                                <span style="font-size:13px;color:#888;">Sin imagen</span>
+                            </div>
+                            <img id="updateImageDisplay" src="" alt="Vista previa" style="display:none;max-width:100%;max-height:150px;object-fit:contain;border-radius:12px;border:1px solid #eaeaea;">
+                        </div>
+                        <small>La imagen se muestra como referencia (no se puede modificar aquí)</small>
+                    </div>
                     
                     <div class="updatecategory-form-row">
-                        <div class="updatecategory-form-group">
-                            <label>Icono (Material Icon)</label>
-                            <input type="text" id="categoryIcon" placeholder="Ej: checkroom, shoe, backpack...">
-                            <small>Nombre del icono de Material Symbols</small>
-                        </div>
-                        
                         <div class="updatecategory-form-group">
                             <label>Orden de Visualización</label>
                             <input type="number" id="categoryOrder" value="0" min="0" step="1">
                             <small>Número más bajo = aparece primero</small>
                         </div>
-                    </div>
-                    
-                    <div class="updatecategory-form-row">
+                        
                         <div class="updatecategory-form-group">
                             <label>Estado</label>
                             <select id="categoryStatus">
@@ -84,12 +89,12 @@
                                 <option value="inactive">Inactivo</option>
                             </select>
                         </div>
-                        
-                        <div class="updatecategory-form-group">
-                            <label>Fecha de Creación</label>
-                            <input type="text" id="categoryCreatedAt" readonly disabled>
-                            <small>Fecha en que se creó la categoría</small>
-                        </div>
+                    </div>
+                    
+                    <div class="updatecategory-form-group">
+                        <label>Fecha de Creación</label>
+                        <input type="text" id="categoryCreatedAt" readonly disabled>
+                        <small>Fecha en que se creó la categoría</small>
                     </div>
                 </fieldset>
                 
