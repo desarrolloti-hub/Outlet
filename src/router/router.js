@@ -1,10 +1,11 @@
 /* ========================================
-   ROUTER - Visitantes
+   ROUTER - Con redirección inicial por rol
    ======================================== */
 
 import { routes } from './routes.js';
+import { AuthService, ROLES } from '../services/authService.js';
 
-let isNavigating = false; // Prevenir navegaciones múltiples
+let isNavigating = false;
 
 /**
  * Inicializa el router
@@ -15,7 +16,7 @@ export function initRouter() {
         const link = e.target.closest('[data-link]');
         if (link && !isNavigating) {
             e.preventDefault();
-            e.stopPropagation(); // Evitar propagación
+            e.stopPropagation();
             const href = link.getAttribute('href');
             if (href && !href.startsWith('http') && !href.startsWith('#')) {
                 await navigateTo(href);
@@ -33,8 +34,36 @@ export function initRouter() {
     // Exponer navigateTo globalmente
     window.navigateTo = navigateTo;
     
-    // Manejar ruta inicial
-    handleRoute();
+    // 🔥 Manejar ruta inicial con redirección
+    handleInitialRoute();
+}
+
+/**
+ * Maneja la ruta inicial - SOLO REDIRIGE SI ES ADMIN
+ */
+async function handleInitialRoute() {
+    const currentPath = window.location.pathname;
+    const role = AuthService.getUserRoleSync();
+    
+    console.log('📍 Ruta inicial:', currentPath);
+    console.log('👤 Rol detectado:', role);
+    
+    // 🔥 SOLO redirigir si es admin y no está ya en una ruta de admin
+    if (role === ROLES.ADMIN) {
+        // Si está en la raíz o en una ruta de visitante, redirigir a homeAdmin
+        const isVisitorRoute = ['/', '/products', '/collection', '/login', '/wishlist', '/cart', '/createAccount', '/services', '/nosotros', '/contacto', '/blogs'].includes(currentPath);
+        
+        if (isVisitorRoute || currentPath === '') {
+            console.log('🔄 Admin detectado, redirigiendo a /homeAdmin');
+            window.history.replaceState({}, '', '/homeAdmin');
+            await handleRoute();
+            return;
+        }
+    }
+    
+    // Si es customer o guest, mantener la ruta actual
+    // Si la ruta no existe, ir a 404 o home
+    await handleRoute();
 }
 
 /**
@@ -80,11 +109,14 @@ async function handleRoute() {
         
         const html = await response.text();
         
-        // Insertar en el DOM - SOLO UNA VEZ
+        // Insertar en el DOM
         const appContainer = document.getElementById('app');
         if (appContainer) {
             appContainer.innerHTML = html;
         }
+        
+        // Esperar a que el DOM se actualice
+        await new Promise(resolve => setTimeout(resolve, 0));
         
         // Ejecutar controller de la vista si existe
         if (route.controller && typeof route.controller === 'function') {
@@ -96,16 +128,22 @@ async function handleRoute() {
         
         console.log(`✅ Vista cargada: ${path}`);
         
+        // Disparar evento después de cambiar ruta
+        document.dispatchEvent(new CustomEvent('route:changed', { 
+            detail: { path } 
+        }));
+        
     } catch (error) {
         console.error('❌ Error cargando ruta:', error);
         const appContainer = document.getElementById('app');
         if (appContainer) {
-            appContainer.innerHTML = `<h1>Error cargando página</h1><p>${error.message}</p>`;
+            appContainer.innerHTML = `
+                <div style="text-align:center;padding:50px;">
+                    <h1>Error cargando página</h1>
+                    <p>${error.message}</p>
+                    <button onclick="window.navigateTo('/')">Volver al inicio</button>
+                </div>
+            `;
         }
     }
-    
-    // Disparar evento después de cambiar ruta
-    document.dispatchEvent(new CustomEvent('route:changed', { 
-        detail: { path } 
-    }));
 }
