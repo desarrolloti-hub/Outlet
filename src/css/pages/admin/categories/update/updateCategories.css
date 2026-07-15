@@ -264,7 +264,157 @@ fieldset {
     }
 }
 
-/* Botones de acción */
+/* ====== SUBCATEGORÍAS EDITABLES ====== */
+#subcategoriesSection {
+    margin-top: 8px;
+}
+
+#subcategoriesSection .updatecategory-form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    background: transparent;
+    border-bottom: 1px solid rgba(221, 171, 59, 0.1);
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+#subcategoriesSection .updatecategory-form-header h3 {
+    margin: 0;
+}
+
+.updatecategory-btn-add-sub {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 20px;
+    background: rgba(221, 171, 59, 0.1);
+    border: 1px dashed var(--outlet-gold, #ddab3b);
+    color: var(--outlet-gold, #ddab3b);
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.25s ease;
+}
+
+.updatecategory-btn-add-sub:hover {
+    background: var(--outlet-gold, #ddab3b);
+    color: var(--outlet-text-primary, #1a1a1a);
+    transform: translateY(-2px);
+}
+
+.updatecategory-btn-add-sub i {
+    font-size: 18px;
+}
+
+/* Lista de subcategorías editable */
+.updatecategory-subcategories-list-edit {
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Cada item de subcategoría */
+.updatecategory-sub-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: rgba(221, 171, 59, 0.04);
+    border-radius: 12px;
+    border: 1px solid rgba(221, 171, 59, 0.08);
+    transition: all 0.2s ease;
+}
+
+.updatecategory-sub-item:hover {
+    background: rgba(221, 171, 59, 0.08);
+    border-color: rgba(221, 171, 59, 0.2);
+}
+
+.updatecategory-sub-item .sub-index {
+    font-size: 12px;
+    font-weight: 600;
+    color: #888;
+    min-width: 28px;
+}
+
+.updatecategory-sub-item .sub-inputs {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 0.7fr;
+    gap: 12px;
+}
+
+@media (max-width: 640px) {
+    .updatecategory-sub-item .sub-inputs {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+}
+
+.updatecategory-sub-item .sub-inputs input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    background: var(--outlet-bg-card, white);
+    color: var(--outlet-text-primary, #1a1a1a);
+    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+}
+
+.updatecategory-sub-item .sub-inputs input:focus {
+    outline: none;
+    border-color: var(--outlet-gold, #ddab3b);
+}
+
+.updatecategory-sub-item .sub-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.updatecategory-sub-item .sub-actions button {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    background: transparent;
+    color: #888;
+}
+
+.updatecategory-sub-item .sub-actions .btn-remove-sub:hover {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
+.updatecategory-sub-item .sub-actions .btn-move-up:hover,
+.updatecategory-sub-item .sub-actions .btn-move-down:hover {
+    background: rgba(221, 171, 59, 0.1);
+    color: var(--outlet-gold, #ddab3b);
+}
+
+/* Subcategoría vacía */
+.updatecategory-empty-sub {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--outlet-text-secondary, #6b6b6b);
+    font-size: 14px;
+    background: rgba(221, 171, 59, 0.03);
+    border-radius: 12px;
+    border: 1px dashed #e0e0e0;
+}
+
+/* ====== BOTONES DE ACCIÓN ====== */
 .updatecategory-actions {
     display: flex;
     justify-content: flex-end;
@@ -473,6 +623,30 @@ body.dark-mode .updatecategory-image-preview img {
     border-color: var(--outlet-border-color, #2a4a6e);
 }
 
+body.dark-mode .updatecategory-sub-item {
+    background: rgba(221, 171, 59, 0.04);
+    border-color: var(--outlet-border-color, #2a4a6e);
+}
+
+body.dark-mode .updatecategory-sub-item:hover {
+    background: rgba(221, 171, 59, 0.08);
+}
+
+body.dark-mode .updatecategory-sub-item .sub-inputs input {
+    background: var(--outlet-bg-card, #0f243d);
+    border-color: var(--outlet-border-color, #2a4a6e);
+    color: var(--outlet-text-primary, #d6e5f7);
+}
+
+body.dark-mode .updatecategory-sub-item .sub-inputs input:focus {
+    border-color: var(--outlet-gold, #ddab3b);
+}
+
+body.dark-mode .updatecategory-empty-sub {
+    border-color: var(--outlet-border-color, #2a4a6e);
+    color: #7a8ea8;
+}
+
 /* ====== RESPONSIVE ====== */
 
 @media (max-width: 768px) {
@@ -675,10 +849,7 @@ body:has(.OUTLET-admin-nav.collapsed) .updatecategory-container {
     padding: 10px 24px;
 }
 
-/* ========================================
-   BOTÓN HAMBURGUESA
-   ======================================== */
-
+/* ====== MENÚ HAMBURGUESA ====== */
 .mobile-menu-btn {
     display: none;
     position: fixed;
@@ -728,201 +899,4 @@ body:has(.OUTLET-admin-nav.collapsed) .updatecategory-container {
 
 .updatecategory-container {
     transition: margin-left 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-}
-
-/* ========================================
-   MENÚ HAMBURGUESA - ESTILOS GLOBALES
-   ======================================== */
-
-/* Botón hamburguesa */
-.outlet-mobile-menu-btn {
-    display: none;
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    z-index: 1100;
-    background: var(--outlet-gold, #ddab3b);
-    border: none;
-    padding: 10px 16px;
-    border-radius: 40px;
-    cursor: pointer;
-    align-items: center;
-    gap: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-    transition: all 0.3s ease;
-    backdrop-filter: blur(8px);
-}
-
-.outlet-mobile-menu-btn:hover {
-    transform: scale(1.02);
-    background: var(--outlet-gold-light, #e8c46e);
-}
-
-/* Ícono hamburguesa */
-.outlet-menu-icon {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    width: 22px;
-}
-
-.outlet-menu-line {
-    width: 22px;
-    height: 2px;
-    background: var(--outlet-primary, #1a1a1a);
-    transition: all 0.3s ease;
-    border-radius: 2px;
-}
-
-/* Animación para convertir hamburguesa en X */
-.outlet-menu-close .outlet-menu-line:first-child {
-    transform: rotate(45deg) translate(5px, 5px);
-}
-
-.outlet-menu-close .outlet-menu-line:last-child {
-    transform: rotate(-45deg) translate(5px, -5px);
-}
-
-.outlet-menu-close .outlet-menu-line:nth-child(2) {
-    opacity: 0;
-    transform: scaleX(0);
-}
-
-/* Texto del botón */
-.outlet-menu-text {
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    color: var(--outlet-primary, #1a1a1a);
-}
-
-/* Overlay (fondo oscuro) */
-.outlet-mobile-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
-    z-index: 1040;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-}
-
-.outlet-mobile-overlay.active {
-    opacity: 1;
-    visibility: visible;
-}
-
-/* Navbar en modo móvil */
-@media (max-width: 768px) {
-    .outlet-mobile-menu-btn {
-        display: flex;
-    }
-    
-    /* Ocultar navbar por defecto */
-    .OUTLET-admin-nav {
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        width: 280px !important;
-        height: 100vh !important;
-        transform: translateX(-100%) !important;
-        transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1) !important;
-        z-index: 1050 !important;
-        overflow-y: auto !important;
-        box-shadow: none !important;
-    }
-    
-    /* Navbar abierto */
-    .OUTLET-admin-nav.outlet-mobile-open {
-        transform: translateX(0) !important;
-        box-shadow: 5px 0 25px rgba(0, 0, 0, 0.15) !important;
-    }
-    
-    /* Ajuste para el contenido principal cuando el menú está abierto */
-    body.menu-open {
-        overflow: hidden;
-    }
-    
-    /* Animación de entrada para el navbar */
-    .OUTLET-admin-nav.outlet-mobile-open {
-        animation: outletSlideIn 0.3s ease forwards;
-    }
-}
-
-@keyframes outletSlideIn {
-    from {
-        transform: translateX(-100%);
-    }
-    to {
-        transform: translateX(0);
-    }
-}
-
-/* Ajuste para escritorio (ocultar botón) */
-@media (min-width: 769px) {
-    .outlet-mobile-menu-btn {
-        display: none !important;
-    }
-    
-    .outlet-mobile-overlay {
-        display: none !important;
-    }
-    
-    .OUTLET-admin-nav {
-        transform: translateX(0) !important;
-        position: fixed !important;
-        left: 0 !important;
-        top: 0 !important;
-    }
-}
-
-/* Ajuste para el contenido cuando el navbar está abierto en móvil */
-@media (max-width: 768px) {
-    body .outlet-categories-container,
-    body .categorieslist-container,
-    body .updatecategory-container,
-    body .outlet-products-container,
-    body .outlet-admin-container,
-    body .productlist-container,
-    body .admin-main-content {
-        transition: margin-left 0.3s ease, filter 0.3s ease;
-    }
-    
-    /* Cuando el menú está abierto, desenfocar el contenido ligeramente */
-    body:has(.OUTLET-admin-nav.outlet-mobile-open) .outlet-categories-container,
-    body:has(.OUTLET-admin-nav.outlet-mobile-open) .categorieslist-container,
-    body:has(.OUTLET-admin-nav.outlet-mobile-open) .updatecategory-container,
-    body:has(.OUTLET-admin-nav.outlet-mobile-open) .outlet-products-container,
-    body:has(.OUTLET-admin-nav.outlet-mobile-open) .outlet-admin-container,
-    body:has(.OUTLET-admin-nav.outlet-mobile-open) .productlist-container,
-    body:has(.OUTLET-admin-nav.outlet-mobile-open) .admin-main-content {
-        filter: blur(2px);
-        pointer-events: none;
-    }
-}
-
-/* Scroll suave para el navbar en móvil */
-@media (max-width: 768px) {
-    .OUTLET-admin-nav {
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: thin;
-    }
-    
-    .OUTLET-admin-nav::-webkit-scrollbar {
-        width: 4px;
-    }
-    
-    .OUTLET-admin-nav::-webkit-scrollbar-track {
-        background: var(--outlet-border-light, #f0f0f0);
-    }
-    
-    .OUTLET-admin-nav::-webkit-scrollbar-thumb {
-        background: var(--outlet-gold, #ddab3b);
-        border-radius: 4px;
-    }
 }

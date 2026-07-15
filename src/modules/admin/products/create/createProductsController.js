@@ -102,11 +102,6 @@ function cacheElements() {
 // UI Helpers - CON SWEETALERT2
 // ========================================
 
-/**
- * Muestra un toast personalizado (estilo OUTLET)
- * @param {string} mensaje - Texto a mostrar
- * @param {string} tipo - 'success' | 'error' | 'warning' | 'info'
- */
 function mostrarToast(mensaje, tipo = 'info') {
     const toastExistente = document.querySelector('.outlet-toast');
     if (toastExistente) toastExistente.remove();
@@ -116,7 +111,6 @@ function mostrarToast(mensaje, tipo = 'info') {
     toast.textContent = mensaje;
     document.body.appendChild(toast);
     
-    // Mostrar con animación
     requestAnimationFrame(function() {
         toast.classList.add('show');
     });
@@ -127,10 +121,6 @@ function mostrarToast(mensaje, tipo = 'info') {
     }, 3200);
 }
 
-/**
- * Muestra una SweetAlert2 personalizada
- * @param {Object} options - Opciones de la alerta
- */
 function mostrarSweetAlert(options) {
     var defaultOptions = {
         buttonsStyling: false,
@@ -144,9 +134,6 @@ function mostrarSweetAlert(options) {
     return Swal.fire(Object.assign({}, defaultOptions, options));
 }
 
-/**
- * Muestra alerta de éxito con SweetAlert2
- */
 function mostrarExito(titulo, mensaje) {
     return mostrarSweetAlert({
         icon: 'success',
@@ -156,9 +143,6 @@ function mostrarExito(titulo, mensaje) {
     });
 }
 
-/**
- * Muestra alerta de error con SweetAlert2
- */
 function mostrarError(titulo, mensaje) {
     return mostrarSweetAlert({
         icon: 'error',
@@ -168,9 +152,6 @@ function mostrarError(titulo, mensaje) {
     });
 }
 
-/**
- * Muestra alerta de advertencia con SweetAlert2
- */
 function mostrarAdvertencia(titulo, mensaje, confirmText) {
     confirmText = confirmText || 'Continuar';
     return mostrarSweetAlert({
@@ -183,9 +164,6 @@ function mostrarAdvertencia(titulo, mensaje, confirmText) {
     });
 }
 
-/**
- * Muestra alerta de confirmación con SweetAlert2
- */
 function mostrarConfirmacion(titulo, mensaje, confirmText) {
     confirmText = confirmText || 'Sí, confirmar';
     return mostrarSweetAlert({
@@ -198,9 +176,6 @@ function mostrarConfirmacion(titulo, mensaje, confirmText) {
     });
 }
 
-/**
- * Muestra un loading con SweetAlert2
- */
 function mostrarLoading(mensaje) {
     mensaje = mensaje || 'Procesando...';
     return mostrarSweetAlert({
@@ -212,18 +187,14 @@ function mostrarLoading(mensaje) {
     });
 }
 
-/**
- * Cierra la alerta de loading
- */
 function cerrarLoading() {
     Swal.close();
 }
 
 // ========================================
-// FUNCIÓN ACTUALIZADA: limpiarFormulario CON CONFIRMACIÓN
+// FUNCIÓN: limpiarFormulario CON CONFIRMACIÓN
 // ========================================
 function limpiarFormulario() {
-    // Verificar si hay datos para limpiar
     var tieneDatos = elements.sku?.value || 
                        elements.nombre?.value || 
                        currentMainImage || 
@@ -248,7 +219,6 @@ function limpiarFormulario() {
 }
 
 function ejecutarLimpiarFormulario() {
-    // Limpiar inputs de texto y números
     const inputsToClear = [
         'sku', 'nombre', 'descripcion', 'marca', 'genero',
         'precioCompra', 'precioVenta', 'descuento',
@@ -262,7 +232,6 @@ function ejecutarLimpiarFormulario() {
         }
     });
     
-    // Restablecer selectores
     if (elements.categoria && categoriesList.length > 0) {
         elements.categoria.value = categoriesList[0].id;
         updateSubcategories(categoriesList[0].id);
@@ -271,7 +240,6 @@ function ejecutarLimpiarFormulario() {
     if (elements.estado) elements.estado.value = 'activo';
     if (elements.destacado) elements.destacado.checked = false;
     
-    // Limpiar arrays
     coloresArray = [];
     tallasArray = [];
     materialesArray = [];
@@ -279,12 +247,10 @@ function ejecutarLimpiarFormulario() {
     renderizarTallas();
     renderizarMateriales();
     
-    // Limpiar hidden fields
     if (elements.coloresHidden) elements.coloresHidden.value = '[]';
     if (elements.tallasHidden) elements.tallasHidden.value = '[]';
     if (elements.materialesHidden) elements.materialesHidden.value = '[]';
     
-    // Limpiar imágenes
     ejecutarRemoveMainImage();
     galleryImages = [];
     renderGallery();
@@ -293,7 +259,6 @@ function ejecutarLimpiarFormulario() {
     
     actualizarPrecioFinal();
     
-    // Limpiar inputs de tags
     if (elements.colorInput) elements.colorInput.value = '';
     if (elements.tallaInput) elements.tallaInput.value = '';
     if (elements.materialInput) elements.materialInput.value = '';
@@ -302,15 +267,11 @@ function ejecutarLimpiarFormulario() {
 }
 
 // ========================================
-// FUNCIÓN ACTUALIZADA: guardarProducto CON SWEETALERT2
+// FUNCIÓN: guardarProducto CON SWEETALERT2
 // ========================================
 async function guardarProducto() {
-    // Evitar doble envío
     if (isLoading) return;
     
-    // ===== VALIDACIONES CON SWEETALERT =====
-    
-    // Verificar campos obligatorios del paso 1
     if (!elements.sku?.value || !elements.nombre?.value || !elements.descripcion?.value || 
         !elements.marca?.value || !elements.categoria?.value || !elements.genero?.value) {
         
@@ -320,13 +281,11 @@ async function guardarProducto() {
         );
         
         if (currentStep !== 1) {
-            // Ir al paso 1
             while (currentStep > 1) cambiarPanel(-1);
         }
         return;
     }
     
-    // Verificar imagen principal
     if (!currentMainImage) {
         await mostrarError(
             'Imagen principal requerida',
@@ -339,7 +298,6 @@ async function guardarProducto() {
         return;
     }
     
-    // Verificar precios
     if (!elements.precioCompra?.value || !elements.precioVenta?.value) {
         await mostrarError(
             'Precios requeridos',
@@ -356,7 +314,6 @@ async function guardarProducto() {
         return;
     }
     
-    // Verificar precio de venta > precio de compra
     var precioCompra = parseFloat(elements.precioCompra.value) || 0;
     var precioVenta = parseFloat(elements.precioVenta.value) || 0;
     
@@ -375,7 +332,6 @@ async function guardarProducto() {
         return;
     }
     
-    // Verificar descuento
     var descuento = parseFloat(elements.descuento?.value) || 0;
     if (descuento > 90) {
         await mostrarError(
@@ -392,7 +348,6 @@ async function guardarProducto() {
         return;
     }
     
-    // ===== CONFIRMACIÓN ANTES DE GUARDAR =====
     var nombreProducto = elements.nombre?.value || 'producto';
     var skuProducto = elements.sku?.value || 'N/A';
     
@@ -407,36 +362,27 @@ async function guardarProducto() {
         return;
     }
     
-    // ===== PROCESAR GUARDADO =====
     isLoading = true;
     var btn = elements.saveBtn;
     var originalHTML = btn.innerHTML;
     btn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> Guardando...';
     btn.disabled = true;
     
-    // Mostrar loading
     mostrarLoading('Guardando producto...');
     
     try {
-        // Obtener datos del formulario
         var productData = recolectarDatosProducto();
-        
-        // Guardar producto
         var productoGuardado = await ProductService.create(productData);
         
-        // Cerrar loading
         cerrarLoading();
         
-        // Mostrar éxito
         await mostrarExito(
             '¡Producto guardado!',
             '✅ "' + productoGuardado.nombre + '" se ha guardado exitosamente.'
         );
         
-        // Limpiar formulario
         ejecutarLimpiarFormulario();
         
-        // Restaurar categorías
         if (categoriesList.length > 0) {
             var firstCat = categoriesList[0];
             if (elements.categoria) {
@@ -446,12 +392,8 @@ async function guardarProducto() {
         }
         
     } catch (error) {
-        // Cerrar loading
         cerrarLoading();
-        
         console.error('Error al guardar producto:', error);
-        
-        // Mostrar error detallado
         await mostrarError(
             'Error al guardar',
             'No se pudo guardar el producto. ' + (error.message || 'Error desconocido.')
@@ -465,32 +407,27 @@ async function guardarProducto() {
 }
 
 // ========================================
-// FUNCIÓN ACTUALIZADA: cargar categorías CON SWEETALERT
+// FUNCIÓN: cargar categorías CON SWEETALERT
 // ========================================
 async function loadCategories() {
     try {
         console.log('🔄 Cargando categorías para el formulario...');
         
-        // Mostrar loading sutil
         mostrarLoading('Cargando categorías...');
         
         categoriesList = await CategoryService.getAll({}, true);
         console.log('✅ ' + categoriesList.length + ' categorías cargadas');
         
-        // Cerrar loading
         cerrarLoading();
         
-        // Construir mapa de subcategorías
         subcategoriesMap = {};
         categoriesList.forEach(function(cat) {
             var subNames = (cat.subcategories || []).map(function(sub) { return sub.name; });
             subcategoriesMap[cat.id] = subNames;
         });
         
-        // Poblar el select de categorías
         populateCategorySelect();
         
-        // Si hay categorías, seleccionar la primera por defecto
         if (categoriesList.length > 0) {
             var firstCat = categoriesList[0];
             if (elements.categoria) {
@@ -499,28 +436,21 @@ async function loadCategories() {
             }
         }
         
-        // Mostrar toast de éxito
         mostrarToast('✅ ' + categoriesList.length + ' categorías cargadas', 'success');
         
     } catch (error) {
         console.error('Error al cargar categorías:', error);
-        
-        // Cerrar loading
         cerrarLoading();
-        
-        // Mostrar error con SweetAlert
         await mostrarError(
             'Error al cargar categorías',
             'No se pudieron cargar las categorías. ' + (error.message || 'Error desconocido.')
         );
-        
-        // Fallback: opciones estáticas
         populateCategorySelectFallback();
     }
 }
 
 // ========================================
-// FUNCIÓN ACTUALIZADA: removeMainImage CON CONFIRMACIÓN
+// FUNCIÓN: removeMainImage CON CONFIRMACIÓN
 // ========================================
 function removeMainImage() {
     if (!currentMainImage) return;
@@ -547,12 +477,11 @@ function ejecutarRemoveMainImage() {
 }
 
 // ========================================
-// FUNCIÓN ACTUALIZADA: handleMainImageUpload CON VALIDACIÓN
+// FUNCIÓN: handleMainImageUpload CON VALIDACIÓN
 // ========================================
 function handleMainImageUpload(file) {
     if (!file) return;
     
-    // Validar tamaño
     if (file.size > 5 * 1024 * 1024) {
         mostrarError(
             'Imagen demasiado grande',
@@ -561,7 +490,6 @@ function handleMainImageUpload(file) {
         return;
     }
     
-    // Validar tipo
     var validTypes = ['image/jpeg', 'image/png', 'image/webp'];
     if (!validTypes.includes(file.type)) {
         mostrarError(
@@ -587,7 +515,7 @@ function handleMainImageUpload(file) {
 }
 
 // ========================================
-// FUNCIÓN ACTUALIZADA: addGalleryImage CON VALIDACIÓN
+// FUNCIÓN: addGalleryImage CON VALIDACIÓN
 // ========================================
 function addGalleryImage(file) {
     if (galleryImages.length >= 8) {
@@ -620,7 +548,7 @@ function addGalleryImage(file) {
 }
 
 // ========================================
-// FUNCIÓN ACTUALIZADA: removeGalleryImage CON CONFIRMACIÓN
+// FUNCIÓN: removeGalleryImage CON CONFIRMACIÓN
 // ========================================
 function removeGalleryImage(index) {
     mostrarConfirmacion(
@@ -638,7 +566,7 @@ function removeGalleryImage(index) {
 }
 
 // ========================================
-// FUNCIÓN ACTUALIZADA: renderGallery CON BOTÓN DE ELIMINAR MEJORADO
+// FUNCIÓN: renderGallery CON BOTÓN DE ELIMINAR MEJORADO
 // ========================================
 function renderGallery() {
     if (!elements.galleryGrid) return;
@@ -669,7 +597,7 @@ function renderGallery() {
 }
 
 // ========================================
-// FUNCIÓN ACTUALIZADA: addColor, addTalla, addMaterial CON MEJORES MENSAJES
+// FUNCIONES: addColor, addTalla, addMaterial CON MEJORES MENSAJES
 // ========================================
 function addColor() {
     var color = elements.colorInput?.value.trim();
@@ -720,7 +648,7 @@ function addMaterial() {
 }
 
 // ========================================
-// FUNCIÓN actualizarPrecioFinal
+// FUNCIÓN: actualizarPrecioFinal
 // ========================================
 function actualizarPrecioFinal() {
     var precioVenta = parseFloat(elements.precioVenta?.value) || 0;
@@ -926,7 +854,7 @@ function handleCategoryChange() {
 }
 
 // ========================================
-// FUNCIÓN recolectarDatosProducto
+// FUNCIÓN: recolectarDatosProducto
 // ========================================
 function recolectarDatosProducto() {
     return {
@@ -976,12 +904,35 @@ function initEventListeners() {
     // Botones de acción
     elements.clearBtn?.addEventListener('click', limpiarFormulario);
     elements.saveBtn?.addEventListener('click', guardarProducto);
+    
+    // ✅ BOTÓN VOLVER - VUELVE AL PASO 1 (IMÁGENES E INFO)
     elements.backBtn?.addEventListener('click', function() {
-        if (typeof window.navigateTo === 'function') {
-            window.navigateTo('/admin/productos');
-        } else {
-            window.history.back();
+        // Si ya estás en el paso 1, mostrar mensaje
+        if (currentStep === 1) {
+            mostrarToast('📸 Ya estás en Imágenes e info', 'info');
+            return;
         }
+        
+        // Volver al paso 1 (Imágenes e info) con animación
+        // Calculamos cuántos pasos retroceder
+        var stepsToGoBack = currentStep - 1;
+        
+        // Retroceder paso a paso con animación
+        for (var i = 0; i < stepsToGoBack; i++) {
+            // Usamos setTimeout para que cada animación se ejecute secuencialmente
+            setTimeout(function() {
+                if (currentStep > 1) {
+                    cambiarPanel(-1);
+                }
+            }, i * 400); // 400ms entre cada paso
+        }
+        
+        // Mensaje de confirmación después de la última animación
+        setTimeout(function() {
+            if (currentStep === 1) {
+                mostrarToast('📸 Volviendo a Imágenes e info', 'success');
+            }
+        }, stepsToGoBack * 400 + 300);
     });
     
     // Event listener para cambio de categoría

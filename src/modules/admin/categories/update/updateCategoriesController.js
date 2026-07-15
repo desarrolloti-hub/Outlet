@@ -2,6 +2,7 @@
    UPDATE CATEGORY CONTROLLER - OUTLET ADMIN
    Controlador para editar categorías existentes
    Actualización completa de datos de categoría
+   INCLUYE EDICIÓN DE SUBCATEGORÍAS
    RESPONSIVE: Se adapta a cualquier tamaño
    CON SWEETALERT2 INTEGRADO
    ======================================== */
@@ -14,6 +15,7 @@ import { CategoryService } from '../../../../services/categoryService.js';
 var categories = [];
 var currentCategoryId = null;
 var isSubmitting = false;
+var subcategories = []; // Array de subcategorías (objetos con name y description)
 
 // ========================================
 // DOM Elements
@@ -164,6 +166,12 @@ function cacheElements() {
         previewCard: document.getElementById('previewCard'),
         subcategoriesPreview: document.getElementById('subcategoriesPreview'),
         
+        // Subcategorías
+        subcategoriesSection: document.getElementById('subcategoriesSection'),
+        subcategoriesList: document.getElementById('subcategoriesList'),
+        subcategoryCount: document.getElementById('subcategoryCount'),
+        addSubcategoryBtn: document.getElementById('addSubcategoryBtn'),
+        
         // 🖼️ Elementos de imagen
         updateImageDisplay: document.getElementById('updateImageDisplay'),
         updateImagePlaceholder: document.getElementById('updateImagePlaceholder'),
@@ -271,6 +279,214 @@ function getCategoryIdFromUrl() {
 }
 
 // ========================================
+// FUNCIONES DE SUBCATEGORÍAS
+// ========================================
+
+/**
+ * Renderiza la lista de subcategorías editables
+ */
+function renderSubcategories() {
+    if (!elements.subcategoriesList) return;
+    
+    if (!subcategories || subcategories.length === 0) {
+        elements.subcategoriesList.innerHTML = `
+            <div class="updatecategory-empty-sub">
+                <i class="material-symbols-outlined" style="font-size: 32px; color: #ccc; display: block; margin-bottom: 8px;">subdirectory_arrow_right</i>
+                No hay subcategorías
+                <br>
+                <small style="color: #aaa;">Haz clic en "Agregar Subcategoría" para añadir una</small>
+            </div>
+        `;
+        if (elements.subcategoryCount) {
+            elements.subcategoryCount.textContent = '(0)';
+        }
+        return;
+    }
+    
+    var html = '';
+    subcategories.forEach(function(sub, index) {
+        var name = sub.name || '';
+        var description = sub.description || '';
+        html += `
+            <div class="updatecategory-sub-item" data-index="${index}">
+                <span class="sub-index">${index + 1}.</span>
+                <div class="sub-inputs">
+                    <input type="text" class="sub-name-input" value="${escapeHtml(name)}" placeholder="Nombre de subcategoría" data-index="${index}">
+                    <input type="text" class="sub-description-input" value="${escapeHtml(description)}" placeholder="Descripción (opcional)" data-index="${index}">
+                </div>
+                <div class="sub-actions">
+                    <button type="button" class="btn-move-up" data-index="${index}" title="Mover arriba" ${index === 0 ? 'disabled' : ''}>
+                        <i class="material-symbols-outlined" style="font-size: 18px;">arrow_upward</i>
+                    </button>
+                    <button type="button" class="btn-move-down" data-index="${index}" title="Mover abajo" ${index === subcategories.length - 1 ? 'disabled' : ''}>
+                        <i class="material-symbols-outlined" style="font-size: 18px;">arrow_downward</i>
+                    </button>
+                    <button type="button" class="btn-remove-sub" data-index="${index}" title="Eliminar">
+                        <i class="material-symbols-outlined" style="font-size: 18px;">delete</i>
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    
+    elements.subcategoriesList.innerHTML = html;
+    
+    if (elements.subcategoryCount) {
+        elements.subcategoryCount.textContent = `(${subcategories.length})`;
+    }
+    
+    // Mostrar sección de subcategorías
+    if (elements.subcategoriesSection) {
+        elements.subcategoriesSection.style.display = 'block';
+    }
+    
+    // Actualizar vista previa en el panel derecho
+    updatePreviewSubcategories();
+    
+    // Agregar event listeners a los elementos de subcategoría
+    attachSubcategoryEvents();
+}
+
+/**
+ * Agrega event listeners para los controles de subcategorías
+ */
+function attachSubcategoryEvents() {
+    // Inputs de nombre y descripción - actualizar en tiempo real
+    document.querySelectorAll('.sub-name-input').forEach(function(input) {
+        input.addEventListener('input', function() {
+            var index = parseInt(this.dataset.index);
+            if (!isNaN(index) && subcategories[index]) {
+                subcategories[index].name = this.value;
+            }
+        });
+    });
+    
+    document.querySelectorAll('.sub-description-input').forEach(function(input) {
+        input.addEventListener('input', function() {
+            var index = parseInt(this.dataset.index);
+            if (!isNaN(index) && subcategories[index]) {
+                subcategories[index].description = this.value;
+            }
+        });
+    });
+    
+    // Botones de eliminar
+    document.querySelectorAll('.btn-remove-sub').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var index = parseInt(this.dataset.index);
+            if (!isNaN(index)) {
+                removeSubcategory(index);
+            }
+        });
+    });
+    
+    // Botones de mover arriba
+    document.querySelectorAll('.btn-move-up').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var index = parseInt(this.dataset.index);
+            if (!isNaN(index) && index > 0) {
+                moveSubcategoryUp(index);
+            }
+        });
+    });
+    
+    // Botones de mover abajo
+    document.querySelectorAll('.btn-move-down').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var index = parseInt(this.dataset.index);
+            if (!isNaN(index) && index < subcategories.length - 1) {
+                moveSubcategoryDown(index);
+            }
+        });
+    });
+}
+
+/**
+ * Agrega una nueva subcategoría vacía
+ */
+function addSubcategory() {
+    subcategories.push({
+        name: '',
+        description: '',
+        // El ID se generará al guardar
+        status: 'active'
+    });
+    renderSubcategories();
+    
+    // Enfocar el nuevo input
+    var inputs = document.querySelectorAll('.sub-name-input');
+    if (inputs.length > 0) {
+        inputs[inputs.length - 1].focus();
+    }
+}
+
+/**
+ * Elimina una subcategoría
+ */
+async function removeSubcategory(index) {
+    var subName = subcategories[index]?.name || 'Subcategoría';
+    
+    var result = await mostrarConfirmacion(
+        '¿Eliminar subcategoría?',
+        `¿Estás seguro de eliminar "${subName || 'esta subcategoría'}"?`,
+        'Sí, eliminar'
+    );
+    
+    if (result.isConfirmed) {
+        subcategories.splice(index, 1);
+        renderSubcategories();
+        mostrarToast('Subcategoría eliminada', 'info');
+    }
+}
+
+/**
+ * Mueve una subcategoría hacia arriba
+ */
+function moveSubcategoryUp(index) {
+    if (index <= 0) return;
+    var temp = subcategories[index];
+    subcategories[index] = subcategories[index - 1];
+    subcategories[index - 1] = temp;
+    renderSubcategories();
+}
+
+/**
+ * Mueve una subcategoría hacia abajo
+ */
+function moveSubcategoryDown(index) {
+    if (index >= subcategories.length - 1) return;
+    var temp = subcategories[index];
+    subcategories[index] = subcategories[index + 1];
+    subcategories[index + 1] = temp;
+    renderSubcategories();
+}
+
+/**
+ * Actualiza la vista previa de subcategorías en el panel derecho
+ */
+function updatePreviewSubcategories() {
+    if (!elements.subcategoriesPreview) return;
+    
+    var validSubs = subcategories.filter(function(sub) {
+        return sub.name && sub.name.trim() !== '';
+    });
+    
+    if (validSubs.length === 0) {
+        elements.subcategoriesPreview.innerHTML = '<p class="updatecategory-empty">Esta categoría no tiene subcategorías</p>';
+        return;
+    }
+    
+    var html = '<div style="margin-bottom: 12px;"><small style="color: #888;">Total: ' + validSubs.length + ' subcategoría(s)</small></div><div>';
+    validSubs.forEach(function(sub) {
+        var displayName = sub.name || 'Sin nombre';
+        html += '<span class="updatecategory-subcategory-tag"><i class="material-symbols-outlined" style="font-size: 14px;">subdirectory_arrow_right</i>' + escapeHtml(displayName) + '</span>';
+    });
+    html += '</div>';
+    
+    elements.subcategoriesPreview.innerHTML = html;
+}
+
+// ========================================
 // Cargar datos de la categoría seleccionada
 // ========================================
 function onCategorySelect() {
@@ -280,6 +496,9 @@ function onCategorySelect() {
         elements.formFields.disabled = true;
         elements.actionButtons.style.display = 'none';
         elements.previewCard.style.display = 'none';
+        if (elements.subcategoriesSection) {
+            elements.subcategoriesSection.style.display = 'none';
+        }
         clearForm();
         return;
     }
@@ -304,10 +523,24 @@ function onCategorySelect() {
         clearImagePreview();
     }
     
+    // Cargar subcategorías
+    if (category.subcategories && Array.isArray(category.subcategories)) {
+        subcategories = category.subcategories.map(function(sub) {
+            return {
+                name: sub.name || '',
+                description: sub.description || '',
+                status: sub.status || 'active',
+                id: sub.id // Mantener el ID existente para actualización
+            };
+        });
+    } else {
+        subcategories = [];
+    }
+    
+    renderSubcategories();
+    
     elements.formFields.disabled = false;
     elements.actionButtons.style.display = 'flex';
-    
-    renderSubcategoriesPreview(category.subcategories || []);
     elements.previewCard.style.display = 'block';
 }
 
@@ -320,23 +553,19 @@ function clearForm() {
     elements.categoryStatus.value = 'active';
     elements.categoryCreatedAt.value = '';
     clearImagePreview();
-}
-
-function renderSubcategoriesPreview(subcategories) {
-    if (!elements.subcategoriesPreview) return;
-    
-    if (!subcategories || subcategories.length === 0) {
-        elements.subcategoriesPreview.innerHTML = '<p class="updatecategory-empty">Esta categoría no tiene subcategorías</p>';
-        return;
+    subcategories = [];
+    if (elements.subcategoriesList) {
+        elements.subcategoriesList.innerHTML = '';
     }
-    
-    var html = '<div style="margin-bottom: 12px;"><small style="color: #888;">Total: ' + subcategories.length + ' subcategoría(s)</small></div><div>';
-    subcategories.forEach(function(sub) {
-        html += '<span class="updatecategory-subcategory-tag"><i class="material-symbols-outlined" style="font-size: 14px;">subdirectory_arrow_right</i>' + escapeHtml(sub.name) + '</span>';
-    });
-    html += '</div>';
-    
-    elements.subcategoriesPreview.innerHTML = html;
+    if (elements.subcategoryCount) {
+        elements.subcategoryCount.textContent = '(0)';
+    }
+    if (elements.subcategoriesSection) {
+        elements.subcategoriesSection.style.display = 'none';
+    }
+    if (elements.subcategoriesPreview) {
+        elements.subcategoriesPreview.innerHTML = '<p class="updatecategory-empty">Seleccione una categoría para ver sus subcategorías</p>';
+    }
 }
 
 // ========================================
@@ -354,7 +583,7 @@ function setupSlugGeneration() {
 }
 
 // ========================================
-// Actualizar categoría CON SWEETALERT2
+// Actualizar categoría CON SUBCATEGORÍAS
 // ========================================
 async function updateCategory(event) {
     event.preventDefault();
@@ -379,18 +608,45 @@ async function updateCategory(event) {
         return;
     }
     
+    // Validar subcategorías - no puede haber subcategorías con nombre vacío
+    var invalidSubs = subcategories.filter(function(sub) {
+        return sub.name && sub.name.trim() !== '' && sub.name.trim().length < 2;
+    });
+    
+    if (invalidSubs.length > 0) {
+        await mostrarError('Subcategorías inválidas', 
+            'Las subcategorías deben tener al menos 2 caracteres. Revisa las subcategorías marcadas.');
+        return;
+    }
+    
+    // Filtrar subcategorías vacías para guardar
+    var validSubcategories = subcategories.filter(function(sub) {
+        return sub.name && sub.name.trim() !== '';
+    }).map(function(sub) {
+        return {
+            id: sub.id || `sub_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+            name: sub.name.trim(),
+            description: sub.description ? sub.description.trim() : '',
+            slug: generarSlug(sub.name),
+            status: sub.status || 'active',
+            // Mantener createdAt si existe
+            createdAt: sub.createdAt || new Date().toISOString()
+        };
+    });
+    
     var categoryData = {
         name: name,
         slug: slug,
         description: elements.categoryDescription.value.trim(),
         order: parseInt(elements.categoryOrder.value) || 0,
-        status: elements.categoryStatus.value
+        status: elements.categoryStatus.value,
+        subcategories: validSubcategories
     };
     
     // Confirmación antes de actualizar
     var confirmResult = await mostrarConfirmacion(
         '¿Actualizar categoría?',
-        'Estás a punto de actualizar la categoría "' + name + '".',
+        'Estás a punto de actualizar la categoría "' + name + '" con ' + validSubcategories.length + ' subcategoría(s).',
         'Sí, actualizar'
     );
     
@@ -405,7 +661,7 @@ async function updateCategory(event) {
     btn.innerHTML = '<i class="material-symbols-outlined">hourglass_empty</i> Actualizando...';
     btn.disabled = true;
     
-    mostrarLoading('Actualizando categoría...');
+    mostrarLoading('Actualizando categoría y subcategorías...');
     
     try {
         var updatedCategory = await CategoryService.update(currentCategoryId, categoryData);
@@ -413,7 +669,7 @@ async function updateCategory(event) {
         cerrarLoading();
         await mostrarExito(
             '¡Categoría actualizada!',
-            '✅ "' + updatedCategory.name + '" actualizada exitosamente.'
+            '✅ "' + updatedCategory.name + '" actualizada exitosamente con ' + validSubcategories.length + ' subcategoría(s).'
         );
         
         await loadCategories();
@@ -433,7 +689,7 @@ async function updateCategory(event) {
 }
 
 // ========================================
-// Cancelar / resetear formulario CON SWEETALERT2
+// Cancelar / resetear formulario
 // ========================================
 async function resetForm() {
     if (currentCategoryId) {
@@ -450,13 +706,16 @@ async function resetForm() {
     elements.formFields.disabled = true;
     elements.actionButtons.style.display = 'none';
     elements.previewCard.style.display = 'none';
+    if (elements.subcategoriesSection) {
+        elements.subcategoriesSection.style.display = 'none';
+    }
     clearForm();
     currentCategoryId = null;
     mostrarToast('Formulario reseteado', 'info');
 }
 
 // ========================================
-// NUEVA FUNCIÓN: Redirigir a la página de lectura
+// Redirigir a la página de lectura
 // ========================================
 function goBackToList() {
     if (typeof window.navigateTo === 'function') {
@@ -470,7 +729,6 @@ function goBackToList() {
 // Event Listeners
 // ========================================
 function initEventListeners() {
-    // CAMBIO: Redirige a readCategories en lugar de history.back()
     elements.backBtn?.addEventListener('click', goBackToList);
     
     elements.categorySelector?.addEventListener('change', onCategorySelect);
@@ -478,6 +736,8 @@ function initEventListeners() {
     elements.cancelBtn?.addEventListener('click', resetForm);
     
     elements.categoryForm?.addEventListener('submit', updateCategory);
+    
+    elements.addSubcategoryBtn?.addEventListener('click', addSubcategory);
     
     setupSlugGeneration();
 }
@@ -505,7 +765,7 @@ document.addEventListener('themeChanged', function(e) {
 // Inicialización
 // ========================================
 export async function updateCategoryController() {
-    console.log('✏️ Update Category Controller - Editar categorías');
+    console.log('✏️ Update Category Controller - Editar categorías con subcategorías');
     
     cacheElements();
     syncDarkMode();
@@ -520,13 +780,15 @@ export async function updateCategoryController() {
     if (elements.previewCard) {
         elements.previewCard.style.display = 'none';
     }
+    if (elements.subcategoriesSection) {
+        elements.subcategoriesSection.style.display = 'none';
+    }
     
     await loadCategories();
     
     // Si hay un ID en la URL, seleccionar automáticamente esa categoría
     var categoryIdFromUrl = getCategoryIdFromUrl();
     if (categoryIdFromUrl && elements.categorySelector) {
-        // Verificar que la categoría existe
         var categoryExists = categories.some(function(c) { return c.id === categoryIdFromUrl; });
         if (categoryExists) {
             elements.categorySelector.value = categoryIdFromUrl;

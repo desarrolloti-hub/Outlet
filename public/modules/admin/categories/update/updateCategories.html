@@ -98,6 +98,28 @@
                     </div>
                 </fieldset>
                 
+                <!-- ====== SECCIÓN DE SUBCATEGORÍAS EDITABLES ====== -->
+                <div id="subcategoriesSection" style="display: none; margin-top: 24px;">
+                    <div class="updatecategory-divider"></div>
+                    
+                    <div class="updatecategory-form-header" style="padding: 16px 0;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <i class="material-symbols-outlined" style="color: var(--outlet-gold, #ddab3b);">subdirectory_arrow_right</i>
+                            <h3 style="font-size: 16px; font-weight: 500; margin: 0;">Subcategorías</h3>
+                            <span id="subcategoryCount" style="font-size: 13px; color: #888;">(0)</span>
+                        </div>
+                        <button type="button" id="addSubcategoryBtn" class="updatecategory-btn-add-sub">
+                            <i class="material-symbols-outlined">add</i>
+                            Agregar Subcategoría
+                        </button>
+                    </div>
+                    
+                    <!-- Lista de subcategorías -->
+                    <div id="subcategoriesList" class="updatecategory-subcategories-list-edit">
+                        <!-- Las subcategorías se renderizan dinámicamente -->
+                    </div>
+                </div>
+                
                 <!-- Botones de acción -->
                 <div class="updatecategory-actions" id="actionButtons" style="display: none;">
                     <button type="button" class="updatecategory-btn-secondary" id="cancelBtn">
@@ -112,7 +134,7 @@
             </form>
         </div>
 
-        <!-- Panel de vista previa de subcategorías (opcional) -->
+        <!-- Panel de vista previa de subcategorías (resumen) -->
         <div class="updatecategory-preview-card" id="previewCard" style="display: none;">
             <div class="updatecategory-preview-header">
                 <div class="updatecategory-preview-icon">
@@ -127,7 +149,7 @@
             </div>
             <div class="updatecategory-preview-note">
                 <i class="material-symbols-outlined">info</i>
-                <small>Las subcategorías se gestionan desde el listado principal</small>
+                <small>Las subcategorías se gestionan en el panel de edición</small>
             </div>
         </div>
     </div>
