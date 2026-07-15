@@ -1,13 +1,13 @@
 /* ========================================
-   HOME CONTROLLER - OUTLET (SIN RECARGAS)
-   ✅ CATEGORÍAS DINÁMICAS DESDE FIREBASE
+   HOME CONTROLLER - OUTLET (VERSIÓN FUNCIONAL)
+   ✅ USA getAll CON FILTROS EN MEMORIA
    ======================================== */
 
 import { ProductService } from '../../../services/productService.js';
-import { CategoryService } from '../../../services/categoryService.js';
+import { CategoryService } from '../../../services/categoryService.js';  // ✅ CORREGIDO
 import { CacheService, STORES } from '../../../services/cacheService.js';
 
-// URLs de imágenes de respaldo (para categorías sin imagen)
+// URLs de imágenes de respaldo
 const FALLBACK_IMAGES = [
     "https://lh3.googleusercontent.com/aida-public/AB6AXuCLtfxBJHzGNyW7S2r8PW8UQEHi3Z95AiwvvvFcgXN_hNFljU5xDClu2lssWY6IbYEC4edbKUKNLGf7qG2g2XSS4FKM6nBHZywoiZuPnRqFcOkZlGNNFXKBx-BOGn6ur_pJ3V2ou-YtZhJS9jasGgca3Zn3XDpIif4NDtVf20VhbnwMPBays54-jz3tg7jaRI521AMak_IjSPuW2oGrwBe4CRuUM9Nd0nNJhP3FAVFYozcs1fUdWID0FIqEoDpFZM8y7uhZGL5WyTPA",
     "https://lh3.googleusercontent.com/aida-public/AB6AXuDyrTXSUlcmOYzW27UEkvX2vqNni8uwPo95DIHp7MKUTmqkwuf-xcE1Cfdw98tztp8CBY3lAizz1mDcgp2yOOb0MorWuE5Q4ejnmw3LIwW8ECiWkgCclFwhlZyflfDlz-JXRQkQU4q2WpHwqKPla73kSktxwSVds1R6AjRYI79O8MCVS2xiHFz_ixrDHa7DQnvhzcuswyE0Qs7kgpUq4M66-9xZtuttgvpNz1BVU2Pqpc6nI9IFlPUzdEOJpR79Wsq24K_JtU0j_pnL",
@@ -27,15 +27,23 @@ const GALLERY_IMAGES = [
 const HERO_IMAGE = "https://lh3.googleusercontent.com/aida-public/AB6AXuDBtNHClCvXICohUTSHXDeCbNbys5DdAaT7Q-uEaHIWRwxLm9yovNIk2a5I35QNryWCMgMx7jW6-OcTq9Xx0tLOSAVolnEbxKWfFWFlKQdyKr_xAuMLnSUkYK7nrKWtka7eHTgkVPsuAe7qa8I44o1OHxQcIIfkGjmwdgeWxV_lshwAJ4AxzMiiTbZlXQeODlvTckTjwJep1vka771QFHUaRX9ea8g-plsgl7sxU6J7ojEjJjV5GBf7pMwBzOwOVmWysLX8FRQef6ev";
 
 // ============================================
+// VARIABLES DE ESTADO
+// ============================================
+let currentCategoryFilter = null;
+let allProductsCache = [];
+
+// ============================================
 // FUNCIÓN PRINCIPAL - EXPORTADA
 // ============================================
 export async function homeController() {
-    console.log('🏠 Home Controller - CATEGORÍAS DINÁMICAS DESDE FIREBASE');
+    console.log('🏠 Home Controller - Versión Funcional');
+    
+    await loadAllProducts();
     
     loadHeroImage();
-    await loadCategories(); // ✅ Carga las 6 categorías desde Firebase
-    await loadFlashSale();
-    await loadTrending();
+    await loadCategories();
+    renderFlashSale();
+    renderTrending();
     loadGallery();
     initTimer();
     initCartEvents();
@@ -52,100 +60,33 @@ export async function homeController() {
 }
 
 // ============================================
-// FUNCIONES ESTÁTICAS
+// ✅ CARGAR TODOS LOS PRODUCTOS
 // ============================================
-
-function loadHeroImage() {
-    const heroImg = document.querySelector('.hero img');
-    if (heroImg) {
-        heroImg.src = HERO_IMAGE;
-        heroImg.alt = "Hero Fashion";
-    }
-}
-
-// ============================================
-// ✅ CARGAR CATEGORÍAS DINÁMICAS DESDE FIREBASE
-// ============================================
-async function loadCategories() {
-    const container = document.getElementById('categories-container');
-    if (!container) return;
-
+async function loadAllProducts() {
     try {
-        console.log('🔄 Cargando categorías desde Firebase...');
+        console.log('📦 Cargando todos los productos desde Firebase...');
+        allProductsCache = await ProductService.getAll({}, 'createdAt', 'desc', 100);
+        console.log(`✅ ${allProductsCache.length} productos cargados`);
         
-        // Obtener categorías de Firebase (sin caché para forzar actualización)
-        const categories = await CategoryService.getAll({}, true);
-        
-        console.log('✅ Categorías cargadas desde Firebase:', categories.length);
-        
-        // Verificar que tenemos categorías
-        if (!categories || categories.length === 0) {
-            console.warn('⚠️ No hay categorías en Firebase');
-            container.innerHTML = `
-                <div class="category-empty" style="grid-column: 1/-1; text-align: center; padding: 20px; color: var(--text-secondary);">
-                    <p>No hay categorías disponibles</p>
-                </div>
-            `;
-            return;
-        }
-
-        // Tomar SOLO las primeras 6 categorías (o menos si hay menos)
-        const displayCategories = categories.slice(0, 6);
-        
-        console.log(`📋 Mostrando ${displayCategories.length} categorías:`);
-        displayCategories.forEach((cat, i) => console.log(`  ${i+1}. ${cat.name} (${cat.id})`));
-
-        // Generar HTML para las categorías
-        container.innerHTML = displayCategories.map((cat, idx) => {
-            // Usar imagen en Base64 si existe, o fallback
-            const imgSrc = cat.imageBase64 || FALLBACK_IMAGES[idx % FALLBACK_IMAGES.length];
-            const urlSlug = cat.slug || cat.id;
+        if (allProductsCache.length > 0) {
+            console.log('📋 Primeros productos:');
+            allProductsCache.slice(0, 5).forEach(p => {
+                console.log(`  - ${p.nombre} | Categoría: "${p.categoria}" | Descuento: ${p.porcentajeDescuento || 0}%`);
+            });
             
-            return `
-                <a class="category-item" href="/category/${urlSlug}" data-link>
-                    <div class="circle-img">
-                        <img alt="${cat.name}" src="${imgSrc}" loading="lazy"/>
-                    </div>
-                    <span>${cat.name}</span>
-                </a>
-            `;
-        }).join('');
-
-        console.log('✅ Categorías renderizadas en el home');
-
+            const categorias = [...new Set(allProductsCache.map(p => p.categoria))];
+            console.log(`📋 Categorías disponibles: ${categorias.join(', ')}`);
+        }
     } catch (error) {
-        console.error('❌ Error cargando categorías desde Firebase:', error);
-        
-        // Mostrar mensaje de error
-        container.innerHTML = `
-            <div class="category-error" style="grid-column: 1/-1; text-align: center; padding: 20px; color: var(--error);">
-                <p>Error al cargar categorías: ${error.message}</p>
-            </div>
-        `;
+        console.error('❌ Error cargando productos:', error);
+        allProductsCache = [];
     }
 }
 
-function loadGallery() {
-    const container = document.getElementById('gallery-container');
-    if (!container) return;
-    
-    container.innerHTML = GALLERY_IMAGES.map((img, idx) => `
-        <div class="gallery-item">
-            <img alt="Galería ${idx + 1}" src="${img}" loading="lazy"/>
-            <div class="gallery-overlay">
-                <span class="label-caps">COMPRA ESTE LOOK</span>
-            </div>
-        </div>
-    `).join('');
-}
-
 // ============================================
-// FUNCIONES CON PRODUCTOS - SIN RECARGAS
+// ✅ RENDERIZAR FLASH SALE
 // ============================================
-
-let isFirstLoad = true;
-
-async function loadFlashSale() {
+function renderFlashSale() {
     const container = document.getElementById('flash-sale-container');
     if (!container) {
         console.warn('⚠️ flash-sale-container no encontrado');
@@ -153,39 +94,30 @@ async function loadFlashSale() {
     }
 
     try {
-        if (!container.hasAttribute('data-loaded')) {
-            container.innerHTML = `
-                <div class="loading-state" style="grid-column: 1/-1; text-align: center; padding: 40px;">
-                    <p class="body-sm" style="color: var(--gray-500);">Cargando productos...</p>
-                </div>
-            `;
-        }
-
-        const flashProducts = await ProductService.getOfertas(6);
+        const flashProducts = allProductsCache
+            .filter(p => p.porcentajeDescuento > 0 && p.estado === 'activo')
+            .slice(0, 6);
         
-        console.log('📦 Productos en oferta:', flashProducts.length);
+        console.log(`📦 Productos en oferta: ${flashProducts.length}`);
         
-        if (!flashProducts || flashProducts.length === 0) {
+        if (flashProducts.length === 0) {
             container.innerHTML = `
                 <div class="empty-state" style="grid-column: 1/-1; text-align: center; padding: 40px;">
-                    <p class="body-sm" style="color: var(--gray-500);">No hay productos en oferta disponibles</p>
+                    <p style="color: #666;">No hay productos en oferta disponibles</p>
                 </div>
             `;
             container.setAttribute('data-loaded', 'true');
             return;
         }
 
-        const shouldAnimate = isFirstLoad;
-        
-        const newHTML = flashProducts.map((p) => {
+        const html = flashProducts.map((p) => {
             const discount = p.porcentajeDescuento || 0;
             const finalPrice = p.precioFinal || p.precioVenta * (1 - discount / 100);
-            const soldPercent = p.soldPercent || Math.floor(Math.random() * 60) + 20;
-            const imgSrc = p.imagenPrincipal || '/images/placeholder.jpg';
-            const animStyles = shouldAnimate ? 'opacity: 0; transform: translateY(20px);' : '';
+            const soldPercent = Math.floor(Math.random() * 60) + 20;
+            const imgSrc = p.imagenPrincipal || 'https://placehold.co/300x300?text=Sin+Imagen';
             
             return `
-                <div class="product-card" data-id="${p.id}" style="${animStyles}">
+                <div class="product-card" data-id="${p.id}">
                     <div class="product-img">
                         <img src="${imgSrc}" alt="${p.nombre || 'Producto'}" loading="lazy"/>
                         <div class="sale-tag">-${discount}%</div>
@@ -203,44 +135,30 @@ async function loadFlashSale() {
             `;
         }).join('');
 
-        container.innerHTML = newHTML;
+        container.innerHTML = html;
         container.setAttribute('data-loaded', 'true');
-
-        if (shouldAnimate) {
-            const newCards = container.querySelectorAll('.product-card');
-            newCards.forEach((card, index) => {
-                setTimeout(() => {
-                    card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-                    card.style.opacity = '1';
-                    card.style.transform = 'translateY(0)';
-                }, index * 50);
-            });
-            isFirstLoad = false;
-        }
 
         setTimeout(() => {
             container.querySelectorAll('.progress-fill').forEach((bar, index) => {
-                const product = flashProducts[index];
-                const soldPercent = product?.soldPercent || Math.floor(Math.random() * 60) + 20;
+                const soldPercent = Math.floor(Math.random() * 60) + 20;
                 animateProgressBar(bar, soldPercent);
             });
         }, 300);
 
-        console.log(`✅ ${flashProducts.length} productos de oferta cargados`);
-
     } catch (error) {
-        console.error('❌ Error cargando productos en oferta:', error);
-        if (!container.hasAttribute('data-loaded')) {
-            container.innerHTML = `
-                <div class="error-state" style="grid-column: 1/-1; text-align: center; padding: 40px;">
-                    <p class="body-sm" style="color: var(--red-500);">Error al cargar productos: ${error.message}</p>
-                </div>
-            `;
-        }
+        console.error('❌ Error renderizando ofertas:', error);
+        container.innerHTML = `
+            <div class="error-state" style="grid-column: 1/-1; text-align: center; padding: 40px;">
+                <p style="color: #ef4444;">Error al cargar ofertas: ${error.message}</p>
+            </div>
+        `;
     }
 }
 
-async function loadTrending() {
+// ============================================
+// ✅ RENDERIZAR TRENDING
+// ============================================
+function renderTrending(categoryFilter = null) {
     const container = document.getElementById('trending-container');
     if (!container) {
         console.warn('⚠️ trending-container no encontrado');
@@ -248,63 +166,59 @@ async function loadTrending() {
     }
 
     try {
-        if (!container.hasAttribute('data-loaded')) {
-            container.innerHTML = `
-                <div class="loading-state" style="grid-column: 1/-1; text-align: center; padding: 40px;">
-                    <p class="body-sm" style="color: var(--gray-500);">Cargando productos...</p>
-                </div>
-            `;
-        }
-
-        let products = await ProductService.getDestacados(5);
+        let products = [];
         
-        if (products.length < 5) {
-            const allProducts = await ProductService.getAll({ 
-                estado: 'activo'
-            }, 'createdAt', 'desc', 10);
+        if (categoryFilter) {
+            const filterLower = categoryFilter.toLowerCase();
+            products = allProductsCache.filter(p => 
+                p.categoria && p.categoria.toLowerCase() === filterLower &&
+                p.estado === 'activo'
+            );
+            console.log(`📦 Productos en "${categoryFilter}": ${products.length}`);
+        } else {
+            products = allProductsCache.filter(p => p.destacado && p.estado === 'activo');
             
-            const destacadosIds = new Set(products.map(p => p.id));
-            const adicionales = allProducts
-                .filter(p => !destacadosIds.has(p.id))
-                .slice(0, 5 - products.length);
-            
-            products = [...products, ...adicionales];
+            if (products.length < 5) {
+                const destacadosIds = new Set(products.map(p => p.id));
+                const adicionales = allProductsCache
+                    .filter(p => !destacadosIds.has(p.id) && p.estado === 'activo')
+                    .slice(0, 5 - products.length);
+                products = [...products, ...adicionales];
+            }
+            console.log(`📦 Productos trending: ${products.length}`);
         }
         
-        console.log('📦 Productos para trending:', products.length);
-        
-        if (!products || products.length === 0) {
+        if (products.length === 0) {
             container.innerHTML = `
                 <div class="empty-state" style="grid-column: 1/-1; text-align: center; padding: 40px;">
-                    <p class="body-sm" style="color: var(--gray-500);">No hay productos disponibles</p>
+                    <i class="fas fa-box-open" style="font-size: 40px; color: #999; margin-bottom: 12px; display: block;"></i>
+                    <p style="color: #666;">${categoryFilter ? `No hay productos en "${categoryFilter}"` : 'No hay productos disponibles'}</p>
+                    ${categoryFilter ? `<button onclick="document.getElementById('shopAllBtn')?.click()" style="margin-top: 12px; padding: 8px 24px; background: #ddab3b; border: none; border-radius: 30px; cursor: pointer; font-weight: 600;">Ver todos</button>` : ''}
                 </div>
             `;
             container.setAttribute('data-loaded', 'true');
             return;
         }
 
-        const shouldAnimate = isFirstLoad;
-        
-        const newHTML = products.map(p => {
+        const html = products.map(p => {
             let badge = '';
             if (p.destacado) {
-                badge = '<span class="new-badge" style="background: var(--gold);">DESTACADO</span>';
+                badge = '<span class="new-badge" style="background: #ddab3b;">DESTACADO</span>';
             } else if (p.porcentajeDescuento > 0) {
-                badge = `<span class="new-badge" style="background: var(--red-500);">-${p.porcentajeDescuento}%</span>`;
+                badge = `<span class="new-badge" style="background: #ef4444;">-${p.porcentajeDescuento}%</span>`;
             }
             
             const rating = (4 + Math.random() * 0.9).toFixed(1);
             const reviews = Math.floor(Math.random() * 200) + 10;
-            const imgSrc = p.imagenPrincipal || '/images/placeholder.jpg';
+            const imgSrc = p.imagenPrincipal || 'https://placehold.co/300x300?text=Sin+Imagen';
             const finalPrice = p.precioFinal || p.precioVenta;
-            const animStyles = shouldAnimate ? 'opacity: 0; transform: translateY(20px);' : '';
 
             return `
-                <div class="trending-item" data-id="${p.id}" style="${animStyles}">
+                <div class="trending-item" data-id="${p.id}">
                     <div class="trending-img">
                         ${badge}
                         <img src="${imgSrc}" alt="${p.nombre || 'Producto'}" loading="lazy"/>
-                        <button class="add-cart"><i class="fas fa-cart-plus"></i></button>
+                        <button class="add-cart" data-id="${p.id}"><i class="fas fa-cart-plus"></i></button>
                     </div>
                     <h4 class="body-sm product-name">${p.nombre || 'Producto'}</h4>
                     <div class="price">
@@ -312,36 +226,116 @@ async function loadTrending() {
                         ${p.precioVenta > finalPrice ? `<span class="price-old">$${Math.round(p.precioVenta)}</span>` : ''}
                         <span class="body-sm rating">${rating} ★ (${reviews})</span>
                     </div>
+                    <div style="font-size: 10px; color: #999; margin-top: 4px; text-align: center;">
+                        📂 ${p.categoria || 'Sin categoría'}
+                    </div>
                 </div>
             `;
         }).join('');
 
-        container.innerHTML = newHTML;
+        container.innerHTML = html;
         container.setAttribute('data-loaded', 'true');
-
-        if (shouldAnimate) {
-            const newItems = container.querySelectorAll('.trending-item');
-            newItems.forEach((item, index) => {
-                setTimeout(() => {
-                    item.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-                    item.style.opacity = '1';
-                    item.style.transform = 'translateY(0)';
-                }, index * 50);
-            });
-            isFirstLoad = false;
-        }
-
-        console.log(`✅ ${products.length} productos de tendencias cargados`);
+        
+        console.log(`✅ ${products.length} productos renderizados${categoryFilter ? ` para "${categoryFilter}"` : ''}`);
 
     } catch (error) {
-        console.error('❌ Error cargando productos destacados:', error);
-        if (!container.hasAttribute('data-loaded')) {
-            container.innerHTML = `
-                <div class="error-state" style="grid-column: 1/-1; text-align: center; padding: 40px;">
-                    <p class="body-sm" style="color: var(--red-500);">Error al cargar productos: ${error.message}</p>
+        console.error('❌ Error renderizando productos:', error);
+        container.innerHTML = `
+            <div class="error-state" style="grid-column: 1/-1; text-align: center; padding: 40px;">
+                <p style="color: #ef4444;">Error al cargar productos: ${error.message}</p>
+            </div>
+        `;
+    }
+}
+
+// ============================================
+// ✅ CARGAR CATEGORÍAS
+// ============================================
+async function loadCategories() {
+    const container = document.getElementById('categories-container');
+    if (!container) return;
+
+    try {
+        console.log('🔄 Cargando categorías desde Firebase...');
+        
+        const categories = await CategoryService.getAll({}, true);
+        
+        if (!categories || categories.length === 0) {
+            container.innerHTML = `<div class="category-empty" style="grid-column: 1/-1; text-align: center; padding: 20px;">No hay categorías disponibles</div>`;
+            return;
+        }
+
+        console.log(`📋 ${categories.length} categorías cargadas`);
+        categories.forEach(cat => console.log(`  - "${cat.name}"`));
+
+        const displayCategories = categories.slice(0, 6);
+
+        container.innerHTML = displayCategories.map((cat, idx) => {
+            const imgSrc = cat.imageBase64 || FALLBACK_IMAGES[idx % FALLBACK_IMAGES.length];
+            const categoryName = cat.name;
+            
+            return `
+                <div class="category-item" data-category="${categoryName}" style="cursor: pointer;">
+                    <div class="circle-img">
+                        <img alt="${cat.name}" src="${imgSrc}" loading="lazy"/>
+                    </div>
+                    <span>${cat.name}</span>
                 </div>
             `;
-        }
+        }).join('');
+
+        container.querySelectorAll('.category-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                const categoryName = this.dataset.category;
+                console.log(`🔍 Click en categoría: "${categoryName}"`);
+                filterByCategory(categoryName);
+            });
+        });
+
+        console.log('✅ Categorías renderizadas');
+
+    } catch (error) {
+        console.error('❌ Error cargando categorías:', error);
+        container.innerHTML = `
+            <div class="category-error" style="grid-column: 1/-1; text-align: center; padding: 20px; color: red;">
+                <p>Error al cargar categorías: ${error.message}</p>
+            </div>
+        `;
+    }
+}
+
+// ============================================
+// ✅ FILTRAR PRODUCTOS POR CATEGORÍA
+// ============================================
+function filterByCategory(categoryName) {
+    console.log(`🔍 Filtrando por: "${categoryName}"`);
+    currentCategoryFilter = categoryName;
+    
+    const sectionTitle = document.querySelector('.trending .section-header h2');
+    const sectionSubtitle = document.querySelector('.trending .section-header p');
+    const shopAllBtn = document.getElementById('shopAllBtn');
+    
+    if (sectionTitle) {
+        sectionTitle.textContent = `👗 ${categoryName}`;
+    }
+    
+    if (sectionSubtitle) {
+        sectionSubtitle.textContent = `Productos en ${categoryName}`;
+    }
+    
+    if (shopAllBtn) {
+        shopAllBtn.style.display = 'inline-flex';
+        shopAllBtn.textContent = 'Ver todos';
+    }
+    
+    renderTrending(categoryName);
+    
+    const trendingSection = document.querySelector('.trending');
+    if (trendingSection) {
+        setTimeout(() => {
+            trendingSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 300);
     }
 }
 
@@ -376,6 +370,28 @@ function animateProgressBar(element, target) {
         }
     }
     requestAnimationFrame(update);
+}
+
+function loadGallery() {
+    const container = document.getElementById('gallery-container');
+    if (!container) return;
+    
+    container.innerHTML = GALLERY_IMAGES.map((img, idx) => `
+        <div class="gallery-item">
+            <img alt="Galería ${idx + 1}" src="${img}" loading="lazy"/>
+            <div class="gallery-overlay">
+                <span class="label-caps">COMPRA ESTE LOOK</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+function loadHeroImage() {
+    const heroImg = document.querySelector('.hero img');
+    if (heroImg) {
+        heroImg.src = HERO_IMAGE;
+        heroImg.alt = "Hero Fashion";
+    }
 }
 
 function initTimer() {
@@ -416,21 +432,6 @@ function initCartEvents() {
             window.dispatchEvent(new CustomEvent('cart:updated'));
         }
     });
-    
-    document.addEventListener('click', (e) => {
-        const productCard = e.target.closest('.product-card');
-        const trendingCard = e.target.closest('.trending-item');
-        
-        if (productCard && !e.target.closest('.add-cart') && !e.target.closest('button')) {
-            const productId = productCard.dataset.id;
-            showToast(`🔍 Ver detalles del producto ${productId}`);
-        }
-        
-        if (trendingCard && !e.target.closest('.add-cart') && !e.target.closest('button')) {
-            const productId = trendingCard.dataset.id;
-            showToast(`🔍 Ver detalles del producto ${productId}`);
-        }
-    });
 }
 
 function addToCart(productName) {
@@ -448,10 +449,10 @@ function showToast(message) {
     toast.textContent = message;
     toast.style.cssText = `
         position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-        background: var(--toast-bg, #1f1b13); color: var(--toast-text, white);
+        background: #1f1b13; color: white;
         padding: 12px 24px; border-radius: 40px; font-size: 13px;
         z-index: 9999; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        border-left: 3px solid var(--gold, #ddab3b);
+        border-left: 3px solid #ddab3b;
         animation: slideUp 0.3s ease;
     `;
     document.body.appendChild(toast);
@@ -466,14 +467,6 @@ function showToast(message) {
 function initScrollReveal() {
     const revealElements = document.querySelectorAll('.product-card, .trending-item, .gallery-item, .category-item');
     
-    revealElements.forEach((el, index) => {
-        if (!el.style.opacity || el.style.opacity === '0') {
-            el.style.opacity = '0';
-            el.style.transform = 'translateY(30px)';
-            el.style.transition = `opacity 0.6s ease ${index * 0.03}s, transform 0.6s ease ${index * 0.03}s`;
-        }
-    });
-    
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -484,7 +477,12 @@ function initScrollReveal() {
         });
     }, { threshold: 0.1 });
     
-    revealElements.forEach(el => observer.observe(el));
+    revealElements.forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(30px)';
+        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(el);
+    });
 }
 
 function initMagneticButtons() {
@@ -527,115 +525,45 @@ function initCouponButton() {
 function initShopButtons() {
     const shopNowBtn = document.getElementById('shopNowBtn');
     if (shopNowBtn) {
-        shopNowBtn.addEventListener('click', () => showToast('🛍️ Explorando colección...'));
+        shopNowBtn.addEventListener('click', () => {
+            document.querySelector('.trending')?.scrollIntoView({ behavior: 'smooth' });
+        });
     }
+    
     const shopAllBtn = document.getElementById('shopAllBtn');
     if (shopAllBtn) {
-        shopAllBtn.addEventListener('click', () => showToast('🛍️ Ver todas las tendencias...'));
+        shopAllBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('🔄 Mostrando todos los productos');
+            
+            currentCategoryFilter = null;
+            
+            const sectionTitle = document.querySelector('.trending .section-header h2');
+            const sectionSubtitle = document.querySelector('.trending .section-header p');
+            if (sectionTitle) sectionTitle.textContent = 'Trending Now';
+            if (sectionSubtitle) sectionSubtitle.textContent = 'Top pieces curated for the season.';
+            
+            this.style.display = 'none';
+            
+            renderTrending(null);
+            document.querySelector('.trending')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+        
+        shopAllBtn.style.display = 'none';
     }
 }
 
-// ============================================
-// SCROLL SUAVE PARA CATEGORÍAS
-// ============================================
 function initCategoryScroll() {
     const nav = document.querySelector('.category-nav');
     if (!nav) return;
     
-    // Scroll suave con rueda
     nav.addEventListener('wheel', (e) => {
         if (e.target.closest('.category-grid')) {
             e.preventDefault();
             nav.scrollLeft += e.deltaY * 0.5;
         }
     }, { passive: false });
-    
-    const grid = document.querySelector('.category-grid');
-    if (!grid) return;
-    
-    function checkOverflow() {
-        const hasOverflow = grid.scrollWidth > grid.clientWidth;
-        nav.style.position = 'relative';
-        
-        // Eliminar indicadores previos
-        const existingLeft = nav.querySelector('.scroll-indicator-left');
-        const existingRight = nav.querySelector('.scroll-indicator-right');
-        if (existingLeft) existingLeft.remove();
-        if (existingRight) existingRight.remove();
-        
-        if (hasOverflow) {
-            // Indicador derecho
-            const rightInd = document.createElement('div');
-            rightInd.className = 'scroll-indicator-right';
-            rightInd.innerHTML = '→';
-            rightInd.style.cssText = `
-                position: absolute;
-                right: 0;
-                top: 50%;
-                transform: translateY(-50%);
-                background: var(--gold);
-                color: white;
-                width: 28px;
-                height: 28px;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 14px;
-                cursor: pointer;
-                opacity: 0.7;
-                z-index: 5;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-                transition: opacity 0.2s;
-            `;
-            rightInd.addEventListener('click', () => {
-                nav.scrollBy({ left: 200, behavior: 'smooth' });
-            });
-            rightInd.addEventListener('mouseenter', () => rightInd.style.opacity = '1');
-            rightInd.addEventListener('mouseleave', () => rightInd.style.opacity = '0.7');
-            nav.appendChild(rightInd);
-            
-            // Indicador izquierdo
-            const leftInd = document.createElement('div');
-            leftInd.className = 'scroll-indicator-left';
-            leftInd.innerHTML = '←';
-            leftInd.style.cssText = `
-                position: absolute;
-                left: 0;
-                top: 50%;
-                transform: translateY(-50%);
-                background: var(--gold);
-                color: white;
-                width: 28px;
-                height: 28px;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 14px;
-                cursor: pointer;
-                opacity: 0.7;
-                z-index: 5;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-                transition: opacity 0.2s;
-            `;
-            leftInd.addEventListener('click', () => {
-                nav.scrollBy({ left: -200, behavior: 'smooth' });
-            });
-            leftInd.addEventListener('mouseenter', () => leftInd.style.opacity = '1');
-            leftInd.addEventListener('mouseleave', () => leftInd.style.opacity = '0.7');
-            nav.appendChild(leftInd);
-        }
-    }
-    
-    checkOverflow();
-    window.addEventListener('resize', checkOverflow);
-    setTimeout(checkOverflow, 500);
 }
-
-// ============================================
-// ACTUALIZACIONES EN VIVO
-// ============================================
 
 function initRefreshButton() {
     const refreshBtn = document.getElementById('refreshProductsBtn');
@@ -649,8 +577,9 @@ function initRefreshButton() {
         }
         
         await CacheService.clearCache(STORES.PRODUCTS);
-        await loadFlashSale();
-        await loadTrending();
+        await loadAllProducts();
+        renderFlashSale();
+        renderTrending(currentCategoryFilter);
         
         showToast('✅ Productos actualizados');
         
@@ -666,17 +595,11 @@ function setupRealtimeUpdates() {
     window.addEventListener('products:updated', async (event) => {
         console.log('🔄 Actualizando productos en vivo...', event.detail);
         await CacheService.clearCache(STORES.PRODUCTS);
-        await loadFlashSale();
-        await loadTrending();
-        showToast(`🔄 ${event.detail?.productName || 'Productos'} actualizados`);
+        await loadAllProducts();
+        renderFlashSale();
+        renderTrending(currentCategoryFilter);
+        showToast(`🔄 Productos actualizados`);
     });
-    
-    setInterval(async () => {
-        console.log('🔄 Actualización automática en vivo...');
-        await CacheService.clearCache(STORES.PRODUCTS);
-        await loadFlashSale();
-        await loadTrending();
-    }, 60000);
 }
 
 // ============================================
@@ -701,15 +624,18 @@ if (!document.querySelector('#outlet-styles')) {
             overflow: hidden;
             aspect-ratio: 1 / 1;
         }
-        .btn-refresh:hover {
-            transform: scale(1.1);
-            transition: transform 0.3s;
+        .category-item {
+            cursor: pointer;
+            transition: transform 0.2s ease;
         }
-        .product-card, .trending-item {
-            transition: opacity 0.3s ease, transform 0.3s ease;
+        .category-item:hover {
+            transform: scale(1.05);
         }
-        .category-empty, .category-error {
-            grid-column: 1 / -1 !important;
+        .category-item .circle-img {
+            transition: box-shadow 0.3s ease;
+        }
+        .category-item:hover .circle-img {
+            box-shadow: 0 4px 20px rgba(221, 171, 59, 0.3);
         }
     `;
     document.head.appendChild(style);

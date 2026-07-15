@@ -18,6 +18,7 @@ import {
     limit
 } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
 
+// ✅ CORREGIDO: Sin tilde para coincidir con Firebase
 const CATEGORIES_COLLECTION = 'categorias';
 
 export const CategoryRepository = {
@@ -33,12 +34,10 @@ export const CategoryRepository = {
             
             const categoryRef = doc(db, CATEGORIES_COLLECTION, id);
             
-            // Asegurar que subcategories existe y es un array
             const dataToSave = {
                 ...categoryData,
                 id: id,
-                updatedAt: new Date().toISOString(),
-                subcategories: categoryData.subcategories || []
+                updatedAt: new Date().toISOString()
             };
             
             if (!categoryData.createdAt) {
@@ -62,10 +61,7 @@ export const CategoryRepository = {
             const docSnap = await getDoc(categoryRef);
             
             if (docSnap.exists()) {
-                const data = docSnap.data();
-                // Asegurar que subcategories es un array
-                data.subcategories = data.subcategories || [];
-                return { id: docSnap.id, ...data };
+                return { id: docSnap.id, ...docSnap.data() };
             }
             return null;
         } catch (error) {
@@ -88,9 +84,7 @@ export const CategoryRepository = {
             
             if (!querySnapshot.empty) {
                 const doc = querySnapshot.docs[0];
-                const data = doc.data();
-                data.subcategories = data.subcategories || [];
-                return { id: doc.id, ...data };
+                return { id: doc.id, ...doc.data() };
             }
             return null;
         } catch (error) {
@@ -101,60 +95,88 @@ export const CategoryRepository = {
     
     /**
      * Obtener todas las categorías
+     * ✅ MODIFICADO: Sin filtro de status
      */
-    async getAll(filters = {}, sortBy = 'order', sortDir = 'asc', limitCount = 100) {
-        try {
-            const q = query(collection(db, CATEGORIES_COLLECTION), limit(limitCount));
-            const querySnapshot = await getDocs(q);
+    /**
+ * Obtener todas las categorías
+ */
+async getAll(filters = {}, sortBy = 'order', sortDir = 'asc', limitCount = 100) {
+    try {
+        // ✅ Sin orderBy en Firestore (excluye docs sin el campo).
+        // Ordenamos en memoria para que funcione aunque falte 'order'.
+        const q = query(collection(db, CATEGORIES_COLLECTION), limit(limitCount));
+        const querySnapshot = await getDocs(q);
 
-            let categorias = [];
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                data.subcategories = data.subcategories || [];
-                categorias.push({ id: doc.id, ...data });
-            });
+        let categorias = [];
+        querySnapshot.forEach((doc) => {
+            categorias.push({ id: doc.id, ...doc.data() });
+        });
 
-            // Filtro de búsqueda en memoria
-            if (filters.search) {
-                const searchTerm = filters.search.toLowerCase();
-                categorias = categorias.filter(cat =>
-                    cat.name.toLowerCase().includes(searchTerm) ||
-                    (cat.description && cat.description.toLowerCase().includes(searchTerm))
-                );
-            }
-
-            // Ordenamiento en memoria
-            categorias.sort((a, b) => {
-                const valA = a[sortBy] ?? 0;
-                const valB = b[sortBy] ?? 0;
-                if (valA < valB) return sortDir === 'asc' ? -1 : 1;
-                if (valA > valB) return sortDir === 'asc' ? 1 : -1;
-                return 0;
-            });
-
-            return categorias;
-        } catch (error) {
-            console.error('Error obteniendo categorías:', error);
-            throw new Error(`Error al obtener categorías: ${error.message}`);
+        // Filtro de búsqueda en memoria (si es necesario)
+        if (filters.search) {
+            const searchTerm = filters.search.toLowerCase();
+            categorias = categorias.filter(cat =>
+                cat.name.toLowerCase().includes(searchTerm) ||
+                (cat.description && cat.description.toLowerCase().includes(searchTerm))
+            );
         }
-    },
+
+        // Ordenamiento en memoria, con fallback si falta el campo
+        categorias.sort((a, b) => {
+            const valA = a[sortBy] ?? 0;
+            const valB = b[sortBy] ?? 0;
+            if (valA < valB) return sortDir === 'asc' ? -1 : 1;
+            if (valA > valB) return sortDir === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        return categorias;
+    } catch (error) {
+        console.error('Error obteniendo categorías:', error);
+        throw new Error(`Error al obtener categorías: ${error.message}`);
+    }
+},
+
+/**
+ * Obtener solo categorías activas (para tienda)
+ */
+async getActiveCategories() {
+    try {
+        // ✅ Sin orderBy en Firestore, ordenamos en memoria
+        const querySnapshot = await getDocs(collection(db, CATEGORIES_COLLECTION));
+
+        const categorias = [];
+        querySnapshot.forEach((doc) => {
+            categorias.push({ id: doc.id, ...doc.data() });
+        });
+
+        categorias.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+        return categorias;
+    } catch (error) {
+        console.error('Error obteniendo categorías activas:', error);
+        throw new Error(`Error al obtener categorías activas: ${error.message}`);
+    }
+},
     
     /**
      * Obtener solo categorías activas (para tienda)
+     * ✅ MODIFICADO: Como no tenemos status, devolvemos todas
      */
     async getActiveCategories() {
         try {
-            const querySnapshot = await getDocs(collection(db, CATEGORIES_COLLECTION));
-
+            // Como no tenemos status, devolvemos todas
+            const q = query(
+                collection(db, CATEGORIES_COLLECTION),
+                orderBy('order', 'asc')
+            );
+            const querySnapshot = await getDocs(q);
+            
             const categorias = [];
             querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                data.subcategories = data.subcategories || [];
-                categorias.push({ id: doc.id, ...data });
+                categorias.push({ id: doc.id, ...doc.data() });
             });
-
-            categorias.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-
+            
             return categorias;
         } catch (error) {
             console.error('Error obteniendo categorías activas:', error);
@@ -163,7 +185,7 @@ export const CategoryRepository = {
     },
     
     /**
-     * Actualizar categoría - CON SUBCATEGORÍAS
+     * Actualizar categoría
      */
     async update(categoryId, updateData) {
         try {
@@ -171,11 +193,6 @@ export const CategoryRepository = {
             
             // No permitir actualizar el ID
             delete updateData.id;
-            
-            // Asegurar que subcategories es un array
-            if (updateData.subcategories) {
-                updateData.subcategories = updateData.subcategories || [];
-            }
             
             await updateDoc(categoryRef, {
                 ...updateData,
@@ -190,5 +207,145 @@ export const CategoryRepository = {
         }
     },
     
-    // ... resto de métodos (addSubcategory, updateSubcategory, deleteSubcategory, etc.)
+    /**
+     * Agregar subcategoría
+     */
+    async addSubcategory(categoryId, subcategoryData) {
+        try {
+            const category = await this.getById(categoryId);
+            
+            if (!category) {
+                throw new Error('Categoría no encontrada');
+            }
+            
+            const subcategories = category.subcategories || [];
+            
+            // Generar ID único para la subcategoría
+            const newSubcategory = {
+                id: `${categoryId}_sub_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+                name: subcategoryData.name,
+                description: subcategoryData.description || '',
+                slug: subcategoryData.slug,
+                status: subcategoryData.status || 'active',
+                createdAt: new Date().toISOString()
+            };
+            
+            subcategories.push(newSubcategory);
+            
+            await this.update(categoryId, { subcategories });
+            
+            return { ...category, subcategories };
+        } catch (error) {
+            console.error('Error agregando subcategoría:', error);
+            throw new Error(`Error al agregar subcategoría: ${error.message}`);
+        }
+    },
+    
+    /**
+     * Actualizar subcategoría
+     */
+    async updateSubcategory(categoryId, subcategoryId, updateData) {
+        try {
+            const category = await this.getById(categoryId);
+            
+            if (!category) {
+                throw new Error('Categoría no encontrada');
+            }
+            
+            const subcategories = category.subcategories || [];
+            const subIndex = subcategories.findIndex(sub => sub.id === subcategoryId);
+            
+            if (subIndex === -1) {
+                throw new Error('Subcategoría no encontrada');
+            }
+            
+            subcategories[subIndex] = {
+                ...subcategories[subIndex],
+                ...updateData,
+                updatedAt: new Date().toISOString()
+            };
+            
+            await this.update(categoryId, { subcategories });
+            
+            return { ...category, subcategories };
+        } catch (error) {
+            console.error('Error actualizando subcategoría:', error);
+            throw new Error(`Error al actualizar subcategoría: ${error.message}`);
+        }
+    },
+    
+    /**
+     * Eliminar subcategoría
+     */
+    async deleteSubcategory(categoryId, subcategoryId) {
+        try {
+            const category = await this.getById(categoryId);
+            
+            if (!category) {
+                throw new Error('Categoría no encontrada');
+            }
+            
+            const subcategories = (category.subcategories || []).filter(
+                sub => sub.id !== subcategoryId
+            );
+            
+            await this.update(categoryId, { subcategories });
+            
+            return { ...category, subcategories };
+        } catch (error) {
+            console.error('Error eliminando subcategoría:', error);
+            throw new Error(`Error al eliminar subcategoría: ${error.message}`);
+        }
+    },
+    
+    /**
+     * Eliminar categoría (soft delete)
+     */
+    async delete(categoryId, hardDelete = false) {
+        try {
+            if (hardDelete) {
+                const categoryRef = doc(db, CATEGORIES_COLLECTION, categoryId);
+                await deleteDoc(categoryRef);
+                return true;
+            } else {
+                // Soft delete: solo cambiar estado
+                return await this.update(categoryId, { status: 'inactive' });
+            }
+        } catch (error) {
+            console.error('Error eliminando categoría:', error);
+            throw new Error(`Error al eliminar categoría: ${error.message}`);
+        }
+    },
+    
+    /**
+     * Eliminar categoría permanentemente (hard delete)
+     */
+    async deletePermanently(categoryId) {
+        return await this.delete(categoryId, true);
+    },
+    
+    /**
+     * Verificar si existe una categoría con el mismo nombre
+     */
+    async existsByName(name, excludeId = null) {
+        try {
+            const q = query(
+                collection(db, CATEGORIES_COLLECTION),
+                where('name', '==', name)
+            );
+            const querySnapshot = await getDocs(q);
+            
+            if (querySnapshot.empty) return false;
+            
+            if (excludeId) {
+                const docs = querySnapshot.docs;
+                return docs.some(doc => doc.id !== excludeId);
+            }
+            
+            return true;
+        } catch (error) {
+            console.error('Error verificando nombre:', error);
+            return false;
+        }
+    }
 };
