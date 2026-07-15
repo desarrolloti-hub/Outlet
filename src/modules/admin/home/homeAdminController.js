@@ -1,6 +1,6 @@
 /* ========================================
    ADMIN CONTROLLER - OUTLET (SPA)
-   Versión simplificada con Firebase
+   Versión mejorada con Firebase y sincronización
    ======================================== */
 
 import { ProductService } from '../../../services/productService.js';
@@ -11,85 +11,13 @@ import { ProductService } from '../../../services/productService.js';
 
 let adminProducts = [];
 let editingProductId = null;
+let isLoading = false;
 
 // ========================================
 // CONSTANTES
 // ========================================
 
 const ADMIN_STORAGE_KEY = 'outlet_admin_products';
-
-// ========================================
-// PRODUCTOS DE EJEMPLO (fallback)
-// ========================================
-
-const DEMO_PRODUCTS = [
-    {
-        id: 'demo-1',
-        nombre: 'Playera Oversize',
-        precioVenta: 499,
-        categoria: 'Hombre',
-        imagenPrincipal: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=200&h=200&fit=crop',
-        name: 'Playera Oversize',
-        price: 499,
-        category: 'Hombre',
-        image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=200&h=200&fit=crop'
-    },
-    {
-        id: 'demo-2',
-        nombre: 'Tenis Urban',
-        precioVenta: 1299,
-        categoria: 'Calzado',
-        imagenPrincipal: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&h=200&fit=crop',
-        name: 'Tenis Urban',
-        price: 1299,
-        category: 'Calzado',
-        image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&h=200&fit=crop'
-    },
-    {
-        id: 'demo-3',
-        nombre: 'Vestido de Seda',
-        precioVenta: 1250,
-        categoria: 'Mujer',
-        imagenPrincipal: 'https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=200&h=200&fit=crop',
-        name: 'Vestido de Seda',
-        price: 1250,
-        category: 'Mujer',
-        image: 'https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=200&h=200&fit=crop'
-    },
-    {
-        id: 'demo-4',
-        nombre: 'Bolso de Mano',
-        precioVenta: 890,
-        categoria: 'Accesorios',
-        imagenPrincipal: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=200&h=200&fit=crop',
-        name: 'Bolso de Mano',
-        price: 890,
-        category: 'Accesorios',
-        image: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=200&h=200&fit=crop'
-    },
-    {
-        id: 'demo-5',
-        nombre: 'Gafas de Sol',
-        precioVenta: 350,
-        categoria: 'Accesorios',
-        imagenPrincipal: 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=200&h=200&fit=crop',
-        name: 'Gafas de Sol',
-        price: 350,
-        category: 'Accesorios',
-        image: 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=200&h=200&fit=crop'
-    },
-    {
-        id: 'demo-6',
-        nombre: 'Chaqueta de Cuero',
-        precioVenta: 1599,
-        categoria: 'Hombre',
-        imagenPrincipal: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=200&h=200&fit=crop',
-        name: 'Chaqueta de Cuero',
-        price: 1599,
-        category: 'Hombre',
-        image: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=200&h=200&fit=crop'
-    }
-];
 
 // ========================================
 // HELPERS
@@ -112,7 +40,6 @@ function escapeHtml(str) {
 }
 
 function showToast(message, isError = false) {
-    // Eliminar toast anterior
     const old = document.querySelector('.admin-toast');
     if (old) old.remove();
     
@@ -135,6 +62,7 @@ function showToast(message, isError = false) {
         font-family: 'Inter', sans-serif;
         animation: slideInRight 0.3s ease;
         max-width: 90%;
+        z-index: 99999;
     `;
     
     document.body.appendChild(toast);
@@ -158,7 +86,22 @@ function renderProducts() {
         return;
     }
 
-    // Si no hay productos, mostrar mensaje
+    console.log('🔄 Renderizando productos. isLoading:', isLoading, 'adminProducts.length:', adminProducts?.length || 0);
+
+    // Mostrar loading si está cargando
+    if (isLoading) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5" style="text-align: center; padding: 40px 20px; color: #b0a88c;">
+                    <i class="fa-solid fa-spinner fa-spin" style="font-size: 28px; margin-bottom: 8px; display: block;"></i>
+                    Cargando productos...
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    // Si no hay productos
     if (!adminProducts || adminProducts.length === 0) {
         tbody.innerHTML = `
             <tr>
@@ -176,11 +119,11 @@ function renderProducts() {
     console.log(`📊 Renderizando ${adminProducts.length} productos`);
 
     tbody.innerHTML = adminProducts.map(product => {
-        const imageUrl = product.imagenPrincipal || product.image || 'https://placehold.co/100x100?text=Sin+imagen';
+        const id = product.id || product._id || '';
         const name = product.nombre || product.name || 'Sin nombre';
         const price = product.precioVenta || product.price || 0;
         const category = product.categoria || product.category || 'Sin categoría';
-        const id = product.id || product._id || '';
+        const imageUrl = product.imagenPrincipal || product.image || 'https://placehold.co/100x100?text=Sin+imagen';
 
         return `
             <tr data-id="${id}">
@@ -206,7 +149,7 @@ function renderProducts() {
         `;
     }).join('');
 
-    // Eventos - Editar (REDIRIGE A editProducts)
+    // Eventos - Editar
     document.querySelectorAll('.admin-action-btn.edit').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -233,73 +176,116 @@ function updateStats() {
     const productsCount = document.getElementById('productsCount');
     if (productsCount) productsCount.textContent = adminProducts.length;
 
+    const usersCount = document.getElementById('usersCount');
+    if (usersCount) usersCount.textContent = '0';
+
+    const ordersCount = document.getElementById('ordersCount');
+    if (ordersCount) ordersCount.textContent = '0';
+
     const totalSales = adminProducts.reduce((sum, p) => sum + ((p.precioVenta || p.price || 0) * 10), 0);
     const salesCount = document.getElementById('salesCount');
     if (salesCount) salesCount.textContent = formatMoney(totalSales);
 }
 
 // ========================================
+// NORMALIZAR PRODUCTO
+// ========================================
+
+function normalizeProduct(product) {
+    return {
+        id: product.id || product._id || '',
+        nombre: product.nombre || product.name || 'Sin nombre',
+        precioVenta: product.precioVenta || product.price || 0,
+        categoria: product.categoria || product.category || 'Sin categoría',
+        imagenPrincipal: product.imagenPrincipal || product.image || 'https://placehold.co/100x100?text=Sin+imagen',
+        ...product
+    };
+}
+
+// ========================================
 // CARGAR PRODUCTOS - PRINCIPAL
 // ========================================
 
-async function loadProducts() {
-    console.log('🔄 Cargando productos...');
+async function loadProducts(showLoading = true) {
+    console.log('🔄 loadProducts() iniciado...');
     
-    // Primero intentar desde localStorage
-    try {
-        const saved = localStorage.getItem(ADMIN_STORAGE_KEY);
-        if (saved) {
-            const parsed = JSON.parse(saved);
-            if (parsed && parsed.length > 0) {
-                adminProducts = parsed;
-                console.log('📂 Cargados desde localStorage:', adminProducts.length);
-                renderProducts();
-                updateStats();
-                showToast(`📂 ${adminProducts.length} productos cargados (local)`);
-            }
-        }
-    } catch (e) {
-        console.warn('Error leyendo localStorage:', e);
+    if (showLoading) {
+        isLoading = true;
+        renderProducts();
     }
 
-    // Luego intentar desde Firebase
     try {
+        // 1. INTENTAR DESDE FIRESTORE
         console.log('📡 Intentando cargar desde Firebase...');
+        console.log('📡 ProductService disponible:', typeof ProductService !== 'undefined');
+        console.log('📡 ProductService.getAll:', typeof ProductService?.getAll);
+        
         const products = await ProductService.getAll({}, 'createdAt', 'desc', 100);
+        console.log('📡 Respuesta de Firebase:', products);
         
         if (products && products.length > 0) {
             console.log('✅ Productos de Firebase:', products.length);
             
-            // Mapear productos
-            adminProducts = products.map(p => ({
-                ...p,
-                name: p.nombre || p.name || 'Sin nombre',
-                price: p.precioVenta || p.price || 0,
-                category: p.categoria || p.category || 'Sin categoría',
-                image: p.imagenPrincipal || p.image || 'https://placehold.co/100x100?text=Sin+imagen'
-            }));
+            adminProducts = products.map(p => normalizeProduct(p));
+            console.log('📦 Productos normalizados:', adminProducts.length);
             
-            // Guardar en localStorage como backup
             localStorage.setItem(ADMIN_STORAGE_KEY, JSON.stringify(adminProducts));
             
+            isLoading = false;
             renderProducts();
             updateStats();
             showToast(`✅ ${adminProducts.length} productos cargados desde Firebase`);
-        } else {
-            // Si Firebase no tiene productos, usar demo
-            if (!localStorage.getItem(ADMIN_STORAGE_KEY)) {
-                useDemoProducts();
+            return;
+        }
+        
+        // 2. SI FIRESTORE NO TIENE DATOS, INTENTAR LOCALSTORAGE
+        console.log('📂 Firebase vacío, intentando localStorage...');
+        const saved = localStorage.getItem(ADMIN_STORAGE_KEY);
+        console.log('📂 localStorage data:', saved ? 'encontrado' : 'no encontrado');
+        
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            if (parsed && parsed.length > 0) {
+                adminProducts = parsed.map(p => normalizeProduct(p));
+                console.log('📂 Cargados desde localStorage:', adminProducts.length);
+                isLoading = false;
+                renderProducts();
+                updateStats();
+                showToast(`📂 ${adminProducts.length} productos cargados (local)`);
+                return;
             }
         }
-    } catch (error) {
-        console.error('❌ Error en Firebase:', error);
         
-        // Si no hay productos en localStorage, usar demo
-        if (!localStorage.getItem(ADMIN_STORAGE_KEY)) {
-            useDemoProducts();
-        } else {
-            showToast('⚠️ Usando datos locales (Firebase no disponible)', true);
+        // 3. SI NO HAY NADA, USAR DEMO
+        console.log('📦 No hay datos, usando productos de demo');
+        useDemoProducts();
+        
+    } catch (error) {
+        console.error('❌ Error en loadProducts:', error);
+        console.error('❌ Stack trace:', error.stack);
+        
+        // Intentar localStorage como fallback
+        try {
+            const saved = localStorage.getItem(ADMIN_STORAGE_KEY);
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (parsed && parsed.length > 0) {
+                    adminProducts = parsed.map(p => normalizeProduct(p));
+                    isLoading = false;
+                    renderProducts();
+                    updateStats();
+                    showToast('⚠️ Usando datos locales (Firebase no disponible)', true);
+                    return;
+                }
+            }
+        } catch (e) {
+            console.warn('Error leyendo localStorage:', e);
         }
+        
+        // Último recurso: demo
+        useDemoProducts();
+    } finally {
+        isLoading = false;
     }
 }
 
@@ -308,9 +294,55 @@ async function loadProducts() {
 // ========================================
 
 function useDemoProducts() {
+    const DEMO_PRODUCTS = [
+        {
+            id: 'demo-1',
+            nombre: 'Playera Oversize',
+            precioVenta: 499,
+            categoria: 'Hombre',
+            imagenPrincipal: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=200&h=200&fit=crop'
+        },
+        {
+            id: 'demo-2',
+            nombre: 'Tenis Urban',
+            precioVenta: 1299,
+            categoria: 'Calzado',
+            imagenPrincipal: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&h=200&fit=crop'
+        },
+        {
+            id: 'demo-3',
+            nombre: 'Vestido de Seda',
+            precioVenta: 1250,
+            categoria: 'Mujer',
+            imagenPrincipal: 'https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=200&h=200&fit=crop'
+        },
+        {
+            id: 'demo-4',
+            nombre: 'Bolso de Mano',
+            precioVenta: 890,
+            categoria: 'Accesorios',
+            imagenPrincipal: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=200&h=200&fit=crop'
+        },
+        {
+            id: 'demo-5',
+            nombre: 'Gafas de Sol',
+            precioVenta: 350,
+            categoria: 'Accesorios',
+            imagenPrincipal: 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=200&h=200&fit=crop'
+        },
+        {
+            id: 'demo-6',
+            nombre: 'Chaqueta de Cuero',
+            precioVenta: 1599,
+            categoria: 'Hombre',
+            imagenPrincipal: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=200&h=200&fit=crop'
+        }
+    ];
+    
     console.log('📦 Usando productos de demo');
     adminProducts = DEMO_PRODUCTS;
     localStorage.setItem(ADMIN_STORAGE_KEY, JSON.stringify(adminProducts));
+    isLoading = false;
     renderProducts();
     updateStats();
     showToast('📦 Usando productos de ejemplo');
@@ -326,7 +358,6 @@ async function saveProduct() {
     const category = document.getElementById('productCategory').value.trim();
     let image = document.getElementById('productImage').value.trim();
 
-    // Validaciones
     if (!name) { showToast('El nombre es obligatorio', true); return; }
     if (isNaN(price) || price <= 0) { showToast('Precio inválido', true); return; }
     if (!category) { showToast('La categoría es obligatoria', true); return; }
@@ -337,39 +368,28 @@ async function saveProduct() {
 
     try {
         if (editingProductId) {
-            // EDITAR
             const updateData = {
                 nombre: name,
                 precioVenta: price,
                 categoria: category,
-                imagenPrincipal: image,
-                name: name,
-                price: price,
-                category: category,
-                image: image
+                imagenPrincipal: image
             };
 
             await ProductService.update(editingProductId, updateData);
 
-            // Actualizar array local
             const index = adminProducts.findIndex(p => p.id === editingProductId);
             if (index !== -1) {
-                adminProducts[index] = {
+                adminProducts[index] = normalizeProduct({
                     ...adminProducts[index],
                     nombre: name,
                     precioVenta: price,
                     categoria: category,
-                    imagenPrincipal: image,
-                    name: name,
-                    price: price,
-                    category: category,
-                    image: image
-                };
+                    imagenPrincipal: image
+                });
             }
 
             showToast(`✏️ "${name}" actualizado`);
         } else {
-            // CREAR
             const newProduct = {
                 sku: `PROD-${Date.now()}`,
                 nombre: name,
@@ -392,22 +412,10 @@ async function saveProduct() {
 
             const created = await ProductService.create(newProduct);
             
-            adminProducts.push({
-                id: created.id,
-                nombre: created.nombre,
-                precioVenta: created.precioVenta,
-                categoria: created.categoria,
-                imagenPrincipal: created.imagenPrincipal,
-                name: created.nombre,
-                price: created.precioVenta,
-                category: created.categoria,
-                image: created.imagenPrincipal
-            });
-
+            adminProducts.push(normalizeProduct(created));
             showToast(`✅ "${name}" agregado`);
         }
 
-        // Guardar backup y renderizar
         localStorage.setItem(ADMIN_STORAGE_KEY, JSON.stringify(adminProducts));
         renderProducts();
         updateStats();
@@ -447,8 +455,9 @@ async function deleteProduct(id) {
 }
 
 // ========================================
-// FUNCIÓN: Redirigir a la página de edición de productos
+// NAVEGACIÓN
 // ========================================
+
 function goToEditProduct(productId) {
     if (!productId) {
         showToast('ID de producto no válido', true);
@@ -457,24 +466,17 @@ function goToEditProduct(productId) {
     
     console.log('✏️ Editando producto ID:', productId);
     
-    // Usar el sistema de navegación SPA si existe
     if (typeof window.navigateTo === 'function') {
         window.navigateTo('/editProducts?id=' + encodeURIComponent(productId));
     } else {
-        // Navegación tradicional
         window.location.href = '/editProducts.html?id=' + encodeURIComponent(productId);
     }
 }
 
-// ========================================
-// FUNCIÓN: Redirigir a la página de creación de productos
-// ========================================
 function goToCreateProduct() {
-    // Usar el sistema de navegación SPA si existe
     if (typeof window.navigateTo === 'function') {
         window.navigateTo('/createProducts');
     } else {
-        // Navegación tradicional
         window.location.href = '/createProducts.html';
     }
 }
@@ -510,28 +512,51 @@ function logout() {
 }
 
 // ========================================
-// INICIAR
+// ESCUCHAR ACTUALIZACIONES
+// ========================================
+
+function setupRealtimeUpdates() {
+    window.addEventListener('products:updated', (event) => {
+        console.log('🔄 Productos actualizados:', event.detail);
+        loadProducts(false);
+    });
+
+    window.addEventListener('storage', (event) => {
+        if (event.key === ADMIN_STORAGE_KEY) {
+            console.log('🔄 Cambio detectado en localStorage, recargando...');
+            loadProducts(false);
+        }
+    });
+}
+
+// ========================================
+// INICIAR - VERSIÓN CON MÁS LOGS
 // ========================================
 
 export async function adminController() {
     console.log('👑 Admin Controller iniciando...');
+    console.log('📋 DOM Elements:');
+    console.log('  - productsTable:', document.getElementById('productsTable'));
+    console.log('  - addProductBtn:', document.getElementById('addProductBtn'));
+    console.log('  - productsCount:', document.getElementById('productsCount'));
     
-    // Verificar DOM
     const tbody = document.getElementById('productsTable');
     if (!tbody) {
         console.error('❌ #productsTable no encontrado. Verifica el HTML.');
+        showToast('Error: #productsTable no encontrado', true);
         return;
     }
 
-    // Cargar estilos (si no están)
+    // Cargar estilos
     if (!document.querySelector('link[href*="homeAdmin.css"]')) {
         const link = document.createElement('link');
         link.rel = 'stylesheet';
         link.href = '/src/css/pages/homeAdmin.css';
         document.head.appendChild(link);
+        console.log('✅ Estilos homeAdmin.css cargados');
     }
 
-    // Agregar animación para el toast
+    // Agregar animaciones
     const style = document.createElement('style');
     style.textContent = `
         @keyframes slideInRight {
@@ -544,55 +569,84 @@ export async function adminController() {
     `;
     document.head.appendChild(style);
 
-    // Cargar productos
-    await loadProducts();
-
-    // ========================================
-    // CONFIGURAR EVENTOS
-    // ========================================
-    
-    // ✅ BOTÓN AGREGAR PRODUCTO - Redirige a createProducts
+    // CONFIGURAR EVENTOS DEL BOTÓN AGREGAR
     const addProductBtn = document.getElementById('addProductBtn');
     if (addProductBtn) {
-        // Eliminar event listeners anteriores (si los hay)
+        console.log('✅ addProductBtn encontrado, configurando evento...');
         const newBtn = addProductBtn.cloneNode(true);
         addProductBtn.parentNode.replaceChild(newBtn, addProductBtn);
         
         newBtn.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
+            console.log('🔄 Botón "Agregar producto" clickeado');
             goToCreateProduct();
         });
     } else {
         console.warn('⚠️ Botón #addProductBtn no encontrado en el DOM');
     }
 
-    // Eventos del modal (ya no se usan para editar, se mantienen por compatibilidad)
-    document.getElementById('closeModalBtn')?.addEventListener('click', closeModal);
-    document.getElementById('cancelModalBtn')?.addEventListener('click', closeModal);
-    document.getElementById('saveProductBtn')?.addEventListener('click', saveProduct);
-    document.getElementById('logoutBtn')?.addEventListener('click', logout);
+    // CONFIGURAR EVENTOS DEL MODAL
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const cancelModalBtn = document.getElementById('cancelModalBtn');
+    const saveProductBtn = document.getElementById('saveProductBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const productModal = document.getElementById('productModal');
 
-    // Cerrar modal al hacer clic fuera
-    document.getElementById('productModal')?.addEventListener('click', (e) => {
-        if (e.target === e.currentTarget) closeModal();
-    });
+    if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
+    if (cancelModalBtn) cancelModalBtn.addEventListener('click', closeModal);
+    if (saveProductBtn) saveProductBtn.addEventListener('click', saveProduct);
+    if (logoutBtn) logoutBtn.addEventListener('click', logout);
 
-    // Escuchar actualizaciones desde otros tabs
-    window.addEventListener('products:updated', () => {
-        loadProducts();
-    });
+    if (productModal) {
+        productModal.addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) closeModal();
+        });
+    }
+
+    // ✅ ESCUCHAR ACTUALIZACIONES
+    setupRealtimeUpdates();
+
+    // ✅ CARGAR PRODUCTOS - CON MANEJO DE ERRORES
+    console.log('🚀 Iniciando carga de productos...');
+    try {
+        await loadProducts(true);
+        console.log('✅ Productos cargados exitosamente');
+    } catch (error) {
+        console.error('❌ Error en carga inicial:', error);
+        showToast('Error al cargar productos: ' + error.message, true);
+    }
 
     // Exponer para debug
     window.adminDebug = {
         products: () => adminProducts,
-        refresh: loadProducts,
+        refresh: () => loadProducts(true),
         demo: useDemoProducts,
         stats: updateStats,
         goToCreate: goToCreateProduct,
-        goToEdit: goToEditProduct
+        goToEdit: goToEditProduct,
+        forceReload: () => {
+            localStorage.removeItem(ADMIN_STORAGE_KEY);
+            loadProducts(true);
+        },
+        clearCache: () => {
+            localStorage.removeItem(ADMIN_STORAGE_KEY);
+            console.log('🧹 Cache limpiada');
+            showToast('🧹 Cache limpiada, recargando...');
+            loadProducts(true);
+        },
+        showState: () => {
+            console.log('📊 Estado actual:');
+            console.log('  - adminProducts:', adminProducts);
+            console.log('  - isLoading:', isLoading);
+            console.log('  - editingProductId:', editingProductId);
+            console.log('  - localStorage:', localStorage.getItem(ADMIN_STORAGE_KEY));
+        }
     };
 
     console.log('✅ Admin Controller listo');
     console.log('📌 Para debug: window.adminDebug');
+    console.log('📌 Para ver estado: window.adminDebug.showState()');
+    console.log('📌 Para forzar recarga: window.adminDebug.forceReload()');
+    console.log('📌 Para limpiar cache: window.adminDebug.clearCache()');
 }
