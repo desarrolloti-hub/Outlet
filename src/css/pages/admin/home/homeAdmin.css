@@ -1334,3 +1334,26 @@ svg {
         justify-content: center;
     }  
 }
+/* Spinner para carga */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Estilos para el toast */
+.admin-toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 9999;
+    background: var(--outlet-bg-card, #fff);
+    color: var(--outlet-gold, #ddab3b);
+    padding: 12px 24px;
+    border-radius: 12px;
+    border-left: 4px solid var(--outlet-gold, #ddab3b);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    font-weight: 500;
+    font-size: 13px;
+    transition: all 0.3s ease;
+    max-width: 90%;
+}

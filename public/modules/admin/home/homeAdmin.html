@@ -7,8 +7,6 @@
 
     <div class="admin-main-content">
 
-        </header>
-
         <!-- ESTADÍSTICAS -->
         <section class="admin-cards">
 
@@ -65,7 +63,7 @@
                             <th>Imagen</th>
                             <th>Producto</th>
                             <th>Precio</th>
-                            <th>Stock</th>
+                            <th>Categoría</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -114,7 +112,7 @@
             </div>
 
             <div class="admin-form-group">
-                <label>Precio</label>
+                <label>Precio (MXN)</label>
                 <input
                     type="number"
                     id="productPrice"
@@ -122,11 +120,11 @@
             </div>
 
             <div class="admin-form-group">
-                <label>Stock</label>
+                <label>Categoría</label>
                 <input
-                    type="number"
-                    id="productStock"
-                    placeholder="0">
+                    type="text"
+                    id="productCategory"
+                    placeholder="Ej: Hombre, Mujer, Accesorios">
             </div>
 
             <div class="admin-form-group">
@@ -139,17 +137,19 @@
 
         </div>
 
-        <div class="admin-modal-footer">
+        <div class="admin-modal-footer" style="display: flex; gap: 12px; padding: 20px 28px 28px; border-top: 1px solid var(--outlet-border-soft, #eaeaea);">
 
             <button
                 class="admin-btn-cancel"
-                id="cancelModalBtn">
+                id="cancelModalBtn"
+                style="flex:1; justify-content:center;">
                 Cancelar
             </button>
 
             <button
                 class="admin-btn-save"
-                id="saveProductBtn">
+                id="saveProductBtn"
+                style="flex:1; justify-content:center;">
                 Guardar
             </button>
 

@@ -884,6 +884,40 @@ function recolectarDatosProducto() {
 }
 
 // ========================================
+// FUNCIÓN: irAHomeAdmin - Redirige al home del admin
+// ========================================
+function irAHomeAdmin() {
+    console.log('🔄 Redirigiendo a Home Admin...');
+    
+    // Intentar diferentes formas de redirección
+    try {
+        // 1. Si existe el sistema de navegación SPA
+        if (typeof window.navigateTo === 'function') {
+            window.navigateTo('/homeAdmin');
+            return;
+        }
+        
+        // 2. Probar con la ruta relativa desde la ubicación actual
+        var currentPath = window.location.pathname;
+        console.log('📍 Ruta actual:', currentPath);
+        
+        // Si estamos en /public/createProducts.html o similar
+        if (currentPath.includes('/createProducts')) {
+            window.location.href = '/homeAdmin.html';
+            return;
+        }
+        
+        // 3. Probar con la ruta desde la raíz
+        window.location.href = '/homeAdmin.html';
+        
+    } catch (error) {
+        console.error('❌ Error al redirigir:', error);
+        // Fallback: usar la ruta más simple
+        window.location.href = 'homeAdmin.html';
+    }
+}
+
+// ========================================
 // EVENT LISTENERS
 // ========================================
 function initEventListeners() {
@@ -905,34 +939,31 @@ function initEventListeners() {
     elements.clearBtn?.addEventListener('click', limpiarFormulario);
     elements.saveBtn?.addEventListener('click', guardarProducto);
     
-    // ✅ BOTÓN VOLVER - VUELVE AL PASO 1 (IMÁGENES E INFO)
-    elements.backBtn?.addEventListener('click', function() {
-        // Si ya estás en el paso 1, mostrar mensaje
-        if (currentStep === 1) {
-            mostrarToast('📸 Ya estás en Imágenes e info', 'info');
-            return;
-        }
+    // ✅ BOTÓN VOLVER - REDIRIGE A HOME ADMIN (con múltiples intentos)
+    elements.backBtn?.addEventListener('click', function(e) {
+        e.preventDefault();
         
-        // Volver al paso 1 (Imágenes e info) con animación
-        // Calculamos cuántos pasos retroceder
-        var stepsToGoBack = currentStep - 1;
+        // Verificar si hay datos sin guardar
+        var tieneDatos = elements.sku?.value || 
+                         elements.nombre?.value || 
+                         currentMainImage || 
+                         coloresArray.length > 0 || 
+                         tallasArray.length > 0 ||
+                         galleryImages.length > 0;
         
-        // Retroceder paso a paso con animación
-        for (var i = 0; i < stepsToGoBack; i++) {
-            // Usamos setTimeout para que cada animación se ejecute secuencialmente
-            setTimeout(function() {
-                if (currentStep > 1) {
-                    cambiarPanel(-1);
+        if (tieneDatos) {
+            mostrarAdvertencia(
+                '¿Salir sin guardar?',
+                'Tienes datos sin guardar. ¿Estás seguro de que quieres salir?',
+                'Sí, salir'
+            ).then(function(result) {
+                if (result.isConfirmed) {
+                    irAHomeAdmin();
                 }
-            }, i * 400); // 400ms entre cada paso
+            });
+        } else {
+            irAHomeAdmin();
         }
-        
-        // Mensaje de confirmación después de la última animación
-        setTimeout(function() {
-            if (currentStep === 1) {
-                mostrarToast('📸 Volviendo a Imágenes e info', 'success');
-            }
-        }, stepsToGoBack * 400 + 300);
     });
     
     // Event listener para cambio de categoría
@@ -1027,4 +1058,5 @@ export async function productCreateController() {
     initEventListeners();
     
     console.log('✅ Product Create page loaded');
+    console.log('📌 Para debug: window.location.pathname =', window.location.pathname);
 }
