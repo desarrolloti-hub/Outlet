@@ -206,12 +206,12 @@ function renderProducts() {
         `;
     }).join('');
 
-    // Eventos - Editar
+    // Eventos - Editar (REDIRIGE A editProducts)
     document.querySelectorAll('.admin-action-btn.edit').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
             const id = btn.getAttribute('data-id');
-            if (id) openEditModal(id);
+            if (id) goToEditProduct(id);
         });
     });
 
@@ -447,6 +447,39 @@ async function deleteProduct(id) {
 }
 
 // ========================================
+// FUNCIÓN: Redirigir a la página de edición de productos
+// ========================================
+function goToEditProduct(productId) {
+    if (!productId) {
+        showToast('ID de producto no válido', true);
+        return;
+    }
+    
+    console.log('✏️ Editando producto ID:', productId);
+    
+    // Usar el sistema de navegación SPA si existe
+    if (typeof window.navigateTo === 'function') {
+        window.navigateTo('/editProducts?id=' + encodeURIComponent(productId));
+    } else {
+        // Navegación tradicional
+        window.location.href = '/editProducts.html?id=' + encodeURIComponent(productId);
+    }
+}
+
+// ========================================
+// FUNCIÓN: Redirigir a la página de creación de productos
+// ========================================
+function goToCreateProduct() {
+    // Usar el sistema de navegación SPA si existe
+    if (typeof window.navigateTo === 'function') {
+        window.navigateTo('/createProducts');
+    } else {
+        // Navegación tradicional
+        window.location.href = '/createProducts.html';
+    }
+}
+
+// ========================================
 // MODAL
 // ========================================
 
@@ -460,38 +493,9 @@ function openAddModal() {
     document.getElementById('productModal').style.display = 'flex';
 }
 
-function openEditModal(id) {
-    const product = adminProducts.find(p => p.id === id);
-    if (!product) {
-        showToast('Producto no encontrado', true);
-        return;
-    }
-
-    editingProductId = id;
-    document.getElementById('modalTitle').textContent = 'Editar Producto';
-    document.getElementById('productName').value = product.nombre || product.name || '';
-    document.getElementById('productPrice').value = product.precioVenta || product.price || '';
-    document.getElementById('productCategory').value = product.categoria || product.category || '';
-    document.getElementById('productImage').value = product.imagenPrincipal || product.image || '';
-    document.getElementById('productModal').style.display = 'flex';
-}
-
 function closeModal() {
     document.getElementById('productModal').style.display = 'none';
     editingProductId = null;
-}
-
-// ========================================
-// NUEVA FUNCIÓN: Redirigir a la página de creación de productos
-// ========================================
-function goToCreateProduct() {
-    // Usar el sistema de navegación SPA si existe
-    if (typeof window.navigateTo === 'function') {
-        window.navigateTo('/createProducts');
-    } else {
-        // Navegación tradicional
-        window.location.href = '/createProducts.html';
-    }
 }
 
 // ========================================
@@ -563,7 +567,7 @@ export async function adminController() {
         console.warn('⚠️ Botón #addProductBtn no encontrado en el DOM');
     }
 
-    // Eventos del modal (se mantienen para compatibilidad con edición)
+    // Eventos del modal (ya no se usan para editar, se mantienen por compatibilidad)
     document.getElementById('closeModalBtn')?.addEventListener('click', closeModal);
     document.getElementById('cancelModalBtn')?.addEventListener('click', closeModal);
     document.getElementById('saveProductBtn')?.addEventListener('click', saveProduct);
@@ -585,7 +589,8 @@ export async function adminController() {
         refresh: loadProducts,
         demo: useDemoProducts,
         stats: updateStats,
-        goToCreate: goToCreateProduct
+        goToCreate: goToCreateProduct,
+        goToEdit: goToEditProduct
     };
 
     console.log('✅ Admin Controller listo');
