@@ -707,9 +707,9 @@ async function handleLogout() {
         
         setTimeout(function() {
             if (typeof window.navigateTo === 'function') {
-                window.navigateTo('/login');
+                window.navigateTo('/');
             } else {
-                window.location.href = '/login';
+                window.location.href = '/';
             }
         }, 500);
         
@@ -941,9 +941,9 @@ export async function userProfileEditController() {
             
             setTimeout(function() {
                 if (typeof window.navigateTo === 'function') {
-                    window.navigateTo('/login');
+                    window.navigateTo('/');
                 } else {
-                    window.location.href = '/login';
+                    window.location.href = '/';
                 }
             }, 2000);
             return;
