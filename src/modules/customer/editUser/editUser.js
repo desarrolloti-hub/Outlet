@@ -163,7 +163,7 @@ async function loadCustomerData() {
         
         actualizarIniciales();
         actualizarEstadoDireccion();
-        updateAvatarFromSession();
+        updateEditUserAvatar();
         
         return true;
     } catch (error) {
@@ -177,11 +177,11 @@ async function loadCustomerData() {
 // Cargar datos del customer al formulario
 // ========================================
 function loadDataToForm(customer) {
-    var nombre = document.getElementById('nombre');
-    var apellidoPa = document.getElementById('apellidoPa');
-    var apellidoMa = document.getElementById('apellidoMa');
-    var email = document.getElementById('email');
-    var telefonoPrincipal = document.getElementById('telefonoPrincipal');
+    var nombre = document.getElementById('editUserNombre');
+    var apellidoPa = document.getElementById('editUserApellidoPa');
+    var apellidoMa = document.getElementById('editUserApellidoMa');
+    var email = document.getElementById('editUserEmail');
+    var telefonoPrincipal = document.getElementById('editUserTelefonoPrincipal');
     
     if (nombre) nombre.value = customer.nombre || '';
     if (apellidoPa) apellidoPa.value = customer.apellidoPa || '';
@@ -194,18 +194,18 @@ function loadDataToForm(customer) {
     if (telefonoPrincipal) telefonoPrincipal.value = customer.telefono || customer.direccion?.telefono1 || '';
     
     var direccion = customer.direccion || {};
-    var destinatario = document.getElementById('destinatario');
-    var dirTelefono1 = document.getElementById('dirTelefono1');
-    var dirTelefono2 = document.getElementById('dirTelefono2');
-    var calle = document.getElementById('calle');
-    var numeroExterior = document.getElementById('numeroExterior');
-    var numeroInterior = document.getElementById('numeroInterior');
-    var colonia = document.getElementById('colonia');
-    var ciudad = document.getElementById('ciudad');
-    var estado = document.getElementById('estado');
-    var codigoPostal = document.getElementById('codigoPostal');
-    var pais = document.getElementById('pais');
-    var referencias = document.getElementById('referencias');
+    var destinatario = document.getElementById('editUserDestinatario');
+    var dirTelefono1 = document.getElementById('editUserDirTelefono1');
+    var dirTelefono2 = document.getElementById('editUserDirTelefono2');
+    var calle = document.getElementById('editUserCalle');
+    var numeroExterior = document.getElementById('editUserNumeroExterior');
+    var numeroInterior = document.getElementById('editUserNumeroInterior');
+    var colonia = document.getElementById('editUserColonia');
+    var ciudad = document.getElementById('editUserCiudad');
+    var estado = document.getElementById('editUserEstado');
+    var codigoPostal = document.getElementById('editUserCodigoPostal');
+    var pais = document.getElementById('editUserPais');
+    var referencias = document.getElementById('editUserReferencias');
     
     if (destinatario) destinatario.value = direccion.destinatario || customer.nombreCompleto || '';
     if (dirTelefono1) dirTelefono1.value = direccion.telefono1 || '';
@@ -221,59 +221,55 @@ function loadDataToForm(customer) {
     if (referencias) referencias.value = direccion.referencias || '';
     
     var preferencias = customer.preferencias || {};
-    var newsletterToggle = document.getElementById('newsletterToggle');
-    var notificacionesToggle = document.getElementById('notificacionesToggle');
+    var newsletterToggle = document.getElementById('editUserNewsletterToggle');
+    var notificacionesToggle = document.getElementById('editUserNotificacionesToggle');
     
     if (newsletterToggle) newsletterToggle.checked = preferencias.newsletter || false;
     if (notificacionesToggle) notificacionesToggle.checked = preferencias.notificaciones !== false;
 }
 
 // ========================================
-// Actualizar avatar desde la sesión
+// Actualizar avatar del editUser (NO del navbar)
 // ========================================
-function updateAvatarFromSession() {
+function updateEditUserAvatar() {
     try {
         var session = JSON.parse(localStorage.getItem('outlet_customer'));
         if (!session) return;
         
-        var avatarImg = document.getElementById('profileAvatar');
-        var badgeSpan = document.querySelector('.admin-avatar .avatar-badge');
+        var avatarImg = document.getElementById('editUserProfileAvatar');
+        var placeholder = document.getElementById('editUserAvatarPlaceholder');
+        var initialsSpan = document.getElementById('editUserAvatarInitials');
+        var nameDisplay = document.getElementById('editUserNameDisplay');
+        var emailDisplay = document.getElementById('editUserEmailDisplay');
         
+        // Actualizar nombre y email
+        if (nameDisplay) {
+            nameDisplay.textContent = session.nombreCompleto || session.nombre || 'Usuario';
+        }
+        if (emailDisplay) {
+            emailDisplay.textContent = session.email || '';
+        }
+        
+        // Calcular iniciales
+        var nombre = session.nombre || '';
+        var apellido = session.apellidoPa || '';
+        var iniciales = '';
+        if (nombre) iniciales += nombre.charAt(0);
+        if (apellido) iniciales += apellido.charAt(0);
+        if (iniciales === '') iniciales = 'U';
+        if (initialsSpan) initialsSpan.textContent = iniciales.toUpperCase();
+        
+        // Mostrar foto si existe
         if (avatarImg && session.fotoPerfil && session.fotoPerfil.startsWith('http')) {
             avatarImg.src = session.fotoPerfil;
             avatarImg.style.display = 'block';
-            avatarImg.style.width = '40px';
-            avatarImg.style.height = '40px';
-            avatarImg.style.borderRadius = '50%';
-            avatarImg.style.objectFit = 'cover';
-            avatarImg.style.border = '2px solid var(--outlet-gold, #c9a84c)';
-            if (badgeSpan) badgeSpan.style.display = 'none';
-        } else if (badgeSpan) {
-            avatarImg.style.display = 'none';
-            badgeSpan.style.display = 'flex';
-            badgeSpan.textContent = session.iniciales || session.nombre?.charAt(0) || 'U';
-            badgeSpan.style.width = '40px';
-            badgeSpan.style.height = '40px';
-            badgeSpan.style.borderRadius = '50%';
-            badgeSpan.style.background = 'var(--outlet-gold, #c9a84c)';
-            badgeSpan.style.color = '#1a1a1a';
-            badgeSpan.style.fontWeight = '700';
-            badgeSpan.style.fontSize = '16px';
-            badgeSpan.style.alignItems = 'center';
-            badgeSpan.style.justifyContent = 'center';
-            badgeSpan.style.display = 'flex';
-            badgeSpan.style.textTransform = 'uppercase';
+            if (placeholder) placeholder.style.display = 'none';
+        } else {
+            if (avatarImg) avatarImg.style.display = 'none';
+            if (placeholder) placeholder.style.display = 'flex';
         }
-        
-        if (typeof window.updateProfileAvatar === 'function') {
-            setTimeout(window.updateProfileAvatar, 100);
-        }
-        
-        window.dispatchEvent(new CustomEvent('customer:authStateChanged', {
-            detail: session
-        }));
     } catch (error) {
-        console.error('Error actualizando avatar:', error);
+        console.error('Error actualizando avatar de editUser:', error);
     }
 }
 
@@ -282,11 +278,11 @@ function updateAvatarFromSession() {
 // ========================================
 
 function actualizarIniciales() {
-    var nombreInput = document.getElementById('nombre');
-    var apellidoPaInput = document.getElementById('apellidoPa');
-    var avatarIniciales = document.getElementById('avatarIniciales');
+    var nombreInput = document.getElementById('editUserNombre');
+    var apellidoPaInput = document.getElementById('editUserApellidoPa');
+    var initialsSpan = document.getElementById('editUserAvatarInitials');
     
-    if (!avatarIniciales) return;
+    if (!initialsSpan) return;
     
     var nombre = nombreInput?.value.trim() || currentCustomer?.nombre || '';
     var apellido = apellidoPaInput?.value.trim() || currentCustomer?.apellidoPa || '';
@@ -295,23 +291,17 @@ function actualizarIniciales() {
     if (apellido) iniciales += apellido.charAt(0);
     if (iniciales === '') iniciales = 'U';
     
-    avatarIniciales.textContent = iniciales.toUpperCase();
-    
-    var avatarCircle = document.getElementById('avatarCircle');
-    if (avatarCircle) {
-        avatarCircle.style.transform = 'scale(1.02)';
-        setTimeout(function() { if (avatarCircle) avatarCircle.style.transform = 'scale(1)'; }, 300);
-    }
+    initialsSpan.textContent = iniciales.toUpperCase();
 }
 
 function actualizarEstadoDireccion() {
-    var calle = document.getElementById('calle');
-    var numeroExterior = document.getElementById('numeroExterior');
-    var colonia = document.getElementById('colonia');
-    var ciudad = document.getElementById('ciudad');
-    var estado = document.getElementById('estado');
-    var codigoPostal = document.getElementById('codigoPostal');
-    var dirTelefono1 = document.getElementById('dirTelefono1');
+    var calle = document.getElementById('editUserCalle');
+    var numeroExterior = document.getElementById('editUserNumeroExterior');
+    var colonia = document.getElementById('editUserColonia');
+    var ciudad = document.getElementById('editUserCiudad');
+    var estado = document.getElementById('editUserEstado');
+    var codigoPostal = document.getElementById('editUserCodigoPostal');
+    var dirTelefono1 = document.getElementById('editUserDirTelefono1');
     var badgeEnvio = document.getElementById('badgeEnvio');
     
     if (!badgeEnvio) return;
@@ -344,8 +334,8 @@ function actualizarEstadoDireccion() {
 // ========================================
 
 function renderCards() {
-    var paymentCardsList = document.getElementById('paymentCardsList');
-    var defaultPaymentDisplay = document.getElementById('defaultPaymentDisplay');
+    var paymentCardsList = document.getElementById('editUserPaymentCardsList');
+    var defaultPaymentDisplay = document.getElementById('editUserDefaultPaymentDisplay');
     
     if (!paymentCardsList) return;
     
@@ -534,10 +524,10 @@ function openModal() {
 function closeModal() {
     var modal = document.getElementById('cardModalOverlay');
     if (modal) modal.classList.remove('active');
-    var cardNumber = document.getElementById('cardNumber');
-    var cardExpiry = document.getElementById('cardExpiry');
-    var cardCvv = document.getElementById('cardCvv');
-    var cardName = document.getElementById('cardName');
+    var cardNumber = document.getElementById('editUserCardNumber');
+    var cardExpiry = document.getElementById('editUserCardExpiry');
+    var cardCvv = document.getElementById('editUserCardCvv');
+    var cardName = document.getElementById('editUserCardName');
     if (cardNumber) cardNumber.value = '';
     if (cardExpiry) cardExpiry.value = '';
     if (cardCvv) cardCvv.value = '';
@@ -545,9 +535,9 @@ function closeModal() {
 }
 
 async function saveCard() {
-    var cardNumber = document.getElementById('cardNumber');
-    var cardExpiry = document.getElementById('cardExpiry');
-    var cardName = document.getElementById('cardName');
+    var cardNumber = document.getElementById('editUserCardNumber');
+    var cardExpiry = document.getElementById('editUserCardExpiry');
+    var cardName = document.getElementById('editUserCardName');
     
     if (!cardNumber?.value.trim() || !cardExpiry?.value.trim() || !cardName?.value.trim()) {
         await mostrarError('Campos incompletos', 'Completa todos los campos de la tarjeta.');
@@ -570,29 +560,29 @@ async function guardarCambios() {
             return;
         }
         
-        var nombre = document.getElementById('nombre')?.value || '';
-        var apellidoPa = document.getElementById('apellidoPa')?.value || '';
-        var apellidoMa = document.getElementById('apellidoMa')?.value || '';
-        var telefonoPrincipal = document.getElementById('telefonoPrincipal')?.value || '';
+        var nombre = document.getElementById('editUserNombre')?.value || '';
+        var apellidoPa = document.getElementById('editUserApellidoPa')?.value || '';
+        var apellidoMa = document.getElementById('editUserApellidoMa')?.value || '';
+        var telefonoPrincipal = document.getElementById('editUserTelefonoPrincipal')?.value || '';
         
         var direccion = {
-            destinatario: document.getElementById('destinatario')?.value || '',
-            telefono1: document.getElementById('dirTelefono1')?.value || '',
-            telefono2: document.getElementById('dirTelefono2')?.value || '',
-            calle: document.getElementById('calle')?.value || '',
-            numeroExterior: document.getElementById('numeroExterior')?.value || '',
-            numeroInterior: document.getElementById('numeroInterior')?.value || '',
-            colonia: document.getElementById('colonia')?.value || '',
-            ciudad: document.getElementById('ciudad')?.value || '',
-            estado: document.getElementById('estado')?.value || '',
-            codigoPostal: document.getElementById('codigoPostal')?.value || '',
-            pais: document.getElementById('pais')?.value || 'México',
-            referencias: document.getElementById('referencias')?.value || ''
+            destinatario: document.getElementById('editUserDestinatario')?.value || '',
+            telefono1: document.getElementById('editUserDirTelefono1')?.value || '',
+            telefono2: document.getElementById('editUserDirTelefono2')?.value || '',
+            calle: document.getElementById('editUserCalle')?.value || '',
+            numeroExterior: document.getElementById('editUserNumeroExterior')?.value || '',
+            numeroInterior: document.getElementById('editUserNumeroInterior')?.value || '',
+            colonia: document.getElementById('editUserColonia')?.value || '',
+            ciudad: document.getElementById('editUserCiudad')?.value || '',
+            estado: document.getElementById('editUserEstado')?.value || '',
+            codigoPostal: document.getElementById('editUserCodigoPostal')?.value || '',
+            pais: document.getElementById('editUserPais')?.value || 'México',
+            referencias: document.getElementById('editUserReferencias')?.value || ''
         };
         
         var preferencias = {
-            newsletter: document.getElementById('newsletterToggle')?.checked || false,
-            notificaciones: document.getElementById('notificacionesToggle')?.checked || true
+            newsletter: document.getElementById('editUserNewsletterToggle')?.checked || false,
+            notificaciones: document.getElementById('editUserNotificacionesToggle')?.checked || true
         };
         
         var updateData = {
@@ -620,7 +610,7 @@ async function guardarCambios() {
             currentCustomer = updatedCustomer;
             await mostrarExito('¡Cambios guardados!', 'Todos los cambios han sido guardados correctamente.');
             
-            updateAvatarFromSession();
+            updateEditUserAvatar();
             
             window.dispatchEvent(new CustomEvent('customer:authStateChanged', {
                 detail: updatedCustomer
@@ -737,22 +727,105 @@ async function handleLogout() {
 }
 
 // ========================================
+// Manejar cambio de foto de perfil
+// ========================================
+
+function setupEditUserAvatar() {
+    var avatarInput = document.getElementById('editUserAvatarInput');
+    var avatarOverlay = document.getElementById('editUserAvatarOverlay');
+    
+    if (avatarOverlay && avatarInput) {
+        avatarOverlay.addEventListener('click', function() {
+            avatarInput.click();
+        });
+    }
+    
+    if (avatarInput) {
+        avatarInput.addEventListener('change', async function(e) {
+            var file = e.target.files[0];
+            if (!file) return;
+            
+            // Validar tipo de archivo
+            if (!file.type.startsWith('image/')) {
+                await mostrarError('Tipo no válido', 'Por favor, selecciona una imagen válida (JPG, PNG, GIF).');
+                avatarInput.value = '';
+                return;
+            }
+            
+            // Validar tamaño (máx 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                await mostrarError('Imagen muy grande', 'La imagen no debe superar los 5MB.');
+                avatarInput.value = '';
+                return;
+            }
+            
+            try {
+                mostrarLoading('Subiendo foto de perfil...');
+                
+                // Crear FormData para subir
+                var formData = new FormData();
+                formData.append('foto', file);
+                formData.append('customerId', currentCustomer?.id || '');
+                
+                // Subir al servidor (ajusta la URL según tu API)
+                var response = await fetch('/api/customer/upload-avatar', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                cerrarLoading();
+                
+                if (!response.ok) {
+                    throw new Error('Error al subir la foto');
+                }
+                
+                var result = await response.json();
+                
+                if (result.success && result.fotoUrl) {
+                    // Actualizar sesión local
+                    var session = JSON.parse(localStorage.getItem('outlet_customer') || '{}');
+                    session.fotoPerfil = result.fotoUrl;
+                    localStorage.setItem('outlet_customer', JSON.stringify(session));
+                    
+                    // Actualizar avatar en la UI
+                    updateEditUserAvatar();
+                    
+                    // Notificar al navbar que el avatar cambió
+                    if (typeof window.updateProfileAvatar === 'function') {
+                        setTimeout(window.updateProfileAvatar, 100);
+                    }
+                    
+                    // Disparar evento de auth state changed
+                    window.dispatchEvent(new CustomEvent('customer:authStateChanged', {
+                        detail: session
+                    }));
+                    
+                    await mostrarExito('¡Foto actualizada!', 'Tu foto de perfil ha sido actualizada correctamente.');
+                } else {
+                    throw new Error(result.message || 'Error al subir la foto');
+                }
+            } catch (error) {
+                cerrarLoading();
+                console.error('Error subiendo foto:', error);
+                await mostrarError('Error al subir foto', error.message || 'No se pudo subir la foto de perfil.');
+                avatarInput.value = '';
+            }
+        });
+    }
+}
+
+// ========================================
 // Event Listeners
 // ========================================
 
 function initEventListeners() {
-    var btnCambiarAvatar = document.getElementById('btnCambiarAvatar');
-    btnCambiarAvatar?.addEventListener('click', function() {
-        mostrarToast('Función de avatar disponible próximamente', 'info');
-    });
-    
-    var nombreInput = document.getElementById('nombre');
-    var apellidoPaInput = document.getElementById('apellidoPa');
+    var nombreInput = document.getElementById('editUserNombre');
+    var apellidoPaInput = document.getElementById('editUserApellidoPa');
     nombreInput?.addEventListener('input', actualizarIniciales);
     apellidoPaInput?.addEventListener('input', actualizarIniciales);
     
-    var direccionInputs = ['destinatario', 'dirTelefono1', 'dirTelefono2', 'calle', 'numeroExterior', 
-                             'numeroInterior', 'colonia', 'ciudad', 'estado', 'codigoPostal', 'pais', 'referencias'];
+    var direccionInputs = ['editUserDestinatario', 'editUserDirTelefono1', 'editUserDirTelefono2', 'editUserCalle', 'editUserNumeroExterior', 
+                             'editUserNumeroInterior', 'editUserColonia', 'editUserCiudad', 'editUserEstado', 'editUserCodigoPostal', 'editUserPais', 'editUserReferencias'];
     direccionInputs.forEach(function(id) {
         var input = document.getElementById(id);
         input?.addEventListener('input', actualizarEstadoDireccion);
@@ -761,8 +834,8 @@ function initEventListeners() {
     var btnCambiarPass = document.getElementById('btnCambiarPass');
     btnCambiarPass?.addEventListener('click', cambiarContrasena);
     
-    var newsletterToggle = document.getElementById('newsletterToggle');
-    var notificacionesToggle = document.getElementById('notificacionesToggle');
+    var newsletterToggle = document.getElementById('editUserNewsletterToggle');
+    var notificacionesToggle = document.getElementById('editUserNotificacionesToggle');
     newsletterToggle?.addEventListener('change', function(e) {
         mostrarToast('Newsletter ' + (e.target.checked ? 'activada' : 'desactivada'), 'info');
     });
@@ -770,9 +843,9 @@ function initEventListeners() {
         mostrarToast('Notificaciones ' + (e.target.checked ? 'activadas' : 'desactivadas'), 'info');
     });
     
-    var transferenciaToggle = document.getElementById('transferenciaToggle');
-    var paypalToggle = document.getElementById('paypalToggle');
-    var contraentregaToggle = document.getElementById('contraentregaToggle');
+    var transferenciaToggle = document.getElementById('editUserTransferenciaToggle');
+    var paypalToggle = document.getElementById('editUserPaypalToggle');
+    var contraentregaToggle = document.getElementById('editUserContraentregaToggle');
     transferenciaToggle?.addEventListener('change', function(e) {
         mostrarToast('Transferencia bancaria ' + (e.target.checked ? 'activada' : 'desactivada'), 'info');
     });
@@ -824,6 +897,9 @@ function initEventListeners() {
         mostrarToast('Cambios descartados', 'info');
         loadCustomerData();
     });
+    
+    // Configurar avatar
+    setupEditUserAvatar();
 }
 
 // ========================================

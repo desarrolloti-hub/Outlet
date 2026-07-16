@@ -216,7 +216,12 @@ function formatMoney(amount) {
 function loadWishlist() {
     var saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
-        wishlistItems = JSON.parse(saved);
+        try {
+            wishlistItems = JSON.parse(saved);
+        } catch (e) {
+            wishlistItems = sampleProducts.slice(0);
+            saveWishlist();
+        }
     } else {
         wishlistItems = sampleProducts.slice(0);
         saveWishlist();
@@ -228,6 +233,10 @@ function loadWishlist() {
 // ========================================
 function saveWishlist() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(wishlistItems));
+    // Disparar evento para actualizar badges
+    document.dispatchEvent(new CustomEvent('wishlistUpdated', {
+        detail: { count: wishlistItems.length }
+    }));
 }
 
 // ========================================
@@ -272,7 +281,7 @@ function renderWishlist() {
                     '<img src="' + product.image + '" alt="' + product.name + '" loading="lazy">' +
                     badgeHtml +
                     '<div class="wishlist-card-actions">' +
-                        '<button class="wishlist-heart-btn active" data-id="' + product.id + '">' +
+                        '<button class="wishlist-heart-btn active" data-id="' + product.id + '" aria-label="Eliminar de favoritos">' +
                             '<i class="fa-solid fa-heart"></i>' +
                         '</button>' +
                     '</div>' +
@@ -282,7 +291,7 @@ function renderWishlist() {
                     '<h3 class="wishlist-card-title">' + product.name + '</h3>' +
                     '<div class="wishlist-card-footer">' +
                         '<p class="wishlist-card-price">' + formatMoney(product.price) + '</p>' +
-                        '<button class="wishlist-add-cart-btn" data-id="' + product.id + '">' +
+                        '<button class="wishlist-add-cart-btn" data-id="' + product.id + '" aria-label="Agregar al carrito">' +
                             '<i class="fa-solid fa-shopping-cart"></i>' +
                         '</button>' +
                     '</div>' +
@@ -298,43 +307,56 @@ function renderWishlist() {
 // Adjunta eventos a elementos dinámicos
 // ========================================
 function attachCardEvents() {
-    var heartBtns = document.querySelectorAll('.wishlist-heart-btn');
-    heartBtns.forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            var productId = parseInt(this.getAttribute('data-id'));
-            removeFromWishlist(productId);
-        });
-    });
+    // CORREGIDO: Usar event delegation para mejor rendimiento y evitar múltiples listeners
+    var grid = document.getElementById('wishlistGrid');
+    if (!grid) return;
     
-    var cartBtns = document.querySelectorAll('.wishlist-add-cart-btn');
-    cartBtns.forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            var productId = parseInt(this.getAttribute('data-id'));
+    // Remover listeners antiguos (si existen)
+    grid.removeEventListener('click', handleGridClick);
+    grid.addEventListener('click', handleGridClick);
+}
+
+// Manejador centralizado para clicks en el grid
+function handleGridClick(e) {
+    // Botón de corazón (eliminar de wishlist)
+    var heartBtn = e.target.closest('.wishlist-heart-btn');
+    if (heartBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        var productId = parseInt(heartBtn.getAttribute('data-id'));
+        if (productId) {
+            removeFromWishlist(productId);
+        }
+        return;
+    }
+    
+    // Botón de agregar al carrito
+    var cartBtn = e.target.closest('.wishlist-add-cart-btn');
+    if (cartBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        var productId = parseInt(cartBtn.getAttribute('data-id'));
+        if (productId) {
             var product = wishlistItems.find(function(p) { return p.id === productId; });
             if (product) {
                 addToCart(product);
             }
-        });
-    });
+        }
+        return;
+    }
     
-    var cards = document.querySelectorAll('.wishlist-product-card');
-    cards.forEach(function(card) {
-        card.addEventListener('click', function(e) {
-            if (e.target.closest('.wishlist-heart-btn') || e.target.closest('.wishlist-add-cart-btn')) return;
-            var productId = this.getAttribute('data-id');
-            if (productId) {
-                if (typeof window.navigateTo === 'function') {
-                    window.navigateTo('/product/' + productId);
-                } else {
-                    window.location.href = '/product/' + productId;
-                }
+    // Click en la tarjeta (navegar a producto)
+    var card = e.target.closest('.wishlist-product-card');
+    if (card) {
+        var productId = card.getAttribute('data-id');
+        if (productId && !e.target.closest('.wishlist-heart-btn') && !e.target.closest('.wishlist-add-cart-btn')) {
+            if (typeof window.navigateTo === 'function') {
+                window.navigateTo('/product/' + productId);
+            } else {
+                window.location.href = '/product/' + productId;
             }
-        });
-    });
+        }
+    }
 }
 
 // ========================================
@@ -466,19 +488,8 @@ function updateCartBadge() {
 function initEventListeners() {
     var sortBtn = document.getElementById('sortBtn');
     if (sortBtn) {
-        sortBtn.addEventListener('click', function() {
-            if (currentSort === 'newest') {
-                currentSort = 'price-asc';
-                mostrarToast('Ordenando por: Precio (Menor a Mayor)', 'info');
-            } else if (currentSort === 'price-asc') {
-                currentSort = 'price-desc';
-                mostrarToast('Ordenando por: Precio (Mayor a Menor)', 'info');
-            } else {
-                currentSort = 'newest';
-                mostrarToast('Ordenando por: Más reciente', 'info');
-            }
-            renderWishlist();
-        });
+        sortBtn.removeEventListener('click', handleSortClick);
+        sortBtn.addEventListener('click', handleSortClick);
     }
     
     var moveAllBtn = document.getElementById('moveAllToCartBtn');
@@ -490,15 +501,33 @@ function initEventListeners() {
     var exploreBtns = document.querySelectorAll('#exploreMoreBtn, #exploreMoreFooterBtn');
     exploreBtns.forEach(function(btn) {
         if (btn) {
-            btn.addEventListener('click', function() {
-                if (typeof window.navigateTo === 'function') {
-                    window.navigateTo('/collection');
-                } else {
-                    window.location.href = '/collection';
-                }
-            });
+            btn.removeEventListener('click', handleExploreClick);
+            btn.addEventListener('click', handleExploreClick);
         }
     });
+}
+
+// Manejadores separados para mejor mantenimiento
+function handleSortClick() {
+    if (currentSort === 'newest') {
+        currentSort = 'price-asc';
+        mostrarToast('Ordenando por: Precio (Menor a Mayor)', 'info');
+    } else if (currentSort === 'price-asc') {
+        currentSort = 'price-desc';
+        mostrarToast('Ordenando por: Precio (Mayor a Menor)', 'info');
+    } else {
+        currentSort = 'newest';
+        mostrarToast('Ordenando por: Más reciente', 'info');
+    }
+    renderWishlist();
+}
+
+function handleExploreClick() {
+    if (typeof window.navigateTo === 'function') {
+        window.navigateTo('/collection');
+    } else {
+        window.location.href = '/collection';
+    }
 }
 
 // ========================================

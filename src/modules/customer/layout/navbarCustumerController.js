@@ -11,6 +11,7 @@ import { ThemeService } from '../../shared/layout/themeService.js';
 let isNavbarInitialized = false;
 let currentUser = null;
 let isApplyingTheme = false;
+let eventCleanupFunctions = [];
 
 // ===== CONFIGURACIÓN DE TEMA - CON PRIORIDAD =====
 const THEME_KEY = 'outlet_theme';
@@ -138,8 +139,6 @@ function showGuestUI() {
         }
     });
     
-    // ⚠️ ELIMINADO: Ya no se crea ni se manipula #profileBadge
-    // Simplemente ocultamos el avatar si existe
     const avatarImg = document.getElementById('profileAvatar');
     if (avatarImg) {
         avatarImg.style.display = 'none';
@@ -362,10 +361,28 @@ function updateCartBadge() {
 }
 
 /**
- * Configurar eventos del navbar customer - SIN BADGE
+ * Limpiar eventos antiguos
+ */
+function cleanupNavbarEvents() {
+    console.log('🧹 Limpiando eventos antiguos del navbar...');
+    eventCleanupFunctions.forEach(cleanup => {
+        try {
+            cleanup();
+        } catch (e) {
+            console.warn('Error en cleanup:', e);
+        }
+    });
+    eventCleanupFunctions = [];
+}
+
+/**
+ * Configurar eventos del navbar customer - SE PUEDE LLAMAR MÚLTIPLES VECES
  */
 function setupNavbarEvents() {
     console.log('🔧 Configurando eventos del Customer Navbar...');
+    
+    // Limpiar eventos anteriores
+    cleanupNavbarEvents();
     
     // ===== PERFIL - SOLO AVATAR =====
     const profileBtn = document.getElementById('profileBtn');
@@ -373,23 +390,26 @@ function setupNavbarEvents() {
     
     if (profileBtn) {
         console.log('✅ Configurando #profileBtn customer');
-        profileBtn.removeEventListener('click', handleProfileClick);
-        profileBtn.addEventListener('click', handleProfileClick);
+        const handler = handleProfileClick;
+        profileBtn.addEventListener('click', handler);
+        eventCleanupFunctions.push(() => profileBtn.removeEventListener('click', handler));
     }
     
     if (profileAvatar) {
         console.log('✅ Configurando #profileAvatar customer');
         profileAvatar.style.cursor = 'pointer';
-        profileAvatar.removeEventListener('click', handleProfileClick);
-        profileAvatar.addEventListener('click', handleProfileClick);
+        const handler = handleProfileClick;
+        profileAvatar.addEventListener('click', handler);
+        eventCleanupFunctions.push(() => profileAvatar.removeEventListener('click', handler));
     }
     
     // ===== WISHLIST (FAVORITOS) =====
     const wishlistBtn = document.getElementById('wishlistBtn');
     if (wishlistBtn) {
         console.log('✅ Configurando #wishlistBtn customer');
-        wishlistBtn.removeEventListener('click', handleWishlistClick);
-        wishlistBtn.addEventListener('click', handleWishlistClick);
+        const handler = handleWishlistClick;
+        wishlistBtn.addEventListener('click', handler);
+        eventCleanupFunctions.push(() => wishlistBtn.removeEventListener('click', handler));
     } else {
         console.warn('⚠️ Botón de wishlist no encontrado');
     }
@@ -398,8 +418,9 @@ function setupNavbarEvents() {
     const cartBtn = document.getElementById('cartBtn');
     if (cartBtn) {
         console.log('✅ Configurando #cartBtn customer');
-        cartBtn.removeEventListener('click', handleCartClick);
-        cartBtn.addEventListener('click', handleCartClick);
+        const handler = handleCartClick;
+        cartBtn.addEventListener('click', handler);
+        eventCleanupFunctions.push(() => cartBtn.removeEventListener('click', handler));
     } else {
         console.warn('⚠️ Botón de carrito no encontrado');
     }
@@ -408,16 +429,18 @@ function setupNavbarEvents() {
     const logoLink = document.getElementById('logoLink');
     if (logoLink) {
         console.log('✅ Configurando #logoLink customer');
-        logoLink.removeEventListener('click', handleLogoClick);
-        logoLink.addEventListener('click', handleLogoClick);
+        const handler = handleLogoClick;
+        logoLink.addEventListener('click', handler);
+        eventCleanupFunctions.push(() => logoLink.removeEventListener('click', handler));
     }
     
     // ===== TEMA =====
     const themeToggleBtn = document.getElementById('themeToggleBtn');
     if (themeToggleBtn) {
         console.log('✅ Configurando #themeToggleBtn customer con prioridad');
-        themeToggleBtn.removeEventListener('click', handleThemeToggle);
-        themeToggleBtn.addEventListener('click', handleThemeToggle);
+        const handler = handleThemeToggle;
+        themeToggleBtn.addEventListener('click', handler);
+        eventCleanupFunctions.push(() => themeToggleBtn.removeEventListener('click', handler));
         forceUpdateThemeIcon();
     } else {
         console.warn('⚠️ Botón de tema no encontrado en Customer Navbar');
@@ -427,8 +450,9 @@ function setupNavbarEvents() {
     const searchBtn = document.getElementById('searchBtn');
     if (searchBtn) {
         console.log('✅ Configurando #searchBtn customer');
-        searchBtn.removeEventListener('click', handleSearchClick);
-        searchBtn.addEventListener('click', handleSearchClick);
+        const handler = handleSearchClick;
+        searchBtn.addEventListener('click', handler);
+        eventCleanupFunctions.push(() => searchBtn.removeEventListener('click', handler));
     }
     
     // ===== MENÚ MÓVIL =====
@@ -439,29 +463,33 @@ function setupNavbarEvents() {
     
     if (hamburgerBtn && mobileMenu) {
         console.log('✅ Configurando menú móvil customer');
-        hamburgerBtn.removeEventListener('click', toggleMobileMenu);
-        hamburgerBtn.addEventListener('click', toggleMobileMenu);
+        const toggleHandler = toggleMobileMenu;
+        hamburgerBtn.addEventListener('click', toggleHandler);
+        eventCleanupFunctions.push(() => hamburgerBtn.removeEventListener('click', toggleHandler));
     }
     
     if (mobileCloseBtn && mobileMenu) {
-        mobileCloseBtn.removeEventListener('click', closeMobileMenu);
-        mobileCloseBtn.addEventListener('click', closeMobileMenu);
+        const closeHandler = closeMobileMenu;
+        mobileCloseBtn.addEventListener('click', closeHandler);
+        eventCleanupFunctions.push(() => mobileCloseBtn.removeEventListener('click', closeHandler));
     }
     
     if (mobileOverlay && mobileMenu) {
-        mobileOverlay.removeEventListener('click', closeMobileMenu);
-        mobileOverlay.addEventListener('click', closeMobileMenu);
+        const closeHandler = closeMobileMenu;
+        mobileOverlay.addEventListener('click', closeHandler);
+        eventCleanupFunctions.push(() => mobileOverlay.removeEventListener('click', closeHandler));
     }
     
     // ===== LOGOUT =====
     const logoutBtn = document.getElementById('logoutBtn') || document.getElementById('mobileLogoutBtn');
     if (logoutBtn) {
         console.log('✅ Configurando #logoutBtn customer');
-        logoutBtn.removeEventListener('click', handleLogout);
-        logoutBtn.addEventListener('click', handleLogout);
+        const handler = handleLogout;
+        logoutBtn.addEventListener('click', handler);
+        eventCleanupFunctions.push(() => logoutBtn.removeEventListener('click', handler));
     }
     
-    console.log('✅ Eventos del Customer Navbar configurados');
+    console.log('✅ Eventos del Customer Navbar configurados (limpiables)');
 }
 
 /**
@@ -674,15 +702,65 @@ function initProfilePhotoSystem() {
 }
 
 // ========================================
+// RECONECTAR EVENTOS DESPUÉS DE NAVEGACIÓN
+// ========================================
+
+function reconnectNavbarEvents() {
+    console.log('🔄 Re-conectando eventos del navbar...');
+    setupNavbarEvents();
+    updateProfileAvatar();
+    updateWishlistBadge();
+    updateCartBadge();
+    forceUpdateThemeIcon();
+}
+
+// Escuchar eventos de navegación del router
+document.addEventListener('routeChanged', () => {
+    console.log('🔄 Ruta cambiada - reconectando navbar...');
+    // Pequeño delay para asegurar que el DOM se actualizó
+    setTimeout(reconnectNavbarEvents, 50);
+});
+
+// Escuchar cambios en el DOM que puedan indicar recreación del navbar
+const domObserver = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+        if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+            // Verificar si se agregó algún elemento del navbar
+            for (const node of mutation.addedNodes) {
+                if (node.nodeType === Node.ELEMENT_NODE) {
+                    // Buscar IDs del navbar
+                    if (node.querySelector && (
+                        node.querySelector('#profileBtn') || 
+                        node.querySelector('#wishlistBtn') ||
+                        node.querySelector('#cartBtn') ||
+                        node.querySelector('#logoLink')
+                    )) {
+                        console.log('🔄 Navbar detectado en DOM - reconectando...');
+                        setTimeout(reconnectNavbarEvents, 50);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Iniciar observador de DOM después de la carga inicial
+setTimeout(() => {
+    domObserver.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+}, 500);
+
+// ========================================
 // INICIALIZACIÓN PRINCIPAL
 // ========================================
 
 export async function initCustomerNavbarController() {
     if (isNavbarInitialized) {
-        console.log('🔄 Customer Navbar ya inicializado');
-        setTimeout(updateProfileAvatar, 100);
-        updateWishlistBadge();
-        updateCartBadge();
+        console.log('🔄 Customer Navbar ya inicializado - reconectando eventos...');
+        reconnectNavbarEvents();
         return;
     }
     
@@ -801,7 +879,9 @@ export {
     updateCartBadge,
     handleCartClick,
     handleLogoClick,
-    handleSearchClick
+    handleSearchClick,
+    reconnectNavbarEvents,
+    setupNavbarEvents
 };
 
 console.log('📦 Customer Navbar Controller cargado CON PRIORIDAD - COMPLETO (SIN BADGE)');

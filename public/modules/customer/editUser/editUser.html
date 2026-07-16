@@ -12,6 +12,32 @@
         </div>
     </div>
 
+    <!-- ======================================== -->
+    <!-- SECCIÓN DE FOTO DE PERFIL (NUEVA)         -->
+    <!-- ======================================== -->
+    <div class="outlet-profile-avatar-section">
+        <div class="outlet-avatar-container">
+            <!-- CAMBIADO: ID único para evitar conflicto con el navbar -->
+            <img id="editUserProfileAvatar" 
+                 src="" 
+                 alt="Foto de perfil" 
+                 class="outlet-profile-avatar-img"
+                 style="display: none; width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid var(--outlet-gold, #c9a84c);">
+            <div class="outlet-avatar-placeholder" id="editUserAvatarPlaceholder" style="width: 80px; height: 80px; border-radius: 50%; background: var(--outlet-gold, #c9a84c); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 700; color: #1a1a1a; text-transform: uppercase;">
+                <span id="editUserAvatarInitials">U</span>
+            </div>
+            <div class="outlet-avatar-overlay" id="editUserAvatarOverlay">
+                <span class="material-symbols-outlined">photo_camera</span>
+                <span>Cambiar foto</span>
+            </div>
+            <input type="file" id="editUserAvatarInput" accept="image/*" style="display:none">
+        </div>
+        <div class="outlet-avatar-info">
+            <h3 id="editUserNameDisplay">Usuario</h3>
+            <p id="editUserEmailDisplay">usuario@email.com</p>
+        </div>
+    </div>
+
     <!-- Wizard premium -->
     <div class="outlet-wizard-container">
         <div class="outlet-wizard-steps">
@@ -60,28 +86,28 @@
                 <div class="outlet-form-grid">
                     <div class="outlet-input-group">
                         <label>Nombre(s)</label>
-                        <input type="text" id="nombre" placeholder="Tu nombre">
+                        <input type="text" id="editUserNombre" placeholder="Tu nombre">
                         <span class="outlet-input-line"></span>
                     </div>
                     <div class="outlet-input-group">
                         <label>Apellido paterno</label>
-                        <input type="text" id="apellidoPa" placeholder="Apellido paterno">
+                        <input type="text" id="editUserApellidoPa" placeholder="Apellido paterno">
                         <span class="outlet-input-line"></span>
                     </div>
                     <div class="outlet-input-group">
                         <label>Apellido materno</label>
-                        <input type="text" id="apellidoMa" placeholder="Apellido materno">
+                        <input type="text" id="editUserApellidoMa" placeholder="Apellido materno">
                         <span class="outlet-input-line"></span>
                     </div>
                     <div class="outlet-input-group">
                         <label>Correo electrónico</label>
-                        <input type="email" id="email" placeholder="correo@ejemplo.com" readonly disabled>
+                        <input type="email" id="editUserEmail" placeholder="correo@ejemplo.com" readonly disabled>
                         <span class="outlet-input-line"></span>
                         <small>El correo no se puede cambiar</small>
                     </div>
                     <div class="outlet-input-group outlet-full-width">
                         <label>Teléfono de contacto</label>
-                        <input type="tel" id="telefonoPrincipal" placeholder="Ej: 55 1234 5678">
+                        <input type="tel" id="editUserTelefonoPrincipal" placeholder="Ej: 55 1234 5678">
                         <span class="outlet-input-line"></span>
                         <small>Usaremos este número solo para asuntos de tu pedido</small>
                     </div>
@@ -114,7 +140,7 @@
                             <span>Recibir newsletter con ofertas</span>
                         </div>
                         <label class="outlet-toggle-switch">
-                            <input type="checkbox" id="newsletterToggle" checked>
+                            <input type="checkbox" id="editUserNewsletterToggle" checked>
                             <span class="outlet-toggle-slider"></span>
                         </label>
                     </div>
@@ -124,7 +150,7 @@
                             <span>Notificaciones sobre mi pedido</span>
                         </div>
                         <label class="outlet-toggle-switch">
-                            <input type="checkbox" id="notificacionesToggle" checked>
+                            <input type="checkbox" id="editUserNotificacionesToggle" checked>
                             <span class="outlet-toggle-slider"></span>
                         </label>
                     </div>
@@ -143,62 +169,62 @@
                 <div class="outlet-form-grid">
                     <div class="outlet-input-group outlet-full-width">
                         <label>Destinatario</label>
-                        <input type="text" id="destinatario" placeholder="Ej: Ana García López">
+                        <input type="text" id="editUserDestinatario" placeholder="Ej: Ana García López">
                         <span class="outlet-input-line"></span>
                     </div>
                     <div class="outlet-input-group">
                         <label>Teléfono</label>
-                        <input type="tel" id="dirTelefono1" placeholder="Ej: 55 1234 5678">
+                        <input type="tel" id="editUserDirTelefono1" placeholder="Ej: 55 1234 5678">
                         <span class="outlet-input-line"></span>
                     </div>
                     <div class="outlet-input-group">
                         <label>Teléfono alternativo</label>
-                        <input type="tel" id="dirTelefono2" placeholder="Opcional">
+                        <input type="tel" id="editUserDirTelefono2" placeholder="Opcional">
                         <span class="outlet-input-line"></span>
                     </div>
                     <div class="outlet-input-group outlet-full-width">
                         <label>Calle</label>
-                        <input type="text" id="calle" placeholder="Calle">
+                        <input type="text" id="editUserCalle" placeholder="Calle">
                         <span class="outlet-input-line"></span>
                     </div>
                     <div class="outlet-input-group">
                         <label>Número exterior</label>
-                        <input type="text" id="numeroExterior" placeholder="No.">
+                        <input type="text" id="editUserNumeroExterior" placeholder="No.">
                         <span class="outlet-input-line"></span>
                     </div>
                     <div class="outlet-input-group">
                         <label>Número interior</label>
-                        <input type="text" id="numeroInterior" placeholder="Int.">
+                        <input type="text" id="editUserNumeroInterior" placeholder="Int.">
                         <span class="outlet-input-line"></span>
                     </div>
                     <div class="outlet-input-group outlet-full-width">
                         <label>Colonia</label>
-                        <input type="text" id="colonia" placeholder="Colonia">
+                        <input type="text" id="editUserColonia" placeholder="Colonia">
                         <span class="outlet-input-line"></span>
                     </div>
                     <div class="outlet-input-group">
                         <label>Ciudad</label>
-                        <input type="text" id="ciudad" placeholder="Ciudad">
+                        <input type="text" id="editUserCiudad" placeholder="Ciudad">
                         <span class="outlet-input-line"></span>
                     </div>
                     <div class="outlet-input-group">
                         <label>Estado</label>
-                        <input type="text" id="estado" placeholder="Estado">
+                        <input type="text" id="editUserEstado" placeholder="Estado">
                         <span class="outlet-input-line"></span>
                     </div>
                     <div class="outlet-input-group">
                         <label>Código postal</label>
-                        <input type="text" id="codigoPostal" placeholder="CP">
+                        <input type="text" id="editUserCodigoPostal" placeholder="CP">
                         <span class="outlet-input-line"></span>
                     </div>
                     <div class="outlet-input-group outlet-full-width">
                         <label>País</label>
-                        <input type="text" id="pais" placeholder="País" value="México">
+                        <input type="text" id="editUserPais" placeholder="País" value="México">
                         <span class="outlet-input-line"></span>
                     </div>
                     <div class="outlet-input-group outlet-full-width">
                         <label>Referencias</label>
-                        <textarea id="referencias" rows="2" placeholder="Ej: Entre calles, cerca del parque..."></textarea>
+                        <textarea id="editUserReferencias" rows="2" placeholder="Ej: Entre calles, cerca del parque..."></textarea>
                         <span class="outlet-input-line"></span>
                     </div>
                 </div>
@@ -212,7 +238,7 @@
                     <span class="outlet-section-icon material-symbols-outlined">credit_card</span>
                     <h2>Tarjetas guardadas</h2>
                 </div>
-                <div class="outlet-payment-cards-list" id="paymentCardsList"></div>
+                <div class="outlet-payment-cards-list" id="editUserPaymentCardsList"></div>
                 <button type="button" class="outlet-btn-add-card" id="btnAddCard">
                     <span class="material-symbols-outlined">add_card</span>
                     Agregar nueva tarjeta
@@ -231,7 +257,7 @@
                             <span>Transferencia bancaria</span>
                         </div>
                         <label class="outlet-toggle-switch">
-                            <input type="checkbox" id="transferenciaToggle">
+                            <input type="checkbox" id="editUserTransferenciaToggle">
                             <span class="outlet-toggle-slider"></span>
                         </label>
                     </div>
@@ -241,7 +267,7 @@
                             <span>PayPal</span>
                         </div>
                         <label class="outlet-toggle-switch">
-                            <input type="checkbox" id="paypalToggle">
+                            <input type="checkbox" id="editUserPaypalToggle">
                             <span class="outlet-toggle-slider"></span>
                         </label>
                     </div>
@@ -251,7 +277,7 @@
                             <span>Pago contra entrega</span>
                         </div>
                         <label class="outlet-toggle-switch">
-                            <input type="checkbox" id="contraentregaToggle">
+                            <input type="checkbox" id="editUserContraentregaToggle">
                             <span class="outlet-toggle-slider"></span>
                         </label>
                     </div>
@@ -263,7 +289,7 @@
                     <span class="outlet-section-icon material-symbols-outlined">verified</span>
                     <h2>Método predeterminado</h2>
                 </div>
-                <div class="outlet-default-payment" id="defaultPaymentDisplay">
+                <div class="outlet-default-payment" id="editUserDefaultPaymentDisplay">
                     <div class="outlet-default-placeholder">
                         <span class="material-symbols-outlined">credit_card</span>
                         <p>No hay tarjeta seleccionada</p>
@@ -283,24 +309,24 @@
             <div class="outlet-modal-body">
                 <div class="outlet-input-group">
                     <label>Número de tarjeta</label>
-                    <input type="text" id="cardNumber" placeholder="**** **** **** ****">
+                    <input type="text" id="editUserCardNumber" placeholder="**** **** **** ****">
                     <span class="outlet-input-line"></span>
                 </div>
                 <div class="outlet-form-row-modal">
                     <div class="outlet-input-group">
                         <label>Fecha expiración</label>
-                        <input type="text" id="cardExpiry" placeholder="MM/AA">
+                        <input type="text" id="editUserCardExpiry" placeholder="MM/AA">
                         <span class="outlet-input-line"></span>
                     </div>
                     <div class="outlet-input-group">
                         <label>CVV</label>
-                        <input type="text" id="cardCvv" placeholder="***">
+                        <input type="text" id="editUserCardCvv" placeholder="***">
                         <span class="outlet-input-line"></span>
                     </div>
                 </div>
                 <div class="outlet-input-group">
                     <label>Nombre en la tarjeta</label>
-                    <input type="text" id="cardName" placeholder="Como aparece en la tarjeta">
+                    <input type="text" id="editUserCardName" placeholder="Como aparece en la tarjeta">
                     <span class="outlet-input-line"></span>
                 </div>
                 <div class="outlet-modal-actions">
