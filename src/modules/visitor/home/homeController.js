@@ -1,10 +1,13 @@
 /* ========================================
-   HOME CONTROLLER - OUTLET (VERSIÓN FUNCIONAL)
+   HOME CONTROLLER - OUTLET (VERSIÓN FUNCIONAL CON PROTECCIÓN VISITOR)
    ✅ USA getAll CON FILTROS EN MEMORIA
+   ✅ PROTECCIÓN PARA CARRITO Y LISTA DE DESEOS (TODOS LOS LUGARES)
+   ✅ REDIRECCIÓN SOLO A /createAccount PARA VISITOR
+   ✅ CORREGIDO: LISTA DE DESEOS AHORA REDIRIGE CORRECTAMENTE
    ======================================== */
 
 import { ProductService } from '../../../services/productService.js';
-import { CategoryService } from '../../../services/categoryService.js';  // ✅ CORREGIDO
+import { CategoryService } from '../../../services/categoryService.js';
 import { CacheService, STORES } from '../../../services/cacheService.js';
 
 // URLs de imágenes de respaldo
@@ -36,7 +39,7 @@ let allProductsCache = [];
 // FUNCIÓN PRINCIPAL - EXPORTADA
 // ============================================
 export async function homeController() {
-    console.log('🏠 Home Controller - Versión Funcional');
+    console.log('🏠 Home Controller - Versión Funcional con Protección Visitor');
     
     await loadAllProducts();
     
@@ -56,7 +59,334 @@ export async function homeController() {
     initRefreshButton();
     setupRealtimeUpdates();
     
+    // ✅ Solo mantener protección para clics en header y enlaces
+    initNavigationProtection();
+    initHeaderProtection();
+    initCartLinkProtection();
+    
     console.log('✅ Home Controller listo');
+}
+
+// ============================================
+// ✅ VERIFICACIÓN DE AUTENTICACIÓN
+// ============================================
+function isUserAuthenticated() {
+    // Verifica si hay un usuario logueado en localStorage o session
+    const user = localStorage.getItem('outlet_user');
+    const session = sessionStorage.getItem('outlet_session');
+    const userData = localStorage.getItem('userData');
+    const sessionData = sessionStorage.getItem('sessionData');
+    const token = localStorage.getItem('auth_token');
+    const sessionToken = sessionStorage.getItem('auth_token');
+    
+    return !!(user || session || userData || sessionData || token || sessionToken);
+}
+
+// ============================================
+// ✅ REDIRIGIR A CREATE ACCOUNT (SOLO VISITOR)
+// ============================================
+function redirectToCreateAccount() {
+    console.log('🔒 Redirigiendo a /createAccount (usuario no autenticado)');
+    
+    const route = '/createAccount';
+    
+    // 1. Intentar con el router global
+    if (window.router && typeof window.router.navigate === 'function') {
+        window.router.navigate(route);
+        showToast('🔒 Inicia sesión para usar esta función');
+        return;
+    }
+    
+    // 2. Intentar con el sistema de navegación de la aplicación
+    if (window.App && window.App.router && typeof window.App.router.navigate === 'function') {
+        window.App.router.navigate(route);
+        showToast('🔒 Inicia sesión para usar esta función');
+        return;
+    }
+    
+    // 3. Intentar con el Router de la aplicación (si existe)
+    if (window.Router && typeof window.Router.navigate === 'function') {
+        window.Router.navigate(route);
+        showToast('🔒 Inicia sesión para usar esta función');
+        return;
+    }
+    
+    // 4. Fallback: usar window.location.href
+    window.location.href = route;
+    showToast('🔒 Inicia sesión para usar esta función');
+}
+
+// ============================================
+// ✅ PROTECCIÓN PARA RUTAS DIRECTAS
+// ============================================
+function initRouteProtection() {
+    // Proteger rutas de carrito y wishlist
+    const protectedRoutes = ['/cart', '/wishlist', '/cartCustomer', '/wishlistCustomer'];
+    const currentPath = window.location.pathname || window.location.hash.replace('#', '');
+    
+    console.log('📍 Ruta actual:', currentPath);
+    
+    // Verificar si la ruta actual está protegida
+    if (protectedRoutes.some(route => currentPath.includes(route))) {
+        if (!isUserAuthenticated()) {
+            console.log('🔒 Ruta protegida detectada, redirigiendo...');
+            redirectToCreateAccount();
+            return;
+        }
+    }
+}
+
+// ============================================
+// ✅ PROTECCIÓN ESPECÍFICA PARA LISTA DE DESEOS
+// ============================================
+function initWishlistProtection() {
+    console.log('🛡️ Inicializando protección para lista de deseos');
+    
+    // Buscar TODOS los enlaces que contengan "wishlist" o "favoritos"
+    const wishlistLinks = document.querySelectorAll('a[href*="wishlist"], a[href*="favoritos"], a[href*="Wishlist"], a[href*="Favoritos"]');
+    
+    console.log(`🔗 Enlaces de wishlist encontrados: ${wishlistLinks.length}`);
+    
+    wishlistLinks.forEach((link, index) => {
+        console.log(`  ${index + 1}. href: ${link.getAttribute('href')}`);
+        
+        // Remover event listeners anteriores para evitar duplicados
+        link.removeEventListener('click', handleWishlistLinkClick);
+        link.addEventListener('click', handleWishlistLinkClick);
+    });
+    
+    // También buscar elementos con clase o data attribute
+    const wishlistElements = document.querySelectorAll('.wishlist-link, [data-wishlist-link], .favorite-link, [data-favorite-link]');
+    
+    wishlistElements.forEach((el, index) => {
+        console.log(`  Elemento wishlist encontrado: ${el.tagName} ${el.className}`);
+        el.removeEventListener('click', handleWishlistLinkClick);
+        el.addEventListener('click', handleWishlistLinkClick);
+    });
+}
+
+// ============================================
+// ✅ MANEJADOR PARA CLICKS EN ENLACES DE WISHLIST
+// ============================================
+function handleWishlistLinkClick(e) {
+    console.log('🎯 Click en enlace de wishlist detectado');
+    
+    if (!isUserAuthenticated()) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        console.log('🔒 Usuario no autenticado, redirigiendo a createAccount');
+        redirectToCreateAccount();
+        return false;
+    }
+    
+    console.log('✅ Usuario autenticado, permitiendo navegación');
+    return true;
+}
+
+// ============================================
+// ✅ PROTECCIÓN PARA ENLACES DEL CARRITO
+// ============================================
+function initCartLinkProtection() {
+    console.log('🛡️ Inicializando protección para carrito');
+    
+    // Buscar TODOS los enlaces que contengan "cart" o "carrito"
+    const cartLinks = document.querySelectorAll('a[href*="cart"], a[href*="carrito"], a[href*="Cart"], a[href*="Carrito"]');
+    
+    console.log(`🔗 Enlaces de carrito encontrados: ${cartLinks.length}`);
+    
+    cartLinks.forEach((link, index) => {
+        console.log(`  ${index + 1}. href: ${link.getAttribute('href')}`);
+        
+        link.removeEventListener('click', handleCartLinkClick);
+        link.addEventListener('click', handleCartLinkClick);
+    });
+    
+    // También buscar elementos con clase o data attribute
+    const cartElements = document.querySelectorAll('.cart-link, [data-cart-link], .carrito-link, [data-carrito-link]');
+    
+    cartElements.forEach((el, index) => {
+        console.log(`  Elemento carrito encontrado: ${el.tagName} ${el.className}`);
+        el.removeEventListener('click', handleCartLinkClick);
+        el.addEventListener('click', handleCartLinkClick);
+    });
+}
+
+// ============================================
+// ✅ MANEJADOR PARA CLICKS EN ENLACES DE CARRITO
+// ============================================
+function handleCartLinkClick(e) {
+    console.log('🎯 Click en enlace de carrito detectado');
+    
+    if (!isUserAuthenticated()) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        console.log('🔒 Usuario no autenticado, redirigiendo a createAccount');
+        redirectToCreateAccount();
+        return false;
+    }
+    
+    console.log('✅ Usuario autenticado, permitiendo navegación');
+    return true;
+}
+
+// ============================================
+// ✅ MANEJAR CLICKS EN CARRITO (Botones de productos)
+// ============================================
+function handleCartClick(e) {
+    const target = e.target.closest('[data-cart-action]');
+    if (!target) return;
+    
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!isUserAuthenticated()) {
+        redirectToCreateAccount();
+        return;
+    }
+    
+    // Si está autenticado, ejecuta la acción normal del carrito
+    const productCard = target.closest('.trending-item, .product-card');
+    const productName = productCard?.querySelector('.product-name')?.textContent || 'Producto';
+    addToCart(productName);
+    showToast(`✨ ${productName} agregado al carrito`);
+    window.dispatchEvent(new CustomEvent('cart:updated'));
+}
+
+// ============================================
+// ✅ MANEJAR CLICKS EN LISTA DE DESEOS (Botones de productos)
+// ============================================
+function handleWishlistClick(e) {
+    const target = e.target.closest('[data-wishlist-action]');
+    if (!target) return;
+    
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!isUserAuthenticated()) {
+        redirectToCreateAccount();
+        return;
+    }
+    
+    // Si está autenticado, ejecuta la acción normal de wishlist
+    const productCard = target.closest('.trending-item, .product-card');
+    const productName = productCard?.querySelector('.product-name')?.textContent || 'Producto';
+    toggleWishlist(target, productName);
+}
+
+// ============================================
+// ✅ FUNCIÓN PARA TOGGLE WISHLIST
+// ============================================
+function toggleWishlist(button, productName) {
+    let wishlist = JSON.parse(localStorage.getItem('outlet_wishlist') || '[]');
+    const exists = wishlist.some(item => item.name === productName);
+    
+    const icon = button.querySelector('i');
+    
+    if (exists) {
+        wishlist = wishlist.filter(item => item.name !== productName);
+        if (icon) {
+            icon.style.color = '#666';
+            icon.style.transition = 'all 0.3s';
+        }
+        showToast(`💔 ${productName} removido de favoritos`);
+    } else {
+        wishlist.push({ 
+            id: Date.now(), 
+            name: productName, 
+            date: new Date().toISOString() 
+        });
+        if (icon) {
+            icon.style.color = '#ddab3b';
+            icon.style.transition = 'all 0.3s';
+        }
+        showToast(`❤️ ${productName} agregado a favoritos`);
+    }
+    
+    localStorage.setItem('outlet_wishlist', JSON.stringify(wishlist));
+}
+
+// ============================================
+// ✅ PROTECCIÓN PARA HEADER (Iconos de carrito y wishlist)
+// ============================================
+function initHeaderProtection() {
+    console.log('🛡️ Inicializando protección para header');
+    
+    // Buscar y proteger iconos del header
+    const headerIcons = document.querySelectorAll('.header-cart, .header-wishlist, .cart-icon, .wishlist-icon, [data-header-cart], [data-header-wishlist]');
+    
+    headerIcons.forEach(icon => {
+        icon.removeEventListener('click', handleHeaderIconClick);
+        icon.addEventListener('click', handleHeaderIconClick);
+    });
+}
+
+// ============================================
+// ✅ MANEJADOR PARA CLICKS EN ICONOS DEL HEADER
+// ============================================
+function handleHeaderIconClick(e) {
+    const element = this;
+    
+    // Verificar si es carrito o wishlist
+    const isCart = element.classList.contains('header-cart') || 
+                  element.classList.contains('cart-icon') || 
+                  element.matches('[data-header-cart]');
+    
+    const isWishlist = element.classList.contains('header-wishlist') || 
+                     element.classList.contains('wishlist-icon') || 
+                     element.matches('[data-header-wishlist]');
+    
+    // También verificar si el icono está dentro de un enlace
+    const parentLink = element.closest('a');
+    if (parentLink) {
+        const href = parentLink.getAttribute('href') || '';
+        const isCartLink = href.includes('cart') || href.includes('carrito');
+        const isWishlistLink = href.includes('wishlist') || href.includes('favoritos');
+        
+        if ((isCartLink || isWishlistLink) && !isUserAuthenticated()) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('🔒 Click en icono del header (no autenticado)');
+            redirectToCreateAccount();
+            return false;
+        }
+    }
+    
+    if ((isCart || isWishlist) && !isUserAuthenticated()) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('🔒 Click en icono del header (no autenticado)');
+        redirectToCreateAccount();
+        return false;
+    }
+}
+
+// ============================================
+// ✅ PROTECCIÓN PARA NAVEGACIÓN (Enlaces en el menú)
+// ============================================
+function initNavigationProtection() {
+    console.log('🛡️ Inicializando protección para navegación');
+    
+    // Proteger enlaces a carrito y wishlist en el menú
+    document.addEventListener('click', (e) => {
+        const link = e.target.closest('a');
+        if (!link) return;
+        
+        const href = link.getAttribute('href') || '';
+        
+        // Verificar si es carrito o wishlist
+        const isCart = href.includes('cart') || href.includes('carrito') || href.includes('Cart') || href.includes('Carrito');
+        const isWishlist = href.includes('wishlist') || href.includes('favoritos') || href.includes('Wishlist') || href.includes('Favoritos');
+        
+        if ((isCart || isWishlist) && !isUserAuthenticated()) {
+            console.log('🔒 Click en enlace de navegación protegido:', href);
+            e.preventDefault();
+            e.stopPropagation();
+            redirectToCreateAccount();
+            return false;
+        }
+    }, true); // Capturing phase
 }
 
 // ============================================
@@ -121,6 +451,9 @@ function renderFlashSale() {
                     <div class="product-img">
                         <img src="${imgSrc}" alt="${p.nombre || 'Producto'}" loading="lazy"/>
                         <div class="sale-tag">-${discount}%</div>
+                        <button class="wishlist-btn" data-wishlist-action="${p.id}" style="position:absolute; top:8px; right:8px; background:rgba(255,255,255,0.9); border:none; border-radius:50%; width:32px; height:32px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.3s; z-index:2;">
+                            <i class="fas fa-heart" style="color:#666;"></i>
+                        </button>
                     </div>
                     <h4 class="body-sm product-name">${p.nombre || 'Producto'}</h4>
                     <div class="price">
@@ -131,6 +464,9 @@ function renderFlashSale() {
                         <div class="progress-fill" style="width: 0%"></div>
                     </div>
                     <p class="body-sm sold-out-text">${soldPercent}% Vendido</p>
+                    <button class="add-cart" data-cart-action="${p.id}" style="width:100%; margin-top:8px; padding:8px; background:#1f1b13; color:white; border:none; border-radius:4px; cursor:pointer; transition:all 0.3s;">
+                        <i class="fas fa-cart-plus"></i> Agregar al carrito
+                    </button>
                 </div>
             `;
         }).join('');
@@ -218,7 +554,12 @@ function renderTrending(categoryFilter = null) {
                     <div class="trending-img">
                         ${badge}
                         <img src="${imgSrc}" alt="${p.nombre || 'Producto'}" loading="lazy"/>
-                        <button class="add-cart" data-id="${p.id}"><i class="fas fa-cart-plus"></i></button>
+                        <button class="wishlist-btn" data-wishlist-action="${p.id}" style="position:absolute; top:8px; right:8px; background:rgba(255,255,255,0.9); border:none; border-radius:50%; width:32px; height:32px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.3s; z-index:2;">
+                            <i class="fas fa-heart" style="color:#666;"></i>
+                        </button>
+                        <button class="add-cart" data-cart-action="${p.id}" style="position:absolute; bottom:8px; right:8px; background:rgba(31,27,19,0.9); color:white; border:none; border-radius:50%; width:40px; height:40px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.3s; z-index:2;">
+                            <i class="fas fa-cart-plus"></i>
+                        </button>
                     </div>
                     <h4 class="body-sm product-name">${p.nombre || 'Producto'}</h4>
                     <div class="price">
@@ -421,17 +762,11 @@ function initTimer() {
 }
 
 function initCartEvents() {
-    document.addEventListener('click', (e) => {
-        const addBtn = e.target.closest('.add-cart');
-        if (addBtn) {
-            e.stopPropagation();
-            const productCard = addBtn.closest('.trending-item');
-            const productName = productCard?.querySelector('.product-name')?.textContent || 'Producto';
-            addToCart(productName);
-            showToast(`✨ ${productName} agregado al carrito`);
-            window.dispatchEvent(new CustomEvent('cart:updated'));
-        }
-    });
+    // Delegación de eventos para el carrito
+    document.addEventListener('click', handleCartClick);
+    
+    // Delegación de eventos para la lista de deseos
+    document.addEventListener('click', handleWishlistClick);
 }
 
 function addToCart(productName) {
@@ -636,6 +971,16 @@ if (!document.querySelector('#outlet-styles')) {
         }
         .category-item:hover .circle-img {
             box-shadow: 0 4px 20px rgba(221, 171, 59, 0.3);
+        }
+        .add-cart:hover {
+            background: #ddab3b !important;
+            color: #1f1b13 !important;
+        }
+        .wishlist-btn:hover {
+            transform: scale(1.1);
+        }
+        .wishlist-btn:hover i {
+            color: #ddab3b !important;
         }
     `;
     document.head.appendChild(style);
