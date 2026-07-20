@@ -33,9 +33,9 @@
 <nav class="OUTLET-nav" id="customerNav">
     <!-- Línea dorada en la parte superior del nav -->
     <div class="nav-gold-line"></div>
-    
+
     <div class="nav-container">
-        
+
         <!-- LADO IZQUIERDO: Logo + Hamburguesa -->
         <div class="nav-left">
             <!-- Botón hamburguesa (móvil) -->
@@ -59,13 +59,26 @@
             <li><a href="/brands" data-link>Marcas</a></li>
         </ul>
 
+        <!-- BUSCADOR FIJO EN EL NAVBAR -->
+        <div class="search-container" id="searchContainer">
+            <div class="search-input-wrapper">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="searchInput" class="search-input" placeholder="Buscar productos..."
+                    autocomplete="off">
+                <button class="search-clear-btn" id="searchClearBtn" style="display:none;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <!-- Resultados del buscador (dropdown) -->
+            <div class="search-results-dropdown" id="searchResultsDropdown">
+                <div class="search-results-placeholder">
+                    <span>🔍 Escribe para buscar productos</span>
+                </div>
+            </div>
+        </div>
+
         <!-- ICONOS DE ACCIÓN (DESKTOP + MÓVIL) -->
         <div class="nav-icons">
-            <!-- Buscador -->
-            <button class="icon-btn" id="searchBtn" aria-label="Buscar">
-                <i class="fas fa-search" style="font-size: 18px;"></i>
-            </button>
-
             <!-- Botón tema oscuro -->
             <button class="theme-toggle-btn" id="themeToggleBtn" aria-label="Cambiar tema">
                 <i class="fas fa-moon"></i>
@@ -90,7 +103,7 @@
             </button>
         </div>
     </div>
-    
+
     <!-- Línea dorada en la parte inferior del nav -->
     <div class="nav-gold-line"></div>
 </nav>
@@ -107,15 +120,15 @@
         <li><a href="/categories" data-link><i class="fas fa-th-large"></i> Categorías</a></li>
         <li><a href="/sale" data-link><i class="fas fa-tags"></i> Outlet</a></li>
         <li><a href="/brands" data-link><i class="fas fa-building"></i> Marcas</a></li>
-        
+
         <hr class="mobile-divider">
-        
+
         <li><a href="/my-account" data-link><i class="fas fa-user-circle"></i> Mi cuenta</a></li>
         <li><a href="/orders" data-link><i class="fas fa-truck"></i> Mis pedidos</a></li>
         <li><a href="/wishlist" data-link><i class="fas fa-heart"></i> Favoritos</a></li>
-        
+
         <hr class="mobile-divider">
-        
+
         <li><a href="#" id="mobileLogoutBtn"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a></li>
     </ul>
 </div>
