@@ -23,61 +23,61 @@ import { productsController } from '../modules/visitor/products/productsControll
 
 import { userProfileEditController } from '../modules/customer/editUser/editUser.js';
 import { homeCustomerController } from '../modules/customer/home/homeCustumerController.js';
-import{cartCustomerController} from '../modules/customer/cart/cartCustumerController.js'
-import{wishlistCustomerController} from '../modules/customer/wishlist/wishlistCustumerController.js'
+import { cartCustomerController } from '../modules/customer/cart/cartCustumerController.js'
+import { wishlistCustomerController } from '../modules/customer/wishlist/wishlistCustumerController.js'
 import { productsCustumerController } from '../modules/customer/products/productsCustumer.js';
-import{collectionCustomerController} from '../modules/customer/collection/collectionCustumerController.js'
+import { collectionCustomerController } from '../modules/customer/collection/collectionCustumerController.js'
 
 
 
 //         ---------   Admin   ---------
 //  importar controllers de administración de productos
 import { adminController } from '../modules/admin/home/homeAdminController.js';
-import { createAccountAdminController} from '../modules/admin/createAccount/createAccountAdminController.js';
+import { createAccountAdminController } from '../modules/admin/createAccount/createAccountAdminController.js';
 
-import {readCategoriesController} from '../modules/admin/categories/read/readCategoriesController.js';
-import {categoriesCreateController } from '../modules/admin/categories/create/createCategoriesController.js';
+import { readCategoriesController } from '../modules/admin/categories/read/readCategoriesController.js';
+import { categoriesCreateController } from '../modules/admin/categories/create/createCategoriesController.js';
 import { updateCategoryController } from '../modules/admin/categories/update/updateCategoriesController.js';
 
 import { productCreateController } from '../modules/admin/products/create/createProductsController.js';
 import { productListController } from '../modules/admin/products/productsListController.js';
-import { editProductController }from '../modules/admin/products/edit/editProductController.js';
+import { editProductController } from '../modules/admin/products/edit/editProductController.js';
 
-import {readCustomersController}from '../modules/admin/user/create/viewCustumer.js'
-import {readAdminsController}from '../modules/admin/user/read/readAdminsController.js'
-import {updateAdminController} from '../modules/admin/user/update/updateAdminsController.js'
+import { readCustomersController } from '../modules/admin/user/create/viewCustumer.js'
+import { readAdminsController } from '../modules/admin/user/read/readAdminsController.js'
+import { updateAdminController } from '../modules/admin/user/update/updateAdminsController.js'
 
 
 
 export const routes = {
 
-        /* ========================================
-                        visitor
-       ======================================== */
+    /* ========================================
+                    visitor
+   ======================================== */
 
     "/": {
         view: "/modules/visitor/home/home.html",
         controller: homeController
     },
-      "/products": {
+    "/products": {
         view: "/modules/visitor/products/products.html",
-        controller: productsController  
+        controller: productsController
     },
     "/collection": {
         view: "/modules/visitor/collection/collection.html",
-        controller: coleccionController  
+        controller: coleccionController
     },
     "/login": {
-    view: "/modules/visitor/login/login.html",
-    controller: loginController  
+        view: "/modules/visitor/login/login.html",
+        controller: loginController
     },
     "/wishlist": {
         view: "/modules/visitor/wishlist/wishlist.html",
         controller: wishlistController
     },
-    "/cart":{
-         view: "/modules/visitor/cart/cart.html",
-        controller:cartController 
+    "/cart": {
+        view: "/modules/visitor/cart/cart.html",
+        controller: cartController
     },
     "/createAccount": {
         view: "/modules/visitor/createAccount/createAccount.html",
@@ -99,7 +99,7 @@ export const routes = {
         view: "/src/views/blogs.html",
         controller: null
     },
-    
+
 
     /* ========================================
          Rutas de administración de productos
@@ -113,8 +113,8 @@ export const routes = {
         controller: categoriesCreateController
     },
     "/readCategories": {
-    view: "/modules/admin/categories/read/readCategories.html",
-    controller: readCategoriesController 
+        view: "/modules/admin/categories/read/readCategories.html",
+        controller: readCategoriesController
     },
     "/updateCategories": {
         view: "/modules/admin/categories/update/updateCategories.html",
@@ -124,59 +124,59 @@ export const routes = {
         view: "/modules/admin/products/create/createProducts.html",
         controller: productCreateController
     },
-       "/productsList": {
+    "/productsList": {
         view: "/modules/admin/products/list/productsList.html",
         controller: productListController
     },
-         "/editProducts": {
+    "/editProducts": {
         view: "/modules/admin/products/edit/editProducts.html",
         controller: editProductController
     },
-        "/createAccountAdmin": {
+    "/createAccountAdmin": {
         view: "/modules/admin/createAccount/createAccountAdmin.html",
         controller: createAccountAdminController
-    
+
     },
-        "/viewCustumer":{
-        view:"/modules/admin/user/create/viewCustumer.html",
+    "/viewCustumer": {
+        view: "/modules/admin/user/create/viewCustumer.html",
         controller: readCustomersController
     },
 
-    "/readAdmins":{
-        view:"/modules/admin/user/read/readAdmins.html",
-        controller: readAdminsController 
+    "/readAdmins": {
+        view: "/modules/admin/user/read/readAdmins.html",
+        controller: readAdminsController
     },
 
-    "/updateAdmins":{
-        view:"/modules/admin/user/update/updateAdmins.html",
+    "/updateAdmins": {
+        view: "/modules/admin/user/update/updateAdmins.html",
         controller: updateAdminController
     },
 
-       /* ========================================
-         Rutas de customer 
-         ======================================== */
-         
-    "/editUser":{
+    /* ========================================
+      Rutas de customer 
+      ======================================== */
+
+    "/editUser": {
         view: "/modules/customer/editUser/editUser.html",
         controller: userProfileEditController
     },
-    "/homeCustomer":{
-        view: "/modules/customer/home/homeCustomer.html",
+    "/homeCustomer": {
+        view: "/modules/customer/home/homeCustumer.html",
         controller: homeCustomerController
     },
-    "/cartCustomer":{
+    "/cartCustomer": {
         view: "/modules/customer/cart/cartCustomer.html",
         controller: cartCustomerController
     },
-    "/wishlistCustomer":{
+    "/wishlistCustomer": {
         view: "/modules/customer/wishlist/wishlistCustumer.html",
         controller: wishlistCustomerController
     },
-    "/productsCustomer":{
+    "/productsCustomer": {
         view: "/modules/customer/products/productsCustomer.html",
         controller: productsCustumerController
     },
-    "/collectionCustomer":{
+    "/collectionCustomer": {
         view: "/modules/customer/collection/collectionCustomer.html",
         controller: collectionCustomerController
     },
@@ -186,12 +186,12 @@ export const routes = {
    ======================================== */
 
     '/404': {
-    view: '/modules/shared/errors/404.html',
-    controller: init404Controller
+        view: '/modules/shared/errors/404.html',
+        controller: init404Controller
     },
 
-   '/verifyEmail': {
-    view: '/modules/shared/email/verifyEmail.html',
-    controller: null
-    }, 
+    '/verifyEmail': {
+        view: '/modules/shared/email/verifyEmail.html',
+        controller: null
+    },
 };
