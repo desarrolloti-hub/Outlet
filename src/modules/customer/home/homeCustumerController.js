@@ -29,6 +29,14 @@ const GALLERY_IMAGES = [
 const HERO_IMAGE = "https://lh3.googleusercontent.com/aida-public/AB6AXuDBtNHClCvXICohUTSHXDeCbNbys5DdAaT7Q-uEaHIWRwxLm9yovNIk2a5I35QNryWCMgMx7jW6-OcTq9Xx0tLOSAVolnEbxKWfFWFlKQdyKr_xAuMLnSUkYK7nrKWtka7eHTgkVPsuAe7qa8I44o1OHxQcIIfkGjmwdgeWxV_lshwAJ4AxzMiiTbZlXQeODlvTckTjwJep1vka771QFHUaRX9ea8g-plsgl7sxU6J7ojEjJjV5GBf7pMwBzOwOVmWysLX8FRQef6ev";
 
 // ============================================
+// CONSTANTES DE STORAGE - UNIFICADAS
+// ============================================
+const STORAGE_KEYS = {
+    CART: 'outlet_cart',
+    WISHLIST: 'outlet_wishlist'   // ← UNIFICADO (mismo que wishlist)
+};
+
+// ============================================
 // VARIABLES DE ESTADO
 // ============================================
 let currentCategoryFilter = null;
@@ -119,7 +127,16 @@ function renderFlashSale() {
             const imgSrc = p.imagenPrincipal || 'https://placehold.co/300x300?text=Sin+Imagen';
 
             return `
-                <div class="product-card" data-id="${p.id}">
+                <div class="product-card" data-id="${p.id}" data-product='${JSON.stringify({
+                id: p.id,
+                nombre: p.nombre,
+                marca: p.marca || '',
+                precio: p.precioVenta || 0,
+                precioFinal: finalPrice,
+                imagen: imgSrc,
+                categoria: p.categoria || '',
+                descuento: discount
+            })}'>
                     <div class="product-img">
                         <img src="${imgSrc}" alt="${p.nombre || 'Producto'}" loading="lazy"/>
                         <div class="sale-tag">-${discount}%</div>
@@ -222,7 +239,16 @@ function renderTrending(categoryFilter = null) {
             const finalPrice = p.precioFinal || p.precioVenta;
 
             return `
-                <div class="trending-item" data-id="${p.id}">
+                <div class="trending-item" data-id="${p.id}" data-product='${JSON.stringify({
+                id: p.id,
+                nombre: p.nombre,
+                marca: p.marca || '',
+                precio: p.precioVenta || 0,
+                precioFinal: finalPrice,
+                imagen: imgSrc,
+                categoria: p.categoria || '',
+                descuento: p.porcentajeDescuento || 0
+            })}'>
                     <div class="trending-img">
                         ${badge}
                         <img src="${imgSrc}" alt="${p.nombre || 'Producto'}" loading="lazy"/>
@@ -353,6 +379,239 @@ function filterByCategory(categoryName) {
 }
 
 // ============================================
+// ✅ FUNCIONES DE CARRITO Y WISHLIST - UNIFICADAS
+// ============================================
+
+/**
+ * Obtener producto completo desde la card (con todos los datos)
+ */
+function getProductFromCard(card) {
+    const productDataAttr = card.dataset.product;
+    if (productDataAttr) {
+        try {
+            return JSON.parse(productDataAttr);
+        } catch (e) {
+            console.warn('Error parseando data-product:', e);
+        }
+    }
+
+    // Fallback: extraer datos básicos
+    const nameEl = card.querySelector('.product-name');
+    const priceEl = card.querySelector('.price-current');
+    const imgEl = card.querySelector('img');
+
+    return {
+        id: card.dataset.id || Date.now(),
+        nombre: nameEl?.textContent || 'Producto',
+        precio: parseInt(priceEl?.textContent?.replace(/[^0-9]/g, '') || 0),
+        imagen: imgEl?.src || 'https://placehold.co/300x300?text=Sin+Imagen',
+        marca: '',
+        categoria: '',
+        descuento: 0
+    };
+}
+
+/**
+ * Agregar al carrito - UNIFICADO con outlet_cart
+ */
+function addToCart(productId) {
+    // Buscar el producto en el cache
+    const product = allProductsCache.find(p => p.id === productId);
+
+    if (!product) {
+        console.warn('⚠️ Producto no encontrado:', productId);
+        // Intentar obtener de la card
+        const card = document.querySelector(`.product-card[data-id="${productId}"], .trending-item[data-id="${productId}"]`);
+        if (card) {
+            const fallbackProduct = getProductFromCard(card);
+            addToCartWithData(fallbackProduct);
+            return;
+        }
+        return;
+    }
+
+    // Crear objeto con estructura completa
+    const cartProduct = {
+        id: product.id,
+        brand: product.marca || 'Outlet',
+        name: product.nombre,
+        size: 'Única',
+        color: 'Estándar',
+        price: product.precioFinal || product.precioVenta || 0,
+        quantity: 1,
+        image: product.imagenPrincipal || 'https://placehold.co/300x300?text=Sin+Imagen',
+        dateAdded: new Date().toISOString()
+    };
+
+    addToCartWithData(cartProduct);
+}
+
+/**
+ * Agregar al carrito con datos estructurados
+ */
+function addToCartWithData(productData) {
+    // Usar la clave UNIFICADA
+    let cart = JSON.parse(localStorage.getItem(STORAGE_KEYS.CART) || '[]');
+
+    const existingItem = cart.find(item => item.id === productData.id);
+
+    if (existingItem) {
+        existingItem.quantity = (existingItem.quantity || 1) + 1;
+        showToast(`🛒 ${productData.name} - Cantidad actualizada a ${existingItem.quantity}`);
+    } else {
+        const cartItem = {
+            id: productData.id,
+            brand: productData.marca || 'Outlet',
+            name: productData.nombre || productData.name,
+            size: 'Única',
+            color: 'Estándar',
+            price: productData.precioFinal || productData.precio || productData.price || 0,
+            quantity: 1,
+            image: productData.imagenPrincipal || productData.imagen || 'https://placehold.co/300x300?text=Sin+Imagen',
+            dateAdded: new Date().toISOString()
+        };
+        cart.push(cartItem);
+        showToast(`✨ ${cartItem.name} agregado al carrito`);
+    }
+
+    localStorage.setItem(STORAGE_KEYS.CART, JSON.stringify(cart));
+
+    // Disparar eventos para actualizar badges
+    window.dispatchEvent(new CustomEvent('cartUpdated'));
+    document.dispatchEvent(new CustomEvent('cartUpdated'));
+
+    // Actualizar badge en navbar
+    updateCartBadge();
+}
+
+/**
+ * Toggle wishlist - UNIFICADO con outlet_wishlist
+ */
+function toggleWishlist(button, productId) {
+    // Buscar el producto en el cache
+    const product = allProductsCache.find(p => p.id === productId);
+
+    if (!product) {
+        console.warn('⚠️ Producto no encontrado:', productId);
+        // Intentar obtener de la card
+        const card = document.querySelector(`.product-card[data-id="${productId}"], .trending-item[data-id="${productId}"]`);
+        if (card) {
+            const fallbackProduct = getProductFromCard(card);
+            toggleWishlistWithData(button, fallbackProduct);
+            return;
+        }
+        return;
+    }
+
+    // Crear objeto con estructura completa
+    const wishlistProduct = {
+        id: product.id,
+        brand: product.marca || 'Outlet',
+        name: product.nombre,
+        price: product.precioFinal || product.precioVenta || 0,
+        image: product.imagenPrincipal || 'https://placehold.co/300x300?text=Sin+Imagen',
+        badge: product.porcentajeDescuento > 0 ? `-${product.porcentajeDescuento}%` : null,
+        badgeType: product.porcentajeDescuento > 0 ? 'danger' : null
+    };
+
+    toggleWishlistWithData(button, wishlistProduct);
+}
+
+/**
+ * Toggle wishlist con datos estructurados
+ */
+function toggleWishlistWithData(button, productData) {
+    // Usar la clave UNIFICADA
+    let wishlist = JSON.parse(localStorage.getItem(STORAGE_KEYS.WISHLIST) || '[]');
+
+    const exists = wishlist.some(item => item.id === productData.id);
+    const icon = button.querySelector('i');
+
+    if (exists) {
+        wishlist = wishlist.filter(item => item.id !== productData.id);
+        if (icon) {
+            icon.style.color = '#666';
+            icon.style.transition = 'all 0.3s';
+            icon.style.transform = 'scale(0.8)';
+            setTimeout(() => { icon.style.transform = 'scale(1)'; }, 300);
+        }
+        showToast(`💔 ${productData.nombre || productData.name} removido de favoritos`);
+    } else {
+        const wishlistItem = {
+            id: productData.id,
+            brand: productData.marca || 'Outlet',
+            name: productData.nombre || productData.name,
+            price: productData.precioFinal || productData.precio || productData.price || 0,
+            image: productData.imagenPrincipal || productData.imagen || 'https://placehold.co/300x300?text=Sin+Imagen',
+            badge: productData.descuento > 0 ? `-${productData.descuento}%` : null,
+            badgeType: productData.descuento > 0 ? 'danger' : null,
+            dateAdded: new Date().toISOString()
+        };
+        wishlist.push(wishlistItem);
+        if (icon) {
+            icon.style.color = '#ddab3b';
+            icon.style.transition = 'all 0.3s';
+            icon.style.transform = 'scale(1.3)';
+            setTimeout(() => { icon.style.transform = 'scale(1)'; }, 300);
+        }
+        showToast(`❤️ ${wishlistItem.name} agregado a favoritos`);
+    }
+
+    localStorage.setItem(STORAGE_KEYS.WISHLIST, JSON.stringify(wishlist));
+
+    // Disparar eventos para actualizar badges
+    window.dispatchEvent(new CustomEvent('wishlistUpdated'));
+    document.dispatchEvent(new CustomEvent('wishlistUpdated'));
+
+    // Actualizar badge en navbar
+    updateWishlistBadge();
+}
+
+/**
+ * Actualizar badge del carrito
+ */
+function updateCartBadge() {
+    try {
+        const cart = JSON.parse(localStorage.getItem(STORAGE_KEYS.CART) || '[]');
+        const total = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+
+        const badge = document.querySelector('.cart-count, #cartCount');
+        if (badge) {
+            if (total > 0) {
+                badge.style.display = 'inline-block';
+                badge.textContent = total;
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    } catch (error) {
+        console.error('Error actualizando badge del carrito:', error);
+    }
+}
+
+/**
+ * Actualizar badge del wishlist
+ */
+function updateWishlistBadge() {
+    try {
+        const wishlist = JSON.parse(localStorage.getItem(STORAGE_KEYS.WISHLIST) || '[]');
+        const count = wishlist.length;
+
+        const badge = document.querySelector('.wishlist-count, #wishlistCount');
+        if (badge) {
+            if (count > 0) {
+                badge.style.display = 'inline-block';
+                badge.textContent = count;
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    } catch (error) {
+        console.error('Error actualizando badge del wishlist:', error);
+    }
+}
+
+// ============================================
 // ANIMACIONES Y EVENTOS
 // ============================================
 
@@ -434,65 +693,71 @@ function initTimer() {
 }
 
 function initCartEvents() {
-    // Delegación de eventos para el carrito
+    // Evento para agregar al carrito - 🔥 PASANDO EL ID DEL PRODUCTO
     document.addEventListener('click', (e) => {
         const addBtn = e.target.closest('.add-cart');
         if (addBtn) {
             e.stopPropagation();
-            const productCard = addBtn.closest('.trending-item') || addBtn.closest('.product-card');
-            const productName = productCard?.querySelector('.product-name')?.textContent || 'Producto';
-            addToCart(productName);
-            showToast(`✨ ${productName} agregado al carrito`);
-            window.dispatchEvent(new CustomEvent('cart:updated'));
+            e.preventDefault();
+
+            // Obtener el ID del producto
+            const productId = addBtn.dataset.cartAction;
+            if (productId) {
+                addToCart(productId);
+            } else {
+                // Fallback: buscar en el card
+                const productCard = addBtn.closest('.trending-item') || addBtn.closest('.product-card');
+                if (productCard && productCard.dataset.id) {
+                    addToCart(productCard.dataset.id);
+                } else {
+                    // Fallback extremo: usar el nombre
+                    const productName = productCard?.querySelector('.product-name')?.textContent || 'Producto';
+                    const productData = {
+                        id: Date.now(),
+                        nombre: productName,
+                        precio: 0,
+                        imagen: 'https://placehold.co/300x300?text=Sin+Imagen',
+                        marca: '',
+                        categoria: ''
+                    };
+                    addToCartWithData(productData);
+                }
+            }
         }
     });
 
-    // Delegación de eventos para la lista de deseos
+    // Evento para wishlist - 🔥 PASANDO EL ID DEL PRODUCTO
     document.addEventListener('click', (e) => {
         const wishlistBtn = e.target.closest('.wishlist-btn');
         if (wishlistBtn) {
             e.preventDefault();
             e.stopPropagation();
-            const productCard = wishlistBtn.closest('.trending-item') || wishlistBtn.closest('.product-card');
-            const productName = productCard?.querySelector('.product-name')?.textContent || 'Producto';
-            toggleWishlist(wishlistBtn, productName);
+
+            // Obtener el ID del producto
+            const productId = wishlistBtn.dataset.wishlistAction;
+            if (productId) {
+                toggleWishlist(wishlistBtn, productId);
+            } else {
+                // Fallback: buscar en el card
+                const productCard = wishlistBtn.closest('.trending-item') || wishlistBtn.closest('.product-card');
+                if (productCard && productCard.dataset.id) {
+                    toggleWishlist(wishlistBtn, productCard.dataset.id);
+                } else {
+                    // Fallback extremo: usar el nombre
+                    const productName = productCard?.querySelector('.product-name')?.textContent || 'Producto';
+                    const productData = {
+                        id: Date.now(),
+                        nombre: productName,
+                        precio: 0,
+                        imagen: 'https://placehold.co/300x300?text=Sin+Imagen',
+                        marca: '',
+                        categoria: ''
+                    };
+                    toggleWishlistWithData(wishlistBtn, productData);
+                }
+            }
         }
     });
-}
-
-function addToCart(productName) {
-    let cart = JSON.parse(localStorage.getItem('outlet_cart_customer') || '[]');
-    cart.push({ id: Date.now(), name: productName, quantity: 1, date: new Date().toISOString() });
-    localStorage.setItem('outlet_cart_customer', JSON.stringify(cart));
-}
-
-function toggleWishlist(button, productName) {
-    let wishlist = JSON.parse(localStorage.getItem('outlet_wishlist_customer') || '[]');
-    const exists = wishlist.some(item => item.name === productName);
-
-    const icon = button.querySelector('i');
-
-    if (exists) {
-        wishlist = wishlist.filter(item => item.name !== productName);
-        if (icon) {
-            icon.style.color = '#666';
-            icon.style.transition = 'all 0.3s';
-        }
-        showToast(`💔 ${productName} removido de favoritos`);
-    } else {
-        wishlist.push({
-            id: Date.now(),
-            name: productName,
-            date: new Date().toISOString()
-        });
-        if (icon) {
-            icon.style.color = '#ddab3b';
-            icon.style.transition = 'all 0.3s';
-        }
-        showToast(`❤️ ${productName} agregado a favoritos`);
-    }
-
-    localStorage.setItem('outlet_wishlist_customer', JSON.stringify(wishlist));
 }
 
 function showToast(message) {
@@ -509,6 +774,8 @@ function showToast(message) {
         z-index: 9999; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         border-left: 3px solid #ddab3b;
         animation: slideUp 0.3s ease;
+        max-width: 90%;
+        text-align: center;
     `;
     document.body.appendChild(toast);
 
@@ -658,6 +925,16 @@ function setupRealtimeUpdates() {
 }
 
 // ============================================
+// INICIALIZAR BADGES AL CARGAR
+// ============================================
+function initBadges() {
+    setTimeout(() => {
+        updateCartBadge();
+        updateWishlistBadge();
+    }, 300);
+}
+
+// ============================================
 // ESTILOS BASE
 // ============================================
 if (!document.querySelector('#outlet-styles-customer')) {
@@ -705,3 +982,6 @@ if (!document.querySelector('#outlet-styles-customer')) {
     `;
     document.head.appendChild(style);
 }
+
+// Inicializar badges
+initBadges();

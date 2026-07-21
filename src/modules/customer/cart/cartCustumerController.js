@@ -1,57 +1,95 @@
 /* ========================================
-   CART CONTROLLER - CUSTOMER (COPIA EXACTA DEL VISITOR)
-   LOS BOTONES USAN buttons.css
+   CART CONTROLLER - CUSTOMER
+   Controlador del carrito con datos desde Firebase
+   CON BOTONES DE buttons.css
    ======================================== */
 
-// Storage keys - USA LA MISMA CLAVE
+import { ProductService } from '../../../services/productService.js';
+
+// Storage key - UNIFICADA
 const STORAGE_KEYS = {
-    CART: 'outlet_cart'  // ← MISMA para visitor y customer
+    CART: 'outlet_cart'
 };
 
 // Exchange rate (EUR to MXN)
-const EXCHANGE_RATE = 20; // 1 EUR = 20 MXN
-
-// Sample products for "You may also like" (prices in MXN)
-const UPSELl_ITEMS = [
-    {
-        id: 101,
-        name: "CALZADO NOIR",
-        category: "SNEAKERS",
-        price: 13000.00, // 650 EUR * 20
-        image: "https://picsum.photos/id/0/400/500"
-    },
-    {
-        id: 102,
-        name: "CARTERA ORO NEGRO",
-        category: "ACCESORIOS",
-        price: 8400.00, // 420 EUR * 20
-        image: "https://picsum.photos/id/21/400/500"
-    },
-    {
-        id: 103,
-        name: "GAFAS ÉLITE",
-        category: "ÓPTICA",
-        price: 7600.00, // 380 EUR * 20
-        image: "https://picsum.photos/id/22/400/500"
-    },
-    {
-        id: 104,
-        name: "RELOJ CROMO",
-        category: "JOYERÍA",
-        price: 25000.00, // 1250 EUR * 20
-        image: "https://picsum.photos/id/23/400/500"
-    }
-];
+const EXCHANGE_RATE = 20;
 
 // Cart items (will be loaded from localStorage)
 let cartItems = [];
+let allProducts = [];
+
+// ========================================
+// CARGAR TODOS LOS PRODUCTOS DESDE FIREBASE
+// ========================================
+async function loadAllProducts() {
+    try {
+        console.log('📦 Cargando productos desde Firebase para cart...');
+        allProducts = await ProductService.getAll({}, 'createdAt', 'desc', 100);
+        console.log(`✅ ${allProducts.length} productos cargados`);
+        return allProducts;
+    } catch (error) {
+        console.error('❌ Error cargando productos:', error);
+        allProducts = [];
+        return [];
+    }
+}
+
+/**
+ * Obtener producto completo por ID desde Firebase
+ */
+function getProductById(productId) {
+    return allProducts.find(p => p.id === productId);
+}
+
+// ========================================
+// FUNCIONES PARA UPSALE
+// ========================================
+
+/**
+ * Obtener productos para "Te podría interesar" desde Firebase
+ */
+function getUpsellItems() {
+    // Tomar productos destacados o con descuento, excluyendo los que ya están en el carrito
+    const cartIds = new Set(cartItems.map(item => item.id));
+
+    let candidates = allProducts.filter(p =>
+        p.estado === 'activo' &&
+        !cartIds.has(p.id) &&
+        (p.destacado || p.porcentajeDescuento > 0)
+    );
+
+    // Si no hay suficientes, agregar más productos
+    if (candidates.length < 4) {
+        const additional = allProducts.filter(p =>
+            p.estado === 'activo' &&
+            !cartIds.has(p.id) &&
+            !candidates.includes(p)
+        );
+        candidates = [...candidates, ...additional];
+    }
+
+    // Tomar hasta 4
+    return candidates.slice(0, 4).map(p => ({
+        id: p.id,
+        name: p.nombre,
+        category: p.categoria || 'Producto',
+        price: p.precioFinal || p.precioVenta || 0,
+        image: p.imagenPrincipal || 'https://placehold.co/400/500?text=Sin+Imagen',
+        descuento: p.porcentajeDescuento || 0,
+        _product: p
+    }));
+}
+
+// ========================================
+// FUNCIONES PRINCIPALES
+// ========================================
 
 /**
  * Load styles for cart page
  */
 function loadStyles() {
     if (document.querySelector('link[href*="cart.css"]')) return;
-    
+
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = '/src/css/pages/cart.css';
@@ -62,8 +100,8 @@ function loadStyles() {
  * Format currency (Mexican Pesos)
  */
 function formatMoney(amount) {
-    return new Intl.NumberFormat('es-MX', { 
-        style: 'currency', 
+    return new Intl.NumberFormat('es-MX', {
+        style: 'currency',
         currency: 'MXN',
         minimumFractionDigits: 0,
         maximumFractionDigits: 0
@@ -76,31 +114,15 @@ function formatMoney(amount) {
 function loadCart() {
     const savedCart = localStorage.getItem(STORAGE_KEYS.CART);
     if (savedCart) {
-        cartItems = JSON.parse(savedCart);
+        try {
+            cartItems = JSON.parse(savedCart);
+            console.log(`📦 ${cartItems.length} items en carrito`);
+        } catch (e) {
+            cartItems = [];
+            saveCart();
+        }
     } else {
-        // Default sample cart items (prices in MXN)
-        cartItems = [
-            {
-                id: 1,
-                brand: "Maison Luxe",
-                name: "VESTIDO DE SEDA NOCTURNE",
-                size: "38 (M)",
-                color: "Noir Anthracite",
-                price: 25000.00, // 1250 EUR * 20
-                quantity: 1,
-                image: "https://picsum.photos/id/20/400/500"
-            },
-            {
-                id: 2,
-                brand: "Atelier Gold",
-                name: "BOLSO CLUTCH MINIMALISTA",
-                size: "Única",
-                color: "Oro Mate",
-                price: 17800.00, // 890 EUR * 20
-                quantity: 1,
-                image: "https://picsum.photos/id/26/400/500"
-            }
-        ];
+        cartItems = [];
         saveCart();
     }
 }
@@ -131,17 +153,17 @@ function updateCartBadge() {
 function showNotification(message, isError = false) {
     const existingToast = document.querySelector('.toast-notification');
     if (existingToast) existingToast.remove();
-    
+
     const notification = document.createElement('div');
     notification.className = 'toast-notification';
     notification.textContent = message;
-    
+
     if (isError) {
         notification.style.borderLeftColor = 'var(--outlet-danger)';
     }
-    
+
     document.body.appendChild(notification);
-    
+
     setTimeout(() => {
         notification.style.opacity = '0';
         notification.style.transform = 'translateX(100%)';
@@ -150,7 +172,7 @@ function showNotification(message, isError = false) {
 }
 
 /**
- * Render cart items - USA LOS IDS DEL CUSTOMER
+ * Render cart items - CON DATOS ACTUALIZADOS
  * 🔥 BOTONES CON CLASES DE buttons.css
  */
 function renderCart() {
@@ -165,46 +187,65 @@ function renderCart() {
             <div class="outlet-cart-empty">
                 <i class="fas fa-shopping-bag"></i>
                 <p>Tu carrito está vacío</p>
-                <!-- 🔥 BOTÓN CORREGIDO: outlet-btn-primary -->
                 <button class="outlet-btn outlet-btn-primary" id="continueShoppingBtnCustomer">SEGUIR COMPRANDO</button>
             </div>
         `;
-        
+
         const continueBtn = document.getElementById('continueShoppingBtnCustomer');
         if (continueBtn) {
             continueBtn.addEventListener('click', () => {
                 window.navigateTo('/collection');
             });
         }
-        
+
         renderSummary();
         return;
     }
 
-    container.innerHTML = cartItems.map(item => `
+    // Enriquecer items con datos actualizados de Firebase
+    const enrichedItems = cartItems.map(item => {
+        const product = getProductById(item.id);
+        if (product) {
+            return {
+                ...item,
+                name: product.nombre || item.name,
+                brand: product.marca || item.brand || 'Outlet',
+                price: product.precioFinal || product.precioVenta || item.price || 0,
+                image: product.imagenPrincipal || item.image || 'https://placehold.co/300x300?text=Sin+Imagen',
+                isAvailable: product.estado !== 'agotado',
+                _product: product
+            };
+        }
+        return {
+            ...item,
+            isAvailable: true
+        };
+    });
+
+    container.innerHTML = enrichedItems.map(item => `
         <div class="outlet-cart-item" data-id="${item.id}">
             <div class="outlet-cart-item-inner">
                 <div class="outlet-cart-item-image">
                     <img src="${item.image}" alt="${item.name}" loading="lazy">
+                    ${!item.isAvailable ? '<div class="outlet-cart-out-of-stock">AGOTADO</div>' : ''}
                 </div>
                 <div class="outlet-cart-item-details">
                     <div class="outlet-cart-item-info">
                         <p class="outlet-cart-item-brand">${item.brand}</p>
                         <h3 class="outlet-cart-item-name">${item.name}</h3>
                         <div class="outlet-cart-item-attributes">
-                            <span>Talla: ${item.size}</span>
-                            <span>Color: ${item.color}</span>
+                            <span>Talla: ${item.size || 'Única'}</span>
+                            <span>Color: ${item.color || 'Estándar'}</span>
                         </div>
                     </div>
                     <div class="outlet-cart-item-actions">
                         <div class="outlet-cart-quantity">
-                            <button class="outlet-cart-qty-btn decr" data-id="${item.id}">−</button>
+                            <button class="outlet-cart-qty-btn decr" data-id="${item.id}" ${!item.isAvailable ? 'disabled' : ''}>−</button>
                             <span class="outlet-cart-qty-value">${item.quantity}</span>
-                            <button class="outlet-cart-qty-btn incr" data-id="${item.id}">+</button>
+                            <button class="outlet-cart-qty-btn incr" data-id="${item.id}" ${!item.isAvailable ? 'disabled' : ''}>+</button>
                         </div>
                         <div class="outlet-cart-item-price">
                             <p class="outlet-cart-price">${formatMoney(item.price * item.quantity)}</p>
-                            <!-- 🔥 BOTÓN CORREGIDO: outlet-btn-danger -->
                             <button class="outlet-btn outlet-btn-danger outlet-btn-sm" data-id="${item.id}">
                                 <i class="fas fa-trash-alt"></i> ELIMINAR
                             </button>
@@ -220,7 +261,7 @@ function renderCart() {
 }
 
 /**
- * Render order summary - USA LOS IDS DEL CUSTOMER
+ * Render order summary
  * 🔥 BOTONES CON CLASES DE buttons.css
  */
 function renderSummary() {
@@ -230,14 +271,32 @@ function renderSummary() {
         return;
     }
 
-    const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+    // Filtrar solo items disponibles para el cálculo
+    const availableItems = cartItems.filter(item => {
+        const product = getProductById(item.id);
+        return product ? product.estado !== 'agotado' : true;
+    });
+
+    const subtotal = availableItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
     const shipping = subtotal > 2000 ? 0 : 300;
     const tax = subtotal * 0.08;
     const total = subtotal + shipping + tax;
 
+    // Verificar si hay items agotados
+    const hasOutOfStock = cartItems.some(item => {
+        const product = getProductById(item.id);
+        return product ? product.estado === 'agotado' : false;
+    });
+
     container.innerHTML = `
         <div class="outlet-cart-summary-card">
             <h3 class="outlet-cart-summary-title">RESUMEN DEL PEDIDO</h3>
+            
+            ${hasOutOfStock ? `
+                <div class="outlet-cart-summary-warning" style="background:#fff3cd;padding:10px;border-radius:4px;margin-bottom:12px;border-left:3px solid #ffc107;">
+                    <span style="color:#856404;font-size:13px;">⚠️ Algunos productos están agotados y no se incluyen en el total.</span>
+                </div>
+            ` : ''}
             
             <div class="outlet-cart-summary-row">
                 <span>SUBTOTAL</span>
@@ -263,15 +322,14 @@ function renderSummary() {
                 <label>¿TIENES UN CÓDIGO PROMOCIONAL?</label>
                 <div class="outlet-cart-promo-input-group">
                     <input type="text" id="promoCodeCustomer" placeholder="INGRESA TU CÓDIGO">
-                    <!-- 🔥 BOTÓN CORREGIDO: outlet-btn-dark -->
                     <button class="outlet-btn outlet-btn-dark outlet-btn-sm" id="applyPromoBtnCustomer">APLICAR</button>
                 </div>
             </div>
             
-            <!-- 🔥 BOTÓN CORREGIDO: outlet-btn-primary con hover-icon -->
-            <button class="outlet-btn outlet-btn-primary outlet-btn-block outlet-btn-hover-icon" id="checkoutBtnCustomer">
+            <button class="outlet-btn outlet-btn-primary outlet-btn-block outlet-btn-hover-icon" id="checkoutBtnCustomer" ${availableItems.length === 0 ? 'disabled' : ''}>
                 FINALIZAR COMPRA <i class="fas fa-arrow-right outlet-btn-icon outlet-btn-icon-right"></i>
             </button>
+            ${availableItems.length === 0 ? '<p style="font-size:12px;color:#999;text-align:center;margin-top:8px;">No hay productos disponibles para comprar</p>' : ''}
         </div>
     `;
 
@@ -295,8 +353,8 @@ function renderSummary() {
     const checkoutBtn = document.getElementById('checkoutBtnCustomer');
     if (checkoutBtn) {
         checkoutBtn.addEventListener('click', () => {
-            if (cartItems.length === 0) {
-                showNotification('⚠️ Tu carrito está vacío', true);
+            if (availableItems.length === 0) {
+                showNotification('⚠️ No hay productos disponibles para comprar', true);
             } else {
                 showNotification('🚀 Redirigiendo al pago...');
             }
@@ -305,7 +363,7 @@ function renderSummary() {
 }
 
 /**
- * Render upsell items - USA LOS IDS DEL CUSTOMER
+ * Render upsell items desde Firebase
  */
 function renderUpsell() {
     const grid = document.getElementById('upsellGridCustomer');
@@ -314,10 +372,18 @@ function renderUpsell() {
         return;
     }
 
-    grid.innerHTML = UPSELl_ITEMS.map(item => `
+    const upsellItems = getUpsellItems();
+
+    if (upsellItems.length === 0) {
+        grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#999;">No hay productos disponibles</p>';
+        return;
+    }
+
+    grid.innerHTML = upsellItems.map(item => `
         <div class="outlet-cart-upsell-card" data-id="${item.id}">
             <div class="outlet-cart-upsell-image">
                 <img src="${item.image}" alt="${item.name}" loading="lazy">
+                ${item.descuento > 0 ? `<span class="outlet-cart-upsell-badge">-${item.descuento}%</span>` : ''}
             </div>
             <div class="outlet-cart-upsell-info">
                 <p class="outlet-cart-upsell-category">${item.category}</p>
@@ -330,8 +396,8 @@ function renderUpsell() {
     // Attach upsell card events
     document.querySelectorAll('.outlet-cart-upsell-card').forEach(card => {
         card.addEventListener('click', () => {
-            const id = parseInt(card.getAttribute('data-id'));
-            const product = UPSELl_ITEMS.find(p => p.id === id);
+            const id = card.getAttribute('data-id');
+            const product = allProducts.find(p => p.id === id);
             if (product) {
                 addToCart(product);
             }
@@ -343,32 +409,41 @@ function renderUpsell() {
  * Add product to cart (from upsell)
  */
 function addToCart(product) {
+    if (!product) return;
+
+    // Verificar si está agotado
+    if (product.estado === 'agotado') {
+        showNotification('❌ Producto agotado', true);
+        return;
+    }
+
     const existingItem = cartItems.find(item => item.id === product.id);
-    
+
     if (existingItem) {
         existingItem.quantity += 1;
-        showNotification(`✨ ${product.name} - Cantidad actualizada`);
+        showNotification(`✨ ${product.nombre} - Cantidad actualizada`);
     } else {
         cartItems.push({
             id: product.id,
-            brand: product.category,
-            name: product.name,
-            size: "Única",
-            color: "Estándar",
-            price: product.price,
+            brand: product.marca || 'Outlet',
+            name: product.nombre,
+            size: 'Única',
+            color: 'Estándar',
+            price: product.precioFinal || product.precioVenta || 0,
             quantity: 1,
-            image: product.image
+            image: product.imagenPrincipal || 'https://placehold.co/300x300?text=Sin+Imagen',
+            dateAdded: new Date().toISOString()
         });
-        showNotification(`✨ ${product.name} añadido al carrito`);
+        showNotification(`✨ ${product.nombre} añadido al carrito`);
     }
-    
+
     saveCart();
     renderCart();
+    renderUpsell(); // Actualizar upsell después de agregar
 }
 
 /**
  * Attach events to cart items (quantity, remove)
- * 🔥 ACTUALIZADO PARA USAR outlet-btn-danger
  */
 function attachCartEvents() {
     // Increment quantity
@@ -376,14 +451,14 @@ function attachCartEvents() {
         btn.removeEventListener('click', handleIncrement);
         btn.addEventListener('click', handleIncrement);
     });
-    
+
     // Decrement quantity
     document.querySelectorAll('.outlet-cart-qty-btn.decr').forEach(btn => {
         btn.removeEventListener('click', handleDecrement);
         btn.addEventListener('click', handleDecrement);
     });
-    
-    // Remove item - 🔥 CORREGIDO: ahora usa .outlet-btn-danger
+
+    // Remove item
     document.querySelectorAll('.outlet-btn-danger[data-id]').forEach(btn => {
         btn.removeEventListener('click', handleRemove);
         btn.addEventListener('click', handleRemove);
@@ -394,9 +469,15 @@ function attachCartEvents() {
  * Handle increment quantity
  */
 function handleIncrement(e) {
-    const id = parseInt(e.currentTarget.getAttribute('data-id'));
+    const id = e.currentTarget.getAttribute('data-id');
     const item = cartItems.find(i => i.id === id);
     if (item) {
+        // Verificar disponibilidad
+        const product = getProductById(id);
+        if (product && product.estado === 'agotado') {
+            showNotification('❌ Producto agotado, no se puede aumentar', true);
+            return;
+        }
         item.quantity++;
         saveCart();
         renderCart();
@@ -407,7 +488,7 @@ function handleIncrement(e) {
  * Handle decrement quantity
  */
 function handleDecrement(e) {
-    const id = parseInt(e.currentTarget.getAttribute('data-id'));
+    const id = e.currentTarget.getAttribute('data-id');
     const item = cartItems.find(i => i.id === id);
     if (item && item.quantity > 1) {
         item.quantity--;
@@ -420,19 +501,23 @@ function handleDecrement(e) {
  * Handle remove item
  */
 function handleRemove(e) {
-    const id = parseInt(e.currentTarget.getAttribute('data-id'));
+    const id = e.currentTarget.getAttribute('data-id');
     const item = cartItems.find(i => i.id === id);
     cartItems = cartItems.filter(i => i.id !== id);
     saveCart();
     renderCart();
+    renderUpsell(); // Actualizar upsell después de eliminar
     showNotification(`🗑 ${item?.name || 'Producto'} eliminado del carrito`);
 }
+
+// ========================================
+// INYECCIÓN DE HTML
+// ========================================
 
 /**
  * INYECTA EL HTML DEL CARRITO PARA CUSTOMER
  */
 function injectCartHTML() {
-    // Verifica si el contenedor ya existe
     if (document.getElementById('cartItemsContainerCustomer')) {
         console.log('✅ El HTML del carrito ya está en el DOM');
         return true;
@@ -440,13 +525,11 @@ function injectCartHTML() {
 
     console.log('📄 Inyectando HTML del carrito para CUSTOMER...');
 
-    // Busca dónde insertar
-    const appContainer = document.getElementById('app') || 
-                        document.getElementById('main-content') || 
-                        document.querySelector('main') || 
-                        document.body;
+    const appContainer = document.getElementById('app') ||
+        document.getElementById('main-content') ||
+        document.querySelector('main') ||
+        document.body;
 
-    // HTML del carrito con los IDs del customer
     const cartHTML = `
         <main class="outlet-cart-container">
             <div class="container">
@@ -486,40 +569,41 @@ function injectCartHTML() {
 
     appContainer.innerHTML = cartHTML;
 
-    // Verifica que los contenedores se crearon
     const hasContainers = document.getElementById('cartItemsContainerCustomer') !== null;
     console.log(`✅ Contenedores creados: ${hasContainers}`);
-    
+
     return hasContainers;
 }
 
-/**
- * Main controller - CUSTOMER
- */
+// ========================================
+// CONTROLLER PRINCIPAL
+// ========================================
+
 export async function cartCustomerController() {
-    console.log('🛒 Cart Controller CUSTOMER - Página del carrito');
-    
-    // Inyectar el HTML primero
+    console.log('🛒 Cart Controller CUSTOMER - Página del carrito (con Firebase)');
+
     const htmlInjected = injectCartHTML();
     if (!htmlInjected) {
         console.error('❌ Error al inyectar el HTML');
         return;
     }
-    
-    // Load styles
+
     loadStyles();
-    
-    // Load cart data (USA outlet_cart)
+
+    // Cargar productos desde Firebase
+    await loadAllProducts();
+
+    // Load cart data
     loadCart();
-    
+
     // Render cart
     renderCart();
-    
+
     // Render upsell
     renderUpsell();
-    
+
     // Update cart badge
     updateCartBadge();
-    
+
     console.log('✅ Cart page CUSTOMER loaded successfully');
 }

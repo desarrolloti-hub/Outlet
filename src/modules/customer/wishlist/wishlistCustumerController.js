@@ -1,104 +1,46 @@
 /* ========================================
    WISHLIST CONTROLLER - CUSTOMER
    Controlador para página de productos favoritos
-   CON SWEETALERT2 INTEGRADO
+   CON DATOS DESDE FIREBASE - ENRIQUECIDO
+   🔥 UNIFICADO con outlet_wishlist
+   🔥 PERMITE PRODUCTOS AGREGADOS DESDE HOME
    ======================================== */
 
-// Sample product data
-var sampleProducts = [
-    {
-        id: 1,
-        brand: "VALENTINO",
-        name: "Structured Wool-Blend Coat",
-        price: 3450,
-        image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAE78NUeRiMSPhkcmI3ADlJW1vriiriQ_nlq1_wZ3a3ATxS9KdxwTVCNK3Sbwni3mvqm86pynU3vwA-ug9zIHc3rIuwJ9mDEFOSxjQhB5PdTX_t3oX0nG6Wn09FLU_2GVMLcBs0k375ON7DTmUPdHyHvWBrbx5bXmAl37tGQS1Qj5BZpWDIHlaWSWB0uQN0ma_DA-CrxGI5Ee6ZJYnnUjwbVVctHaikXZ9qwqmjS6SBJXPBpBeQGJ409AxCkvjTbc_8CAXADuiMO1R1",
-        badge: "Back in Stock",
-        badgeType: "primary"
-    },
-    {
-        id: 2,
-        brand: "LOEWE",
-        name: "Puzzle Edge Large Bag",
-        price: 2900,
-        image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAcbL7JMg8fS1P8XorMQqf2BFYlv_Ni409_q5voqFTnBeuA6IGCNo5FKVNg4NGJmJ_JuiaFL96mIaIFXQRFgV3ZPgE6n_XuMjZYoobip2y9R2__TKpFLlOTpnUntEJGPShcnRiNn2W8-3BVq9DgGSzQBu9u2qiYHGeYOsMk9cnNZyvFlWbGq_CjjviOVwGm7kT219u8rT-TPlsNNZ_eZ4YmRPb28lQbKcUM_xXhDI4JcJNRIgnZS7oucbWACltMAqghZwatk7jigLdH",
-        badge: null,
-        badgeType: null
-    },
-    {
-        id: 3,
-        brand: "ISSEY MIYAKE",
-        name: "Pleats Please Maxi Dress",
-        price: 890,
-        image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDEX5W_8pMm-QjTDzsFh7MY8AdZaoMp0iHTjFdlbekizzE2LRcHqGttn3PkCfSsc_LI__Zg4XkHVH8v5oQXJpbDlKJts8D9kllnw1QoSTwVeKbBarRH1oYnYqF0hYC4z90GRmLmvHtp4KAMyn-4s2d39vcQ0PoVZNszr6hTFUXqrwJDXmYHmq8WJXaV0sl7Ba4IuzJ8NmMQMgUFQv2zrdJvdsS_ZMGIh8iGGlobVZGZNHZ6WSp4aBywVSwZ8ox3LxuPENjTkNZpzCI-",
-        badge: "Low Stock",
-        badgeType: "danger"
-    },
-    {
-        id: 4,
-        brand: "SAINT LAURENT",
-        name: "Blade Pointed-Toe Pumps",
-        price: 1150,
-        image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDO95NM-zC55t-K3KCJaDQDw1qlEH1HfzuG9mChrVrcAJsSNjyEJOQxaIoY9nSS5yywPRZAO8gDcCIFkgQvGzNt5SHYNneKWkxjUsSl0jDIiWvGUf0L4ioS2_mNa4hPHnQ_VkEVv18S74nJnQs41rmb12z67Ww-yUbGVWOtudeIeFtSh300ZggIGeoTb2oBGsJ6cY64vM1U4D4x7tVWBHa0zMWcXo3nFoLFKgY_LuA3j3HeMJzRsoK13chAMQA1ZvOgbTw1USfJGK3Y",
-        badge: null,
-        badgeType: null
-    },
-    {
-        id: 5,
-        brand: "JIL SANDER",
-        name: "Horizon Mesh Watch",
-        price: 2100,
-        image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCu6YrYpko9mKLwAD11xWxLqOM3GWhuc2EiN94qaN7Gr2gEmJIvRgrKTWY_iAVBrrC3wqO48DGdcCKcE2nHf4WleZpOmrGeUAT5dVwquPbDDi1vjfAbHr1X1BEr-xbSR6V8LMNmx8i4KW538m6QUKocqqT0AG10RQwroYUvSv_fPUZnric4JZpESLDoID8r4rkfCwdtw5Jmii_cAsTr0cs3oZv8CRglHyk80aDSR-lpU6V86EyhWpg9_G2PbH9U6i3iXBZg5i9K3l_Z",
-        badge: null,
-        badgeType: null
-    },
-    {
-        id: 6,
-        brand: "THE ROW",
-        name: "Margaux Silk Blazer",
-        price: 4500,
-        image: "https://lh3.googleusercontent.com/aida-public/AB6AXuB2RiCKT9Rg_urcWZauMwGyJx16Vgg-2j-f2-2uN92lDWtQAzfgKH7SgHMpvFkq9D2rrvjYtWYmuh9W0iczYK54uRKYAsAmaLfHivrzj0sa5Q2DtzOJHJ7a2tIWVaNvzHPS5WtvyDvWzlUZG0jMwkxuhp9cQJpdSQupiWy33WeOqtEQZWY74mShqnmpolk2iHjm2-qSomBYZiIY_ac39umH1TzcdhIcjNfqdShkQYHTtGJOXa9vLRI2wXkup3ivc1fot8e2xVJFT0I8",
-        badge: "Only 2 left",
-        badgeType: "danger"
-    }
-];
+import { ProductService } from '../../../services/productService.js';
 
-// Storage key
-var STORAGE_KEY = 'outlet_wishlist';
+// 🔥 STORAGE KEY UNIFICADA
+const STORAGE_KEY = 'outlet_wishlist';
 
 // State
-var wishlistItems = [];
-var currentSort = 'newest';
+let wishlistItems = [];
+let currentSort = 'newest';
+let allProducts = [];
+let productsMap = {};
 
 // ========================================
 // UI Helpers - CON SWEETALERT2
 // ========================================
 
-/**
- * Muestra un toast personalizado (estilo OUTLET)
- */
 function mostrarToast(mensaje, tipo) {
     tipo = tipo || 'info';
     var toastExistente = document.querySelector('.outlet-toast');
     if (toastExistente) toastExistente.remove();
-    
+
     var toast = document.createElement('div');
     toast.className = 'outlet-toast ' + tipo;
     toast.textContent = mensaje;
     document.body.appendChild(toast);
-    
-    requestAnimationFrame(function() {
+
+    requestAnimationFrame(function () {
         toast.classList.add('show');
     });
-    
-    setTimeout(function() {
+
+    setTimeout(function () {
         toast.classList.remove('show');
-        setTimeout(function() { toast.remove(); }, 300);
+        setTimeout(function () { toast.remove(); }, 300);
     }, 3200);
 }
 
-/**
- * Muestra una SweetAlert2 personalizada
- */
 function mostrarSweetAlert(options) {
     var defaultOptions = {
         buttonsStyling: false,
@@ -108,13 +50,9 @@ function mostrarSweetAlert(options) {
             popup: 'swal2-popup'
         }
     };
-    
     return Swal.fire(Object.assign({}, defaultOptions, options));
 }
 
-/**
- * Muestra alerta de éxito
- */
 function mostrarExito(titulo, mensaje) {
     return mostrarSweetAlert({
         icon: 'success',
@@ -124,9 +62,6 @@ function mostrarExito(titulo, mensaje) {
     });
 }
 
-/**
- * Muestra alerta de error
- */
 function mostrarError(titulo, mensaje) {
     return mostrarSweetAlert({
         icon: 'error',
@@ -136,24 +71,6 @@ function mostrarError(titulo, mensaje) {
     });
 }
 
-/**
- * Muestra alerta de advertencia
- */
-function mostrarAdvertencia(titulo, mensaje, confirmText) {
-    confirmText = confirmText || 'Continuar';
-    return mostrarSweetAlert({
-        icon: 'warning',
-        title: titulo || '¡Cuidado!',
-        text: mensaje || 'Estás a punto de realizar una acción importante.',
-        confirmButtonText: confirmText,
-        showCancelButton: true,
-        cancelButtonText: 'Cancelar'
-    });
-}
-
-/**
- * Muestra alerta de confirmación
- */
 function mostrarConfirmacion(titulo, mensaje, confirmText) {
     confirmText = confirmText || 'Sí, confirmar';
     return mostrarSweetAlert({
@@ -166,23 +83,17 @@ function mostrarConfirmacion(titulo, mensaje, confirmText) {
     });
 }
 
-/**
- * Muestra un loading con SweetAlert2
- */
 function mostrarLoading(mensaje) {
     mensaje = mensaje || 'Procesando...';
     return mostrarSweetAlert({
         title: mensaje,
         allowOutsideClick: false,
-        didOpen: function() {
+        didOpen: function () {
             Swal.showLoading();
         }
     });
 }
 
-/**
- * Cierra la alerta de loading
- */
 function cerrarLoading() {
     Swal.close();
 }
@@ -192,7 +103,6 @@ function cerrarLoading() {
 // ========================================
 function loadStyles() {
     if (document.querySelector('link[href*="wishlist.css"]')) return;
-    
     var link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = '/src/css/pages/wishlist.css';
@@ -203,149 +113,391 @@ function loadStyles() {
 // Formateo de moneda
 // ========================================
 function formatMoney(amount) {
-    return new Intl.NumberFormat('en-US', { 
-        style: 'currency', 
-        currency: 'USD',
-        minimumFractionDigits: 0
+    return new Intl.NumberFormat('es-MX', {
+        style: 'currency',
+        currency: 'MXN',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
     }).format(amount);
 }
 
 // ========================================
-// Carga wishlist desde localStorage
+// CARGAR TODOS LOS PRODUCTOS DESDE FIREBASE
 // ========================================
-function loadWishlist() {
-    var saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-        try {
-            wishlistItems = JSON.parse(saved);
-        } catch (e) {
-            wishlistItems = sampleProducts.slice(0);
-            saveWishlist();
+async function loadAllProducts() {
+    try {
+        console.log('📦 Cargando productos desde Firebase para wishlist...');
+        allProducts = await ProductService.getAll({}, 'createdAt', 'desc', 100);
+
+        productsMap = {};
+        allProducts.forEach(p => {
+            productsMap[String(p.id)] = p;
+        });
+
+        console.log(`✅ ${allProducts.length} productos cargados desde Firebase`);
+        console.log('📋 IDs de productos disponibles:', Object.keys(productsMap).slice(0, 10).join(', '));
+
+        return allProducts;
+    } catch (error) {
+        console.error('❌ Error cargando productos:', error);
+        allProducts = [];
+        productsMap = {};
+        return [];
+    }
+}
+
+/**
+ * Obtener producto completo por ID desde Firebase (rápido con mapa)
+ */
+function getProductById(productId) {
+    const idStr = String(productId);
+    return productsMap[idStr] || null;
+}
+
+/**
+ * 🔥 Verificar si un producto existe en Firebase
+ * Si no existe, lo consideramos válido igual (puede ser un producto agregado desde Home)
+ */
+function productExistsInFirebase(productId) {
+    const idStr = String(productId);
+    // Si es un ID numérico, debe existir en Firebase
+    if (/^\d+$/.test(idStr)) {
+        return !!productsMap[idStr];
+    }
+    // Si es un ID personalizado (ej: ZAPATILLAS_1784143743217), lo consideramos válido
+    // porque fue agregado desde Home
+    return true;
+}
+
+/**
+ * ENRIQUECER item de wishlist con datos actualizados de Firebase
+ * 🔥 Si el producto no existe en Firebase, mantenemos los datos guardados
+ */
+function enrichWishlistItem(item) {
+    const product = getProductById(item.id);
+
+    // Si el producto existe en Firebase, usar datos actualizados
+    if (product) {
+        console.log(`✅ Enriquecido desde Firebase: ${item.id} -> ${product.nombre}`);
+
+        const discount = product.porcentajeDescuento || 0;
+        const finalPrice = product.precioFinal || product.precioVenta || 0;
+
+        let badge = null;
+        let badgeType = null;
+
+        if (discount > 0) {
+            badge = `-${discount}%`;
+            badgeType = 'danger';
+        } else if (product.estado === 'agotado') {
+            badge = 'Agotado';
+            badgeType = 'danger';
+        } else if (product.destacado) {
+            badge = 'Destacado';
+            badgeType = 'primary';
         }
-    } else {
-        wishlistItems = sampleProducts.slice(0);
-        saveWishlist();
+
+        return {
+            id: String(product.id),
+            brand: product.marca || 'Outlet',
+            name: product.nombre || item.name || 'Producto',
+            price: finalPrice,
+            image: product.imagenPrincipal || item.image || 'https://placehold.co/300x300?text=Sin+Imagen',
+            badge: badge,
+            badgeType: badgeType,
+            categoria: product.categoria || '',
+            estado: product.estado || 'activo',
+            _product: product,
+            dateAdded: item.dateAdded || new Date().toISOString()
+        };
+    }
+
+    // 🔥 Si no existe en Firebase, mantener los datos guardados (agregado desde Home)
+    console.log(`📦 Usando datos guardados para: ${item.id} - ${item.name}`);
+    return {
+        ...item,
+        image: item.image || 'https://placehold.co/300x300?text=Sin+Imagen',
+        brand: item.brand || 'Outlet',
+        // Asegurar que tenga estado
+        estado: item.estado || 'activo'
+    };
+}
+
+// ========================================
+// 🧹 LIMPIAR outlet_wishlist de datos estáticos (SOLO IDs numéricos que no existen)
+// ========================================
+function limpiarWishlistEstatica() {
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            const items = JSON.parse(saved);
+            // 🔥 Solo filtrar IDs numéricos que no existen en Firebase
+            // Los IDs personalizados (con letras) siempre se mantienen
+            const itemsValidos = items.filter(item => {
+                const idStr = String(item.id);
+                // Si es ID numérico, debe existir en Firebase
+                if (/^\d+$/.test(idStr)) {
+                    return !!productsMap[idStr];
+                }
+                // IDs personalizados siempre válidos
+                return true;
+            });
+
+            if (itemsValidos.length !== items.length) {
+                console.log(`🧹 Eliminados ${items.length - itemsValidos.length} items estáticos de wishlist...`);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(itemsValidos));
+                console.log(`✅ Wishlist limpiada: ${itemsValidos.length} items válidos`);
+            }
+        }
+    } catch (e) {
+        console.warn('Error limpiando wishlist:', e);
     }
 }
 
 // ========================================
-// Guarda wishlist en localStorage
+// CARGA WISHLIST 
 // ========================================
+function loadWishlist() {
+    // 🔥 LIMPIAR datos estáticos (solo IDs numéricos que no existen)
+    limpiarWishlistEstatica();
+
+    var saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+        try {
+            var rawItems = JSON.parse(saved);
+            // 🔥 FILTRAR SOLO IDs numéricos que existen en Firebase
+            // Los IDs personalizados (con letras) siempre se mantienen
+            wishlistItems = rawItems.filter(item => {
+                const idStr = String(item.id);
+                if (/^\d+$/.test(idStr)) {
+                    return !!productsMap[idStr];
+                }
+                return true;
+            });
+
+            // Si hay items que no existen en Firebase, actualizar localStorage
+            if (wishlistItems.length !== rawItems.length) {
+                console.log(`🧹 Eliminados ${rawItems.length - wishlistItems.length} items que no existen en Firebase`);
+                saveWishlist();
+            }
+
+            console.log(`📦 ${wishlistItems.length} items en wishlist`);
+            if (wishlistItems.length > 0) {
+                console.log('📋 Items:', wishlistItems.map(i => `${i.id} - ${i.name}`).join(', '));
+            }
+        } catch (e) {
+            console.warn('Error parseando wishlist:', e);
+            wishlistItems = [];
+            saveWishlist();
+        }
+    } else {
+        console.log('📦 No hay wishlist guardada, iniciando vacía');
+        wishlistItems = [];
+        saveWishlist();
+    }
+}
+
 function saveWishlist() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(wishlistItems));
-    // Disparar evento para actualizar badges
     document.dispatchEvent(new CustomEvent('wishlistUpdated', {
         detail: { count: wishlistItems.length }
     }));
+    window.dispatchEvent(new CustomEvent('wishlistUpdated', {
+        detail: { count: wishlistItems.length }
+    }));
+    updateWishlistBadge();
+}
+
+function updateWishlistBadge() {
+    const badge = document.querySelector('.wishlist-count, #wishlistCount');
+    if (badge) {
+        const count = wishlistItems.length;
+        if (count > 0) {
+            badge.style.display = 'inline-block';
+            badge.textContent = count;
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+}
+
+function updateCartBadge() {
+    var cart = JSON.parse(localStorage.getItem('outlet_cart') || '[]');
+    var badge = document.querySelector('.cart-count');
+    if (badge) {
+        var total = cart.reduce(function (sum, item) { return sum + (item.quantity || 1); }, 0);
+        badge.textContent = total;
+        badge.style.opacity = total === 0 ? '0' : '1';
+    }
 }
 
 // ========================================
-// Renderiza el grid de wishlist
+// RENDERIZA WISHLIST - CON ENRIQUECIMIENTO
 // ========================================
 function renderWishlist() {
     var grid = document.getElementById('wishlistGrid');
     var emptyState = document.getElementById('wishlistEmptyState');
     var footer = document.getElementById('wishlistFooter');
     var itemsCountSpan = document.getElementById('wishlistItemsCount');
-    
-    if (!grid) return;
-    
+
+    if (!grid) {
+        console.warn('⚠️ wishlistGrid no encontrado');
+        return;
+    }
+
+    // 🔥 Verificar items válidos
+    var validItems = wishlistItems.filter(item => {
+        const idStr = String(item.id);
+        if (/^\d+$/.test(idStr)) {
+            return !!productsMap[idStr];
+        }
+        return true;
+    });
+
+    if (validItems.length !== wishlistItems.length) {
+        wishlistItems = validItems;
+        saveWishlist();
+    }
+
     var hasItems = wishlistItems.length > 0;
-    
+
     grid.style.display = hasItems ? 'grid' : 'none';
     if (emptyState) emptyState.style.display = hasItems ? 'none' : 'block';
     if (footer) footer.style.display = hasItems ? 'block' : 'none';
-    if (itemsCountSpan) itemsCountSpan.textContent = wishlistItems.length + ' Item' + (wishlistItems.length !== 1 ? 's' : '') + ' Saved';
-    
-    if (!hasItems) return;
-    
-    var sortedItems = wishlistItems.slice(0);
-    if (currentSort === 'price-asc') {
-        sortedItems.sort(function(a, b) { return a.price - b.price; });
-    } else if (currentSort === 'price-desc') {
-        sortedItems.sort(function(a, b) { return b.price - a.price; });
-    } else {
-        sortedItems.sort(function(a, b) { return b.id - a.id; });
+    if (itemsCountSpan) itemsCountSpan.textContent = wishlistItems.length + ' Item' + (wishlistItems.length !== 1 ? 's' : '') + ' Guardado';
+
+    if (!hasItems) {
+        console.log('📦 Wishlist vacía');
+        return;
     }
-    
+
+    // 🔥 ENRIQUECER cada item con datos de Firebase (o mantener datos guardados)
+    var enrichedItems = wishlistItems
+        .map(function (item) {
+            return enrichWishlistItem(item);
+        })
+        .filter(function (item) { return item !== null; });
+
+    if (enrichedItems.length === 0) {
+        wishlistItems = [];
+        saveWishlist();
+        grid.style.display = 'none';
+        if (emptyState) emptyState.style.display = 'block';
+        if (footer) footer.style.display = 'none';
+        if (itemsCountSpan) itemsCountSpan.textContent = '0 Items Guardados';
+        console.log('📦 Wishlist vacía después de enriquecer');
+        return;
+    }
+
+    // Ordenar
+    var sortedItems = enrichedItems.slice(0);
+    if (currentSort === 'price-asc') {
+        sortedItems.sort(function (a, b) { return (a.price || 0) - (b.price || 0); });
+    } else if (currentSort === 'price-desc') {
+        sortedItems.sort(function (a, b) { return (b.price || 0) - (a.price || 0); });
+    } else {
+        sortedItems.sort(function (a, b) {
+            const idA = typeof a.id === 'string' ? parseInt(a.id) || 0 : a.id || 0;
+            const idB = typeof b.id === 'string' ? parseInt(b.id) || 0 : b.id || 0;
+            return idB - idA;
+        });
+    }
+
+    console.log(`📦 Renderizando ${sortedItems.length} items en wishlist`);
+
     var html = '';
-    sortedItems.forEach(function(product) {
+    sortedItems.forEach(function (displayItem) {
         var badgeHtml = '';
-        if (product.badge) {
-            badgeHtml = '<div class="wishlist-card-badge"><span class="wishlist-badge-' + (product.badgeType === 'danger' ? 'danger' : 'primary') + '">' + product.badge + '</span></div>';
+        if (displayItem.badge) {
+            badgeHtml = '<div class="wishlist-card-badge"><span class="wishlist-badge-' + (displayItem.badgeType === 'danger' ? 'danger' : 'primary') + '">' + displayItem.badge + '</span></div>';
         }
-        
-        html += 
-            '<div class="wishlist-product-card" data-id="' + product.id + '">' +
-                '<div class="wishlist-card-image">' +
-                    '<img src="' + product.image + '" alt="' + product.name + '" loading="lazy">' +
-                    badgeHtml +
-                    '<div class="wishlist-card-actions">' +
-                        '<button class="wishlist-heart-btn active" data-id="' + product.id + '" aria-label="Eliminar de favoritos">' +
-                            '<i class="fa-solid fa-heart"></i>' +
-                        '</button>' +
-                    '</div>' +
-                '</div>' +
-                '<div class="wishlist-card-content">' +
-                    '<p class="wishlist-card-brand">' + product.brand + '</p>' +
-                    '<h3 class="wishlist-card-title">' + product.name + '</h3>' +
-                    '<div class="wishlist-card-footer">' +
-                        '<p class="wishlist-card-price">' + formatMoney(product.price) + '</p>' +
-                        '<button class="wishlist-add-cart-btn" data-id="' + product.id + '" aria-label="Agregar al carrito">' +
-                            '<i class="fa-solid fa-shopping-cart"></i>' +
-                        '</button>' +
-                    '</div>' +
-                '</div>' +
+
+        var isInStock = displayItem.estado !== 'agotado';
+        var stockLabel = isInStock ? '' : '<span style="color:#ef4444;font-size:11px;display:block;">Agotado</span>';
+
+        var categoriaHtml = displayItem.categoria ?
+            '<span style="font-size:10px;color:#999;display:block;margin-top:2px;">📂 ' + displayItem.categoria + '</span>' : '';
+
+        html +=
+            '<div class="wishlist-product-card" data-id="' + displayItem.id + '">' +
+            '<div class="wishlist-card-image">' +
+            '<img src="' + (displayItem.image || 'https://placehold.co/300x300?text=Sin+Imagen') + '" alt="' + displayItem.name + '" loading="lazy" onerror="this.src=\'https://placehold.co/300x300?text=Error\'">' +
+            badgeHtml +
+            '<div class="wishlist-card-actions">' +
+            '<button class="wishlist-heart-btn active" data-id="' + displayItem.id + '" aria-label="Eliminar de favoritos">' +
+            '<i class="fa-solid fa-heart"></i>' +
+            '</button>' +
+            '</div>' +
+            '</div>' +
+            '<div class="wishlist-card-content">' +
+            '<p class="wishlist-card-brand">' + (displayItem.brand || 'Outlet') + '</p>' +
+            '<h3 class="wishlist-card-title">' + (displayItem.name || 'Producto') + '</h3>' +
+            categoriaHtml +
+            '<div class="wishlist-card-footer">' +
+            '<div>' +
+            '<p class="wishlist-card-price">' + formatMoney(displayItem.price || 0) + '</p>' +
+            stockLabel +
+            '</div>' +
+            (isInStock ?
+                '<button class="wishlist-add-cart-btn" data-id="' + displayItem.id + '" aria-label="Agregar al carrito">' +
+                '<i class="fa-solid fa-shopping-cart"></i>' +
+                '</button>' :
+                '<button class="wishlist-add-cart-btn" disabled style="opacity:0.4;cursor:not-allowed;" aria-label="Producto agotado">' +
+                '<i class="fa-solid fa-ban"></i>' +
+                '</button>'
+            ) +
+            '</div>' +
+            '</div>' +
             '</div>';
     });
-    
+
     grid.innerHTML = html;
     attachCardEvents();
+    console.log('✅ Wishlist renderizada correctamente');
 }
 
-// ========================================
-// Adjunta eventos a elementos dinámicos
-// ========================================
 function attachCardEvents() {
-    // CORREGIDO: Usar event delegation para mejor rendimiento y evitar múltiples listeners
     var grid = document.getElementById('wishlistGrid');
     if (!grid) return;
-    
-    // Remover listeners antiguos (si existen)
     grid.removeEventListener('click', handleGridClick);
     grid.addEventListener('click', handleGridClick);
 }
 
-// Manejador centralizado para clicks en el grid
 function handleGridClick(e) {
-    // Botón de corazón (eliminar de wishlist)
     var heartBtn = e.target.closest('.wishlist-heart-btn');
     if (heartBtn) {
         e.preventDefault();
         e.stopPropagation();
-        var productId = parseInt(heartBtn.getAttribute('data-id'));
+        var productId = heartBtn.getAttribute('data-id');
         if (productId) {
             removeFromWishlist(productId);
         }
         return;
     }
-    
-    // Botón de agregar al carrito
+
     var cartBtn = e.target.closest('.wishlist-add-cart-btn');
     if (cartBtn) {
         e.preventDefault();
         e.stopPropagation();
-        var productId = parseInt(cartBtn.getAttribute('data-id'));
+        if (cartBtn.disabled) return;
+
+        var productId = cartBtn.getAttribute('data-id');
         if (productId) {
-            var product = wishlistItems.find(function(p) { return p.id === productId; });
+            var product = getProductById(productId);
             if (product) {
                 addToCart(product);
+            } else {
+                var wishlistItem = wishlistItems.find(function (p) { return String(p.id) === String(productId); });
+                if (wishlistItem) {
+                    addToCartFromWishlistItem(wishlistItem);
+                } else {
+                    mostrarError('Error', 'Producto no encontrado');
+                }
             }
         }
         return;
     }
-    
-    // Click en la tarjeta (navegar a producto)
+
     var card = e.target.closest('.wishlist-product-card');
     if (card) {
         var productId = card.getAttribute('data-id');
@@ -360,20 +512,23 @@ function handleGridClick(e) {
 }
 
 // ========================================
-// Elimina producto de wishlist CON SWEETALERT2
+// ELIMINAR DE WISHLIST
 // ========================================
 async function removeFromWishlist(productId) {
-    var product = wishlistItems.find(function(p) { return p.id === productId; });
-    if (!product) return;
-    
+    var product = wishlistItems.find(function (p) { return String(p.id) === String(productId); });
+    if (!product) {
+        console.warn('⚠️ Producto no encontrado en wishlist:', productId);
+        return;
+    }
+
     var result = await mostrarConfirmacion(
         '¿Eliminar de wishlist?',
         '¿Estás seguro de que quieres eliminar "' + product.name + '" de tu lista de deseos?',
         'Sí, eliminar'
     );
-    
+
     if (result.isConfirmed) {
-        wishlistItems = wishlistItems.filter(function(p) { return p.id !== productId; });
+        wishlistItems = wishlistItems.filter(function (p) { return String(p.id) !== String(productId); });
         saveWishlist();
         renderWishlist();
         await mostrarExito('Eliminado', '"' + product.name + '" ha sido eliminado de tu wishlist.');
@@ -381,87 +536,154 @@ async function removeFromWishlist(productId) {
 }
 
 // ========================================
-// Agrega producto al carrito CON SWEETALERT2
+// AGREGAR AL CARRITO
 // ========================================
 async function addToCart(product) {
+    if (!product) {
+        await mostrarError('Error', 'Producto no encontrado');
+        return;
+    }
+
+    if (product.estado === 'agotado') {
+        await mostrarError('Agotado', 'Este producto no está disponible actualmente.');
+        return;
+    }
+
     var cart = JSON.parse(localStorage.getItem('outlet_cart') || '[]');
-    
-    var existingItem = cart.find(function(item) { return item.id === product.id; });
+
+    var existingItem = cart.find(function (item) { return String(item.id) === String(product.id); });
     if (existingItem) {
         existingItem.quantity = (existingItem.quantity || 1) + 1;
     } else {
         cart.push({
-            id: product.id,
-            name: product.name,
-            brand: product.brand,
-            price: product.price,
-            image: product.image,
+            id: String(product.id),
+            name: product.nombre || 'Producto',
+            brand: product.marca || 'Outlet',
+            price: product.precioFinal || product.precioVenta || 0,
+            image: product.imagenPrincipal || 'https://placehold.co/300x300?text=Sin+Imagen',
             quantity: 1,
-            dateAdded: new Date().toISOString()
+            dateAdded: new Date().toISOString(),
+            size: 'Única',
+            color: 'Estándar'
         });
     }
-    
+
     localStorage.setItem('outlet_cart', JSON.stringify(cart));
     updateCartBadge();
-    
+
     await mostrarExito(
         '¡Añadido al carrito!',
-        '"' + product.name + '" ha sido añadido correctamente. 🛒'
+        '"' + (product.nombre || 'Producto') + '" ha sido añadido correctamente. 🛒'
+    );
+}
+
+async function addToCartFromWishlistItem(wishlistItem) {
+    var cart = JSON.parse(localStorage.getItem('outlet_cart') || '[]');
+
+    var existingItem = cart.find(function (item) { return String(item.id) === String(wishlistItem.id); });
+    if (existingItem) {
+        existingItem.quantity = (existingItem.quantity || 1) + 1;
+    } else {
+        cart.push({
+            id: String(wishlistItem.id),
+            name: wishlistItem.name || 'Producto',
+            brand: wishlistItem.brand || 'Outlet',
+            price: wishlistItem.price || 0,
+            image: wishlistItem.image || 'https://placehold.co/300x300?text=Sin+Imagen',
+            quantity: 1,
+            dateAdded: new Date().toISOString(),
+            size: 'Única',
+            color: 'Estándar'
+        });
+    }
+
+    localStorage.setItem('outlet_cart', JSON.stringify(cart));
+    updateCartBadge();
+
+    await mostrarExito(
+        '¡Añadido al carrito!',
+        '"' + (wishlistItem.name || 'Producto') + '" ha sido añadido correctamente. 🛒'
     );
 }
 
 // ========================================
-// Mueve todos los productos al carrito CON SWEETALERT2
+// MOVER TODOS AL CARRITO
 // ========================================
 async function moveAllToCart() {
     if (wishlistItems.length === 0) {
         await mostrarError('Wishlist vacía', 'No hay productos en tu wishlist para mover al carrito.');
         return;
     }
-    
+
+    var enriched = wishlistItems
+        .map(function (item) { return enrichWishlistItem(item); })
+        .filter(function (item) { return item !== null; });
+
+    var availableItems = enriched.filter(function (item) { return item.estado !== 'agotado'; });
+    var unavailableItems = enriched.filter(function (item) { return item.estado === 'agotado'; });
+
+    if (availableItems.length === 0) {
+        await mostrarError('Sin stock', 'Ninguno de los productos en tu wishlist está disponible actualmente.');
+        return;
+    }
+
+    var mensajeConfirmacion = '¿Quieres mover los ' + availableItems.length + ' producto(s) disponibles de tu wishlist al carrito?';
+    if (unavailableItems.length > 0) {
+        mensajeConfirmacion += ' (' + unavailableItems.length + ' producto(s) no están disponibles)';
+    }
+
     var result = await mostrarConfirmacion(
-        '¿Mover todos al carrito?',
-        '¿Quieres mover los ' + wishlistItems.length + ' producto(s) de tu wishlist al carrito?',
-        'Sí, mover todos'
+        '¿Mover al carrito?',
+        mensajeConfirmacion,
+        'Sí, mover'
     );
-    
+
     if (!result.isConfirmed) return;
-    
+
     mostrarLoading('Moviendo productos al carrito...');
-    
+
     try {
         var cart = JSON.parse(localStorage.getItem('outlet_cart') || '[]');
-        
-        wishlistItems.forEach(function(product) {
-            var existingItem = cart.find(function(item) { return item.id === product.id; });
-            if (existingItem) {
-                existingItem.quantity = (existingItem.quantity || 1) + 1;
-            } else {
-                cart.push({
-                    id: product.id,
-                    name: product.name,
-                    brand: product.brand,
-                    price: product.price,
-                    image: product.image,
-                    quantity: 1,
-                    dateAdded: new Date().toISOString()
-                });
+
+        availableItems.forEach(function (item) {
+            var product = item._product || getProductById(item.id);
+            if (product) {
+                var existingItem = cart.find(function (cartItem) { return String(cartItem.id) === String(product.id); });
+                if (existingItem) {
+                    existingItem.quantity = (existingItem.quantity || 1) + 1;
+                } else {
+                    cart.push({
+                        id: String(product.id),
+                        name: product.nombre || item.name,
+                        brand: product.marca || item.brand || 'Outlet',
+                        price: product.precioFinal || product.precioVenta || item.price || 0,
+                        image: product.imagenPrincipal || item.image || 'https://placehold.co/300x300?text=Sin+Imagen',
+                        quantity: 1,
+                        dateAdded: new Date().toISOString(),
+                        size: 'Única',
+                        color: 'Estándar'
+                    });
+                }
             }
         });
-        
+
         localStorage.setItem('outlet_cart', JSON.stringify(cart));
         updateCartBadge();
-        
-        cerrarLoading();
-        await mostrarExito(
-            '¡Todos movidos al carrito!',
-            wishlistItems.length + ' producto(s) han sido movidos al carrito. 🛍️'
-        );
-        
-        wishlistItems = [];
+
+        var movedIds = new Set(availableItems.map(function (item) { return String(item.id); }));
+        wishlistItems = wishlistItems.filter(function (item) { return !movedIds.has(String(item.id)); });
         saveWishlist();
+
+        cerrarLoading();
+
+        var mensajeExito = availableItems.length + ' producto(s) han sido movidos al carrito. 🛍️';
+        if (unavailableItems.length > 0) {
+            mensajeExito += ' (' + unavailableItems.length + ' no estaban disponibles)';
+        }
+        await mostrarExito('¡Productos movidos!', mensajeExito);
+
         renderWishlist();
-        
+
     } catch (error) {
         cerrarLoading();
         await mostrarError('Error al mover', 'Ocurrió un error al mover los productos al carrito.');
@@ -470,20 +692,7 @@ async function moveAllToCart() {
 }
 
 // ========================================
-// Actualiza el badge del carrito en el navbar
-// ========================================
-function updateCartBadge() {
-    var cart = JSON.parse(localStorage.getItem('outlet_cart') || '[]');
-    var badge = document.querySelector('.cart-count');
-    if (badge) {
-        var total = cart.reduce(function(sum, item) { return sum + (item.quantity || 1); }, 0);
-        badge.textContent = total;
-        badge.style.opacity = total === 0 ? '0' : '1';
-    }
-}
-
-// ========================================
-// Inicializa event listeners
+// EVENT LISTENERS
 // ========================================
 function initEventListeners() {
     var sortBtn = document.getElementById('sortBtn');
@@ -491,15 +700,15 @@ function initEventListeners() {
         sortBtn.removeEventListener('click', handleSortClick);
         sortBtn.addEventListener('click', handleSortClick);
     }
-    
+
     var moveAllBtn = document.getElementById('moveAllToCartBtn');
     if (moveAllBtn) {
         moveAllBtn.removeEventListener('click', moveAllToCart);
         moveAllBtn.addEventListener('click', moveAllToCart);
     }
-    
+
     var exploreBtns = document.querySelectorAll('#exploreMoreBtn, #exploreMoreFooterBtn');
-    exploreBtns.forEach(function(btn) {
+    exploreBtns.forEach(function (btn) {
         if (btn) {
             btn.removeEventListener('click', handleExploreClick);
             btn.addEventListener('click', handleExploreClick);
@@ -507,7 +716,6 @@ function initEventListeners() {
     });
 }
 
-// Manejadores separados para mejor mantenimiento
 function handleSortClick() {
     if (currentSort === 'newest') {
         currentSort = 'price-asc';
@@ -531,16 +739,41 @@ function handleExploreClick() {
 }
 
 // ========================================
-// Controller principal
+// CONTROLLER PRINCIPAL
 // ========================================
 export async function wishlistCustomerController() {
-    console.log('💖 Wishlist Controller - Favorites page');
-    
+    console.log('💖 Wishlist Controller - CON SOPORTE PARA PRODUCTOS DE HOME');
+
     loadStyles();
+
+    // 🔥 PRIMERO: Cargar productos de Firebase
+    await loadAllProducts();
+
+    // 🔥 SEGUNDO: Cargar wishlist (filtra solo IDs numéricos que no existen)
     loadWishlist();
+
+    // 🔥 TERCERO: Renderizar (todos los productos válidos)
     renderWishlist();
     initEventListeners();
     updateCartBadge();
-    
+    updateWishlistBadge();
+
+    // Escuchar cambios en localStorage desde otras pestañas
+    window.addEventListener('storage', function (event) {
+        if (event.key === STORAGE_KEY) {
+            console.log('🔄 Wishlist actualizada desde otra pestaña');
+            loadWishlist();
+            renderWishlist();
+            updateWishlistBadge();
+        }
+    });
+
+    document.addEventListener('wishlistUpdated', function () {
+        console.log('🔄 Wishlist actualizada - recargando...');
+        loadWishlist();
+        renderWishlist();
+        updateWishlistBadge();
+    });
+
     console.log('✅ Wishlist page loaded successfully');
 }
