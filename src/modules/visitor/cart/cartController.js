@@ -200,26 +200,7 @@ function loadCart() {
     } else {
         // Default sample cart items (prices in MXN)
         cartItems = [
-            {
-                id: 1,
-                brand: "Maison Luxe",
-                name: "VESTIDO DE SEDA NOCTURNE",
-                size: "38 (M)",
-                color: "Noir Anthracite",
-                price: 25000.00,
-                quantity: 1,
-                image: "https://picsum.photos/id/20/400/500"
-            },
-            {
-                id: 2,
-                brand: "Atelier Gold",
-                name: "BOLSO CLUTCH MINIMALISTA",
-                size: "Única",
-                color: "Oro Mate",
-                price: 17800.00,
-                quantity: 1,
-                image: "https://picsum.photos/id/26/400/500"
-            }
+        
         ];
         saveCart();
     }

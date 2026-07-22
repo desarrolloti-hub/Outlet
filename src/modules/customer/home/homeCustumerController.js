@@ -266,7 +266,7 @@ function renderTrending(categoryFilter = null) {
                         <span class="body-sm rating">${rating} ★ (${reviews})</span>
                     </div>
                     <div style="font-size: 10px; color: #999; margin-top: 4px; text-align: center;">
-                        📂 ${p.categoria || 'Sin categoría'}
+                         ${p.categoria || 'Sin categoría'}
                     </div>
                 </div>
             `;

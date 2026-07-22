@@ -79,6 +79,9 @@ async function initLayoutControllers(role) {
         return;
     }
 
+    // 🆕 Agregar clase al body para compensar la altura del navbar
+    document.body.classList.add('has-navbar-fixed');
+
     await Promise.all([
         controllers.navbar ? controllers.navbar() : Promise.resolve(),
         controllers.footer ? controllers.footer() : Promise.resolve()

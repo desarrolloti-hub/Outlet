@@ -264,6 +264,10 @@ function renderCart() {
  * Render order summary
  * 🔥 BOTONES CON CLASES DE buttons.css
  */
+/**
+ * Render order summary
+ * 🔥 BOTONES CON CLASES DE buttons.css
+ */
 function renderSummary() {
     const container = document.getElementById('orderSummaryContainerCustomer');
     if (!container) {
@@ -356,7 +360,12 @@ function renderSummary() {
             if (availableItems.length === 0) {
                 showNotification('⚠️ No hay productos disponibles para comprar', true);
             } else {
-                showNotification('🚀 Redirigiendo al pago...');
+                // ✅ REDIRIGIR A /editUser
+                if (typeof window.navigateTo === 'function') {
+                    window.navigateTo('/editUser');
+                } else {
+                    window.location.href = '/editUser';
+                }
             }
         });
     }

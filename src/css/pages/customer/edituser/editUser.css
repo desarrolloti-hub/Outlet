@@ -952,3 +952,56 @@ body.dark-mode {
     --outlet-border-light: #2a4a6a;
     --outlet-border-medium: #4a6a8a;
 }
+
+/* ======================================== */
+/* LOGOUT SECTION - Edit User               */
+/* ======================================== */
+
+.outlet-logout-section {
+    margin-top: var(--outlet-spacing-xl);
+}
+
+.outlet-divider {
+    border: none;
+    border-top: 2px solid var(--outlet-border-medium);
+    margin: var(--outlet-spacing-lg) 0;
+}
+
+.outlet-logout-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--outlet-spacing-lg);
+    padding: var(--outlet-spacing-md) 0;
+    flex-wrap: wrap;
+}
+
+.outlet-logout-info {
+    display: flex;
+    align-items: center;
+    gap: var(--outlet-spacing-md);
+    flex: 1;
+}
+
+.outlet-logout-info h4 {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.outlet-logout-info p {
+    font-size: 0.85rem;
+    color: var(--outlet-text-secondary);
+    line-height: 1.4;
+}
+
+@media (max-width: 768px) {
+    .outlet-logout-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .outlet-logout-container .outlet-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
