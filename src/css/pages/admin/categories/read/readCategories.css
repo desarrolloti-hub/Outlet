@@ -10,6 +10,16 @@
     max-width: 1400px;
     margin: 0 auto;
     width: 100%;
+    margin-left: 280px;
+    transition: margin-left 0.3s ease;
+    width: auto;
+    max-width: calc(100% - 280px);
+    padding: 32px 32px 32px 32px;
+}
+
+body:has(.OUTLET-admin-nav.collapsed) .categorieslist-container {
+    margin-left: 80px;
+    max-width: calc(100% - 80px);
 }
 
 /* ====== HEADER ====== */
@@ -17,15 +27,15 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 48px;
-    padding-bottom: 24px;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
     border-bottom: 2px solid var(--outlet-gold, #ddab3b);
     flex-wrap: wrap;
     gap: 20px;
 }
 
 .categorieslist-title {
-    font-size: 28px;
+    font-size: 26px;
     font-weight: 400;
     letter-spacing: -0.5px;
     color: var(--outlet-text-primary, #1a1a1a);
@@ -42,13 +52,13 @@
     margin-top: 6px;
 }
 
-/* ====== BOTÓN AGREGAR - ESTILO NAVBAR ====== */
+/* ====== BOTÓN AGREGAR ====== */
 .categorieslist-btn-add {
     background: var(--outlet-gold-gradient, linear-gradient(135deg, #ddab3b 0%, #f3bf4d 100%));
     color: var(--outlet-black, #1a1a1a);
     border: none;
-    padding: 10px 28px;
-    border-radius: var(--outlet-radius-md, 8px);
+    padding: 10px 24px;
+    border-radius: 0 !important;
     cursor: pointer;
     font-size: 14px;
     font-weight: 600;
@@ -77,7 +87,7 @@
 /* ====== TABLA ====== */
 .categorieslist-table-container {
     background: var(--outlet-bg-card, white);
-    border-radius: 20px;
+    border-radius: 16px;
     border: 1px solid rgba(221, 171, 59, 0.12);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
     overflow: hidden;
@@ -94,14 +104,14 @@
     min-width: 700px;
 }
 
-/* ====== ENCABEZADOS DORADOS CENTRADOS ====== */
+/* ====== ENCABEZADOS ====== */
 .categorieslist-table thead {
     background: #faf8f5;
     border-bottom: 3px solid var(--outlet-gold, #ddab3b);
 }
 
 .categorieslist-table th {
-    padding: 18px 16px;
+    padding: 14px 12px;
     text-align: center;
     font-weight: 600;
     font-size: 13px;
@@ -111,16 +121,16 @@
     border-bottom: 2px solid var(--outlet-gold, #ddab3b);
 }
 
-/* ====== CELDAS CENTRADAS ====== */
+/* ====== CELDAS ====== */
 .categorieslist-table td {
-    padding: 16px;
+    padding: 12px 12px;
     text-align: center;
     border-bottom: 1px solid #f0f0f0;
     font-size: 14px;
     vertical-align: middle;
 }
 
-/* ====== IMAGEN CON BORDE DORADO ====== */
+/* ====== IMAGEN ====== */
 .categorieslist-image-cell {
     display: flex;
     align-items: center;
@@ -144,7 +154,7 @@
     font-size: 12px;
 }
 
-/* ====== SUBCATEGORÍAS CON ÍCONO - CENTRADO ====== */
+/* ====== SUBCATEGORÍAS ====== */
 .categorieslist-subcategory-count {
     display: inline-flex;
     align-items: center;
@@ -230,7 +240,7 @@
     color: var(--outlet-gold, #ddab3b);
 }
 
-/* ====== BOTONES DE ACCIÓN - CENTRADOS ====== */
+/* ====== BOTONES DE ACCIÓN ====== */
 .categorieslist-actions-cell {
     display: flex;
     gap: 8px;
@@ -243,8 +253,8 @@
 .categorieslist-btn-subcategories {
     background: transparent;
     border: 1px solid #e0e0e0;
-    padding: 8px 16px;
-    border-radius: 30px;
+    padding: 6px 14px;
+    border-radius: 0 !important;
     cursor: pointer;
     transition: all 0.25s ease;
     font-size: 12px;
@@ -397,7 +407,7 @@
     width: 100%;
     padding: 12px 16px;
     border: 1px solid #e0e0e0;
-    border-radius: 12px;
+    border-radius: 0 !important;
     font-size: 14px;
     font-family: 'Inter', sans-serif;
     transition: all 0.25s;
@@ -438,7 +448,7 @@
     color: var(--outlet-gold, #ddab3b);
     border: 2px solid var(--outlet-gold, #ddab3b);
     padding: 14px;
-    border-radius: 40px;
+    border-radius: 0 !important;
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
@@ -460,7 +470,7 @@
     background: transparent;
     border: 1px solid #e0e0e0;
     padding: 10px 20px;
-    border-radius: 40px;
+    border-radius: 0 !important;
     cursor: pointer;
     font-size: 13px;
     font-weight: 500;
@@ -478,7 +488,7 @@
     color: white;
     border: none;
     padding: 10px 20px;
-    border-radius: 40px;
+    border-radius: 0 !important;
     cursor: pointer;
     font-size: 13px;
     font-weight: 500;
@@ -514,7 +524,7 @@
     flex: 1;
     padding: 12px 16px;
     border: 1px solid #e0e0e0;
-    border-radius: 12px;
+    border-radius: 0 !important;
     font-size: 14px;
     font-family: 'Inter', sans-serif;
     background: var(--outlet-bg-card, #fff);
@@ -531,7 +541,7 @@
     color: var(--outlet-gold, #ddab3b);
     border: 2px solid var(--outlet-gold, #ddab3b);
     padding: 0 20px;
-    border-radius: 40px;
+    border-radius: 0 !important;
     cursor: pointer;
     font-size: 13px;
     font-weight: 500;
@@ -613,7 +623,7 @@
     background: var(--outlet-toast-bg, #1f1b13);
     color: var(--outlet-toast-text, #fff8f2);
     padding: 0.75rem 1.5rem;
-    border-radius: 8px;
+    border-radius: 0 !important;
     font-size: 0.875rem;
     font-weight: 500;
     z-index: var(--outlet-z-tooltip, 1070);
@@ -711,21 +721,24 @@ body.dark-mode .categorieslist-btn-add {
 
 /* ====== RESPONSIVE ====== */
 
-/* Tablets (768px - 1024px) */
 @media (max-width: 1024px) {
     .categorieslist-container {
-        padding: 32px;
+        margin-left: 240px;
+        max-width: calc(100% - 240px);
+        padding: 28px;
     }
 
-    .categorieslist-title {
-        font-size: 26px;
+    body:has(.OUTLET-admin-nav.collapsed) .categorieslist-container {
+        margin-left: 70px;
+        max-width: calc(100% - 70px);
     }
 }
 
-/* Tablets pequeñas y móviles grandes (768px) */
 @media (max-width: 768px) {
     .categorieslist-container {
-        padding: 24px;
+        margin-left: 0 !important;
+        max-width: 100% !important;
+        padding: 20px;
     }
 
     .categorieslist-header {
@@ -736,7 +749,7 @@ body.dark-mode .categorieslist-btn-add {
     }
 
     .categorieslist-title {
-        font-size: 24px;
+        font-size: 22px;
     }
 
     .categorieslist-btn-add {
@@ -786,10 +799,9 @@ body.dark-mode .categorieslist-btn-add {
     }
 }
 
-/* Móviles pequeños (480px) */
 @media (max-width: 480px) {
     .categorieslist-container {
-        padding: 16px;
+        padding: 12px;
     }
 
     .categorieslist-header {
@@ -878,7 +890,6 @@ body.dark-mode .categorieslist-btn-add {
     }
 }
 
-/* Móviles muy pequeños (375px) */
 @media (max-width: 375px) {
     .categorieslist-container {
         padding: 12px;
@@ -903,160 +914,7 @@ body.dark-mode .categorieslist-btn-add {
     }
 }
 
-/* ========================================
-   INTEGRACIÓN CON NAVBAR LATERAL
-   ======================================== */
-
-body {
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
-}
-
-.categorieslist-container {
-    margin-left: 280px;
-    transition: margin-left 0.3s ease;
-    width: auto;
-    max-width: calc(100% - 280px);
-    padding: 32px 32px 32px 32px;
-}
-
-body:has(.OUTLET-admin-nav.collapsed) .categorieslist-container {
-    margin-left: 80px;
-    max-width: calc(100% - 80px);
-}
-
-/* ========================================
-   RESPONSIVE OPTIMIZADO
-   ======================================== */
-
-@media (max-width: 1024px) {
-    .categorieslist-container {
-        margin-left: 240px;
-        max-width: calc(100% - 240px);
-        padding: 28px;
-    }
-
-    body:has(.OUTLET-admin-nav.collapsed) .categorieslist-container {
-        margin-left: 70px;
-        max-width: calc(100% - 70px);
-    }
-}
-
-@media (max-width: 768px) {
-    .categorieslist-container {
-        margin-left: 0 !important;
-        max-width: 100% !important;
-        padding: 20px;
-    }
-}
-
-@media (max-width: 480px) {
-    .categorieslist-container {
-        padding: 12px;
-    }
-}
-
-/* ========================================
-   REDUCIR ESPACIOS INTERNOS
-   ======================================== */
-
-.categorieslist-header {
-    margin-bottom: 32px;
-    padding-bottom: 16px;
-}
-
-.categorieslist-title {
-    font-size: 26px;
-}
-
-@media (max-width: 768px) {
-    .categorieslist-title {
-        font-size: 22px;
-    }
-}
-
-.categorieslist-table-container {
-    border-radius: 16px;
-}
-
-.categorieslist-table th {
-    padding: 14px 12px;
-}
-
-.categorieslist-table td {
-    padding: 12px 12px;
-}
-
-.categorieslist-btn-add {
-    padding: 10px 24px;
-}
-
-.categorieslist-btn-edit,
-.categorieslist-btn-delete,
-.categorieslist-btn-subcategories {
-    padding: 6px 14px;
-}
-
-/* ========================================
-   BOTÓN HAMBURGUESA
-   ======================================== */
-
-.mobile-menu-btn {
-    display: none;
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    z-index: 1100;
-    background: var(--outlet-gold);
-    border: none;
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    cursor: pointer;
-    align-items: center;
-    justify-content: center;
-    color: var(--outlet-primary);
-    box-shadow: var(--outlet-shadow-md);
-}
-
-.mobile-menu-btn i {
-    font-size: 24px;
-}
-
-@media (max-width: 768px) {
-    .mobile-menu-btn {
-        display: flex;
-    }
-
-    .OUTLET-admin-nav {
-        transform: translateX(-100%);
-        transition: transform 0.3s ease;
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 100vh;
-        z-index: 1050;
-        width: 280px !important;
-    }
-
-    .OUTLET-admin-nav.open {
-        transform: translateX(0);
-    }
-
-    body.menu-open {
-        overflow: hidden;
-    }
-}
-
-.categorieslist-container {
-    transition: margin-left 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-}
-
-/* ========================================
-   MENÚ HAMBURGUESA - ESTILOS GLOBALES
-   ======================================== */
-
+/* ====== MENÚ HAMBURGUESA (UNIFICADO) ====== */
 .outlet-mobile-menu-btn {
     display: none;
     position: fixed;
@@ -1066,7 +924,7 @@ body:has(.OUTLET-admin-nav.collapsed) .categorieslist-container {
     background: var(--outlet-gold, #ddab3b);
     border: none;
     padding: 10px 16px;
-    border-radius: 40px;
+    border-radius: 0 !important;
     cursor: pointer;
     align-items: center;
     gap: 10px;
@@ -1151,6 +1009,21 @@ body:has(.OUTLET-admin-nav.collapsed) .categorieslist-container {
         z-index: 1050 !important;
         overflow-y: auto !important;
         box-shadow: none !important;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+    }
+
+    .OUTLET-admin-nav::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .OUTLET-admin-nav::-webkit-scrollbar-track {
+        background: var(--outlet-border-light, #f0f0f0);
+    }
+
+    .OUTLET-admin-nav::-webkit-scrollbar-thumb {
+        background: var(--outlet-gold, #ddab3b);
+        border-radius: 4px;
     }
 
     .OUTLET-admin-nav.outlet-mobile-open {
@@ -1162,8 +1035,25 @@ body:has(.OUTLET-admin-nav.collapsed) .categorieslist-container {
         overflow: hidden;
     }
 
-    .OUTLET-admin-nav.outlet-mobile-open {
-        animation: outletSlideIn 0.3s ease forwards;
+    body .outlet-categories-container,
+    body .categorieslist-container,
+    body .updatecategory-container,
+    body .outlet-products-container,
+    body .outlet-admin-container,
+    body .productlist-container,
+    body .admin-main-content {
+        transition: margin-left 0.3s ease, filter 0.3s ease;
+    }
+
+    body:has(.OUTLET-admin-nav.outlet-mobile-open) .outlet-categories-container,
+    body:has(.OUTLET-admin-nav.outlet-mobile-open) .categorieslist-container,
+    body:has(.OUTLET-admin-nav.outlet-mobile-open) .updatecategory-container,
+    body:has(.OUTLET-admin-nav.outlet-mobile-open) .outlet-products-container,
+    body:has(.OUTLET-admin-nav.outlet-mobile-open) .outlet-admin-container,
+    body:has(.OUTLET-admin-nav.outlet-mobile-open) .productlist-container,
+    body:has(.OUTLET-admin-nav.outlet-mobile-open) .admin-main-content {
+        filter: blur(2px);
+        pointer-events: none;
     }
 }
 
@@ -1191,49 +1081,5 @@ body:has(.OUTLET-admin-nav.collapsed) .categorieslist-container {
         position: fixed !important;
         left: 0 !important;
         top: 0 !important;
-    }
-}
-
-@media (max-width: 768px) {
-
-    body .outlet-categories-container,
-    body .categorieslist-container,
-    body .updatecategory-container,
-    body .outlet-products-container,
-    body .outlet-admin-container,
-    body .productlist-container,
-    body .admin-main-content {
-        transition: margin-left 0.3s ease, filter 0.3s ease;
-    }
-
-    body:has(.OUTLET-admin-nav.outlet-mobile-open) .outlet-categories-container,
-    body:has(.OUTLET-admin-nav.outlet-mobile-open) .categorieslist-container,
-    body:has(.OUTLET-admin-nav.outlet-mobile-open) .updatecategory-container,
-    body:has(.OUTLET-admin-nav.outlet-mobile-open) .outlet-products-container,
-    body:has(.OUTLET-admin-nav.outlet-mobile-open) .outlet-admin-container,
-    body:has(.OUTLET-admin-nav.outlet-mobile-open) .productlist-container,
-    body:has(.OUTLET-admin-nav.outlet-mobile-open) .admin-main-content {
-        filter: blur(2px);
-        pointer-events: none;
-    }
-}
-
-@media (max-width: 768px) {
-    .OUTLET-admin-nav {
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: thin;
-    }
-
-    .OUTLET-admin-nav::-webkit-scrollbar {
-        width: 4px;
-    }
-
-    .OUTLET-admin-nav::-webkit-scrollbar-track {
-        background: var(--outlet-border-light, #f0f0f0);
-    }
-
-    .OUTLET-admin-nav::-webkit-scrollbar-thumb {
-        background: var(--outlet-gold, #ddab3b);
-        border-radius: 4px;
     }
 }

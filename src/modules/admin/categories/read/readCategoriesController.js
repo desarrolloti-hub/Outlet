@@ -24,29 +24,6 @@ var elements = {};
 // ========================================
 
 /**
- * Muestra un toast personalizado (estilo OUTLET)
- */
-function mostrarToast(mensaje, tipo) {
-    tipo = tipo || 'info';
-    var toastExistente = document.querySelector('.outlet-toast');
-    if (toastExistente) toastExistente.remove();
-
-    var toast = document.createElement('div');
-    toast.className = 'outlet-toast ' + tipo;
-    toast.textContent = mensaje;
-    document.body.appendChild(toast);
-
-    requestAnimationFrame(function () {
-        toast.classList.add('show');
-    });
-
-    setTimeout(function () {
-        toast.classList.remove('show');
-        setTimeout(function () { toast.remove(); }, 300);
-    }, 3200);
-}
-
-/**
  * Muestra una SweetAlert2 personalizada
  */
 function mostrarSweetAlert(options) {
@@ -87,21 +64,6 @@ function mostrarError(titulo, mensaje) {
 }
 
 /**
- * Muestra alerta de advertencia
- */
-function mostrarAdvertencia(titulo, mensaje, confirmText) {
-    confirmText = confirmText || 'Continuar';
-    return mostrarSweetAlert({
-        icon: 'warning',
-        title: titulo || '¡Cuidado!',
-        text: mensaje || 'Estás a punto de realizar una acción importante.',
-        confirmButtonText: confirmText,
-        showCancelButton: true,
-        cancelButtonText: 'Cancelar'
-    });
-}
-
-/**
  * Muestra alerta de confirmación
  */
 function mostrarConfirmacion(titulo, mensaje, confirmText) {
@@ -116,27 +78,6 @@ function mostrarConfirmacion(titulo, mensaje, confirmText) {
     });
 }
 
-/**
- * Muestra un loading con SweetAlert2
- */
-function mostrarLoading(mensaje) {
-    mensaje = mensaje || 'Procesando...';
-    return mostrarSweetAlert({
-        title: mensaje,
-        allowOutsideClick: false,
-        didOpen: function () {
-            Swal.showLoading();
-        }
-    });
-}
-
-/**
- * Cierra la alerta de loading
- */
-function cerrarLoading() {
-    Swal.close();
-}
-
 // ========================================
 // Cache de elementos DOM
 // ========================================
@@ -144,13 +85,11 @@ function cacheElements() {
     elements = {
         addBtn: document.getElementById('addCategoryBtn'),
         tableBody: document.getElementById('categoriesTableBody'),
-
         deleteModal: document.getElementById('deleteModal'),
         deleteItemName: document.getElementById('deleteItemName'),
         confirmDeleteBtn: document.getElementById('confirmDeleteBtn'),
         cancelDeleteBtn: document.getElementById('cancelDeleteBtn'),
         closeDeleteModalBtn: document.getElementById('closeDeleteModalBtn'),
-
         toast: document.getElementById('categoriesToast')
     };
 }
@@ -221,23 +160,19 @@ function renderTable() {
         var safeStatus = cat.status || 'active';
         var subcategoryCount = Array.isArray(cat.subcategories) ? cat.subcategories.length : 0;
 
-
-        // En renderTable() - reemplaza la parte de imageHtml con esto:
         var imageHtml = '';
         if (cat.imageBase64 && cat.imageBase64.startsWith('data:image')) {
             imageHtml = '<img src="' + escapeHtml(cat.imageBase64) + '" alt="' + escapeHtml(safeName) + '" style="width:40px;height:40px;object-fit:cover;border-radius:8px;border:2px solid #ddab3b;box-shadow:0 0 12px rgba(221,171,59,0.2);">';
         } else {
             imageHtml = '<span style="color:#ccc;font-size:12px;">Sin imagen</span>';
         }
-        // En renderTable() - reemplaza la línea de subcategorías
-        // En renderTable() - columna de subcategorías centrada
+
         html +=
             '<tr data-id="' + escapeHtml(safeId) + '">' +
             '<td><div class="categorieslist-image-cell">' + imageHtml + '</div></td>' +
             '<td><code style="font-size: 12px;">' + escapeHtml(safeId) + '</code></td>' +
             '<td><strong>' + escapeHtml(safeName) + '</strong></td>' +
             '<td><code style="font-size: 12px;">' + escapeHtml(safeSlug) + '</code></td>' +
-            // 👇 Subcategorías centradas con ícono
             '<td><span class="categorieslist-subcategory-count"><i class="material-symbols-outlined">local_offer</i> ' + subcategoryCount + '</span></td>' +
             '<td>' + safeOrder + '</td>' +
             '<td><span class="categorieslist-status-badge ' + (safeStatus === 'active' ? 'categorieslist-status-active' : 'categorieslist-status-inactive') + '">' + (safeStatus === 'active' ? 'Activo' : 'Inactivo') + '</span></td>' +
@@ -297,7 +232,7 @@ async function loadCategories() {
 }
 
 // ========================================
-// NUEVA FUNCIÓN: Redirigir a la página de creación
+// Navegación
 // ========================================
 function openCreatePage() {
     if (typeof window.navigateTo === 'function') {
@@ -307,16 +242,12 @@ function openCreatePage() {
     }
 }
 
-// ========================================
-// NUEVA FUNCIÓN: Redirigir a la página de actualización con el ID
-// ========================================
 function openUpdatePage(categoryId) {
     if (!categoryId) {
         mostrarError('Error', 'No se pudo identificar la categoría a editar.');
         return;
     }
 
-    // Redirigir a la página de actualización con el ID como parámetro
     if (typeof window.navigateTo === 'function') {
         window.navigateTo('/updateCategories?id=' + encodeURIComponent(categoryId));
     } else {
@@ -339,7 +270,7 @@ async function deleteCategory(id) {
 }
 
 // ========================================
-// Modal de confirmación CON SWEETALERT2
+// Modal de confirmación
 // ========================================
 async function showDeleteModal(id, name) {
     var displayName = name || 'esta categoría';
@@ -366,15 +297,12 @@ async function confirmDelete() {
 // Event Listeners
 // ========================================
 function initEventListeners() {
-    // Redirige a createCategories
     elements.addBtn?.addEventListener('click', openCreatePage);
 
-    // Botones del modal de eliminación
     elements.confirmDeleteBtn?.addEventListener('click', confirmDelete);
     elements.cancelDeleteBtn?.addEventListener('click', function () { deleteTarget = null; hideModal(elements.deleteModal); });
     elements.closeDeleteModalBtn?.addEventListener('click', function () { deleteTarget = null; hideModal(elements.deleteModal); });
 
-    // Cerrar modal con Escape
     document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
             if (elements.deleteModal?.style.display === 'flex') {
@@ -384,7 +312,6 @@ function initEventListeners() {
         }
     });
 
-    // Cerrar modal clickeando fuera
     elements.deleteModal?.addEventListener('click', function (e) {
         if (e.target === elements.deleteModal) {
             hideModal(elements.deleteModal);
