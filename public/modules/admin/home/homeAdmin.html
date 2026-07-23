@@ -1,51 +1,63 @@
 <!-- ========================================
-   ADMIN PANEL - OUTLET
-   Diseño simplificado y premium
+   ADMIN PANEL - OUTLET (ELEGANTE Y DORADO)
    ======================================== -->
 
 <main class="admin-dashboard">
 
     <div class="admin-main-content">
 
-        <!-- ESTADÍSTICAS -->
+        <!-- ESTADÍSTICAS CON ICONOS DORADOS -->
         <section class="admin-cards">
 
             <div class="outlet-stat-card">
+                <div class="outlet-stat-icon">
+                    <i class="fa-solid fa-box"></i>
+                </div>
                 <div class="outlet-stat-info">
-                    <h3 id="productsCount">0</h3>
-                    <p>Productos</p>
+                    <h3 id="productsCount">8</h3>
+                    <p>PRODUCTOS</p>
                 </div>
             </div>
 
             <div class="outlet-stat-card">
+                <div class="outlet-stat-icon">
+                    <i class="fa-solid fa-users"></i>
+                </div>
                 <div class="outlet-stat-info">
                     <h3 id="usersCount">0</h3>
-                    <p>Usuarios</p>
+                    <p>USUARIOS</p>
                 </div>
             </div>
 
             <div class="outlet-stat-card">
+                <div class="outlet-stat-icon">
+                    <i class="fa-solid fa-truck"></i>
+                </div>
                 <div class="outlet-stat-info">
                     <h3 id="ordersCount">0</h3>
-                    <p>Pedidos</p>
+                    <p>PEDIDOS</p>
                 </div>
             </div>
 
-            <div class="outlet-stat-card">
-                <div class="outlet-stat-info">
-                    <h3 id="salesCount">$0</h3>
-                    <p>Ventas</p>
+            <!-- VENTAS SIN ICONO -->
+            <div class="outlet-stat-card" id="salesCard">
+                <div class="outlet-stat-info sales-only">
+                    <h3 id="salesCount">$191,360</h3>
+                    <p>VENTAS</p>
                 </div>
             </div>
 
         </section>
 
-        <!-- TABLA -->
+        <!-- TABLA DE PRODUCTOS -->
         <section class="admin-table-section">
 
             <div class="admin-table-header">
 
-                <h2>Catálogo de Productos</h2>
+                <h2 class="table-title">
+                    <i class="fa-regular fa-star"></i>
+                    Catálogo de Productos
+                </h2>
 
                 <button id="addProductBtn" class="admin-add-btn">
                     <i class="fa-solid fa-plus"></i>
@@ -60,15 +72,75 @@
 
                     <thead>
                         <tr>
-                            <th>Imagen</th>
-                            <th>Producto</th>
-                            <th>Precio</th>
-                            <th>Categoría</th>
-                            <th>Acciones</th>
+                            <th>IMAGEN</th>
+                            <th>PRODUCTO</th>
+                            <th>PRECIO</th>
+                            <th>CATEGORÍA</th>
+                            <th>ACCIONES</th>
                         </tr>
                     </thead>
 
                     <tbody id="productsTable">
+                        <tr>
+                            <td><img src="https://via.placeholder.com/50/DDAB3B/1F1B13?text=A" alt="producto"
+                                    class="product-image"></td>
+                            <td>Aretes</td>
+                            <td>$1,025</td>
+                            <td>Joyería</td>
+                            <td>
+                                <button class="admin-action-btn" title="Editar">
+                                    <i class="fa-regular fa-pen-to-square"></i>
+                                </button>
+                                <button class="admin-action-btn" title="Eliminar">
+                                    <i class="fa-regular fa-trash-can"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><img src="https://via.placeholder.com/50/DDAB3B/1F1B13?text=K" alt="producto"
+                                    class="product-image"></td>
+                            <td>Kids</td>
+                            <td>$3,659</td>
+                            <td>Calzado</td>
+                            <td>
+                                <button class="admin-action-btn" title="Editar">
+                                    <i class="fa-regular fa-pen-to-square"></i>
+                                </button>
+                                <button class="admin-action-btn" title="Eliminar">
+                                    <i class="fa-regular fa-trash-can"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><img src="https://via.placeholder.com/50/DDAB3B/1F1B13?text=B" alt="producto"
+                                    class="product-image"></td>
+                            <td>Bolso</td>
+                            <td>$2,589</td>
+                            <td>Bolso</td>
+                            <td>
+                                <button class="admin-action-btn" title="Editar">
+                                    <i class="fa-regular fa-pen-to-square"></i>
+                                </button>
+                                <button class="admin-action-btn" title="Eliminar">
+                                    <i class="fa-regular fa-trash-can"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><img src="https://via.placeholder.com/50/DDAB3B/1F1B13?text=C" alt="producto"
+                                    class="product-image"></td>
+                            <td>Calzado</td>
+                            <td>$5,236</td>
+                            <td>Calzado</td>
+                            <td>
+                                <button class="admin-action-btn" title="Editar">
+                                    <i class="fa-regular fa-pen-to-square"></i>
+                                </button>
+                                <button class="admin-action-btn" title="Eliminar">
+                                    <i class="fa-regular fa-trash-can"></i>
+                                </button>
+                            </td>
+                        </tr>
                     </tbody>
 
                 </table>
@@ -92,6 +164,7 @@
         <div class="admin-modal-header">
 
             <h3 id="modalTitle">
+                <i class="fa-regular fa-gem"></i>
                 Agregar Producto
             </h3>
 
@@ -104,53 +177,35 @@
         <div class="admin-modal-body">
 
             <div class="admin-form-group">
-                <label>Nombre del producto</label>
-                <input
-                    type="text"
-                    id="productName"
-                    placeholder="Ej: Camisa Premium">
+                <label><i class="fa-regular fa-tag"></i> Nombre del producto</label>
+                <input type="text" id="productName" placeholder="Ej: Aretes de oro">
             </div>
 
             <div class="admin-form-group">
-                <label>Precio (MXN)</label>
-                <input
-                    type="number"
-                    id="productPrice"
-                    placeholder="0">
+                <label><i class="fa-regular fa-dollar-sign"></i> Precio (MXN)</label>
+                <input type="number" id="productPrice" placeholder="0">
             </div>
 
             <div class="admin-form-group">
-                <label>Categoría</label>
-                <input
-                    type="text"
-                    id="productCategory"
-                    placeholder="Ej: Hombre, Mujer, Accesorios">
+                <label><i class="fa-regular fa-layer-group"></i> Categoría</label>
+                <input type="text" id="productCategory" placeholder="Ej: Joyería, Calzado, Bolso">
             </div>
 
             <div class="admin-form-group">
-                <label>URL de imagen</label>
-                <input
-                    type="text"
-                    id="productImage"
-                    placeholder="https://...">
+                <label><i class="fa-regular fa-image"></i> URL de imagen</label>
+                <input type="text" id="productImage" placeholder="https://...">
             </div>
 
         </div>
 
-        <div class="admin-modal-footer" style="display: flex; gap: 12px; padding: 20px 28px 28px; border-top: 1px solid var(--outlet-border-soft, #eaeaea);">
+        <div class="admin-modal-footer">
 
-            <button
-                class="admin-btn-cancel"
-                id="cancelModalBtn"
-                style="flex:1; justify-content:center;">
+            <button class="admin-btn-cancel" id="cancelModalBtn">
                 Cancelar
             </button>
 
-            <button
-                class="admin-btn-save"
-                id="saveProductBtn"
-                style="flex:1; justify-content:center;">
-                Guardar
+            <button class="admin-btn-save" id="saveProductBtn">
+                <i class="fa-regular fa-check"></i> Guardar
             </button>
 
         </div>
