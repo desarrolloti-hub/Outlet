@@ -29,6 +29,7 @@ import { productsCustumerController } from '../modules/customer/products/product
 import { collectionCustomerController } from '../modules/customer/collection/collectionCustumerController.js'
 
 import { OrdersController } from '../modules/customer/orders/ordersController.js'
+import { paymentMethodsController } from '../modules/customer/paymentMethods/paymentMethodsController.js';
 
 
 
@@ -186,6 +187,11 @@ export const routes = {
         view: "/modules/customer/orders/orders.html",
         controller: OrdersController
     },
+    "/payment": {
+        view: "/modules/customer/paymentMethods/paymentMethods.html",
+        controller: paymentMethodsController
+    },
+
 
     /* ========================================
          Rutas de error y fallback  

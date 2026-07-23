@@ -317,9 +317,9 @@ function handleProfileMenuItemClick(e, action) {
             console.log('💳 Navegando a métodos de pago');
             if (session) {
                 if (typeof window.navigateTo === 'function') {
-                    window.navigateTo('/payment-methods');
+                    window.navigateTo('/payment');
                 } else {
-                    window.location.href = '/payment-methods';
+                    window.location.href = '/payment';
                 }
             } else {
                 if (typeof window.navigateTo === 'function') {

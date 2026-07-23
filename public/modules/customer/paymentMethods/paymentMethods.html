@@ -1,0 +1,144 @@
+<!-- ========================================
+   VISTA DE MÉTODOS DE PAGO - OUTLET
+   Página para gestionar tarjetas y métodos de pago
+   ======================================== -->
+
+<main class="outlet-payment-container">
+    <!-- Header premium -->
+    <div class="outlet-payment-header">
+        <div class="outlet-payment-title">
+            <h1 class="outlet-text-gold">Métodos de Pago</h1>
+            <p class="outlet-payment-subtitle">Administra tus tarjetas guardadas y métodos de pago</p>
+        </div>
+    </div>
+
+    <!-- ======================================== -->
+    <!-- SECCIÓN DE TARJETAS GUARDADAS             -->
+    <!-- ======================================== -->
+    <div class="outlet-form-section">
+        <div class="outlet-section-title">
+            <span class="outlet-section-icon material-symbols-outlined">credit_card</span>
+            <h2>Tarjetas guardadas</h2>
+            <span class="outlet-badge-cards" id="badgeCardCount">0 tarjetas</span>
+        </div>
+        <div class="outlet-payment-cards-list" id="paymentCardsList">
+            <!-- Las tarjetas se renderizan aquí dinámicamente -->
+        </div>
+        <button type="button" class="outlet-btn-add-card" id="btnAddCard">
+            <span class="material-symbols-outlined">add_card</span>
+            Agregar nueva tarjeta
+        </button>
+    </div>
+
+    <!-- ======================================== -->
+    <!-- SECCIÓN DE OTROS MÉTODOS DE PAGO         -->
+    <!-- ======================================== -->
+    <div class="outlet-form-section">
+        <div class="outlet-section-title">
+            <span class="outlet-section-icon material-symbols-outlined">payments</span>
+            <h2>Otros métodos de pago</h2>
+        </div>
+        <div class="outlet-payment-methods-grid">
+            <div class="outlet-payment-method-item">
+                <div class="outlet-method-info">
+                    <span class="material-symbols-outlined">account_balance</span>
+                    <span>Transferencia bancaria</span>
+                </div>
+                <label class="outlet-toggle-switch">
+                    <input type="checkbox" id="paymentTransferenciaToggle">
+                    <span class="outlet-toggle-slider"></span>
+                </label>
+            </div>
+            <div class="outlet-payment-method-item">
+                <div class="outlet-method-info">
+                    <span class="material-symbols-outlined">paypal</span>
+                    <span>PayPal</span>
+                </div>
+                <label class="outlet-toggle-switch">
+                    <input type="checkbox" id="paymentPaypalToggle">
+                    <span class="outlet-toggle-slider"></span>
+                </label>
+            </div>
+            <div class="outlet-payment-method-item">
+                <div class="outlet-method-info">
+                    <span class="material-symbols-outlined">storefront</span>
+                    <span>Pago contra entrega</span>
+                </div>
+                <label class="outlet-toggle-switch">
+                    <input type="checkbox" id="paymentContraentregaToggle">
+                    <span class="outlet-toggle-slider"></span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================== -->
+    <!-- SECCIÓN DE MÉTODO PREDETERMINADO         -->
+    <!-- ======================================== -->
+    <div class="outlet-form-section">
+        <div class="outlet-section-title">
+            <span class="outlet-section-icon material-symbols-outlined">verified</span>
+            <h2>Método predeterminado</h2>
+        </div>
+        <div class="outlet-default-payment" id="defaultPaymentDisplay">
+            <div class="outlet-default-placeholder">
+                <span class="material-symbols-outlined">credit_card</span>
+                <p>No hay tarjeta seleccionada</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================== -->
+    <!-- ACCIONES FINALES                         -->
+    <!-- ======================================== -->
+    <div class="outlet-action-buttons">
+        <button type="button" class="outlet-btn-secondary" id="btnCancelar">
+            <span class="material-symbols-outlined">close</span>
+            Cancelar
+        </button>
+        <button type="button" class="outlet-btn-primary" id="btnGuardar">
+            <span class="material-symbols-outlined">check</span>
+            Aceptar
+        </button>
+    </div>
+
+    <!-- ======================================== -->
+    <!-- MODAL PARA AGREGAR TARJETA               -->
+    <!-- ======================================== -->
+    <div class="outlet-modal-overlay" id="cardModalOverlay">
+        <div class="outlet-modal-container">
+            <div class="outlet-modal-header">
+                <h3>Agregar nueva tarjeta</h3>
+                <button class="outlet-modal-close" id="closeModalBtn">✕</button>
+            </div>
+            <div class="outlet-modal-body">
+                <div class="outlet-input-group">
+                    <label>Número de tarjeta</label>
+                    <input type="text" id="paymentCardNumber" placeholder="**** **** **** ****">
+                    <span class="outlet-input-line"></span>
+                </div>
+                <div class="outlet-form-row-modal">
+                    <div class="outlet-input-group">
+                        <label>Fecha expiración</label>
+                        <input type="text" id="paymentCardExpiry" placeholder="MM/AA">
+                        <span class="outlet-input-line"></span>
+                    </div>
+                    <div class="outlet-input-group">
+                        <label>CVV</label>
+                        <input type="text" id="paymentCardCvv" placeholder="***">
+                        <span class="outlet-input-line"></span>
+                    </div>
+                </div>
+                <div class="outlet-input-group">
+                    <label>Nombre en la tarjeta</label>
+                    <input type="text" id="paymentCardName" placeholder="Como aparece en la tarjeta">
+                    <span class="outlet-input-line"></span>
+                </div>
+                <div class="outlet-modal-actions">
+                    <button type="button" class="outlet-btn-secondary-modal" id="cancelModalBtn">Cancelar</button>
+                    <button type="button" class="outlet-btn-primary-modal" id="saveCardBtn">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>

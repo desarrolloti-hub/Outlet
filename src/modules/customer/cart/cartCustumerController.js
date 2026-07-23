@@ -362,9 +362,9 @@ function renderSummary() {
             } else {
                 // ✅ REDIRIGIR A /editUser
                 if (typeof window.navigateTo === 'function') {
-                    window.navigateTo('/editUser');
+                    window.navigateTo('/payment');
                 } else {
-                    window.location.href = '/editUser';
+                    window.location.href = '/payment';
                 }
             }
         });
