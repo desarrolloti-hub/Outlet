@@ -407,3 +407,176 @@ body.dark-mode .search-error {
 body.dark-mode .search-results-dropdown::-webkit-scrollbar-thumb {
     background: var(--nav-gold-dark, #b8860b);
 }
+
+/* ========================================
+   MENÚ DESPLEGABLE DE PERFIL
+   ======================================== */
+
+.profile-btn-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.profile-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 260px;
+    background: var(--outlet-bg-card, #ffffff);
+    border-radius: var(--outlet-radius-lg, 12px);
+    box-shadow: var(--outlet-shadow-lg, 0 10px 30px rgba(0, 0, 0, 0.12));
+    border: 1px solid var(--outlet-border-color, #d2c5b0);
+    z-index: var(--outlet-z-dropdown, 1000);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px) scale(0.96);
+    transform-origin: top right;
+    transition: all 0.25s cubic-bezier(0.2, 0.9, 0.4, 1);
+    pointer-events: none;
+}
+
+.profile-dropdown-menu.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+.profile-dropdown-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border-bottom: 1px solid var(--outlet-border-soft, #e2d9cc);
+}
+
+.profile-dropdown-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--outlet-radius-full, 50%);
+    overflow: hidden;
+    border: 2px solid var(--outlet-gold, #ddab3b);
+    flex-shrink: 0;
+}
+
+.profile-dropdown-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-dropdown-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.profile-dropdown-name {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--outlet-text-primary, #1f1b13);
+}
+
+.profile-dropdown-email {
+    display: block;
+    font-size: 12px;
+    color: var(--outlet-text-secondary, #4f4635);
+    opacity: 0.6;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.profile-dropdown-list {
+    list-style: none;
+    padding: 8px 0;
+    margin: 0;
+}
+
+.profile-dropdown-list li {
+    margin: 0;
+}
+
+.profile-dropdown-list li a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    color: var(--outlet-text-primary, #1f1b13);
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.15s ease;
+    cursor: pointer;
+}
+
+.profile-dropdown-list li a:hover {
+    background: var(--outlet-bg-container-high, rgba(221, 171, 59, 0.08));
+}
+
+.profile-dropdown-list li a i {
+    width: 20px;
+    text-align: center;
+    font-size: 16px;
+    color: var(--outlet-gold, #ddab3b);
+}
+
+.profile-dropdown-divider {
+    height: 1px;
+    background: var(--outlet-border-soft, #e2d9cc);
+    margin: 4px 12px;
+}
+
+.profile-dropdown-list li:last-child a {
+    color: var(--outlet-danger, #ba1a1a);
+}
+
+.profile-dropdown-list li:last-child a i {
+    color: var(--outlet-danger, #ba1a1a);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .profile-dropdown-menu {
+        width: 240px;
+        right: -20px;
+    }
+}
+
+/* ===== MODO OSCURO ===== */
+body.dark-mode .profile-dropdown-menu {
+    background: var(--outlet-bg-card, #0a1c2c);
+    border-color: var(--outlet-border-color, #2a4a6e);
+}
+
+body.dark-mode .profile-dropdown-header {
+    border-bottom-color: var(--outlet-border-color, #2a4a6e);
+}
+
+body.dark-mode .profile-dropdown-name {
+    color: var(--outlet-text-primary, #d6e5f7);
+}
+
+body.dark-mode .profile-dropdown-email {
+    color: var(--outlet-text-secondary, #b0c4de);
+}
+
+body.dark-mode .profile-dropdown-list li a {
+    color: var(--outlet-text-primary, #d6e5f7);
+}
+
+body.dark-mode .profile-dropdown-list li a:hover {
+    background: var(--outlet-bg-container, #0f243d);
+}
+
+body.dark-mode .profile-dropdown-divider {
+    background: var(--outlet-border-color, #2a4a6e);
+}
+
+body.dark-mode .profile-dropdown-list li:last-child a {
+    color: var(--outlet-danger, #ff6b6b);
+}
+
+body.dark-mode .profile-dropdown-list li:last-child a i {
+    color: var(--outlet-danger, #ff6b6b);
+}

@@ -97,10 +97,53 @@
             </button>
 
             <!-- FOTO DE PERFIL (reemplaza el icono de persona) -->
-            <button class="icon-btn profile-btn" id="profileBtn" aria-label="Mi perfil">
-                <img src="/assets/imagenes/usuario-default.png" alt="Perfil" class="profile-avatar" id="profileAvatar">
-                <span class="profile-badge" id="profileBadge"></span>
-            </button>
+            <div class="profile-btn-wrapper">
+                <button class="icon-btn profile-btn" id="profileBtn" aria-label="Mi perfil">
+                    <img src="/assets/imagenes/usuario-default.png" alt="Perfil" class="profile-avatar"
+                        id="profileAvatar">
+                    <span class="profile-badge" id="profileBadge"></span>
+                </button>
+
+                <!-- MENÚ DESPLEGABLE DE PERFIL -->
+                <div class="profile-dropdown-menu" id="profileDropdownMenu">
+                    <div class="profile-dropdown-header">
+                        <div class="profile-dropdown-avatar">
+                            <img src="/assets/imagenes/usuario-default.png" alt="Perfil" id="profileDropdownAvatar">
+                        </div>
+                        <div class="profile-dropdown-info">
+                            <span class="profile-dropdown-name" id="profileDropdownName">Usuario</span>
+                            <span class="profile-dropdown-email" id="profileDropdownEmail">usuario@email.com</span>
+                        </div>
+                    </div>
+                    <ul class="profile-dropdown-list">
+                        <li>
+                            <a href="#" id="profileMenuItemProfile" data-action="profile">
+                                <i class="fas fa-user-circle"></i>
+                                <span>Mi Perfil</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" id="profileMenuItemOrders" data-action="orders">
+                                <i class="fas fa-shopping-bag"></i>
+                                <span>Compras realizadas</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" id="profileMenuItemPayment" data-action="payment">
+                                <i class="fas fa-credit-card"></i>
+                                <span>Métodos de pago</span>
+                            </a>
+                        </li>
+                        <li class="profile-dropdown-divider"></li>
+                        <li>
+                            <a href="#" id="profileMenuItemLogout" data-action="logout">
+                                <i class="fas fa-sign-out-alt"></i>
+                                <span>Cerrar sesión</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 

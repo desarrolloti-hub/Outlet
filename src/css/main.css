@@ -13,6 +13,7 @@
 
 /* Components */
 @import url('./components/navbar.css');
+@import url('./components/custumer/navbarCustumer.css');
 @import url('./components/footer.css');
 @import url('./components/buttons.css');
 @import url('./components/cards.css');
@@ -26,7 +27,7 @@
 @import url('./pages/visitor/shared/errors/404.css');
 @import url('./pages/visitor/products/products.css');
 @import url('./pages/visitor/collection/collection.css');
-@import url('./pages/visitor/wishlist/wishlist.css'); 
+@import url('./pages/visitor/wishlist/wishlist.css');
 @import url('./pages/visitor/cart/cart.css');
 @import url('./pages/visitor/login/login.css');
 @import url('./pages/visitor/createAccount/createAccount.css');
@@ -80,8 +81,8 @@ body {
     background-color: var(--outlet-bg-primary);
     color: var(--outlet-text-primary);
     overflow-x: hidden;
-    transition: background-color var(--outlet-transition-base), 
-                color var(--outlet-transition-base);
+    transition: background-color var(--outlet-transition-base),
+        color var(--outlet-transition-base);
 }
 
 #app {
