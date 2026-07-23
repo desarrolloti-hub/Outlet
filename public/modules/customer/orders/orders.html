@@ -1,0 +1,96 @@
+<!-- ========================================
+   ORDERS VIEW - OUTLET
+   Historial de compras del cliente - RESPONSIVE
+   ======================================== -->
+
+<main>
+    <!-- Main Content Area -->
+    <div class="orders-main-container">
+        <!-- Filter Sidebar -->
+        <aside class="orders-sidebar" id="ordersSidebar">
+            <div class="orders-sidebar-header">
+                <h3 class="orders-sidebar-title">FILTROS</h3>
+                <button class="orders-sidebar-toggle" id="sidebarToggle" type="button" aria-label="Toggle filters">
+                    <span class="material-symbols-outlined">filter_list</span>
+                    <span class="orders-sidebar-toggle-text">Filtros</span>
+                </button>
+            </div>
+
+            <div class="orders-sidebar-content" id="sidebarContent">
+                <!-- Estado del pedido -->
+                <div class="orders-filter-group">
+                    <p class="orders-filter-label">Estado</p>
+                    <div class="orders-checkbox-group">
+                        <label class="orders-checkbox-label">
+                            <input type="checkbox" class="orders-checkbox" value="pending" checked>
+                            <span>Pendiente</span>
+                        </label>
+                        <label class="orders-checkbox-label">
+                            <input type="checkbox" class="orders-checkbox" value="processing" checked>
+                            <span>En proceso</span>
+                        </label>
+                        <label class="orders-checkbox-label">
+                            <input type="checkbox" class="orders-checkbox" value="shipped" checked>
+                            <span>Enviado</span>
+                        </label>
+                        <label class="orders-checkbox-label">
+                            <input type="checkbox" class="orders-checkbox" value="delivered" checked>
+                            <span>Entregado</span>
+                        </label>
+                        <label class="orders-checkbox-label">
+                            <input type="checkbox" class="orders-checkbox" value="cancelled">
+                            <span>Cancelado</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Rango de fechas -->
+                <div class="orders-filter-group">
+                    <p class="orders-filter-label">Período</p>
+                    <div class="orders-date-inputs">
+                        <input type="date" class="orders-date-input" id="dateFrom" value="">
+                        <span class="orders-date-separator">—</span>
+                        <input type="date" class="orders-date-input" id="dateTo" value="">
+                    </div>
+                </div>
+
+                <!-- Botón de limpiar filtros -->
+                <button class="orders-clear-filters" id="clearFilters">
+                    <span class="material-symbols-outlined">refresh</span>
+                    Limpiar filtros
+                </button>
+            </div>
+        </aside>
+
+        <!-- Orders Grid -->
+        <section class="orders-section">
+            <div class="orders-header">
+                <p class="orders-results-count" id="resultsCount">Mostrando 0 de 0 pedidos</p>
+                <div class="orders-sort-container">
+                    <span class="orders-sort-label">ORDENAR POR:</span>
+                    <select class="orders-sort-select" id="sortSelect">
+                        <option value="newest">RECIENTES</option>
+                        <option value="oldest">ANTIGUOS</option>
+                        <option value="price-asc">PRECIO: MENOR A MAYOR</option>
+                        <option value="price-desc">PRECIO: MAYOR A MENOR</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="orders-grid" id="ordersGrid">
+                <!-- Los pedidos se inyectan desde JS -->
+            </div>
+
+            <!-- Pagination -->
+            <div class="orders-pagination">
+                <button class="orders-pagination-btn" id="prevPage">
+                    <span class="material-symbols-outlined">chevron_left</span>
+                </button>
+                <div class="orders-pagination-numbers" id="paginationNumbers"></div>
+                <button class="orders-pagination-btn" id="nextPage">
+                    <span class="material-symbols-outlined">chevron_right</span>
+                </button>
+            </div>
+        </section>
+    </div>
+</main>

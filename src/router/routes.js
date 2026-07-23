@@ -28,6 +28,8 @@ import { wishlistCustomerController } from '../modules/customer/wishlist/wishlis
 import { productsCustumerController } from '../modules/customer/products/productsCustumer.js';
 import { collectionCustomerController } from '../modules/customer/collection/collectionCustumerController.js'
 
+import { OrdersController } from '../modules/customer/orders/ordersController.js'
+
 
 
 //         ---------   Admin   ---------
@@ -179,6 +181,10 @@ export const routes = {
     "/collectionCustomer": {
         view: "/modules/customer/collection/collectionCustomer.html",
         controller: collectionCustomerController
+    },
+    "/ordersCustumer": {
+        view: "/modules/customer/orders/orders.html",
+        controller: OrdersController
     },
 
     /* ========================================
