@@ -743,16 +743,139 @@ svg {
     border-collapse: collapse;
 }
 
+/* ====== LÍNEA HORIZONTAL DORADA EN EL ENCABEZADO DE LA TABLA ====== */
 .admin-table thead th {
-    text-align: left;
-    padding: 16px 16px;
-    font-weight: 600;
-    font-size: 12px;
-    color: var(--outlet-gold);
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
     border-bottom: 2px solid var(--outlet-gold) !important;
     padding-bottom: 12px;
+}
+
+/* ====== TARJETAS DE ESTADÍSTICAS CON BORDE DORADO ====== */
+.outlet-stat-card {
+    background: var(--outlet-bg-card);
+    border-radius: var(--outlet-radius-xl);
+    padding: var(--outlet-spacing-lg);
+    box-shadow: var(--outlet-shadow-sm);
+    border: 2px solid var(--outlet-gold) !important;
+    transition: all var(--outlet-transition-base);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: var(--outlet-spacing-md);
+}
+
+.outlet-stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--outlet-shadow-gold);
+    border-color: var(--outlet-gold-light) !important;
+}
+
+/* ====== ICONOS DORADOS EN LAS TARJETAS DE ESTADÍSTICAS ====== */
+.outlet-stat-icon {
+    width: 60px;
+    height: 60px;
+    background: transparent;
+    border: 2px solid var(--outlet-gold);
+    border-radius: var(--outlet-radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--outlet-transition-base);
+    flex-shrink: 0;
+}
+
+.outlet-stat-icon i {
+    font-size: 28px;
+    color: var(--outlet-gold);
+}
+
+.outlet-stat-card:hover .outlet-stat-icon {
+    background: var(--outlet-gold);
+    box-shadow: var(--outlet-shadow-gold);
+}
+
+.outlet-stat-card:hover .outlet-stat-icon i {
+    color: var(--outlet-black);
+}
+
+/* ====== BORDE DORADO EN LAS IMÁGENES DE PRODUCTOS ====== */
+.product-image {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: var(--outlet-radius-md);
+    border: 2px solid var(--outlet-gold) !important;
+    transition: var(--outlet-transition-base);
+}
+
+.product-image:hover {
+    border-color: var(--outlet-gold-light);
+    transform: scale(1.05);
+    box-shadow: var(--outlet-shadow-gold);
+}
+
+/* ====== VENTAS SIN ICONO ====== */
+.sales-only {
+    text-align: center;
+    width: 100%;
+}
+
+.sales-only h3 {
+    font-size: 2.5rem;
+    color: var(--outlet-gold);
+}
+
+.sales-only p {
+    letter-spacing: 1px;
+    font-weight: 500;
+}
+
+/* ====== TÍTULO DE LA TABLA CON ESTRELLA DORADA ====== */
+.table-title {
+    font-family: 'Playfair Display', serif;
+    font-weight: 600;
+    color: var(--outlet-text-primary);
+}
+
+.table-title i {
+    color: var(--outlet-gold);
+    margin-right: 8px;
+}
+
+/* ====== ICONOS DORADOS EN EL MODAL ====== */
+.admin-form-group label i {
+    color: var(--outlet-gold);
+    margin-right: 6px;
+}
+
+#modalTitle i {
+    color: var(--outlet-gold);
+    margin-right: 10px;
+}
+
+.admin-btn-save i {
+    margin-right: 6px;
+}
+
+/* ====== BOTONES DE ACCIÓN SIN BORDE (SOLO ICONOS) ====== */
+.admin-action-btn {
+    background: transparent;
+    border: none !important;
+    color: var(--outlet-gold);
+    padding: 6px 10px;
+    margin: 0 3px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.admin-action-btn:hover {
+    color: var(--outlet-gold-dark);
+    transform: scale(1.1);
 }
 
 .admin-table tbody tr {
@@ -1399,32 +1522,4 @@ svg {
     100% {
         transform: rotate(360deg);
     }
-}
-
-/* ====== VENTAS SIN ICONO ====== */
-.sales-only {
-    text-align: center;
-    width: 100%;
-}
-
-.sales-only h3 {
-    font-size: 2.5rem;
-    color: var(--outlet-gold);
-}
-
-.sales-only p {
-    letter-spacing: 1px;
-    font-weight: 500;
-}
-
-/* ====== TÍTULO DE LA TABLA CON ESTRELLA DORADA ====== */
-.table-title {
-    font-family: 'Playfair Display', serif;
-    font-weight: 600;
-    color: var(--outlet-text-primary);
-}
-
-.table-title i {
-    color: var(--outlet-gold);
-    margin-right: 8px;
 }

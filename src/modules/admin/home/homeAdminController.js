@@ -24,8 +24,8 @@ const ADMIN_STORAGE_KEY = 'outlet_admin_products';
 // ========================================
 
 function formatMoney(amount) {
-    return new Intl.NumberFormat('es-MX', { 
-        style: 'currency', 
+    return new Intl.NumberFormat('es-MX', {
+        style: 'currency',
         currency: 'MXN',
         minimumFractionDigits: 0,
         maximumFractionDigits: 0
@@ -42,7 +42,7 @@ function escapeHtml(str) {
 function showToast(message, isError = false) {
     const old = document.querySelector('.admin-toast');
     if (old) old.remove();
-    
+
     const toast = document.createElement('div');
     toast.className = 'admin-toast';
     toast.textContent = message;
@@ -64,9 +64,9 @@ function showToast(message, isError = false) {
         max-width: 90%;
         z-index: 99999;
     `;
-    
+
     document.body.appendChild(toast);
-    
+
     setTimeout(() => {
         toast.style.opacity = '0';
         toast.style.transform = 'translateX(30px)';
@@ -208,7 +208,7 @@ function normalizeProduct(product) {
 
 async function loadProducts(showLoading = true) {
     console.log('🔄 loadProducts() iniciado...');
-    
+
     if (showLoading) {
         isLoading = true;
         renderProducts();
@@ -219,30 +219,30 @@ async function loadProducts(showLoading = true) {
         console.log('📡 Intentando cargar desde Firebase...');
         console.log('📡 ProductService disponible:', typeof ProductService !== 'undefined');
         console.log('📡 ProductService.getAll:', typeof ProductService?.getAll);
-        
+
         const products = await ProductService.getAll({}, 'createdAt', 'desc', 100);
         console.log('📡 Respuesta de Firebase:', products);
-        
+
         if (products && products.length > 0) {
             console.log('✅ Productos de Firebase:', products.length);
-            
+
             adminProducts = products.map(p => normalizeProduct(p));
             console.log('📦 Productos normalizados:', adminProducts.length);
-            
+
             localStorage.setItem(ADMIN_STORAGE_KEY, JSON.stringify(adminProducts));
-            
+
             isLoading = false;
             renderProducts();
             updateStats();
             showToast(`✅ ${adminProducts.length} productos cargados desde Firebase`);
             return;
         }
-        
+
         // 2. SI FIRESTORE NO TIENE DATOS, INTENTAR LOCALSTORAGE
         console.log('📂 Firebase vacío, intentando localStorage...');
         const saved = localStorage.getItem(ADMIN_STORAGE_KEY);
         console.log('📂 localStorage data:', saved ? 'encontrado' : 'no encontrado');
-        
+
         if (saved) {
             const parsed = JSON.parse(saved);
             if (parsed && parsed.length > 0) {
@@ -255,15 +255,15 @@ async function loadProducts(showLoading = true) {
                 return;
             }
         }
-        
+
         // 3. SI NO HAY NADA, USAR DEMO
         console.log('📦 No hay datos, usando productos de demo');
         useDemoProducts();
-        
+
     } catch (error) {
         console.error('❌ Error en loadProducts:', error);
         console.error('❌ Stack trace:', error.stack);
-        
+
         // Intentar localStorage como fallback
         try {
             const saved = localStorage.getItem(ADMIN_STORAGE_KEY);
@@ -281,7 +281,7 @@ async function loadProducts(showLoading = true) {
         } catch (e) {
             console.warn('Error leyendo localStorage:', e);
         }
-        
+
         // Último recurso: demo
         useDemoProducts();
     } finally {
@@ -338,7 +338,7 @@ function useDemoProducts() {
             imagenPrincipal: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=200&h=200&fit=crop'
         }
     ];
-    
+
     console.log('📦 Usando productos de demo');
     adminProducts = DEMO_PRODUCTS;
     localStorage.setItem(ADMIN_STORAGE_KEY, JSON.stringify(adminProducts));
@@ -411,7 +411,7 @@ async function saveProduct() {
             };
 
             const created = await ProductService.create(newProduct);
-            
+
             adminProducts.push(normalizeProduct(created));
             showToast(`✅ "${name}" agregado`);
         }
@@ -436,15 +436,15 @@ async function deleteProduct(id) {
     if (!product) return;
 
     const name = product.nombre || product.name || 'Producto';
-    
+
     if (!confirm(`¿Eliminar "${name}" permanentemente?`)) return;
 
     try {
         await ProductService.delete(id, false);
-        
+
         adminProducts = adminProducts.filter(p => p.id !== id);
         localStorage.setItem(ADMIN_STORAGE_KEY, JSON.stringify(adminProducts));
-        
+
         renderProducts();
         updateStats();
         showToast(`🗑️ "${name}" eliminado`);
@@ -463,9 +463,9 @@ function goToEditProduct(productId) {
         showToast('ID de producto no válido', true);
         return;
     }
-    
+
     console.log('✏️ Editando producto ID:', productId);
-    
+
     if (typeof window.navigateTo === 'function') {
         window.navigateTo('/editProducts?id=' + encodeURIComponent(productId));
     } else {
@@ -539,7 +539,7 @@ export async function adminController() {
     console.log('  - productsTable:', document.getElementById('productsTable'));
     console.log('  - addProductBtn:', document.getElementById('addProductBtn'));
     console.log('  - productsCount:', document.getElementById('productsCount'));
-    
+
     const tbody = document.getElementById('productsTable');
     if (!tbody) {
         console.error('❌ #productsTable no encontrado. Verifica el HTML.');
@@ -575,8 +575,8 @@ export async function adminController() {
         console.log('✅ addProductBtn encontrado, configurando evento...');
         const newBtn = addProductBtn.cloneNode(true);
         addProductBtn.parentNode.replaceChild(newBtn, addProductBtn);
-        
-        newBtn.addEventListener('click', function(e) {
+
+        newBtn.addEventListener('click', function (e) {
             e.preventDefault();
             e.stopPropagation();
             console.log('🔄 Botón "Agregar producto" clickeado');

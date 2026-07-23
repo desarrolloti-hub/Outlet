@@ -1,13 +1,12 @@
 <!-- modules/admin/layout/adminNavbar.html -->
-
-<!-- ÚNICO BOTÓN HAMBURGUESA - ELIMINA CUALQUIER OTRO -->
+<!-- Botón hamburguesa -->
 <button id="adminMobileToggleBtn" class="admin-mobile-toggle" aria-label="Abrir menú">
     <i class="fas fa-bars"></i>
 </button>
 
-<!-- NAVBAR PRINCIPAL -->
+<!-- Navbar principal -->
 <nav class="OUTLET-admin-nav mobile-hidden" id="adminNav">
-    <!-- Header del navbar -->
+    <!-- Header -->
     <div class="admin-nav-header">
         <div class="admin-logo">
             <img src="/assets/iconos/outlet_lineado_blanco.png" alt="OUTLET Admin" class="admin-logo-img">
@@ -18,10 +17,11 @@
         </button>
     </div>
 
-    <!-- Información del usuario -->
+    <!-- Usuario -->
     <div class="admin-user-info">
         <div class="admin-avatar">
             <img src="/assets/imagenes/hombre.png" alt="Foto de perfil" class="admin-avatar-img">
+            <span class="admin-avatar-badge"></span>
         </div>
         <div class="admin-user-details">
             <span class="admin-user-name" id="adminUserName">Administrador</span>
@@ -29,46 +29,48 @@
         </div>
     </div>
 
-    <!-- Enlaces de navegación -->
+    <!-- Enlaces -->
     <ul class="admin-nav-links">
         <li>
-            <a href="/homeAdmin" data-link>
+            <a href="/homeAdmin" data-link class="active">
                 <i class="fas fa-tachometer-alt"></i>
                 <span>Dashboard</span>
             </a>
         </li>
         <li>
-            <a href="/categories" data-link>
+            <a href="/readCategories" data-link>
                 <i class="fas fa-tags"></i>
                 <span>Categorías</span>
             </a>
         </li>
         <li>
-            <a href="/orders" data-link>
+            <a href="/readOrders" data-link>
                 <i class="fas fa-shopping-cart"></i>
                 <span>Pedidos</span>
             </a>
         </li>
         <li>
-            <a href="/users" data-link>
+            <a href="/readUsers" data-link>
                 <i class="fas fa-users"></i>
                 <span>Usuarios</span>
             </a>
         </li>
         <li>
-            <a href="/settings" data-link>
+            <a href="/adminSettings" data-link>
                 <i class="fas fa-cog"></i>
                 <span>Configuración</span>
             </a>
         </li>
     </ul>
 
-    <!-- Footer del navbar -->
+    <!-- Footer -->
     <div class="admin-nav-footer">
+        <!-- Botón Tema - Estilo dorado -->
         <button class="admin-theme-toggle" id="adminThemeToggleBtn" title="Cambiar modo oscuro">
             <i class="fas fa-moon"></i>
             <span>Tema</span>
         </button>
+        <!-- Botón Cerrar Sesión - Cuadrado y Rojo -->
         <a href="#" id="adminLogoutBtn" class="admin-logout-btn">
             <i class="fas fa-sign-out-alt"></i>
             <span>Cerrar Sesión</span>
@@ -76,5 +78,5 @@
     </div>
 </nav>
 
-<!-- OVERLAY PARA CERRAR MENÚ EN MÓVIL -->
+<!-- Overlay -->
 <div id="adminNavOverlay" class="admin-nav-overlay"></div>

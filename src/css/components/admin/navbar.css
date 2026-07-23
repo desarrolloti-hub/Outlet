@@ -1,5 +1,38 @@
 /* ========================================
    ADMIN NAVBAR - OUTLET LUXURY EDITION
+   LÍNEAS DORADAS - BOTÓN ROJO CUADRADO
+   ======================================== */
+
+:root {
+    --outlet-gold: #ddab3b;
+    --outlet-gold-light: #f3bf4d;
+    --outlet-gold-dark: #b8860b;
+    --outlet-gold-gradient: linear-gradient(135deg, #ddab3b 0%, #f3bf4d 100%);
+    --outlet-gold-soft: rgba(221, 171, 59, 0.12);
+    --outlet-gold-border: rgba(221, 171, 59, 0.3);
+    --outlet-bg-surface: #ffffff;
+    --outlet-bg-card: #ffffff;
+    --outlet-text-primary: #1f1b13;
+    --outlet-text-secondary: #5a4f3b;
+    --outlet-text-muted: #8a7f6b;
+    --outlet-black: #1a1a1a;
+    --outlet-red: #dc2626;
+    --outlet-red-hover: #b91c1c;
+    --outlet-red-soft: rgba(220, 38, 38, 0.1);
+    --outlet-shadow-md: 0 5px 15px rgba(0, 0, 0, 0.08);
+    --outlet-shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.12);
+    --outlet-shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.15);
+    --outlet-shadow-gold: 0 8px 25px rgba(221, 171, 59, 0.25);
+    --outlet-radius-md: 8px;
+    --outlet-radius-lg: 12px;
+    --outlet-radius-xl: 16px;
+    --outlet-radius-full: 9999px;
+    --outlet-transition-base: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --outlet-transition-fast: 0.2s ease;
+}
+
+/* ========================================
+   NAVBAR PRINCIPAL
    ======================================== */
 
 .OUTLET-admin-nav {
@@ -8,17 +41,38 @@
     top: 0;
     bottom: 0;
     width: 280px;
-    background: var(--outlet-bg-surface, #ffffff);
-    border-right: 1px solid var(--outlet-border-soft, rgba(221, 171, 59, 0.12));
+    background: var(--outlet-bg-card);
+    border-right: 2px solid var(--outlet-gold);
     display: flex;
     flex-direction: column;
     z-index: 1030;
     transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: var(--outlet-shadow-md, 0 5px 15px rgba(0, 0, 0, 0.08));
+    box-shadow: var(--outlet-shadow-md);
     overflow-y: auto;
 }
 
-/* ========== ESTADOS PARA MÓVIL ========== */
+/* Scrollbar dorada */
+.OUTLET-admin-nav::-webkit-scrollbar {
+    width: 4px;
+}
+
+.OUTLET-admin-nav::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.OUTLET-admin-nav::-webkit-scrollbar-thumb {
+    background: var(--outlet-gold);
+    border-radius: 10px;
+}
+
+.OUTLET-admin-nav::-webkit-scrollbar-thumb:hover {
+    background: var(--outlet-gold-dark);
+}
+
+/* ========================================
+   ESTADOS MÓVIL
+   ======================================== */
+
 .OUTLET-admin-nav.mobile-hidden {
     transform: translateX(-100%) !important;
 }
@@ -27,7 +81,10 @@
     transform: translateX(0) !important;
 }
 
-/* ========== MODO COLAPSADO (ESCRITORIO) ========== */
+/* ========================================
+   MODO COLAPSADO (ESCRITORIO)
+   ======================================== */
+
 .OUTLET-admin-nav.collapsed {
     width: 80px;
 }
@@ -73,16 +130,22 @@
 
 .OUTLET-admin-nav.collapsed .admin-logout-btn {
     justify-content: center;
+    padding: 10px;
+    width: calc(100% - 20px);
+    margin: 0 10px;
 }
 
-/* ========== HEADER ========== */
+/* ========================================
+   HEADER - LÍNEA DORADA
+   ======================================== */
+
 .admin-nav-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 20px;
-    border-bottom: 1px solid var(--outlet-border-soft, rgba(221, 171, 59, 0.12));
-    margin-bottom: 8px;
+    padding: 22px 20px 18px 20px;
+    border-bottom: 2px solid var(--outlet-gold);
+    margin-bottom: 6px;
 }
 
 .admin-logo {
@@ -92,16 +155,17 @@
 }
 
 .admin-logo-img {
-    width: 36px;
-    height: 36px;
+    width: 38px;
+    height: 38px;
     object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(221, 171, 59, 0.3));
 }
 
 .admin-logo-text {
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 700;
-    letter-spacing: 1px;
-    background: linear-gradient(135deg, var(--outlet-gold, #ddab3b) 0%, var(--outlet-gold-light, #f3bf4d) 100%);
+    letter-spacing: 1.5px;
+    background: var(--outlet-gold-gradient);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -109,51 +173,74 @@
 
 .admin-collapse-btn {
     background: transparent;
-    border: 1px solid var(--outlet-border-soft, rgba(221, 171, 59, 0.2));
-    color: var(--outlet-text-secondary, #4f4635);
+    border: 1.5px solid var(--outlet-gold);
+    color: var(--outlet-gold);
     cursor: pointer;
     width: 34px;
     height: 34px;
-    border-radius: var(--outlet-radius-md, 8px);
-    transition: all 0.3s ease;
+    border-radius: var(--outlet-radius-md);
+    transition: all var(--outlet-transition-base);
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .admin-collapse-btn:hover {
-    background: rgba(221, 171, 59, 0.1);
-    border-color: var(--outlet-gold, #ddab3b);
-    color: var(--outlet-gold, #ddab3b);
+    background: var(--outlet-gold-soft);
+    border-color: var(--outlet-gold-dark);
+    color: var(--outlet-gold-dark);
+    transform: translateX(-2px);
 }
 
-/* ========== USUARIO ========== */
+/* ========================================
+   USUARIO - LÍNEA DORADA
+   ======================================== */
+
 .admin-user-info {
     display: flex;
     align-items: center;
     gap: 14px;
-    padding: 20px 20px;
-    border-bottom: 1px solid var(--outlet-border-soft, rgba(221, 171, 59, 0.12));
-    margin-bottom: 8px;
+    padding: 18px 20px 18px 20px;
+    border-bottom: 2px solid var(--outlet-gold);
+    margin-bottom: 6px;
 }
 
 .admin-avatar {
-    width: 48px;
-    height: 48px;
-    background: linear-gradient(135deg, rgba(221, 171, 59, 0.15) 0%, rgba(221, 171, 59, 0.05) 100%);
-    border-radius: var(--outlet-radius-lg, 12px);
+    width: 52px;
+    height: 52px;
+    background: var(--outlet-gold-soft);
+    border-radius: var(--outlet-radius-lg);
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid var(--outlet-border-soft, rgba(221, 171, 59, 0.2));
+    border: 2px solid var(--outlet-gold);
     overflow: hidden;
     flex-shrink: 0;
+    position: relative;
+    transition: all var(--outlet-transition-base);
+}
+
+.admin-avatar:hover {
+    border-color: var(--outlet-gold-dark);
+    box-shadow: var(--outlet-shadow-gold);
 }
 
 .admin-avatar-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+.admin-avatar-badge {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 12px;
+    height: 12px;
+    background: #22c55e;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
 }
 
 .admin-user-details {
@@ -163,9 +250,9 @@
 
 .admin-user-name {
     display: block;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 700;
-    color: var(--outlet-text-primary, #1f1b13);
+    color: var(--outlet-text-primary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -173,134 +260,200 @@
 
 .admin-user-email {
     display: block;
-    font-size: 11px;
-    color: var(--outlet-text-secondary, #4f4635);
+    font-size: 11.5px;
+    color: var(--outlet-text-secondary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    opacity: 0.75;
 }
 
-/* ========== ENLACES ========== */
+/* ========================================
+   ENLACES
+   ======================================== */
+
 .admin-nav-links {
     flex: 1;
     list-style: none;
-    padding: 0;
+    padding: 4px 0;
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 2px;
     overflow-y: auto;
 }
 
 .admin-nav-links li a {
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding: 12px 20px;
-    margin: 0 8px;
-    color: var(--outlet-text-secondary, #4f4635);
+    gap: 16px;
+    padding: 12px 22px;
+    margin: 0 12px;
+    color: var(--outlet-text-secondary);
     text-decoration: none;
-    transition: all 0.25s ease;
-    border-radius: var(--outlet-radius-md, 8px);
-    font-size: 13px;
+    transition: all var(--outlet-transition-base);
+    border-radius: var(--outlet-radius-lg);
+    font-size: 14px;
     font-weight: 500;
+    position: relative;
 }
 
 .admin-nav-links li a i {
-    width: 22px;
-    font-size: 16px;
+    width: 24px;
+    font-size: 17px;
     text-align: center;
     flex-shrink: 0;
+    color: var(--outlet-text-muted);
+    transition: all var(--outlet-transition-base);
 }
 
 .admin-nav-links li a:hover {
-    background: rgba(221, 171, 59, 0.08);
-    color: var(--outlet-gold, #ddab3b);
+    background: var(--outlet-gold-soft);
+    color: var(--outlet-gold);
     transform: translateX(4px);
 }
 
-.admin-nav-links li a.active {
-    background: linear-gradient(135deg, rgba(221, 171, 59, 0.12) 0%, rgba(221, 171, 59, 0.05) 100%);
-    color: var(--outlet-gold, #ddab3b);
-    border-right: 2px solid var(--outlet-gold, #ddab3b);
+.admin-nav-links li a:hover i {
+    color: var(--outlet-gold);
+    transform: scale(1.1);
 }
 
-/* ========== FOOTER ========== */
+.admin-nav-links li a.active {
+    background: var(--outlet-gold-gradient);
+    color: var(--outlet-black);
+    box-shadow: var(--outlet-shadow-gold);
+}
+
+.admin-nav-links li a.active i {
+    color: var(--outlet-black);
+}
+
+.admin-nav-links li a.active:hover {
+    transform: translateX(4px);
+}
+
+/* ========================================
+   FOOTER - LÍNEA DORADA
+   ======================================== */
+
 .admin-nav-footer {
-    padding: 16px 20px 24px 20px;
-    border-top: 1px solid var(--outlet-border-soft, rgba(221, 171, 59, 0.12));
+    padding: 14px 20px 22px 20px;
+    border-top: 2px solid var(--outlet-gold);
     margin-top: auto;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
 }
 
+/* ========================================
+   BOTÓN TEMA - ESTILO DORADO
+   ======================================== */
+
 .admin-theme-toggle {
-    background: transparent;
-    border: 1px solid var(--outlet-border-soft, rgba(221, 171, 59, 0.2));
-    color: var(--outlet-text-secondary, #4f4635);
-    padding: 10px;
-    border-radius: var(--outlet-radius-md, 8px);
+    background: var(--outlet-gold-gradient);
+    color: var(--outlet-black);
+    border: none;
+    padding: 10px 24px;
+    border-radius: var(--outlet-radius-lg);
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all var(--outlet-transition-base);
+    font-size: 13px;
+    font-weight: 600;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
-    font-size: 13px;
     width: 100%;
+    box-shadow: var(--outlet-shadow-sm);
+}
+
+.admin-theme-toggle i {
+    color: var(--outlet-black);
+    font-size: 16px;
 }
 
 .admin-theme-toggle:hover {
-    background: rgba(221, 171, 59, 0.1);
-    border-color: var(--outlet-gold, #ddab3b);
-    color: var(--outlet-gold, #ddab3b);
+    transform: translateY(-2px);
+    box-shadow: var(--outlet-shadow-gold);
 }
+
+.admin-theme-toggle:active {
+    transform: translateY(0px);
+}
+
+/* ========================================
+   BOTÓN CERRAR SESIÓN - CUADRADO Y ROJO
+   ======================================== */
 
 .admin-logout-btn {
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding: 10px 12px;
-    text-decoration: none;
-    border-radius: var(--outlet-radius-md, 8px);
-    transition: all 0.25s ease;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--outlet-text-secondary, #4f4635);
-    width: 100%;
     justify-content: center;
+    gap: 10px;
+    padding: 10px 24px;
+    text-decoration: none;
+    border-radius: var(--outlet-radius-md);
+    transition: all var(--outlet-transition-base);
+    font-size: 13px;
+    font-weight: 600;
+    width: 100%;
+    background: var(--outlet-red);
+    color: #ffffff;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+}
+
+.admin-logout-btn i {
+    color: #ffffff;
+    font-size: 16px;
+    transition: all var(--outlet-transition-base);
 }
 
 .admin-logout-btn:hover {
-    background: rgba(220, 38, 38, 0.1);
-    color: #ef4444;
+    background: var(--outlet-red-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(220, 38, 38, 0.4);
 }
 
-/* ========== BOTÓN HAMBURGUESA ========== */
+.admin-logout-btn:hover i {
+    transform: translateX(4px);
+}
+
+.admin-logout-btn:active {
+    transform: translateY(0px);
+}
+
+/* ========================================
+   BOTÓN HAMBURGUESA - ESTILO DORADO
+   ======================================== */
+
 .admin-mobile-toggle {
     display: none;
     position: fixed;
     top: 16px;
     left: 16px;
     z-index: 1060;
-    background: var(--outlet-gold, #ddab3b);
-    color: #1a1a1a;
+    background: var(--outlet-gold-gradient);
+    color: var(--outlet-black);
     border: none;
-    border-radius: var(--outlet-radius-md, 8px);
+    border-radius: var(--outlet-radius-md);
     padding: 10px 14px;
     font-size: 20px;
     cursor: pointer;
-    box-shadow: var(--outlet-shadow-lg, 0 10px 30px rgba(0, 0, 0, 0.12));
-    transition: all 0.3s ease;
+    box-shadow: var(--outlet-shadow-gold);
+    transition: all var(--outlet-transition-base);
 }
 
 .admin-mobile-toggle:hover {
     transform: scale(1.05);
-    background: var(--outlet-gold-light, #f3bf4d);
+    box-shadow: 0 8px 30px rgba(221, 171, 59, 0.35);
 }
 
-/* ========== OVERLAY ========== */
+/* ========================================
+   OVERLAY
+   ======================================== */
+
 .admin-nav-overlay {
     display: none;
     position: fixed;
@@ -318,56 +471,66 @@
     display: block !important;
 }
 
-/* ========== RESPONSIVE MÓVIL ========== */
+/* ========================================
+   RESPONSIVE MÓVIL
+   ======================================== */
+
 @media (max-width: 768px) {
     .admin-mobile-toggle {
         display: flex;
         align-items: center;
         justify-content: center;
     }
-    
+
     .OUTLET-admin-nav {
         transform: translateX(-100%);
         width: 280px;
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         z-index: 1050;
-        box-shadow: var(--outlet-shadow-xl, 0 20px 60px rgba(0, 0, 0, 0.15));
+        box-shadow: var(--outlet-shadow-xl);
+        border-right: 2px solid var(--outlet-gold);
     }
-    
+
     .OUTLET-admin-nav.open {
         transform: translateX(0) !important;
     }
-    
+
     .OUTLET-admin-nav.mobile-hidden {
         transform: translateX(-100%) !important;
     }
-    
+
     .OUTLET-admin-nav.collapsed {
         width: 280px;
     }
-    
+
     .OUTLET-admin-nav.collapsed .admin-logo-text,
     .OUTLET-admin-nav.collapsed .admin-user-details,
     .OUTLET-admin-nav.collapsed .admin-nav-links span,
     .OUTLET-admin-nav.collapsed .admin-nav-footer span {
         display: block;
     }
-    
+
     .OUTLET-admin-nav.collapsed .admin-nav-links li a {
         justify-content: flex-start;
-        padding: 12px 20px;
+        padding: 12px 22px;
     }
-    
+
     .OUTLET-admin-nav.collapsed .admin-nav-links li a i {
         margin: 0;
-        font-size: 16px;
-        width: 22px;
+        font-size: 17px;
+        width: 24px;
     }
-    
+
+    .OUTLET-admin-nav.collapsed .admin-logout-btn {
+        width: 100%;
+        margin: 0;
+        padding: 10px 24px;
+    }
+
     .admin-collapse-btn {
         display: none !important;
     }
-    
+
     body.role-admin main,
     body.role-admin .admin-dashboard,
     body.role-admin .main-content,
@@ -379,30 +542,34 @@
     }
 }
 
-/* ========== ESCRITORIO ========== */
+/* ========================================
+   ESCRITORIO
+   ======================================== */
+
 @media (min-width: 769px) {
     .admin-mobile-toggle {
         display: none !important;
     }
-    
+
     .admin-nav-overlay {
         display: none !important;
     }
-    
+
     .OUTLET-admin-nav {
         transform: none !important;
         position: fixed;
         height: 100vh;
         width: 280px;
         z-index: 1030;
-        box-shadow: var(--outlet-shadow-md, 0 5px 15px rgba(0, 0, 0, 0.08));
+        box-shadow: var(--outlet-shadow-md);
         overflow-y: auto;
+        border-right: 2px solid var(--outlet-gold);
     }
-    
+
     .OUTLET-admin-nav.collapsed {
         width: 80px !important;
     }
-    
+
     body.role-admin main,
     body.role-admin .admin-dashboard,
     body.role-admin .main-content {
@@ -410,24 +577,10 @@
         transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         padding: 20px;
     }
-    
-    body.role-admin .OUTLET-admin-nav.collapsed ~ main,
-    body.role-admin .OUTLET-admin-nav.collapsed ~ .admin-dashboard,
-    body.role-admin .OUTLET-admin-nav.collapsed ~ .main-content {
+
+    body.role-admin .OUTLET-admin-nav.collapsed~main,
+    body.role-admin .OUTLET-admin-nav.collapsed~.admin-dashboard,
+    body.role-admin .OUTLET-admin-nav.collapsed~.main-content {
         margin-left: 80px !important;
     }
-}
-
-/* ========== SCROLLBAR ========== */
-.OUTLET-admin-nav::-webkit-scrollbar {
-    width: 4px;
-}
-
-.OUTLET-admin-nav::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.OUTLET-admin-nav::-webkit-scrollbar-thumb {
-    background: var(--outlet-gold, #ddab3b);
-    border-radius: 10px;
 }
