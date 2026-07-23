@@ -1,57 +1,99 @@
-
 /* ========================================
    ADMIN FOOTER - ESTILOS UNIFICADOS
+   TEXTO CENTRADO
    ======================================== */
 
+/* ===== FOOTER PRINCIPAL ===== */
 .outlet-admin-footer {
     background: var(--outlet-bg-card, #ffffff);
     border-top: 1px solid var(--outlet-border-color, #d2c5b0);
-    width: 100%;
-    margin-top: auto;
     padding: 16px 24px;
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    z-index: 1000;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
     transition: all var(--outlet-transition-base, 0.3s ease);
+    width: 100%;
 }
 
-/* Modo oscuro */
+/* ===== SIDEBAR ===== */
+body.has-sidebar .outlet-admin-footer {
+    width: calc(100% - 250px);
+    margin-left: 250px;
+}
+
+/* ===== MODO OSCURO ===== */
 body.dark-mode .outlet-admin-footer {
     background: var(--outlet-bg-card, #0f243d);
     border-top-color: var(--outlet-border-color, #2a4a6e);
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
 }
 
-/* Línea dorada superior */
+body.dark-mode .outlet-admin-brand-name {
+    color: var(--outlet-text-primary, #e0e0e0);
+}
+
+body.dark-mode .outlet-admin-footer-copyright {
+    color: var(--outlet-text-secondary, #b0c4de);
+}
+
+body.dark-mode .outlet-admin-badge {
+    background: var(--outlet-bg-container-low, #0f243d);
+}
+
+/* ===== LÍNEA DORADA ===== */
 .outlet-admin-footer-gold-line {
     height: 2px;
     background: var(--outlet-gold-gradient-horizontal, linear-gradient(90deg, #c9a03d, #f2d06b, #fff2a8, #f2d06b, #c9a03d));
-    width: 100%;
     margin-bottom: 16px;
+    width: 100%;
 }
 
-/* Contenido principal */
+/* ===== CONTENIDO - CENTRADO ===== */
 .outlet-admin-footer-content {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
+    /* Cambiado a center */
     flex-wrap: wrap;
     gap: 16px;
 }
 
-/* Marca */
-.outlet-admin-footer-brand {
+.outlet-admin-footer-copyright {
     display: flex;
     align-items: center;
-    gap: 8px;
+    justify-content: center;
+    /* Cambiado a center */
+    gap: 6px;
+    flex-wrap: wrap;
+    font-size: 11px;
+    color: var(--outlet-text-secondary, #4f4635);
 }
 
+.outlet-admin-footer-copyright i {
+    font-size: 11px;
+}
+
+.outlet-admin-footer-separator {
+    color: var(--outlet-border-color, #d2c5b0);
+}
+
+/* ===== BADGES ===== */
+.outlet-admin-badge {
+    background: var(--outlet-bg-container-low, #fcf2e5);
+    padding: 2px 6px;
+    border-radius: var(--outlet-radius-sm, 4px);
+    font-size: 9px;
+    font-weight: 500;
+}
+
+/* ===== MARCA (eliminada del HTML pero mantenida por si se usa) ===== */
 .outlet-admin-brand-name {
     font-size: 14px;
     font-weight: 700;
     letter-spacing: 2px;
     color: var(--outlet-text-primary, #1f1b13);
-}
-
-body.dark-mode .outlet-admin-brand-name {
-    color: var(--outlet-text-primary, #e0e0e0);
-
 }
 
 .outlet-admin-brand-tag {
@@ -65,94 +107,60 @@ body.dark-mode .outlet-admin-brand-name {
     text-transform: uppercase;
 }
 
-/* Copyright */
-.outlet-admin-footer-copyright {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 11px;
-    color: var(--outlet-text-secondary, #4f4635);
-    flex-wrap: wrap;
-}
-
-body.dark-mode .outlet-admin-footer-copyright {
-    color: var(--outlet-text-secondary, #b0c4de);
-}
-
-.outlet-admin-footer-copyright i {
-    font-size: 11px;
-}
-
-.outlet-admin-footer-separator {
-    color: var(--outlet-border-color, #d2c5b0);
-}
-
-.outlet-admin-badge {
-    background: var(--outlet-bg-container-low, #fcf2e5);
-    padding: 2px 6px;
-    border-radius: var(--outlet-radius-sm, 4px);
-    font-size: 9px;
-    font-weight: 500;
-}
-
-body.dark-mode .outlet-admin-badge {
-    background: var(--outlet-bg-container-low, #0f243d);
-}
-
-/* Versión */
-.outlet-admin-version-badge {
-    font-size: 10px;
-    font-weight: 500;
-    color: var(--outlet-text-secondary, #4f4635);
-    background: var(--outlet-bg-container-low, #fcf2e5);
-    padding: 4px 10px;
-    border-radius: var(--outlet-radius-full, 9999px);
-    transition: all var(--outlet-transition-fast, 0.2s ease);
-}
-
-body.dark-mode .outlet-admin-version-badge {
-    background: var(--outlet-bg-container-low, #0f243d);
-    color: var(--outlet-text-secondary, #b0c4de);
-}
-
-.outlet-admin-version-badge:hover {
-    background: var(--outlet-gold, #ddab3b);
-    color: #1a1a1a;
-}
-
-/* Año actual dinámico */
+/* ===== AÑO ACTUAL ===== */
 .current-year {
     font-weight: 600;
 }
 
-/* Responsive */
+/* ===== CONTENIDO PRINCIPAL ===== */
+.admin-main-content,
+.outlet-admin-container {
+    padding-bottom: 80px;
+    min-height: 100vh;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+    body.has-sidebar .outlet-admin-footer {
+        width: calc(100% - 200px);
+        margin-left: 200px;
+    }
+}
+
 @media (max-width: 768px) {
     .outlet-admin-footer {
         padding: 12px 16px;
+        width: 100% !important;
+        margin-left: 0 !important;
+        right: 0 !important;
     }
-    
+
     .outlet-admin-footer-content {
-        flex-direction: column;
-        text-align: center;
-        gap: 8px;
+        justify-content: center;
     }
-    
+
     .outlet-admin-footer-copyright {
         justify-content: center;
+        font-size: 10px;
         gap: 4px;
     }
-    
+
     .outlet-admin-footer-separator {
         display: none;
     }
-    
+
     .outlet-admin-brand-name {
         font-size: 12px;
     }
-    
+
     .outlet-admin-brand-tag {
         font-size: 8px;
         padding: 2px 6px;
+    }
+
+    .admin-main-content,
+    .outlet-admin-container {
+        padding-bottom: 100px;
     }
 }
 
@@ -160,13 +168,23 @@ body.dark-mode .outlet-admin-version-badge {
     .outlet-admin-footer {
         padding: 10px 12px;
     }
-    
+
     .outlet-admin-footer-copyright {
         font-size: 9px;
+        gap: 3px;
     }
-    
-    .outlet-admin-version-badge {
+
+    .outlet-admin-footer-copyright i {
+        font-size: 9px;
+    }
+
+    .outlet-admin-badge {
         font-size: 8px;
-        padding: 3px 8px;
+        padding: 1px 5px;
+    }
+
+    .admin-main-content,
+    .outlet-admin-container {
+        padding-bottom: 120px;
     }
 }

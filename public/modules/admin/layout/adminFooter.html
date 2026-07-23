@@ -1,20 +1,14 @@
 <!-- ========================================
    ADMIN FOOTER - OUTLET
    Footer minimalista para panel de administración
-   UNIFICADO CON VARIABLES GLOBALES
+   TEXTO CENTRADO
    ======================================== -->
 
-<footer class="outlet-admin-footer">
+<footer class="outlet-admin-footer" id="adminFooter">
     <div class="outlet-admin-footer-gold-line"></div>
-    
+
     <div class="outlet-admin-footer-content">
-        <!-- Marca -->
-        <div class="outlet-admin-footer-brand">
-            <span class="outlet-admin-brand-name">OUTLET</span>
-            <span class="outlet-admin-brand-tag">ADMIN</span>
-        </div>
-        
-        <!-- Copyright -->
+        <!-- Copyright centrado -->
         <div class="outlet-admin-footer-copyright">
             <i class="fa-regular fa-copyright"></i>
             <span class="current-year"></span>
@@ -25,13 +19,11 @@
         </div>
     </div>
 </footer>
+
 <script>
-    // Actualizar año automáticamente
-    (function() {
-        const yearElements = document.querySelectorAll('.current-year');
-        const currentYear = new Date().getFullYear();
-        yearElements.forEach(el => {
-            el.textContent = currentYear;
-        });
-    })();
+    // Actualizar año automáticamente (fallback)
+    document.addEventListener('DOMContentLoaded', function () {
+        const year = new Date().getFullYear();
+        document.querySelectorAll('.current-year').forEach(el => el.textContent = year);
+    });
 </script>
