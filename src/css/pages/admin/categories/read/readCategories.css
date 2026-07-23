@@ -19,7 +19,7 @@
     align-items: center;
     margin-bottom: 48px;
     padding-bottom: 24px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    border-bottom: 2px solid var(--outlet-gold, #ddab3b);
     flex-wrap: wrap;
     gap: 20px;
 }
@@ -32,37 +32,46 @@
     margin: 0;
 }
 
+.categorieslist-title span {
+    color: var(--outlet-gold, #ddab3b);
+}
+
 .categorieslist-subtitle {
-    color: var(--outlet-text-secondary, #6b6b6b);
+    color: var(--outlet-gold, #ddab3b);
     font-size: 14px;
     margin-top: 6px;
 }
 
-/* ====== BOTÓN AGREGAR ====== */
+/* ====== BOTÓN AGREGAR - ESTILO NAVBAR ====== */
 .categorieslist-btn-add {
-    background: var(--outlet-text-primary, #1a1a1a);
-    color: var(--outlet-gold, #ddab3b);
-    border: 1px solid rgba(221, 171, 59, 0.3);
-    padding: 12px 28px;
-    border-radius: 40px;
+    background: var(--outlet-gold-gradient, linear-gradient(135deg, #ddab3b 0%, #f3bf4d 100%));
+    color: var(--outlet-black, #1a1a1a);
+    border: none;
+    padding: 10px 28px;
+    border-radius: var(--outlet-radius-md, 8px);
     cursor: pointer;
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 600;
     font-family: 'Inter', sans-serif;
     display: flex;
     align-items: center;
     gap: 10px;
-    transition: all 0.25s ease;
+    transition: all var(--outlet-transition-base, 0.3s cubic-bezier(0.4, 0, 0.2, 1));
+    box-shadow: var(--outlet-shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.06));
 }
 
 .categorieslist-btn-add i {
     font-size: 18px;
+    color: var(--outlet-black, #1a1a1a);
 }
 
 .categorieslist-btn-add:hover {
-    background: var(--outlet-gold, #ddab3b);
-    color: var(--outlet-text-primary, #1a1a1a);
     transform: translateY(-2px);
+    box-shadow: var(--outlet-shadow-gold, 0 8px 25px rgba(221, 171, 59, 0.25));
+}
+
+.categorieslist-btn-add:active {
+    transform: translateY(0px);
 }
 
 /* ====== TABLA ====== */
@@ -85,36 +94,40 @@
     min-width: 700px;
 }
 
+/* ====== ENCABEZADOS DORADOS CENTRADOS ====== */
 .categorieslist-table thead {
     background: #faf8f5;
-    border-bottom: 1px solid #eaeaea;
+    border-bottom: 3px solid var(--outlet-gold, #ddab3b);
 }
 
 .categorieslist-table th {
     padding: 18px 16px;
-    text-align: left;
+    text-align: center;
     font-weight: 600;
     font-size: 13px;
-    color: #888;
+    color: var(--outlet-gold, #ddab3b);
     letter-spacing: 0.5px;
     text-transform: uppercase;
+    border-bottom: 2px solid var(--outlet-gold, #ddab3b);
 }
 
+/* ====== CELDAS CENTRADAS ====== */
 .categorieslist-table td {
     padding: 16px;
-    text-align: left;
+    text-align: center;
     border-bottom: 1px solid #f0f0f0;
     font-size: 14px;
     vertical-align: middle;
 }
 
-/* ====== IMAGEN ====== */
+/* ====== IMAGEN CON BORDE DORADO ====== */
 .categorieslist-image-cell {
     display: flex;
     align-items: center;
     justify-content: center;
     width: 50px;
     height: 50px;
+    margin: 0 auto;
 }
 
 .categorieslist-image-cell img {
@@ -122,7 +135,8 @@
     height: 40px;
     object-fit: cover;
     border-radius: 8px;
-    border: 1px solid #eaeaea;
+    border: 2px solid var(--outlet-gold, #ddab3b);
+    box-shadow: 0 0 12px rgba(221, 171, 59, 0.2);
 }
 
 .categorieslist-image-cell .no-image {
@@ -130,7 +144,34 @@
     font-size: 12px;
 }
 
-/* Badge de estado */
+/* ====== SUBCATEGORÍAS CON ÍCONO - CENTRADO ====== */
+.categorieslist-subcategory-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: rgba(221, 171, 59, 0.1);
+    color: var(--outlet-gold, #ddab3b);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid rgba(221, 171, 59, 0.2);
+    transition: all 0.2s ease;
+    min-width: 60px;
+}
+
+.categorieslist-subcategory-count:hover {
+    background: var(--outlet-gold, #ddab3b);
+    color: var(--outlet-text-primary, #1a1a1a);
+    transform: scale(1.05);
+}
+
+.categorieslist-subcategory-count i {
+    font-size: 16px;
+}
+
+/* ====== BADGE DE ESTADO ====== */
 .categorieslist-status-badge {
     display: inline-block;
     padding: 4px 12px;
@@ -144,18 +185,21 @@
 .categorieslist-status-active {
     background: rgba(34, 197, 94, 0.1);
     color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.3);
 }
 
 .categorieslist-status-inactive {
     background: rgba(107, 114, 128, 0.1);
     color: #6b7280;
+    border: 1px solid rgba(107, 114, 128, 0.3);
 }
 
-/* Subcategorías */
+/* ====== SUBCATEGORÍAS TAGS ====== */
 .categorieslist-subcategories {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
+    justify-content: center;
 }
 
 .categorieslist-subcategory-tag {
@@ -167,6 +211,7 @@
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
+    border: 1px solid rgba(221, 171, 59, 0.2);
 }
 
 .categorieslist-subcategory-tag:hover {
@@ -185,11 +230,11 @@
     color: var(--outlet-gold, #ddab3b);
 }
 
-/* ====== BOTONES DE ACCIÓN ====== */
+/* ====== BOTONES DE ACCIÓN - CENTRADOS ====== */
 .categorieslist-actions-cell {
     display: flex;
     gap: 8px;
-    justify-content: flex-start;
+    justify-content: center;
     flex-wrap: wrap;
 }
 
@@ -223,9 +268,9 @@
 }
 
 .categorieslist-btn-edit:hover {
-    background: #3b82f6;
-    border-color: #3b82f6;
-    color: white;
+    background: var(--outlet-gold, #ddab3b);
+    border-color: var(--outlet-gold, #ddab3b);
+    color: var(--outlet-text-primary, #1a1a1a);
 }
 
 .categorieslist-btn-delete:hover {
@@ -252,7 +297,9 @@
 }
 
 @keyframes categorieslistSpin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* ====== MODAL ====== */
@@ -275,7 +322,7 @@
     border-radius: 24px;
     padding: 32px;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(221, 171, 59, 0.2);
+    border: 2px solid var(--outlet-gold, #ddab3b);
     max-height: 90vh;
     overflow-y: auto;
 }
@@ -286,7 +333,7 @@
     align-items: center;
     margin-bottom: 28px;
     padding-bottom: 16px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 2px solid var(--outlet-gold, #ddab3b);
 }
 
 .categorieslist-modal-header h3 {
@@ -310,7 +357,6 @@
     color: var(--outlet-danger, #ef4444);
 }
 
-/* Modal body para confirmación */
 .categorieslist-modal-body {
     margin-bottom: 24px;
 }
@@ -390,7 +436,7 @@
     width: 100%;
     background: var(--outlet-text-primary, #1a1a1a);
     color: var(--outlet-gold, #ddab3b);
-    border: 1px solid rgba(221, 171, 59, 0.3);
+    border: 2px solid var(--outlet-gold, #ddab3b);
     padding: 14px;
     border-radius: 40px;
     font-size: 15px;
@@ -444,7 +490,7 @@
     transform: translateY(-1px);
 }
 
-/* ====== SUBCATEGORÍAS ====== */
+/* ====== SUBCATEGORÍAS MODAL ====== */
 .categorieslist-subcategory-info {
     background: rgba(221, 171, 59, 0.05);
     padding: 12px 16px;
@@ -483,7 +529,7 @@
 .categorieslist-btn-subcategory-add {
     background: var(--outlet-text-primary, #1a1a1a);
     color: var(--outlet-gold, #ddab3b);
-    border: 1px solid rgba(221, 171, 59, 0.3);
+    border: 2px solid var(--outlet-gold, #ddab3b);
     padding: 0 20px;
     border-radius: 40px;
     cursor: pointer;
@@ -581,6 +627,7 @@
         transform: translateX(100%);
         opacity: 0;
     }
+
     to {
         transform: translateX(0);
         opacity: 1;
@@ -594,11 +641,12 @@ body.dark-mode .categorieslist-table-container {
 
 body.dark-mode .categorieslist-table thead {
     background: var(--outlet-bg-container-low, #0a1c2c);
-    border-bottom-color: var(--outlet-border-color, #2a4a6e);
+    border-bottom-color: var(--outlet-gold, #ddab3b);
 }
 
 body.dark-mode .categorieslist-table th {
-    color: var(--outlet-text-secondary, #b0c4de);
+    color: var(--outlet-gold, #ddab3b);
+    border-bottom-color: var(--outlet-gold, #ddab3b);
 }
 
 body.dark-mode .categorieslist-table td {
@@ -617,11 +665,11 @@ body.dark-mode .categorieslist-subcategory-input {
 
 body.dark-mode .categorieslist-modal-content {
     background: var(--outlet-modal-bg, #0f243d);
-    border-color: var(--outlet-border-color, #2a4a6e);
+    border-color: var(--outlet-gold, #ddab3b);
 }
 
 body.dark-mode .categorieslist-modal-header {
-    border-bottom-color: var(--outlet-border-color, #2a4a6e);
+    border-bottom-color: var(--outlet-gold, #ddab3b);
 }
 
 body.dark-mode .categorieslist-modal-header h3 {
@@ -645,7 +693,20 @@ body.dark-mode .categorieslist-subcategory-info {
 }
 
 body.dark-mode .categorieslist-image-cell img {
-    border-color: var(--outlet-border-color, #2a4a6e);
+    border-color: var(--outlet-gold, #ddab3b);
+}
+
+body.dark-mode .categorieslist-header {
+    border-bottom-color: var(--outlet-gold, #ddab3b);
+}
+
+body.dark-mode .categorieslist-subcategory-count {
+    background: rgba(221, 171, 59, 0.15);
+}
+
+body.dark-mode .categorieslist-btn-add {
+    background: var(--outlet-gold-gradient, linear-gradient(135deg, #ddab3b 0%, #f3bf4d 100%));
+    color: var(--outlet-black, #1a1a1a);
 }
 
 /* ====== RESPONSIVE ====== */
@@ -655,7 +716,7 @@ body.dark-mode .categorieslist-image-cell img {
     .categorieslist-container {
         padding: 32px;
     }
-    
+
     .categorieslist-title {
         font-size: 26px;
     }
@@ -673,52 +734,52 @@ body.dark-mode .categorieslist-image-cell img {
         gap: 16px;
         margin-bottom: 32px;
     }
-    
+
     .categorieslist-title {
         font-size: 24px;
     }
-    
+
     .categorieslist-btn-add {
         width: 100%;
         justify-content: center;
         padding: 10px 20px;
     }
-    
+
     .categorieslist-table th {
         padding: 12px 12px;
         font-size: 11px;
     }
-    
+
     .categorieslist-table td {
         padding: 12px 12px;
         font-size: 13px;
     }
-    
+
     .categorieslist-btn-edit span,
     .categorieslist-btn-delete span,
     .categorieslist-btn-subcategories span {
         display: none;
     }
-    
+
     .categorieslist-btn-edit,
     .categorieslist-btn-delete,
     .categorieslist-btn-subcategories {
         padding: 8px 12px;
     }
-    
+
     .categorieslist-actions-cell {
         gap: 6px;
     }
-    
+
     .categorieslist-modal-content {
         padding: 24px;
         width: 95%;
     }
-    
+
     .categorieslist-modal-header h3 {
         font-size: 20px;
     }
-    
+
     .categorieslist-form-row {
         grid-template-columns: 1fr;
         gap: 12px;
@@ -735,11 +796,11 @@ body.dark-mode .categorieslist-image-cell img {
         margin-bottom: 24px;
         padding-bottom: 16px;
     }
-    
+
     .categorieslist-title {
         font-size: 20px;
     }
-    
+
     .categorieslist-subtitle {
         font-size: 12px;
     }
@@ -748,65 +809,65 @@ body.dark-mode .categorieslist-image-cell img {
         font-size: 13px;
         padding: 10px 16px;
     }
-    
+
     .categorieslist-table th {
         padding: 10px 8px;
         font-size: 10px;
     }
-    
+
     .categorieslist-table td {
         padding: 10px 8px;
         font-size: 12px;
     }
-    
+
     .categorieslist-btn-edit,
     .categorieslist-btn-delete,
     .categorieslist-btn-subcategories {
         padding: 6px 10px;
     }
-    
+
     .categorieslist-actions-cell {
         gap: 4px;
     }
-    
+
     .categorieslist-modal-content {
         padding: 20px;
     }
-    
+
     .categorieslist-modal-header {
         margin-bottom: 20px;
         padding-bottom: 12px;
     }
-    
+
     .categorieslist-modal-header h3 {
         font-size: 18px;
     }
-    
+
     .categorieslist-form-group {
         margin-bottom: 16px;
     }
-    
+
     .categorieslist-form-group label {
         font-size: 13px;
         margin-bottom: 6px;
     }
-    
+
     .categorieslist-form-group input,
     .categorieslist-form-group select,
     .categorieslist-form-group textarea {
         padding: 10px 14px;
         font-size: 13px;
     }
-    
+
     .categorieslist-subcategory-add {
         flex-direction: column;
     }
-    
+
     .categorieslist-btn-subcategory-add {
         padding: 10px;
         justify-content: center;
     }
-    
+
     .categorieslist-toast {
         bottom: 1rem;
         right: 1rem;
@@ -822,20 +883,20 @@ body.dark-mode .categorieslist-image-cell img {
     .categorieslist-container {
         padding: 12px;
     }
-    
+
     .categorieslist-table th,
     .categorieslist-table td {
         padding: 8px 6px;
     }
-    
+
     .categorieslist-table th {
         font-size: 9px;
     }
-    
+
     .categorieslist-table td {
         font-size: 11px;
     }
-    
+
     .categorieslist-subcategory-tag {
         font-size: 9px;
         padding: 3px 8px;
@@ -843,7 +904,7 @@ body.dark-mode .categorieslist-image-cell img {
 }
 
 /* ========================================
-   INTEGRACIÓN CON NAVBAR LATERAL - VERSIÓN OPTIMIZADA
+   INTEGRACIÓN CON NAVBAR LATERAL
    ======================================== */
 
 body {
@@ -875,7 +936,7 @@ body:has(.OUTLET-admin-nav.collapsed) .categorieslist-container {
         max-width: calc(100% - 240px);
         padding: 28px;
     }
-    
+
     body:has(.OUTLET-admin-nav.collapsed) .categorieslist-container {
         margin-left: 70px;
         max-width: calc(100% - 70px);
@@ -915,7 +976,6 @@ body:has(.OUTLET-admin-nav.collapsed) .categorieslist-container {
     }
 }
 
-/* Tabla más compacta */
 .categorieslist-table-container {
     border-radius: 16px;
 }
@@ -928,7 +988,6 @@ body:has(.OUTLET-admin-nav.collapsed) .categorieslist-container {
     padding: 12px 12px;
 }
 
-/* Botones más compactos */
 .categorieslist-btn-add {
     padding: 10px 24px;
 }
@@ -969,7 +1028,7 @@ body:has(.OUTLET-admin-nav.collapsed) .categorieslist-container {
     .mobile-menu-btn {
         display: flex;
     }
-    
+
     .OUTLET-admin-nav {
         transform: translateX(-100%);
         transition: transform 0.3s ease;
@@ -980,11 +1039,11 @@ body:has(.OUTLET-admin-nav.collapsed) .categorieslist-container {
         z-index: 1050;
         width: 280px !important;
     }
-    
+
     .OUTLET-admin-nav.open {
         transform: translateX(0);
     }
-    
+
     body.menu-open {
         overflow: hidden;
     }
@@ -998,7 +1057,6 @@ body:has(.OUTLET-admin-nav.collapsed) .categorieslist-container {
    MENÚ HAMBURGUESA - ESTILOS GLOBALES
    ======================================== */
 
-/* Botón hamburguesa */
 .outlet-mobile-menu-btn {
     display: none;
     position: fixed;
@@ -1022,7 +1080,6 @@ body:has(.OUTLET-admin-nav.collapsed) .categorieslist-container {
     background: var(--outlet-gold-light, #e8c46e);
 }
 
-/* Ícono hamburguesa */
 .outlet-menu-icon {
     display: flex;
     flex-direction: column;
@@ -1038,7 +1095,6 @@ body:has(.OUTLET-admin-nav.collapsed) .categorieslist-container {
     border-radius: 2px;
 }
 
-/* Animación para convertir hamburguesa en X */
 .outlet-menu-close .outlet-menu-line:first-child {
     transform: rotate(45deg) translate(5px, 5px);
 }
@@ -1052,7 +1108,6 @@ body:has(.OUTLET-admin-nav.collapsed) .categorieslist-container {
     transform: scaleX(0);
 }
 
-/* Texto del botón */
 .outlet-menu-text {
     font-size: 12px;
     font-weight: 600;
@@ -1061,7 +1116,6 @@ body:has(.OUTLET-admin-nav.collapsed) .categorieslist-container {
     color: var(--outlet-primary, #1a1a1a);
 }
 
-/* Overlay (fondo oscuro) */
 .outlet-mobile-overlay {
     position: fixed;
     top: 0;
@@ -1081,13 +1135,11 @@ body:has(.OUTLET-admin-nav.collapsed) .categorieslist-container {
     visibility: visible;
 }
 
-/* Navbar en modo móvil */
 @media (max-width: 768px) {
     .outlet-mobile-menu-btn {
         display: flex;
     }
-    
-    /* Ocultar navbar por defecto */
+
     .OUTLET-admin-nav {
         position: fixed !important;
         top: 0 !important;
@@ -1100,19 +1152,16 @@ body:has(.OUTLET-admin-nav.collapsed) .categorieslist-container {
         overflow-y: auto !important;
         box-shadow: none !important;
     }
-    
-    /* Navbar abierto */
+
     .OUTLET-admin-nav.outlet-mobile-open {
         transform: translateX(0) !important;
         box-shadow: 5px 0 25px rgba(0, 0, 0, 0.15) !important;
     }
-    
-    /* Ajuste para el contenido principal cuando el menú está abierto */
+
     body.menu-open {
         overflow: hidden;
     }
-    
-    /* Animación de entrada para el navbar */
+
     .OUTLET-admin-nav.outlet-mobile-open {
         animation: outletSlideIn 0.3s ease forwards;
     }
@@ -1122,21 +1171,21 @@ body:has(.OUTLET-admin-nav.collapsed) .categorieslist-container {
     from {
         transform: translateX(-100%);
     }
+
     to {
         transform: translateX(0);
     }
 }
 
-/* Ajuste para escritorio (ocultar botón) */
 @media (min-width: 769px) {
     .outlet-mobile-menu-btn {
         display: none !important;
     }
-    
+
     .outlet-mobile-overlay {
         display: none !important;
     }
-    
+
     .OUTLET-admin-nav {
         transform: translateX(0) !important;
         position: fixed !important;
@@ -1145,8 +1194,8 @@ body:has(.OUTLET-admin-nav.collapsed) .categorieslist-container {
     }
 }
 
-/* Ajuste para el contenido cuando el navbar está abierto en móvil */
 @media (max-width: 768px) {
+
     body .outlet-categories-container,
     body .categorieslist-container,
     body .updatecategory-container,
@@ -1156,8 +1205,7 @@ body:has(.OUTLET-admin-nav.collapsed) .categorieslist-container {
     body .admin-main-content {
         transition: margin-left 0.3s ease, filter 0.3s ease;
     }
-    
-    /* Cuando el menú está abierto, desenfocar el contenido ligeramente */
+
     body:has(.OUTLET-admin-nav.outlet-mobile-open) .outlet-categories-container,
     body:has(.OUTLET-admin-nav.outlet-mobile-open) .categorieslist-container,
     body:has(.OUTLET-admin-nav.outlet-mobile-open) .updatecategory-container,
@@ -1170,21 +1218,20 @@ body:has(.OUTLET-admin-nav.collapsed) .categorieslist-container {
     }
 }
 
-/* Scroll suave para el navbar en móvil */
 @media (max-width: 768px) {
     .OUTLET-admin-nav {
         -webkit-overflow-scrolling: touch;
         scrollbar-width: thin;
     }
-    
+
     .OUTLET-admin-nav::-webkit-scrollbar {
         width: 4px;
     }
-    
+
     .OUTLET-admin-nav::-webkit-scrollbar-track {
         background: var(--outlet-border-light, #f0f0f0);
     }
-    
+
     .OUTLET-admin-nav::-webkit-scrollbar-thumb {
         background: var(--outlet-gold, #ddab3b);
         border-radius: 4px;

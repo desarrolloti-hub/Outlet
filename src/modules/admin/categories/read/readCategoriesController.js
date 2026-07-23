@@ -30,19 +30,19 @@ function mostrarToast(mensaje, tipo) {
     tipo = tipo || 'info';
     var toastExistente = document.querySelector('.outlet-toast');
     if (toastExistente) toastExistente.remove();
-    
+
     var toast = document.createElement('div');
     toast.className = 'outlet-toast ' + tipo;
     toast.textContent = mensaje;
     document.body.appendChild(toast);
-    
-    requestAnimationFrame(function() {
+
+    requestAnimationFrame(function () {
         toast.classList.add('show');
     });
-    
-    setTimeout(function() {
+
+    setTimeout(function () {
         toast.classList.remove('show');
-        setTimeout(function() { toast.remove(); }, 300);
+        setTimeout(function () { toast.remove(); }, 300);
     }, 3200);
 }
 
@@ -58,7 +58,7 @@ function mostrarSweetAlert(options) {
             popup: 'swal2-popup'
         }
     };
-    
+
     return Swal.fire(Object.assign({}, defaultOptions, options));
 }
 
@@ -124,7 +124,7 @@ function mostrarLoading(mensaje) {
     return mostrarSweetAlert({
         title: mensaje,
         allowOutsideClick: false,
-        didOpen: function() {
+        didOpen: function () {
             Swal.showLoading();
         }
     });
@@ -144,13 +144,13 @@ function cacheElements() {
     elements = {
         addBtn: document.getElementById('addCategoryBtn'),
         tableBody: document.getElementById('categoriesTableBody'),
-        
+
         deleteModal: document.getElementById('deleteModal'),
         deleteItemName: document.getElementById('deleteItemName'),
         confirmDeleteBtn: document.getElementById('confirmDeleteBtn'),
         cancelDeleteBtn: document.getElementById('cancelDeleteBtn'),
         closeDeleteModalBtn: document.getElementById('closeDeleteModalBtn'),
-        
+
         toast: document.getElementById('categoriesToast')
     };
 }
@@ -205,61 +205,64 @@ function hideModal(modal) {
 // ========================================
 function renderTable() {
     if (!elements.tableBody) return;
-    
+
     if (!categories || categories.length === 0) {
-        elements.tableBody.innerHTML = 
+        elements.tableBody.innerHTML =
             '<tr><td colspan="7" class="categorieslist-loading"><div class="categorieslist-spinner"></div><span>Cargando categorías...</span></td></tr>';
         return;
     }
-    
+
     var html = '';
-    categories.forEach(function(cat) {
+    categories.forEach(function (cat) {
         var safeId = cat.id || '';
         var safeName = cat.name || '';
         var safeSlug = cat.slug || '';
         var safeOrder = cat.order || 0;
         var safeStatus = cat.status || 'active';
         var subcategoryCount = Array.isArray(cat.subcategories) ? cat.subcategories.length : 0;
-        
-        // 🖼️ IMAGEN
+
+
+        // En renderTable() - reemplaza la parte de imageHtml con esto:
         var imageHtml = '';
         if (cat.imageBase64 && cat.imageBase64.startsWith('data:image')) {
-            imageHtml = '<img src="' + escapeHtml(cat.imageBase64) + '" alt="' + escapeHtml(safeName) + '" style="width:40px;height:40px;object-fit:cover;border-radius:8px;border:1px solid #eaeaea;">';
+            imageHtml = '<img src="' + escapeHtml(cat.imageBase64) + '" alt="' + escapeHtml(safeName) + '" style="width:40px;height:40px;object-fit:cover;border-radius:8px;border:2px solid #ddab3b;box-shadow:0 0 12px rgba(221,171,59,0.2);">';
         } else {
             imageHtml = '<span style="color:#ccc;font-size:12px;">Sin imagen</span>';
         }
-        
-        html += 
+        // En renderTable() - reemplaza la línea de subcategorías
+        // En renderTable() - columna de subcategorías centrada
+        html +=
             '<tr data-id="' + escapeHtml(safeId) + '">' +
-                '<td><div style="display:flex;align-items:center;justify-content:center;width:50px;height:50px;">' + imageHtml + '</div></td>' +
-                '<td><code style="font-size: 12px;">' + escapeHtml(safeId) + '</code></td>' +
-                '<td><strong>' + escapeHtml(safeName) + '</strong></td>' +
-                '<td><code style="font-size: 12px;">' + escapeHtml(safeSlug) + '</code></td>' +
-                '<td><span style="background:rgba(221,171,59,0.1);color:var(--outlet-gold,#ddab3b);padding:4px 12px;border-radius:20px;font-size:12px;font-weight:500;">' + subcategoryCount + ' subcategorías</span></td>' +
-                '<td>' + safeOrder + '</td>' +
-                '<td><span class="categorieslist-status-badge ' + (safeStatus === 'active' ? 'categorieslist-status-active' : 'categorieslist-status-inactive') + '">' + (safeStatus === 'active' ? 'Activo' : 'Inactivo') + '</span></td>' +
-                '<td><div class="categorieslist-actions-cell">' +
-                    '<button class="categorieslist-btn-edit" data-id="' + escapeHtml(safeId) + '" title="Editar">' +
-                        '<i class="material-symbols-outlined">edit</i><span>Editar</span>' +
-                    '</button>' +
-                    '<button class="categorieslist-btn-delete" data-id="' + escapeHtml(safeId) + '" data-name="' + escapeHtml(safeName) + '" title="Eliminar">' +
-                        '<i class="material-symbols-outlined">delete</i><span>Eliminar</span>' +
-                    '</button>' +
-                '</div></td>' +
+            '<td><div class="categorieslist-image-cell">' + imageHtml + '</div></td>' +
+            '<td><code style="font-size: 12px;">' + escapeHtml(safeId) + '</code></td>' +
+            '<td><strong>' + escapeHtml(safeName) + '</strong></td>' +
+            '<td><code style="font-size: 12px;">' + escapeHtml(safeSlug) + '</code></td>' +
+            // 👇 Subcategorías centradas con ícono
+            '<td><span class="categorieslist-subcategory-count"><i class="material-symbols-outlined">local_offer</i> ' + subcategoryCount + '</span></td>' +
+            '<td>' + safeOrder + '</td>' +
+            '<td><span class="categorieslist-status-badge ' + (safeStatus === 'active' ? 'categorieslist-status-active' : 'categorieslist-status-inactive') + '">' + (safeStatus === 'active' ? 'Activo' : 'Inactivo') + '</span></td>' +
+            '<td><div class="categorieslist-actions-cell">' +
+            '<button class="categorieslist-btn-edit" data-id="' + escapeHtml(safeId) + '" title="Editar">' +
+            '<i class="material-symbols-outlined">edit</i><span>Editar</span>' +
+            '</button>' +
+            '<button class="categorieslist-btn-delete" data-id="' + escapeHtml(safeId) + '" data-name="' + escapeHtml(safeName) + '" title="Eliminar">' +
+            '<i class="material-symbols-outlined">delete</i><span>Eliminar</span>' +
+            '</button>' +
+            '</div></td>' +
             '</tr>';
     });
-    
+
     elements.tableBody.innerHTML = html;
-    
-    document.querySelectorAll('.categorieslist-btn-edit').forEach(function(btn) {
-        btn.addEventListener('click', function() {
+
+    document.querySelectorAll('.categorieslist-btn-edit').forEach(function (btn) {
+        btn.addEventListener('click', function () {
             var id = this.dataset.id;
             openUpdatePage(id);
         });
     });
-    
-    document.querySelectorAll('.categorieslist-btn-delete').forEach(function(btn) {
-        btn.addEventListener('click', function() {
+
+    document.querySelectorAll('.categorieslist-btn-delete').forEach(function (btn) {
+        btn.addEventListener('click', function () {
             var id = this.dataset.id;
             var name = this.dataset.name;
             showDeleteModal(id, name);
@@ -280,14 +283,14 @@ async function loadCategories() {
         console.error('Error al cargar categorías:', error);
         await mostrarError('Error al cargar categorías', error.message || 'No se pudieron cargar las categorías.');
         categories = [];
-        
+
         if (elements.tableBody) {
-            elements.tableBody.innerHTML = 
+            elements.tableBody.innerHTML =
                 '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #ef4444;">' +
-                    '<div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>' +
-                    '<strong>Error al cargar categorías</strong><br>' +
-                    '<span style="font-size: 13px; color: #888;">' + escapeHtml(error.message) + '</span><br><br>' +
-                    '<button onclick="location.reload()" style="padding: 8px 24px; background: var(--outlet-gold, #ddab3b); border: none; border-radius: 8px; cursor: pointer; color: #1a1a1a; font-weight: 600;">Reintentar</button>' +
+                '<div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>' +
+                '<strong>Error al cargar categorías</strong><br>' +
+                '<span style="font-size: 13px; color: #888;">' + escapeHtml(error.message) + '</span><br><br>' +
+                '<button onclick="location.reload()" style="padding: 8px 24px; background: var(--outlet-gold, #ddab3b); border: none; border-radius: 8px; cursor: pointer; color: #1a1a1a; font-weight: 600;">Reintentar</button>' +
                 '</td></tr>';
         }
     }
@@ -312,7 +315,7 @@ function openUpdatePage(categoryId) {
         mostrarError('Error', 'No se pudo identificar la categoría a editar.');
         return;
     }
-    
+
     // Redirigir a la página de actualización con el ID como parámetro
     if (typeof window.navigateTo === 'function') {
         window.navigateTo('/updateCategories?id=' + encodeURIComponent(categoryId));
@@ -340,13 +343,13 @@ async function deleteCategory(id) {
 // ========================================
 async function showDeleteModal(id, name) {
     var displayName = name || 'esta categoría';
-    
+
     var result = await mostrarConfirmacion(
         '¿Eliminar categoría?',
         '¿Estás seguro de que quieres eliminar "' + displayName + '"? Esta acción no se puede deshacer.',
         'Sí, eliminar'
     );
-    
+
     if (result.isConfirmed) {
         deleteTarget = { id: id, name: name };
         await confirmDelete();
@@ -365,14 +368,14 @@ async function confirmDelete() {
 function initEventListeners() {
     // Redirige a createCategories
     elements.addBtn?.addEventListener('click', openCreatePage);
-    
+
     // Botones del modal de eliminación
     elements.confirmDeleteBtn?.addEventListener('click', confirmDelete);
-    elements.cancelDeleteBtn?.addEventListener('click', function() { deleteTarget = null; hideModal(elements.deleteModal); });
-    elements.closeDeleteModalBtn?.addEventListener('click', function() { deleteTarget = null; hideModal(elements.deleteModal); });
-    
+    elements.cancelDeleteBtn?.addEventListener('click', function () { deleteTarget = null; hideModal(elements.deleteModal); });
+    elements.closeDeleteModalBtn?.addEventListener('click', function () { deleteTarget = null; hideModal(elements.deleteModal); });
+
     // Cerrar modal con Escape
-    document.addEventListener('keydown', function(e) {
+    document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
             if (elements.deleteModal?.style.display === 'flex') {
                 hideModal(elements.deleteModal);
@@ -380,9 +383,9 @@ function initEventListeners() {
             }
         }
     });
-    
+
     // Cerrar modal clickeando fuera
-    elements.deleteModal?.addEventListener('click', function(e) {
+    elements.deleteModal?.addEventListener('click', function (e) {
         if (e.target === elements.deleteModal) {
             hideModal(elements.deleteModal);
             deleteTarget = null;
@@ -404,7 +407,7 @@ function syncDarkMode() {
     }
 }
 
-document.addEventListener('themeChanged', function(e) {
+document.addEventListener('themeChanged', function (e) {
     if (e.detail.isDarkMode) document.body.classList.add('dark-mode');
     else document.body.classList.remove('dark-mode');
 });
@@ -414,12 +417,12 @@ document.addEventListener('themeChanged', function(e) {
 // ========================================
 export async function readCategoriesController() {
     console.log('📋 Read Categories Controller - Listado de categorías');
-    
+
     cacheElements();
     syncDarkMode();
     initEventListeners();
-    
+
     await loadCategories();
-    
+
     console.log('✅ Read Categories page loaded');
 }
