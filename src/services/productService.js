@@ -2,6 +2,7 @@
    PRODUCT SERVICE - Outlet Val
    Lógica de negocio para productos
    ✅ VERSIÓN OPTIMIZADA CON ÍNDICES
+   MONEDA: PESOS MEXICANOS (MXN)
    ======================================== */
 
 import { Product } from '../classes/productModel.js';
@@ -370,5 +371,64 @@ export const ProductService = {
         const products = await this.getAll(filters);
 
         return products.filter(p => p.id !== productId).slice(0, limit);
+    },
+
+    // ========== UTILIDADES DE FORMATO ==========
+
+    /**
+     * Formatear precio con símbolo de pesos mexicanos
+     */
+    formatPrice(amount) {
+        if (amount === undefined || amount === null) return '$$0.00';
+        return `$${amount.toFixed(2)}`;
+    },
+
+    /**
+     * Formatear precio final con descuento aplicado
+     */
+    formatFinalPrice(product) {
+        if (!product) return '$$0.00';
+        const price = product.precioFinal || product.precioVenta || 0;
+        return `$${price.toFixed(2)}`;
+    },
+
+    /**
+     * Formatear precio original (sin descuento)
+     */
+    formatOriginalPrice(product) {
+        if (!product) return '$$0.00';
+        return `$${(product.precioVenta || 0).toFixed(2)}`;
+    },
+
+    /**
+     * Formatear ahorro
+     */
+    formatSavings(product) {
+        if (!product || !product.enOferta) return null;
+        return `$${product.ahorro.toFixed(2)}`;
+    },
+
+    /**
+     * Obtener precio con formato para mostrar en tabla
+     */
+    getPriceDisplay(product) {
+        if (!product) return { price: '$$0.00', original: null };
+
+        const finalPrice = product.precioFinal || product.precioVenta || 0;
+        const originalPrice = product.precioVenta || 0;
+
+        if (product.enOferta) {
+            return {
+                price: `$${finalPrice.toFixed(2)}`,
+                original: `$${originalPrice.toFixed(2)}`,
+                savings: `$${(originalPrice - finalPrice).toFixed(2)}`
+            };
+        }
+
+        return {
+            price: `$${finalPrice.toFixed(2)}`,
+            original: null,
+            savings: null
+        };
     }
 };

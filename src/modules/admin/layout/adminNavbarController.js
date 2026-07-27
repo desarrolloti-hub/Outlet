@@ -25,7 +25,7 @@ const ADMIN_ROUTES = {
     PRODUCTS: '/readProducts',
     CATEGORIES: '/readCategories',
     USERS: '/readUsers',
-    ORDERS: '/readOrders',
+    ORDERS: '/sales',
     SETTINGS: '/adminSettings'
 };
 
