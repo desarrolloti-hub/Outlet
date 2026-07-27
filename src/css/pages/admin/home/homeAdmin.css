@@ -42,6 +42,11 @@ h3,
     font-family: 'Playfair Display', var(--outlet-font-secondary, serif);
 }
 
+/* ====== UTILIDADES DE CENTRADO ====== */
+.text-center {
+    text-align: center !important;
+}
+
 /* Contenedor principal */
 .admin-wrapper {
     display: flex;
@@ -743,10 +748,25 @@ svg {
     border-collapse: collapse;
 }
 
-/* ====== LÍNEA HORIZONTAL DORADA EN EL ENCABEZADO DE LA TABLA ====== */
+/* ====== ENCABEZADOS Y CELDAS CENTRADOS ====== */
 .admin-table thead th {
     border-bottom: 2px solid var(--outlet-gold) !important;
-    padding-bottom: 12px;
+    padding: 14px 12px;
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--outlet-gold, #ddab3b);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    text-align: center !important;
+}
+
+.admin-table tbody td {
+    padding: 14px 12px;
+    font-size: 13px;
+    color: var(--outlet-text-primary);
+    text-align: center !important;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--outlet-border-soft);
 }
 
 /* ====== TARJETAS DE ESTADÍSTICAS CON BORDE DORADO ====== */
@@ -806,6 +826,7 @@ svg {
     border-radius: var(--outlet-radius-md);
     border: 2px solid var(--outlet-gold) !important;
     transition: var(--outlet-transition-base);
+    display: inline-block;
 }
 
 .product-image:hover {
@@ -857,55 +878,53 @@ svg {
     margin-right: 6px;
 }
 
-/* ====== BOTONES DE ACCIÓN SIN BORDE (SOLO ICONOS) ====== */
-.admin-action-btn {
-    background: transparent;
-    border: none !important;
-    color: var(--outlet-gold);
-    padding: 6px 10px;
-    margin: 0 3px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    width: 36px;
-    height: 36px;
-    display: inline-flex;
-    align-items: center;
+/* ====== BOTONES DE ACCIÓN - ESTILO READ CATEGORIES ====== */
+.admin-actions-cell {
+    display: flex;
+    gap: 8px;
     justify-content: center;
+    flex-wrap: wrap;
 }
 
-.admin-action-btn:hover {
-    color: var(--outlet-gold-dark);
-    transform: scale(1.1);
+.admin-btn-edit,
+.admin-btn-delete {
+    background: transparent;
+    border: 1px solid #e0e0e0;
+    padding: 6px 14px;
+    border-radius: 0 !important;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    font-size: 12px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #888;
+}
+
+.admin-btn-edit i,
+.admin-btn-delete i {
+    font-size: 14px;
+}
+
+.admin-btn-edit:hover {
+    background: var(--outlet-gold, #ddab3b);
+    border-color: var(--outlet-gold, #ddab3b);
+    color: var(--outlet-text-primary, #1a1a1a);
+}
+
+.admin-btn-delete:hover {
+    background: var(--outlet-danger, #ef4444);
+    border-color: var(--outlet-danger, #ef4444);
+    color: white;
 }
 
 .admin-table tbody tr {
     transition: var(--outlet-transition-base);
-    border-bottom: 1px solid var(--outlet-border-soft);
 }
 
 .admin-table tbody tr:hover {
     background: rgba(221, 171, 59, 0.04);
-}
-
-.admin-table td {
-    padding: 16px 16px;
-    font-size: 13px;
-    color: var(--outlet-text-primary);
-}
-
-.product-image {
-    width: 50px;
-    height: 50px;
-    object-fit: cover;
-    border-radius: var(--outlet-radius-md);
-    border: 2px solid var(--outlet-gold) !important;
-    transition: var(--outlet-transition-base);
-}
-
-.product-image:hover {
-    border-color: var(--outlet-gold-light);
-    transform: scale(1.05);
-    box-shadow: var(--outlet-shadow-gold);
 }
 
 .status {
@@ -926,50 +945,6 @@ svg {
     background: rgba(198, 40, 40, 0.1);
     color: #ef5350;
     border: 1px solid rgba(239, 83, 80, 0.3);
-}
-
-.admin-action-btn {
-    background: transparent;
-    border: none !important;
-    color: var(--outlet-gold);
-    padding: 6px 10px;
-    margin: 0 3px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    width: 36px;
-    height: 36px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-}
-
-.admin-action-btn:hover {
-    color: var(--outlet-gold-dark);
-    transform: scale(1.1);
-}
-
-/* Tooltips */
-.admin-action-btn::before {
-    content: attr(title);
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--outlet-black);
-    color: var(--outlet-gold);
-    font-size: 10px;
-    padding: 4px 8px;
-    border-radius: var(--outlet-radius-sm);
-    white-space: nowrap;
-    opacity: 0;
-    pointer-events: none;
-    transition: var(--outlet-transition-base);
-    margin-bottom: 8px;
-}
-
-.admin-action-btn:hover::before {
-    opacity: 1;
 }
 
 /* ====== MODAL PREMIUM ====== */
@@ -1188,6 +1163,14 @@ svg {
     color: var(--outlet-gold);
 }
 
+.admin-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px 28px 24px;
+    border-top: 1px solid var(--outlet-border-soft);
+}
+
 .admin-btn-cancel {
     background: transparent;
     border: 1px solid var(--outlet-border-soft);
@@ -1265,6 +1248,86 @@ svg {
         transform: translateX(0);
         opacity: 1;
     }
+}
+
+/* ====== DARK MODE ====== */
+body.dark-mode .admin-btn-edit,
+body.dark-mode .admin-btn-delete {
+    border-color: var(--outlet-border-color, #2a4a6e);
+    color: var(--outlet-text-secondary, #b0b0b0);
+}
+
+body.dark-mode .admin-btn-edit:hover {
+    background: var(--outlet-gold, #ddab3b);
+    border-color: var(--outlet-gold, #ddab3b);
+    color: var(--outlet-black, #1a1a1a);
+}
+
+body.dark-mode .admin-btn-delete:hover {
+    background: var(--outlet-danger, #ef4444);
+    border-color: var(--outlet-danger, #ef4444);
+    color: white;
+}
+
+body.dark-mode .admin-table-section {
+    background: var(--outlet-bg-card, #0f243d);
+    border-color: var(--outlet-border-color, #2a4a6e);
+}
+
+body.dark-mode .admin-table thead th {
+    color: var(--outlet-gold, #ddab3b);
+    border-bottom-color: var(--outlet-gold, #ddab3b);
+}
+
+body.dark-mode .admin-table tbody tr {
+    border-bottom-color: var(--outlet-border-color, #2a4a6e);
+}
+
+body.dark-mode .admin-table tbody td {
+    color: var(--outlet-text-primary, #d6e5f7);
+}
+
+body.dark-mode .admin-modal-content {
+    background: var(--outlet-modal-bg, #0f243d);
+    border-color: var(--outlet-border-color, #2a4a6e);
+}
+
+body.dark-mode .admin-modal-header {
+    border-bottom-color: var(--outlet-border-color, #2a4a6e);
+}
+
+body.dark-mode .admin-modal-header h3 {
+    color: var(--outlet-text-primary, #d6e5f7);
+}
+
+body.dark-mode .admin-form-group label {
+    color: var(--outlet-gold, #ddab3b);
+}
+
+body.dark-mode .admin-form-group input,
+body.dark-mode .admin-form-group select {
+    background: var(--outlet-bg-container-low, #0a1c2c);
+    border-color: var(--outlet-border-color, #2a4a6e);
+    color: var(--outlet-text-primary, #d6e5f7);
+}
+
+body.dark-mode .admin-modal-footer {
+    border-top-color: var(--outlet-border-color, #2a4a6e);
+}
+
+body.dark-mode .admin-btn-cancel {
+    border-color: var(--outlet-border-color, #2a4a6e);
+    color: var(--outlet-text-secondary, #b0b0b0);
+}
+
+body.dark-mode .outlet-stat-card {
+    background: var(--outlet-bg-card, #0f243d);
+    border-color: var(--outlet-gold, #ddab3b) !important;
+}
+
+body.dark-mode .admin-add-btn {
+    background: var(--outlet-gold-gradient, linear-gradient(135deg, #ddab3b 0%, #f3bf4d 100%));
+    color: var(--outlet-black, #1a1a1a);
 }
 
 /* ====== RESPONSIVE DESIGN ====== */
@@ -1408,7 +1471,7 @@ svg {
         justify-content: center;
     }
 
-    /* Tabla a cards */
+    /* Tabla a cards - los textos ya están centrados por defecto */
     .admin-table thead {
         display: none;
     }
@@ -1419,6 +1482,7 @@ svg {
     .admin-table td {
         display: block;
         width: 100%;
+        text-align: center !important;
     }
 
     .admin-table tr {
@@ -1432,10 +1496,12 @@ svg {
     .admin-table td {
         display: flex;
         align-items: center;
-        justify-content: space-between;
+        justify-content: center !important;
         padding: 10px 0;
         border-bottom: 1px solid var(--outlet-border-soft);
-        text-align: right;
+        text-align: center !important;
+        flex-direction: column;
+        gap: 6px;
     }
 
     .admin-table td:last-child {
@@ -1449,26 +1515,35 @@ svg {
         text-transform: uppercase;
         letter-spacing: 0.5px;
         color: var(--outlet-gold);
+        display: block;
+        margin-bottom: 4px;
     }
 
     .admin-table td:first-child {
-        justify-content: center;
+        justify-content: center !important;
         gap: 16px;
         padding-bottom: 12px;
-    }
-
-    .admin-table td:first-child:before {
-        display: none;
     }
 
     .product-image {
         width: 80px;
         height: 80px;
+        margin: 0 auto;
     }
 
-    .admin-action-btn {
-        width: 40px;
-        height: 40px;
+    .admin-actions-cell {
+        gap: 6px;
+        justify-content: center;
+    }
+
+    .admin-btn-edit span,
+    .admin-btn-delete span {
+        display: none;
+    }
+
+    .admin-btn-edit,
+    .admin-btn-delete {
+        padding: 8px 12px;
     }
 }
 

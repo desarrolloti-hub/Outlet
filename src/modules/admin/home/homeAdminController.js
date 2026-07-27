@@ -127,30 +127,34 @@ function renderProducts() {
 
         return `
             <tr data-id="${id}">
-                <td data-label="Imagen">
+                <td data-label="Imagen" class="text-center">
                     <img src="${imageUrl}" 
                          class="product-image" 
                          alt="${escapeHtml(name)}" 
                          onerror="this.src='https://placehold.co/100x100?text=Error'"
-                         style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px; border: 1px solid #eaeaea;">
+                         style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px; border: 1px solid #eaeaea; display: inline-block;">
                 </td>
-                <td data-label="Producto"><strong>${escapeHtml(name)}</strong></td>
-                <td data-label="Precio">${formatMoney(price)}</td>
-                <td data-label="Categoría">${escapeHtml(category)}</td>
-                <td data-label="Acciones">
-                    <button class="admin-action-btn edit" data-id="${id}" data-action="edit" title="Editar" style="background: rgba(221, 171, 59, 0.1); border: none; cursor: pointer; padding: 8px 12px; border-radius: 6px; transition: all 0.2s; color: #666; margin-right: 4px;">
-                        <i class="fa-regular fa-pen-to-square"></i>
-                    </button>
-                    <button class="admin-action-btn delete" data-id="${id}" data-action="delete" title="Eliminar" style="background: rgba(239, 68, 68, 0.1); border: none; cursor: pointer; padding: 8px 12px; border-radius: 6px; transition: all 0.2s; color: #666;">
-                        <i class="fa-regular fa-trash-can"></i>
-                    </button>
+                <td data-label="Producto" class="text-center"><strong>${escapeHtml(name)}</strong></td>
+                <td data-label="Precio" class="text-center">${formatMoney(price)}</td>
+                <td data-label="Categoría" class="text-center">${escapeHtml(category)}</td>
+                <td data-label="Acciones" class="text-center">
+                    <div class="admin-actions-cell">
+                        <button class="admin-btn-edit" data-id="${id}" title="Editar">
+                            <i class="material-symbols-outlined">edit</i>
+                            <span>Editar</span>
+                        </button>
+                        <button class="admin-btn-delete" data-id="${id}" data-name="${escapeHtml(name)}" title="Eliminar">
+                            <i class="material-symbols-outlined">delete</i>
+                            <span>Eliminar</span>
+                        </button>
+                    </div>
                 </td>
             </tr>
         `;
     }).join('');
 
     // Eventos - Editar
-    document.querySelectorAll('.admin-action-btn.edit').forEach(btn => {
+    document.querySelectorAll('.admin-btn-edit').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
             const id = btn.getAttribute('data-id');
@@ -159,7 +163,7 @@ function renderProducts() {
     });
 
     // Eventos - Eliminar
-    document.querySelectorAll('.admin-action-btn.delete').forEach(btn => {
+    document.querySelectorAll('.admin-btn-delete').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
             const id = btn.getAttribute('data-id');
@@ -530,7 +534,7 @@ function setupRealtimeUpdates() {
 }
 
 // ========================================
-// INICIAR - VERSIÓN CON MÁS LOGS
+// INICIAR
 // ========================================
 
 export async function adminController() {
@@ -604,10 +608,10 @@ export async function adminController() {
         });
     }
 
-    // ✅ ESCUCHAR ACTUALIZACIONES
+    // ESCUCHAR ACTUALIZACIONES
     setupRealtimeUpdates();
 
-    // ✅ CARGAR PRODUCTOS - CON MANEJO DE ERRORES
+    // CARGAR PRODUCTOS
     console.log('🚀 Iniciando carga de productos...');
     try {
         await loadProducts(true);
