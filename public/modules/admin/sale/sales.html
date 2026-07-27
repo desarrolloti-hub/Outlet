@@ -1,0 +1,189 @@
+<!-- ========================================
+   VISTA DE PANEL DE VENTAS - OUTLET ADMIN
+   Panel completo para gestionar ventas
+   CON ESTILOS BASADOS EN TUS VARIABLES GLOBALES
+   ======================================== -->
+
+<main class="sales-dashboard-container">
+    <!-- Header -->
+    <div class="sales-dashboard-header">
+        <div>
+            <h1 class="sales-title">
+                <span class="material-symbols-outlined sales-title-icon">point_of_sale</span>
+                Panel de Ventas
+            </h1>
+            <p class="sales-header-desc">Gestiona todas las órdenes y ventas de tu tienda</p>
+        </div>
+        <div class="sales-header-actions">
+            <button class="sales-btn-primary" id="newSaleBtn">
+                <span class="material-symbols-outlined">add_shopping_cart</span>
+                Nueva Venta
+            </button>
+            <button class="sales-btn-outline" id="refreshBtn">
+                <span class="material-symbols-outlined">refresh</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="sales-stats-grid" id="statsGrid">
+        <div class="sales-stat-card">
+            <div class="sales-stat-icon" style="background: rgba(221, 171, 59, 0.15); color: var(--outlet-gold);">
+                <span class="material-symbols-outlined">shopping_bag</span>
+            </div>
+            <div class="sales-stat-info">
+                <span class="sales-stat-value" id="totalSales">0</span>
+                <span class="sales-stat-label">Ventas Totales</span>
+            </div>
+        </div>
+        <div class="sales-stat-card">
+            <div class="sales-stat-icon" style="background: rgba(40, 167, 69, 0.15); color: #28a745;">
+                <span class="material-symbols-outlined">payments</span>
+            </div>
+            <div class="sales-stat-info">
+                <span class="sales-stat-value" id="totalRevenue">$0.00</span>
+                <span class="sales-stat-label">Ingresos Totales</span>
+            </div>
+        </div>
+        <div class="sales-stat-card">
+            <div class="sales-stat-icon" style="background: rgba(23, 162, 184, 0.15); color: #17a2b8;">
+                <span class="material-symbols-outlined">receipt_long</span>
+            </div>
+            <div class="sales-stat-info">
+                <span class="sales-stat-value" id="averageTicket">$0.00</span>
+                <span class="sales-stat-label">Ticket Promedio</span>
+            </div>
+        </div>
+        <div class="sales-stat-card">
+            <div class="sales-stat-icon" style="background: rgba(255, 193, 7, 0.15); color: #ffc107;">
+                <span class="material-symbols-outlined">pending_actions</span>
+            </div>
+            <div class="sales-stat-info">
+                <span class="sales-stat-value" id="pendingSales">0</span>
+                <span class="sales-stat-label">Pendientes</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="sales-filters">
+        <div class="sales-filter-group">
+            <div class="sales-filter-item">
+                <label>Estado</label>
+                <select id="filterStatus">
+                    <option value="">Todos</option>
+                    <option value="confirmada">Confirmada</option>
+                    <option value="preparando">Preparando</option>
+                    <option value="enviada">Enviada</option>
+                    <option value="entregada">Entregada</option>
+                    <option value="cancelada">Cancelada</option>
+                </select>
+            </div>
+            <div class="sales-filter-item">
+                <label>Pago</label>
+                <select id="filterPayment">
+                    <option value="">Todos</option>
+                    <option value="pendiente">Pendiente</option>
+                    <option value="pagado">Pagado</option>
+                    <option value="fallido">Fallido</option>
+                </select>
+            </div>
+            <div class="sales-filter-item">
+                <label>Fecha desde</label>
+                <input type="date" id="filterDateFrom">
+            </div>
+            <div class="sales-filter-item">
+                <label>Fecha hasta</label>
+                <input type="date" id="filterDateTo">
+            </div>
+        </div>
+        <button class="sales-btn-filter" id="applyFiltersBtn">
+            <span class="material-symbols-outlined">filter_list</span>
+            Aplicar Filtros
+        </button>
+    </div>
+
+    <!-- Tabla de Ventas -->
+    <div class="sales-table-container">
+        <div class="sales-table-header">
+            <div class="sales-table-title">
+                <span class="material-symbols-outlined">list_alt</span>
+                <span>Órdenes de Venta</span>
+            </div>
+            <div class="sales-table-info">
+                <span id="salesCount">0 ventas</span>
+            </div>
+        </div>
+
+        <div class="sales-table-wrapper">
+            <table class="sales-table">
+                <thead>
+                    <tr>
+                        <th>Orden</th>
+                        <th>Cliente</th>
+                        <th>Productos</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                        <th>Pago</th>
+                        <th>Fecha</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="salesTableBody">
+                    <tr>
+                        <td colspan="8" class="sales-table-empty">
+                            <div class="sales-empty-state">
+                                <span class="material-symbols-outlined">inbox</span>
+                                <p>No hay ventas registradas</p>
+                                <small>Las ventas aparecerán aquí cuando se registren</small>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginación -->
+        <div class="sales-pagination">
+            <button class="sales-pagination-btn" id="prevPageBtn" disabled>
+                <span class="material-symbols-outlined">chevron_left</span>
+            </button>
+            <span class="sales-pagination-info" id="pageInfo">Página 1</span>
+            <button class="sales-pagination-btn" id="nextPageBtn">
+                <span class="material-symbols-outlined">chevron_right</span>
+            </button>
+        </div>
+    </div>
+</main>
+
+<!-- Modal para ver/editar venta -->
+<div class="sales-modal-overlay" id="saleModal" style="display: none;">
+    <div class="sales-modal">
+        <div class="sales-modal-header">
+            <h3 id="modalTitle">Detalle de Venta</h3>
+            <button class="sales-modal-close" id="modalCloseBtn">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <div class="sales-modal-body" id="modalBody">
+            <!-- Contenido dinámico -->
+        </div>
+    </div>
+</div>
+
+<!-- Modal para nueva venta -->
+<div class="sales-modal-overlay" id="newSaleModal" style="display: none;">
+    <div class="sales-modal sales-modal-lg">
+        <div class="sales-modal-header">
+            <h3>Nueva Venta</h3>
+            <button class="sales-modal-close" id="newSaleCloseBtn">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <div class="sales-modal-body">
+            <div id="newSaleForm">
+                <!-- Se llenará desde el controller -->
+            </div>
+        </div>
+    </div>
+</div>

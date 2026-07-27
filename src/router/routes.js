@@ -50,7 +50,7 @@ import { readCustomersController } from '../modules/admin/user/create/viewCustum
 import { readAdminsController } from '../modules/admin/user/read/readAdminsController.js'
 import { updateAdminController } from '../modules/admin/user/update/updateAdminsController.js'
 
-
+import { salesController } from '../modules/admin/sale/saleController.js';
 
 export const routes = {
 
@@ -153,6 +153,10 @@ export const routes = {
     "/updateAdmins": {
         view: "/modules/admin/user/update/updateAdmins.html",
         controller: updateAdminController
+    },
+    "/sales": {
+        view: "public/modules/admin/sale/sales.html",
+        controller: salesController
     },
 
     /* ========================================
