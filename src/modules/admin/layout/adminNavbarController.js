@@ -218,7 +218,12 @@ function bindEvents() {
         elements.navOverlay.addEventListener('click', closeMobileNav);
     }
 
+    // ✅ Evento de logout con el nuevo botón estilo editUser
     if (elements.logoutBtn) {
+        // Remover event listeners anteriores para evitar duplicados
+        const newLogoutBtn = elements.logoutBtn.cloneNode(true);
+        elements.logoutBtn.parentNode.replaceChild(newLogoutBtn, elements.logoutBtn);
+        elements.logoutBtn = newLogoutBtn;
         elements.logoutBtn.addEventListener('click', handleLogout);
     }
 

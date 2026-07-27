@@ -4,6 +4,7 @@
    ======================================== -->
 
 <main class="outlet-admin-container">
+    <!-- Header - AHORA HASTA ARRIBA -->
     <div class="outlet-admin-header">
         <div class="outlet-admin-header-left">
             <span class="outlet-admin-badge">PANEL ADMIN</span>
@@ -14,10 +15,6 @@
             <button class="outlet-btn-outline" id="backBtn">
                 <span class="material-symbols-outlined">arrow_back</span>
                 Volver
-            </button>
-            <button class="outlet-btn-danger" id="deleteProductBtn" style="display:none;">
-                <span class="material-symbols-outlined">delete</span>
-                Eliminar
             </button>
         </div>
     </div>
@@ -38,7 +35,8 @@
             <div class="outlet-form-grid">
                 <div class="outlet-input-group">
                     <label>ID (SKU) <span class="outlet-required">*</span></label>
-                    <input type="text" placeholder="Ej: OUT-001-BLK-S" id="sku" readonly style="background: rgba(0,0,0,0.05); cursor: not-allowed;">
+                    <input type="text" placeholder="Ej: OUT-001-BLK-S" id="sku" readonly
+                        style="background: rgba(0,0,0,0.05); cursor: not-allowed;">
                     <small>El SKU no se puede modificar</small>
                 </div>
                 <div class="outlet-input-group">
@@ -89,19 +87,19 @@
             </div>
         </div>
 
-        <!-- ===== SECCIÓN 2: PRECIOS Y DESCUENTOS ===== -->
+        <!-- ===== SECCIÓN 2: PRECIOS Y DESCUENTOS (MXN) ===== -->
         <div class="outlet-form-section">
             <div class="outlet-section-title">
                 <span class="outlet-section-icon material-symbols-outlined">attach_money</span>
-                <h2>Precios y Descuentos</h2>
+                <h2>Precios y Descuentos (MXN)</h2>
             </div>
             <div class="outlet-form-grid">
                 <div class="outlet-input-group">
-                    <label>Precio de Compra (€) <span class="outlet-required">*</span></label>
+                    <label>Precio de Compra ($ MXN) <span class="outlet-required">*</span></label>
                     <input type="number" step="0.01" placeholder="0.00" id="precioCompra">
                 </div>
                 <div class="outlet-input-group">
-                    <label>Precio de Venta (€) <span class="outlet-required">*</span></label>
+                    <label>Precio de Venta ($ MXN) <span class="outlet-required">*</span></label>
                     <input type="number" step="0.01" placeholder="0.00" id="precioVenta">
                 </div>
                 <div class="outlet-input-group">
@@ -110,7 +108,7 @@
                 </div>
                 <div class="outlet-input-group outlet-preview-price">
                     <label>Precio Final (con descuento)</label>
-                    <div class="outlet-price-final" id="precioFinal">€0.00</div>
+                    <div class="outlet-price-final" id="precioFinal">$0.00 MXN</div>
                 </div>
             </div>
         </div>
@@ -166,7 +164,8 @@
                     <div class="outlet-tags-container" id="coloresContainer">
                         <div class="outlet-tags-list" id="coloresList"></div>
                         <div class="outlet-tag-input-wrapper">
-                            <input type="text" placeholder="Ej: Negro, Rojo, Azul..." id="colorInput" class="outlet-tag-input">
+                            <input type="text" placeholder="Ej: Negro, Rojo, Azul..." id="colorInput"
+                                class="outlet-tag-input">
                             <button type="button" class="outlet-tag-add-btn" id="addColorBtn">+</button>
                         </div>
                     </div>
@@ -178,7 +177,8 @@
                     <div class="outlet-tags-container" id="tallasContainer">
                         <div class="outlet-tags-list" id="tallasList"></div>
                         <div class="outlet-tag-input-wrapper">
-                            <input type="text" placeholder="Ej: XS, S, M, L, XL..." id="tallaInput" class="outlet-tag-input">
+                            <input type="text" placeholder="Ej: XS, S, M, L, XL..." id="tallaInput"
+                                class="outlet-tag-input">
                             <button type="button" class="outlet-tag-add-btn" id="addTallaBtn">+</button>
                         </div>
                     </div>
@@ -190,7 +190,8 @@
                     <div class="outlet-tags-container" id="materialesContainer">
                         <div class="outlet-tags-list" id="materialesList"></div>
                         <div class="outlet-tag-input-wrapper">
-                            <input type="text" placeholder="Ej: Algodón, Poliéster, Lana..." id="materialInput" class="outlet-tag-input">
+                            <input type="text" placeholder="Ej: Algodón, Poliéster, Lana..." id="materialInput"
+                                class="outlet-tag-input">
                             <button type="button" class="outlet-tag-add-btn" id="addMaterialBtn">+</button>
                         </div>
                     </div>

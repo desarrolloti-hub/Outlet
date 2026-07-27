@@ -29,6 +29,7 @@
     --outlet-radius-full: 9999px;
     --outlet-transition-base: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --outlet-transition-fast: 0.2s ease;
+    --outlet-transition-elegant: cubic-bezier(0.2, 0.9, 0.4, 1.1);
 }
 
 /* ========================================
@@ -117,7 +118,7 @@
 }
 
 .OUTLET-admin-nav.collapsed .admin-theme-toggle span,
-.OUTLET-admin-nav.collapsed .admin-logout-btn span {
+.OUTLET-admin-nav.collapsed .outlet-btn span {
     display: none;
 }
 
@@ -128,7 +129,7 @@
     margin: 8px 10px 16px 10px;
 }
 
-.OUTLET-admin-nav.collapsed .admin-logout-btn {
+.OUTLET-admin-nav.collapsed .outlet-btn {
     justify-content: center;
     padding: 10px;
     width: calc(100% - 20px);
@@ -382,47 +383,84 @@
 }
 
 /* ========================================
-   BOTÓN CERRAR SESIÓN - CUADRADO Y ROJO
+   BOTÓN CERRAR SESIÓN - ESTILO EDIT USER
    ======================================== */
 
-.admin-logout-btn {
-    display: flex;
+.outlet-btn {
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    padding: 10px 24px;
-    text-decoration: none;
-    border-radius: var(--outlet-radius-md);
-    transition: all var(--outlet-transition-base);
-    font-size: 13px;
-    font-weight: 600;
-    width: 100%;
-    background: var(--outlet-red);
-    color: #ffffff;
+    gap: 8px;
+    padding: 12px 28px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
     border: none;
     cursor: pointer;
+    transition: all 0.35s var(--outlet-transition-elegant, cubic-bezier(0.2, 0.9, 0.4, 1.1));
+    width: 100%;
+}
+
+.outlet-btn-danger {
+    background: var(--outlet-red, #dc2626);
+    color: #ffffff;
+    border: none;
     box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
 }
 
-.admin-logout-btn i {
-    color: #ffffff;
-    font-size: 16px;
-    transition: all var(--outlet-transition-base);
-}
-
-.admin-logout-btn:hover {
-    background: var(--outlet-red-hover);
+.outlet-btn-danger:hover {
+    background: var(--outlet-red-hover, #b91c1c);
     transform: translateY(-2px);
     box-shadow: 0 4px 16px rgba(220, 38, 38, 0.4);
 }
 
-.admin-logout-btn:hover i {
+.outlet-btn-danger:active {
+    transform: translateY(0px);
+}
+
+.outlet-btn-danger .material-symbols-outlined {
+    font-size: 20px;
+    color: #ffffff;
+    transition: all 0.35s var(--outlet-transition-elegant, cubic-bezier(0.2, 0.9, 0.4, 1.1));
+}
+
+.outlet-btn-danger:hover .material-symbols-outlined {
     transform: translateX(4px);
 }
 
-.admin-logout-btn:active {
-    transform: translateY(0px);
+/* ====== DARK MODE ====== */
+body.dark-mode .outlet-btn-danger {
+    background: var(--outlet-red, #dc2626);
+    color: #ffffff;
 }
+
+body.dark-mode .outlet-btn-danger:hover {
+    background: var(--outlet-red-hover, #b91c1c);
+}
+
+/* ====== RESPONSIVE ====== */
+@media (max-width: 768px) {
+    .outlet-btn {
+        padding: 10px 20px;
+        font-size: 10px;
+    }
+
+    .outlet-btn-danger .material-symbols-outlined {
+        font-size: 18px;
+    }
+}
+
+/* Asegurar que el botón ocupe todo el ancho en el navbar */
+.admin-nav-footer .outlet-btn {
+    width: 100%;
+}
+
+/* ========================================
+   BOTÓN CERRAR SESIÓN - CUADRADO Y ROJO (ELIMINADO - REEMPLAZADO POR outlet-btn)
+   ======================================== */
+
+/* El estilo anterior admin-logout-btn ya no se usa */
 
 /* ========================================
    BOTÓN HAMBURGUESA - ESTILO DORADO
@@ -521,10 +559,15 @@
         width: 24px;
     }
 
-    .OUTLET-admin-nav.collapsed .admin-logout-btn {
+    .OUTLET-admin-nav.collapsed .outlet-btn {
         width: 100%;
         margin: 0;
         padding: 10px 24px;
+        justify-content: center;
+    }
+
+    .OUTLET-admin-nav.collapsed .outlet-btn span {
+        display: inline;
     }
 
     .admin-collapse-btn {
