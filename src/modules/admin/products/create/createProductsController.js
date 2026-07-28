@@ -4,6 +4,7 @@
    Wizard de 3 pasos | Botones de navegación abajo
    RESPONSIVE: Se adapta a cualquier tamaño
    CON SWEETALERT2 INTEGRADO
+   PRECIOS EN PESOS MEXICANOS (MXN)
    ======================================== */
 
 import { ProductService } from '../../../../services/productService.js';
@@ -40,12 +41,12 @@ function cacheElements() {
         stepItems: document.querySelectorAll('.outlet-step'),
         stepCurrent: document.getElementById('stepCurrent'),
         panels: document.querySelectorAll('.outlet-carousel-panel'),
-        
+
         // Botones de acción
         clearBtn: document.getElementById('clearBtn'),
         saveBtn: document.getElementById('saveBtn'),
         backBtn: document.getElementById('backBtn'),
-        
+
         // Imagen principal
         mainImageArea: document.getElementById('mainImageArea'),
         mainImageInput: document.getElementById('mainImageInput'),
@@ -54,12 +55,12 @@ function cacheElements() {
         mainPreviewImg: document.getElementById('mainPreviewImg'),
         removeMainImageBtn: document.getElementById('removeMainImageBtn'),
         imagenPrincipal: document.getElementById('imagenPrincipal'),
-        
+
         // Galería
         galleryGrid: document.getElementById('galleryGrid'),
         addGalleryBtn: document.getElementById('addGalleryBtn'),
         galeriaImagenes: document.getElementById('galeriaImagenes'),
-        
+
         // Info general
         sku: document.getElementById('sku'),
         nombre: document.getElementById('nombre'),
@@ -68,13 +69,13 @@ function cacheElements() {
         categoria: document.getElementById('categoria'),
         subcategoria: document.getElementById('subcategoria'),
         genero: document.getElementById('genero'),
-        
+
         // Precios
         precioCompra: document.getElementById('precioCompra'),
         precioVenta: document.getElementById('precioVenta'),
         descuento: document.getElementById('descuento'),
         precioFinal: document.getElementById('precioFinal'),
-        
+
         // Especificaciones
         coloresList: document.getElementById('coloresList'),
         colorInput: document.getElementById('colorInput'),
@@ -105,19 +106,19 @@ function cacheElements() {
 function mostrarToast(mensaje, tipo = 'info') {
     const toastExistente = document.querySelector('.outlet-toast');
     if (toastExistente) toastExistente.remove();
-    
+
     const toast = document.createElement('div');
     toast.className = 'outlet-toast ' + tipo;
     toast.textContent = mensaje;
     document.body.appendChild(toast);
-    
-    requestAnimationFrame(function() {
+
+    requestAnimationFrame(function () {
         toast.classList.add('show');
     });
-    
-    setTimeout(function() {
+
+    setTimeout(function () {
         toast.classList.remove('show');
-        setTimeout(function() { toast.remove(); }, 300);
+        setTimeout(function () { toast.remove(); }, 300);
     }, 3200);
 }
 
@@ -130,7 +131,7 @@ function mostrarSweetAlert(options) {
             popup: 'swal2-popup'
         }
     };
-    
+
     return Swal.fire(Object.assign({}, defaultOptions, options));
 }
 
@@ -181,7 +182,7 @@ function mostrarLoading(mensaje) {
     return mostrarSweetAlert({
         title: mensaje,
         allowOutsideClick: false,
-        didOpen: function() {
+        didOpen: function () {
             Swal.showLoading();
         }
     });
@@ -195,23 +196,23 @@ function cerrarLoading() {
 // FUNCIÓN: limpiarFormulario CON CONFIRMACIÓN
 // ========================================
 function limpiarFormulario() {
-    var tieneDatos = elements.sku?.value || 
-                       elements.nombre?.value || 
-                       currentMainImage || 
-                       coloresArray.length > 0 || 
-                       tallasArray.length > 0 ||
-                       galleryImages.length > 0;
-    
+    var tieneDatos = elements.sku?.value ||
+        elements.nombre?.value ||
+        currentMainImage ||
+        coloresArray.length > 0 ||
+        tallasArray.length > 0 ||
+        galleryImages.length > 0;
+
     if (!tieneDatos) {
         mostrarToast('El formulario ya está vacío', 'info');
         return;
     }
-    
+
     mostrarAdvertencia(
         '¿Limpiar formulario?',
         'Se perderán todos los datos ingresados. ¿Deseas continuar?',
         'Sí, limpiar'
-    ).then(function(result) {
+    ).then(function (result) {
         if (result.isConfirmed) {
             ejecutarLimpiarFormulario();
         }
@@ -224,45 +225,45 @@ function ejecutarLimpiarFormulario() {
         'precioCompra', 'precioVenta', 'descuento',
         'temporada', 'tipoAjuste', 'composicion', 'peso', 'stock'
     ];
-    
-    inputsToClear.forEach(function(id) {
+
+    inputsToClear.forEach(function (id) {
         const element = elements[id];
         if (element) {
             element.value = '';
         }
     });
-    
+
     if (elements.categoria && categoriesList.length > 0) {
         elements.categoria.value = categoriesList[0].id;
         updateSubcategories(categoriesList[0].id);
     }
-    
+
     if (elements.estado) elements.estado.value = 'activo';
     if (elements.destacado) elements.destacado.checked = false;
-    
+
     coloresArray = [];
     tallasArray = [];
     materialesArray = [];
     renderizarColores();
     renderizarTallas();
     renderizarMateriales();
-    
+
     if (elements.coloresHidden) elements.coloresHidden.value = '[]';
     if (elements.tallasHidden) elements.tallasHidden.value = '[]';
     if (elements.materialesHidden) elements.materialesHidden.value = '[]';
-    
+
     ejecutarRemoveMainImage();
     galleryImages = [];
     renderGallery();
     if (elements.galeriaImagenes) elements.galeriaImagenes.value = '[]';
     if (elements.imagenPrincipal) elements.imagenPrincipal.value = '';
-    
+
     actualizarPrecioFinal();
-    
+
     if (elements.colorInput) elements.colorInput.value = '';
     if (elements.tallaInput) elements.tallaInput.value = '';
     if (elements.materialInput) elements.materialInput.value = '';
-    
+
     mostrarToast('Formulario limpiado completamente', 'success');
 }
 
@@ -271,39 +272,39 @@ function ejecutarLimpiarFormulario() {
 // ========================================
 async function guardarProducto() {
     if (isLoading) return;
-    
-    if (!elements.sku?.value || !elements.nombre?.value || !elements.descripcion?.value || 
+
+    if (!elements.sku?.value || !elements.nombre?.value || !elements.descripcion?.value ||
         !elements.marca?.value || !elements.categoria?.value || !elements.genero?.value) {
-        
+
         await mostrarError(
             'Campos incompletos',
             'Completa todos los campos del Paso 1 antes de guardar.'
         );
-        
+
         if (currentStep !== 1) {
             while (currentStep > 1) cambiarPanel(-1);
         }
         return;
     }
-    
+
     if (!currentMainImage) {
         await mostrarError(
             'Imagen principal requerida',
             'Agrega una imagen principal para el producto.'
         );
-        
+
         if (currentStep !== 1) {
             while (currentStep > 1) cambiarPanel(-1);
         }
         return;
     }
-    
+
     if (!elements.precioCompra?.value || !elements.precioVenta?.value) {
         await mostrarError(
             'Precios requeridos',
             'Completa los precios del Paso 2.'
         );
-        
+
         if (currentStep !== 2) {
             if (currentStep > 2) {
                 while (currentStep > 2) cambiarPanel(-1);
@@ -313,10 +314,10 @@ async function guardarProducto() {
         }
         return;
     }
-    
+
     var precioCompra = parseFloat(elements.precioCompra.value) || 0;
     var precioVenta = parseFloat(elements.precioVenta.value) || 0;
-    
+
     if (precioVenta <= precioCompra) {
         await mostrarError(
             'Precio inválido',
@@ -331,7 +332,7 @@ async function guardarProducto() {
         }
         return;
     }
-    
+
     var descuento = parseFloat(elements.descuento?.value) || 0;
     if (descuento > 90) {
         await mostrarError(
@@ -347,42 +348,42 @@ async function guardarProducto() {
         }
         return;
     }
-    
+
     var nombreProducto = elements.nombre?.value || 'producto';
     var skuProducto = elements.sku?.value || 'N/A';
-    
+
     var confirmResult = await mostrarConfirmacion(
         '¿Guardar producto?',
         'Estás a punto de guardar "' + nombreProducto + '" con SKU: ' + skuProducto,
         'Sí, guardar'
     );
-    
+
     if (!confirmResult.isConfirmed) {
         mostrarToast('Guardado cancelado', 'info');
         return;
     }
-    
+
     isLoading = true;
     var btn = elements.saveBtn;
     var originalHTML = btn.innerHTML;
     btn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> Guardando...';
     btn.disabled = true;
-    
+
     mostrarLoading('Guardando producto...');
-    
+
     try {
         var productData = recolectarDatosProducto();
         var productoGuardado = await ProductService.create(productData);
-        
+
         cerrarLoading();
-        
+
         await mostrarExito(
             '¡Producto guardado!',
             '✅ "' + productoGuardado.nombre + '" se ha guardado exitosamente.'
         );
-        
+
         ejecutarLimpiarFormulario();
-        
+
         if (categoriesList.length > 0) {
             var firstCat = categoriesList[0];
             if (elements.categoria) {
@@ -390,7 +391,7 @@ async function guardarProducto() {
                 updateSubcategories(firstCat.id);
             }
         }
-        
+
     } catch (error) {
         cerrarLoading();
         console.error('Error al guardar producto:', error);
@@ -398,7 +399,7 @@ async function guardarProducto() {
             'Error al guardar',
             'No se pudo guardar el producto. ' + (error.message || 'Error desconocido.')
         );
-        
+
     } finally {
         isLoading = false;
         btn.innerHTML = originalHTML;
@@ -412,22 +413,22 @@ async function guardarProducto() {
 async function loadCategories() {
     try {
         console.log('🔄 Cargando categorías para el formulario...');
-        
+
         mostrarLoading('Cargando categorías...');
-        
+
         categoriesList = await CategoryService.getAll({}, true);
         console.log('✅ ' + categoriesList.length + ' categorías cargadas');
-        
+
         cerrarLoading();
-        
+
         subcategoriesMap = {};
-        categoriesList.forEach(function(cat) {
-            var subNames = (cat.subcategories || []).map(function(sub) { return sub.name; });
+        categoriesList.forEach(function (cat) {
+            var subNames = (cat.subcategories || []).map(function (sub) { return sub.name; });
             subcategoriesMap[cat.id] = subNames;
         });
-        
+
         populateCategorySelect();
-        
+
         if (categoriesList.length > 0) {
             var firstCat = categoriesList[0];
             if (elements.categoria) {
@@ -435,9 +436,9 @@ async function loadCategories() {
                 updateSubcategories(firstCat.id);
             }
         }
-        
+
         mostrarToast('✅ ' + categoriesList.length + ' categorías cargadas', 'success');
-        
+
     } catch (error) {
         console.error('Error al cargar categorías:', error);
         cerrarLoading();
@@ -454,12 +455,12 @@ async function loadCategories() {
 // ========================================
 function removeMainImage() {
     if (!currentMainImage) return;
-    
+
     mostrarConfirmacion(
         '¿Eliminar imagen principal?',
         'Esta acción eliminará la imagen principal del producto.',
         'Sí, eliminar'
-    ).then(function(result) {
+    ).then(function (result) {
         if (result.isConfirmed) {
             ejecutarRemoveMainImage();
         }
@@ -481,7 +482,7 @@ function ejecutarRemoveMainImage() {
 // ========================================
 function handleMainImageUpload(file) {
     if (!file) return;
-    
+
     if (file.size > 5 * 1024 * 1024) {
         mostrarError(
             'Imagen demasiado grande',
@@ -489,7 +490,7 @@ function handleMainImageUpload(file) {
         );
         return;
     }
-    
+
     var validTypes = ['image/jpeg', 'image/png', 'image/webp'];
     if (!validTypes.includes(file.type)) {
         mostrarError(
@@ -498,9 +499,9 @@ function handleMainImageUpload(file) {
         );
         return;
     }
-    
+
     var reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = function (e) {
         if (elements.mainPreviewImg) elements.mainPreviewImg.src = e.target.result;
         if (elements.mainImagePlaceholder) elements.mainImagePlaceholder.style.display = 'none';
         if (elements.mainImagePreview) elements.mainImagePreview.style.display = 'flex';
@@ -508,7 +509,7 @@ function handleMainImageUpload(file) {
         if (elements.imagenPrincipal) elements.imagenPrincipal.value = currentMainImage;
         mostrarExito('Imagen cargada', 'La imagen principal se ha cargado correctamente.');
     };
-    reader.onerror = function() {
+    reader.onerror = function () {
         mostrarError('Error al leer la imagen', 'No se pudo procesar la imagen. Intenta de nuevo.');
     };
     reader.readAsDataURL(file);
@@ -525,7 +526,7 @@ function addGalleryImage(file) {
         );
         return;
     }
-    
+
     if (file.size > 5 * 1024 * 1024) {
         mostrarError(
             'Imagen demasiado grande',
@@ -533,15 +534,15 @@ function addGalleryImage(file) {
         );
         return;
     }
-    
+
     var reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = function (e) {
         galleryImages.push(e.target.result);
         renderGallery();
         if (elements.galeriaImagenes) elements.galeriaImagenes.value = JSON.stringify(galleryImages);
         mostrarToast('🖼️ Imagen agregada a la galería', 'success');
     };
-    reader.onerror = function() {
+    reader.onerror = function () {
         mostrarError('Error al leer la imagen', 'No se pudo procesar la imagen.');
     };
     reader.readAsDataURL(file);
@@ -555,7 +556,7 @@ function removeGalleryImage(index) {
         '¿Eliminar imagen de galería?',
         'Esta acción eliminará esta imagen de la galería.',
         'Sí, eliminar'
-    ).then(function(result) {
+    ).then(function (result) {
         if (result.isConfirmed) {
             galleryImages.splice(index, 1);
             renderGallery();
@@ -570,14 +571,14 @@ function removeGalleryImage(index) {
 // ========================================
 function renderGallery() {
     if (!elements.galleryGrid) return;
-    
+
     if (galleryImages.length === 0) {
         elements.galleryGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 30px 20px; color: var(--outlet-text-variant);"><span class="material-symbols-outlined" style="font-size: 40px; display: block; margin-bottom: 8px; opacity: 0.3;">image</span>No hay imágenes en la galería</div>';
         return;
     }
-    
+
     var html = '';
-    galleryImages.forEach(function(img, index) {
+    galleryImages.forEach(function (img, index) {
         html += '<div class="outlet-gallery-item">';
         html += '<img src="' + img + '" alt="Gallery ' + (index + 1) + '">';
         html += '<button type="button" class="outlet-remove-gallery-img" data-index="' + index + '" title="Eliminar imagen">';
@@ -586,9 +587,9 @@ function renderGallery() {
         html += '</div>';
     });
     elements.galleryGrid.innerHTML = html;
-    
-    document.querySelectorAll('.outlet-remove-gallery-img').forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
+
+    document.querySelectorAll('.outlet-remove-gallery-img').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
             e.stopPropagation();
             var index = parseInt(this.dataset.index);
             removeGalleryImage(index);
@@ -648,7 +649,7 @@ function addMaterial() {
 }
 
 // ========================================
-// FUNCIÓN: actualizarPrecioFinal
+// FUNCIÓN: actualizarPrecioFinal - MXN
 // ========================================
 function actualizarPrecioFinal() {
     var precioVenta = parseFloat(elements.precioVenta?.value) || 0;
@@ -658,7 +659,14 @@ function actualizarPrecioFinal() {
         precioFinal = precioVenta * (1 - descuento / 100);
     }
     if (elements.precioFinal) {
-        elements.precioFinal.textContent = '€' + precioFinal.toFixed(2);
+        // Formato con separador de miles y 2 decimales
+        var formateado = precioFinal.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        elements.precioFinal.textContent = '$' + formateado + ' MXN';
+        if (descuento > 0) {
+            elements.precioFinal.style.color = '#ef4444';
+        } else {
+            elements.precioFinal.style.color = 'var(--outlet-gold)';
+        }
     }
 }
 
@@ -668,16 +676,16 @@ function actualizarPrecioFinal() {
 function renderizarColores() {
     if (!elements.coloresList) return;
     var html = '';
-    coloresArray.forEach(function(color, index) {
+    coloresArray.forEach(function (color, index) {
         html += '<span class="outlet-tag">';
         html += color;
         html += '<span class="outlet-remove-tag" data-index="' + index + '" data-type="color">✕</span>';
         html += '</span>';
     });
     elements.coloresList.innerHTML = html;
-    
-    document.querySelectorAll('.outlet-remove-tag[data-type="color"]').forEach(function(btn) {
-        btn.addEventListener('click', function() {
+
+    document.querySelectorAll('.outlet-remove-tag[data-type="color"]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
             var index = parseInt(this.dataset.index);
             coloresArray.splice(index, 1);
             renderizarColores();
@@ -690,16 +698,16 @@ function renderizarColores() {
 function renderizarTallas() {
     if (!elements.tallasList) return;
     var html = '';
-    tallasArray.forEach(function(talla, index) {
+    tallasArray.forEach(function (talla, index) {
         html += '<span class="outlet-tag">';
         html += talla;
         html += '<span class="outlet-remove-tag" data-index="' + index + '" data-type="talla">✕</span>';
         html += '</span>';
     });
     elements.tallasList.innerHTML = html;
-    
-    document.querySelectorAll('.outlet-remove-tag[data-type="talla"]').forEach(function(btn) {
-        btn.addEventListener('click', function() {
+
+    document.querySelectorAll('.outlet-remove-tag[data-type="talla"]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
             var index = parseInt(this.dataset.index);
             tallasArray.splice(index, 1);
             renderizarTallas();
@@ -712,16 +720,16 @@ function renderizarTallas() {
 function renderizarMateriales() {
     if (!elements.materialesList) return;
     var html = '';
-    materialesArray.forEach(function(material, index) {
+    materialesArray.forEach(function (material, index) {
         html += '<span class="outlet-tag">';
         html += material;
         html += '<span class="outlet-remove-tag" data-index="' + index + '" data-type="material">✕</span>';
         html += '</span>';
     });
     elements.materialesList.innerHTML = html;
-    
-    document.querySelectorAll('.outlet-remove-tag[data-type="material"]').forEach(function(btn) {
-        btn.addEventListener('click', function() {
+
+    document.querySelectorAll('.outlet-remove-tag[data-type="material"]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
             var index = parseInt(this.dataset.index);
             materialesArray.splice(index, 1);
             renderizarMateriales();
@@ -735,12 +743,12 @@ function renderizarMateriales() {
 // WIZARD / CARRUSEL
 // ========================================
 function updateWizardUI() {
-    elements.stepItems.forEach(function(step, idx) {
+    elements.stepItems.forEach(function (step, idx) {
         if (idx + 1 === currentStep) step.classList.add('active');
         else step.classList.remove('active');
     });
     if (elements.stepCurrent) elements.stepCurrent.textContent = currentStep;
-    
+
     if (currentStep === 3) {
         if (elements.navButtons) elements.navButtons.style.display = 'none';
         if (elements.actionButtons) elements.actionButtons.style.display = 'flex';
@@ -748,33 +756,33 @@ function updateWizardUI() {
         if (elements.navButtons) elements.navButtons.style.display = 'flex';
         if (elements.actionButtons) elements.actionButtons.style.display = 'none';
     }
-    
+
     if (elements.prevBtn) elements.prevBtn.disabled = currentStep === 1;
 }
 
 function cambiarPanel(direction) {
     if (isTransitioning) return;
-    
+
     var currentPanel = document.querySelector('.outlet-carousel-panel.active');
     var currentIndex = Array.from(elements.panels).indexOf(currentPanel);
     var newIndex = currentIndex + direction;
-    
+
     if (newIndex < 0 || newIndex >= elements.panels.length) return;
-    
+
     isTransitioning = true;
     var newPanel = elements.panels[newIndex];
-    
+
     currentPanel.style.animation = 'outletFadeOutDown 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards';
-    
-    setTimeout(function() {
+
+    setTimeout(function () {
         currentPanel.classList.remove('active');
         currentPanel.style.animation = '';
         newPanel.classList.add('active');
         newPanel.style.animation = 'outletFadeInUp 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards';
-        
+
         currentStep = newIndex + 1;
         updateWizardUI();
-        setTimeout(function() { isTransitioning = false; }, 300);
+        setTimeout(function () { isTransitioning = false; }, 300);
     }, 300);
 }
 
@@ -786,21 +794,21 @@ function prevStep() { if (currentStep > 1) cambiarPanel(-1); }
 // ========================================
 function populateCategorySelect() {
     if (!elements.categoria) return;
-    
+
     var currentValue = elements.categoria.value;
-    
+
     while (elements.categoria.options.length > 1) {
         elements.categoria.remove(1);
     }
-    
-    categoriesList.forEach(function(cat) {
+
+    categoriesList.forEach(function (cat) {
         var option = document.createElement('option');
         option.value = cat.id;
         option.textContent = cat.name;
         elements.categoria.appendChild(option);
     });
-    
-    if (currentValue && categoriesList.some(function(c) { return c.id === currentValue; })) {
+
+    if (currentValue && categoriesList.some(function (c) { return c.id === currentValue; })) {
         elements.categoria.value = currentValue;
     } else if (categoriesList.length > 0) {
         elements.categoria.value = categoriesList[0].id;
@@ -810,14 +818,14 @@ function populateCategorySelect() {
 function populateCategorySelectFallback() {
     if (!elements.categoria) return;
     if (elements.categoria.options.length > 1) return;
-    
+
     var fallbackOptions = [
         { value: 'ropa', label: 'Ropa' },
         { value: 'calzado', label: 'Calzado' },
         { value: 'accesorios', label: 'Accesorios' }
     ];
-    
-    fallbackOptions.forEach(function(opt) {
+
+    fallbackOptions.forEach(function (opt) {
         var option = document.createElement('option');
         option.value = opt.value;
         option.textContent = opt.label;
@@ -827,20 +835,20 @@ function populateCategorySelectFallback() {
 
 function updateSubcategories(categoryId) {
     if (!elements.subcategoria) return;
-    
+
     var subNames = subcategoriesMap[categoryId] || [];
-    
+
     while (elements.subcategoria.options.length > 1) {
         elements.subcategoria.remove(1);
     }
-    
-    subNames.forEach(function(name) {
+
+    subNames.forEach(function (name) {
         var option = document.createElement('option');
         option.value = name;
         option.textContent = name;
         elements.subcategoria.appendChild(option);
     });
-    
+
     if (subNames.length > 0) {
         elements.subcategoria.value = subNames[0];
     }
@@ -888,7 +896,7 @@ function recolectarDatosProducto() {
 // ========================================
 function irAHomeAdmin() {
     console.log('🔄 Redirigiendo a Home Admin...');
-    
+
     // Intentar diferentes formas de redirección
     try {
         // 1. Si existe el sistema de navegación SPA
@@ -896,20 +904,20 @@ function irAHomeAdmin() {
             window.navigateTo('/homeAdmin');
             return;
         }
-        
+
         // 2. Probar con la ruta relativa desde la ubicación actual
         var currentPath = window.location.pathname;
         console.log('📍 Ruta actual:', currentPath);
-        
+
         // Si estamos en /public/createProducts.html o similar
         if (currentPath.includes('/createProducts')) {
             window.location.href = '/homeAdmin.html';
             return;
         }
-        
+
         // 3. Probar con la ruta desde la raíz
         window.location.href = '/homeAdmin.html';
-        
+
     } catch (error) {
         console.error('❌ Error al redirigir:', error);
         // Fallback: usar la ruta más simple
@@ -924,8 +932,8 @@ function initEventListeners() {
     // Navegación
     elements.prevBtn?.addEventListener('click', prevStep);
     elements.nextBtn?.addEventListener('click', nextStep);
-    elements.stepItems?.forEach(function(step, idx) {
-        step.addEventListener('click', function() {
+    elements.stepItems?.forEach(function (step, idx) {
+        step.addEventListener('click', function () {
             var stepNum = parseInt(this.dataset.step);
             if (stepNum > currentStep) {
                 while (currentStep < stepNum) cambiarPanel(1);
@@ -934,29 +942,29 @@ function initEventListeners() {
             }
         });
     });
-    
+
     // Botones de acción
     elements.clearBtn?.addEventListener('click', limpiarFormulario);
     elements.saveBtn?.addEventListener('click', guardarProducto);
-    
+
     // ✅ BOTÓN VOLVER - REDIRIGE A HOME ADMIN (con múltiples intentos)
-    elements.backBtn?.addEventListener('click', function(e) {
+    elements.backBtn?.addEventListener('click', function (e) {
         e.preventDefault();
-        
+
         // Verificar si hay datos sin guardar
-        var tieneDatos = elements.sku?.value || 
-                         elements.nombre?.value || 
-                         currentMainImage || 
-                         coloresArray.length > 0 || 
-                         tallasArray.length > 0 ||
-                         galleryImages.length > 0;
-        
+        var tieneDatos = elements.sku?.value ||
+            elements.nombre?.value ||
+            currentMainImage ||
+            coloresArray.length > 0 ||
+            tallasArray.length > 0 ||
+            galleryImages.length > 0;
+
         if (tieneDatos) {
             mostrarAdvertencia(
                 '¿Salir sin guardar?',
                 'Tienes datos sin guardar. ¿Estás seguro de que quieres salir?',
                 'Sí, salir'
-            ).then(function(result) {
+            ).then(function (result) {
                 if (result.isConfirmed) {
                     irAHomeAdmin();
                 }
@@ -965,55 +973,55 @@ function initEventListeners() {
             irAHomeAdmin();
         }
     });
-    
+
     // Event listener para cambio de categoría
     elements.categoria?.addEventListener('change', handleCategoryChange);
-    
+
     // Imagen principal
-    elements.mainImageArea?.addEventListener('click', function() { elements.mainImageInput?.click(); });
-    elements.mainImageInput?.addEventListener('change', function(e) {
+    elements.mainImageArea?.addEventListener('click', function () { elements.mainImageInput?.click(); });
+    elements.mainImageInput?.addEventListener('change', function (e) {
         if (e.target.files && e.target.files[0]) handleMainImageUpload(e.target.files[0]);
     });
     elements.removeMainImageBtn?.addEventListener('click', removeMainImage);
-    
+
     // Drag & drop
-    elements.mainImageArea?.addEventListener('dragover', function(e) {
+    elements.mainImageArea?.addEventListener('dragover', function (e) {
         e.preventDefault();
         if (elements.mainImageArea) elements.mainImageArea.style.borderColor = 'var(--outlet-gold)';
     });
-    elements.mainImageArea?.addEventListener('dragleave', function(e) {
+    elements.mainImageArea?.addEventListener('dragleave', function (e) {
         e.preventDefault();
         if (elements.mainImageArea) elements.mainImageArea.style.borderColor = '';
     });
-    elements.mainImageArea?.addEventListener('drop', function(e) {
+    elements.mainImageArea?.addEventListener('drop', function (e) {
         e.preventDefault();
         if (elements.mainImageArea) elements.mainImageArea.style.borderColor = '';
         if (e.dataTransfer.files && e.dataTransfer.files[0]) handleMainImageUpload(e.dataTransfer.files[0]);
     });
-    
+
     // Galería
-    elements.addGalleryBtn?.addEventListener('click', function() {
+    elements.addGalleryBtn?.addEventListener('click', function () {
         var input = document.createElement('input');
         input.type = 'file';
         input.accept = 'image/*';
         input.multiple = true;
-        input.onchange = function(e) {
+        input.onchange = function (e) {
             if (e.target.files) {
-                Array.from(e.target.files).forEach(function(file) { addGalleryImage(file); });
+                Array.from(e.target.files).forEach(function (file) { addGalleryImage(file); });
             }
         };
         input.click();
     });
-    
+
     // Tags
     elements.addColorBtn?.addEventListener('click', addColor);
     elements.addTallaBtn?.addEventListener('click', addTalla);
     elements.addMaterialBtn?.addEventListener('click', addMaterial);
-    
-    elements.colorInput?.addEventListener('keypress', function(e) { if (e.key === 'Enter') { e.preventDefault(); addColor(); } });
-    elements.tallaInput?.addEventListener('keypress', function(e) { if (e.key === 'Enter') { e.preventDefault(); addTalla(); } });
-    elements.materialInput?.addEventListener('keypress', function(e) { if (e.key === 'Enter') { e.preventDefault(); addMaterial(); } });
-    
+
+    elements.colorInput?.addEventListener('keypress', function (e) { if (e.key === 'Enter') { e.preventDefault(); addColor(); } });
+    elements.tallaInput?.addEventListener('keypress', function (e) { if (e.key === 'Enter') { e.preventDefault(); addTalla(); } });
+    elements.materialInput?.addEventListener('keypress', function (e) { if (e.key === 'Enter') { e.preventDefault(); addMaterial(); } });
+
     // Precios
     elements.precioVenta?.addEventListener('input', actualizarPrecioFinal);
     elements.descuento?.addEventListener('input', actualizarPrecioFinal);
@@ -1033,7 +1041,7 @@ function syncDarkMode() {
     }
 }
 
-document.addEventListener('themeChanged', function(e) {
+document.addEventListener('themeChanged', function (e) {
     if (e.detail.isDarkMode) document.body.classList.add('dark-mode');
     else document.body.classList.remove('dark-mode');
 });
@@ -1043,7 +1051,7 @@ document.addEventListener('themeChanged', function(e) {
 // ========================================
 export async function productCreateController() {
     console.log('📝 Product Create Controller - Alta de prendas');
-    
+
     cacheElements();
     actualizarPrecioFinal();
     renderizarColores();
@@ -1052,11 +1060,11 @@ export async function productCreateController() {
     renderGallery();
     syncDarkMode();
     updateWizardUI();
-    
+
     await loadCategories();
-    
+
     initEventListeners();
-    
+
     console.log('✅ Product Create page loaded');
     console.log('📌 Para debug: window.location.pathname =', window.location.pathname);
 }
