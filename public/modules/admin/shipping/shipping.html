@@ -1,0 +1,195 @@
+<!-- ========================================
+   VISTA DE PANEL DE ENVÍOS - OUTLET ADMIN
+   Panel completo para gestionar envíos y seguimiento
+   CON ESTILOS BASADOS EN TUS VARIABLES GLOBALES
+   ======================================== -->
+
+<main class="shipping-dashboard-container">
+    <!-- Header -->
+    <div class="shipping-dashboard-header">
+        <div>
+            <h1 class="shipping-title">
+                <span class="material-symbols-outlined shipping-title-icon">local_shipping</span>
+                Panel de Envíos
+            </h1>
+            <p class="shipping-header-desc">Gestiona y da seguimiento a todos los envíos de tu tienda</p>
+        </div>
+        <div class="shipping-header-actions">
+            <button class="shipping-btn-primary" id="createShipmentBtn">
+                <span class="material-symbols-outlined">add</span>
+                Nuevo Envío
+            </button>
+            <button class="shipping-btn-outline" id="refreshBtn">
+                <span class="material-symbols-outlined">refresh</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="shipping-stats-grid" id="statsGrid">
+        <div class="shipping-stat-card">
+            <div class="shipping-stat-icon" style="background: rgba(221, 171, 59, 0.15); color: var(--outlet-gold);">
+                <span class="material-symbols-outlined">inventory_2</span>
+            </div>
+            <div class="shipping-stat-info">
+                <span class="shipping-stat-value" id="totalShipments">0</span>
+                <span class="shipping-stat-label">Total Envíos</span>
+            </div>
+        </div>
+        <div class="shipping-stat-card">
+            <div class="shipping-stat-icon" style="background: rgba(255, 193, 7, 0.15); color: #ffc107;">
+                <span class="material-symbols-outlined">pending</span>
+            </div>
+            <div class="shipping-stat-info">
+                <span class="shipping-stat-value" id="pendingShipments">0</span>
+                <span class="shipping-stat-label">Pendientes</span>
+            </div>
+        </div>
+        <div class="shipping-stat-card">
+            <div class="shipping-stat-icon" style="background: rgba(23, 162, 184, 0.15); color: #17a2b8;">
+                <span class="material-symbols-outlined">move</span>
+            </div>
+            <div class="shipping-stat-info">
+                <span class="shipping-stat-value" id="inTransit">0</span>
+                <span class="shipping-stat-label">En Tránsito</span>
+            </div>
+        </div>
+        <div class="shipping-stat-card">
+            <div class="shipping-stat-icon" style="background: rgba(40, 167, 69, 0.15); color: #28a745;">
+                <span class="material-symbols-outlined">check_circle</span>
+            </div>
+            <div class="shipping-stat-info">
+                <span class="shipping-stat-value" id="deliveredShipments">0</span>
+                <span class="shipping-stat-label">Entregados</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="shipping-filters">
+        <div class="shipping-filter-group">
+            <div class="shipping-filter-item">
+                <label>Estado</label>
+                <select id="filterStatus">
+                    <option value="">Todos</option>
+                    <option value="pendiente">Pendiente</option>
+                    <option value="preparando">Preparando</option>
+                    <option value="enviado">Enviado</option>
+                    <option value="en_transito">En Tránsito</option>
+                    <option value="entregado">Entregado</option>
+                    <option value="fallido">Fallido</option>
+                    <option value="devuelto">Devuelto</option>
+                </select>
+            </div>
+            <div class="shipping-filter-item">
+                <label>Paquetería</label>
+                <select id="filterCarrier">
+                    <option value="">Todas</option>
+                    <option value="estafeta">Estafeta</option>
+                    <option value="fedex">FedEx</option>
+                    <option value="dhl">DHL</option>
+                    <option value="ups">UPS</option>
+                    <option value="correos">Correos de México</option>
+                    <option value="redpack">RedPack</option>
+                    <option value="otro">Otro</option>
+                </select>
+            </div>
+            <div class="shipping-filter-item">
+                <label>Fecha desde</label>
+                <input type="date" id="filterDateFrom">
+            </div>
+            <div class="shipping-filter-item">
+                <label>Fecha hasta</label>
+                <input type="date" id="filterDateTo">
+            </div>
+        </div>
+        <button class="shipping-btn-filter" id="applyFiltersBtn">
+            <span class="material-symbols-outlined">filter_list</span>
+            Aplicar Filtros
+        </button>
+    </div>
+
+    <!-- Tabla de Envíos -->
+    <div class="shipping-table-container">
+        <div class="shipping-table-header">
+            <div class="shipping-table-title">
+                <span class="material-symbols-outlined">list_alt</span>
+                <span>Órdenes de Envío</span>
+            </div>
+            <div class="shipping-table-info">
+                <span id="shipmentsCount">0 envíos</span>
+            </div>
+        </div>
+
+        <div class="shipping-table-wrapper">
+            <table class="shipping-table">
+                <thead>
+                    <tr>
+                        <th>N° Envío</th>
+                        <th>Orden</th>
+                        <th>Cliente</th>
+                        <th>Paquetería</th>
+                        <th>Tracking</th>
+                        <th>Estado</th>
+                        <th>Fecha</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="shippingTableBody">
+                    <tr>
+                        <td colspan="8" class="shipping-table-empty">
+                            <div class="shipping-empty-state">
+                                <span class="material-symbols-outlined">inbox</span>
+                                <p>No hay envíos registrados</p>
+                                <small>Los envíos aparecerán aquí cuando se registren</small>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginación -->
+        <div class="shipping-pagination">
+            <button class="shipping-pagination-btn" id="prevPageBtn" disabled>
+                <span class="material-symbols-outlined">chevron_left</span>
+            </button>
+            <span class="shipping-pagination-info" id="pageInfo">Página 1</span>
+            <button class="shipping-pagination-btn" id="nextPageBtn">
+                <span class="material-symbols-outlined">chevron_right</span>
+            </button>
+        </div>
+    </div>
+</main>
+
+<!-- Modal para ver/editar envío -->
+<div class="shipping-modal-overlay" id="shippingModal" style="display: none;">
+    <div class="shipping-modal">
+        <div class="shipping-modal-header">
+            <h3 id="modalTitle">Detalle de Envío</h3>
+            <button class="shipping-modal-close" id="modalCloseBtn">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <div class="shipping-modal-body" id="modalBody">
+            <!-- Contenido dinámico -->
+        </div>
+    </div>
+</div>
+
+<!-- Modal para nuevo envío -->
+<div class="shipping-modal-overlay" id="newShippingModal" style="display: none;">
+    <div class="shipping-modal shipping-modal-lg">
+        <div class="shipping-modal-header">
+            <h3>Nuevo Envío</h3>
+            <button class="shipping-modal-close" id="newShippingCloseBtn">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <div class="shipping-modal-body">
+            <div id="newShippingForm">
+                <!-- Se llenará desde el controller -->
+            </div>
+        </div>
+    </div>
+</div>

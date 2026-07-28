@@ -51,6 +51,7 @@ import { readAdminsController } from '../modules/admin/user/read/readAdminsContr
 import { updateAdminController } from '../modules/admin/user/update/updateAdminsController.js'
 
 import { salesController } from '../modules/admin/sale/saleController.js';
+import { shippingController } from '../modules/admin/shipping/shippingController.js';
 
 export const routes = {
 
@@ -158,6 +159,11 @@ export const routes = {
         view: "public/modules/admin/sale/sales.html",
         controller: salesController
     },
+    "/shipping": {
+        view: "public/modules/admin/shipping/shipping.html",
+        controller: shippingController
+    },
+
 
     /* ========================================
       Rutas de customer 

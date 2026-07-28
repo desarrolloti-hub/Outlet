@@ -148,8 +148,15 @@
 }
 
 @keyframes outletLineFadeIn {
-    from { width: 0; opacity: 0; }
-    to { width: 28px; opacity: 1; }
+    from {
+        width: 0;
+        opacity: 0;
+    }
+
+    to {
+        width: 28px;
+        opacity: 1;
+    }
 }
 
 .outlet-step-label {
@@ -174,9 +181,11 @@
     .outlet-step-line {
         width: 20px;
     }
+
     .outlet-step-label {
         font-size: 0.55rem;
     }
+
     .outlet-step-item.active::after {
         width: 20px;
     }
@@ -270,13 +279,27 @@
 }
 
 @keyframes outletFadeInUp {
-    from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 @keyframes outletFadeOutDown {
-    from { opacity: 1; transform: translateY(0); }
-    to { opacity: 0; transform: translateY(12px); }
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateY(12px);
+    }
 }
 
 /* Form sections */
@@ -399,9 +422,9 @@
     transition: width 0.3s var(--outlet-transition-elegant);
 }
 
-.outlet-input-group input:focus + .outlet-input-line,
-.outlet-input-group select:focus + .outlet-input-line,
-.outlet-input-group textarea:focus + .outlet-input-line {
+.outlet-input-group input:focus+.outlet-input-line,
+.outlet-input-group select:focus+.outlet-input-line,
+.outlet-input-group textarea:focus+.outlet-input-line {
     width: 100%;
 }
 
@@ -540,11 +563,11 @@ body.dark-mode .outlet-badge-envio.completa {
     transition: 0.35s var(--outlet-transition-elegant);
 }
 
-.outlet-toggle-switch input:checked + .outlet-toggle-slider {
+.outlet-toggle-switch input:checked+.outlet-toggle-slider {
     background-color: var(--outlet-gold);
 }
 
-.outlet-toggle-switch input:checked + .outlet-toggle-slider:before {
+.outlet-toggle-switch input:checked+.outlet-toggle-slider:before {
     transform: translateX(22px);
 }
 
@@ -879,6 +902,7 @@ body.dark-mode .outlet-badge-envio.completa {
 }
 
 @media (max-width: 768px) {
+
     .outlet-btn-primary,
     .outlet-btn-secondary {
         justify-content: center;
@@ -925,8 +949,15 @@ body.dark-mode .outlet-badge-envio.completa {
 }
 
 @keyframes outletToastSlide {
-    from { opacity: 0; transform: translateX(30px); }
-    to { opacity: 1; transform: translateX(0); }
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
 @media (max-width: 768px) {
@@ -999,7 +1030,7 @@ body.dark-mode {
         flex-direction: column;
         align-items: stretch;
     }
-    
+
     .outlet-logout-container .outlet-btn {
         width: 100%;
         justify-content: center;

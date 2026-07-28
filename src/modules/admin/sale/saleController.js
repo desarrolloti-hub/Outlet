@@ -205,7 +205,7 @@ function renderSalesTable() {
                     </div>
                 </td>
                 <td>
-                    <strong style="color: var(--outlet-gold); font-size:1rem;">€${(sale.total || 0).toFixed(2)}</strong>
+                    <strong style="color: var(--outlet-gold); font-size:1rem;">$${(sale.total || 0).toFixed(2)}</strong>
                 </td>
                 <td>
                     <span class="sales-status-badge ${statusClass}">
@@ -232,8 +232,8 @@ function renderSalesTable() {
                         <button class="sales-action-btn edit" data-id="${sale.id}" title="Editar estado">
                             <span class="material-symbols-outlined">edit</span>
                         </button>
-                        <button class="sales-action-btn delete" data-id="${sale.id}" title="Cancelar">
-                            <span class="material-symbols-outlined">delete</span>
+                        <button class="sales-action-btn delete" data-id="${sale.id}" title="Eliminar venta">
+                            <span class="material-symbols-outlined">delete_forever</span>
                         </button>
                     </div>
                 </td>
@@ -257,7 +257,7 @@ function renderSalesTable() {
     });
 
     document.querySelectorAll('.sales-action-btn.delete').forEach(btn => {
-        btn.addEventListener('click', () => cancelSale(btn.dataset.id));
+        btn.addEventListener('click', () => deleteSale(btn.dataset.id));
     });
 }
 
@@ -384,7 +384,7 @@ async function viewSale(saleId) {
                             x${item.cantidad || 1}
                         </span>
                     </div>
-                    <span class="item-price">€${(item.precioFinal * (item.cantidad || 1)).toFixed(2)}</span>
+                    <span class="item-price">$${(item.precioFinal * (item.cantidad || 1)).toFixed(2)}</span>
                 </div>
             `;
         });
@@ -456,23 +456,23 @@ async function viewSale(saleId) {
                 <h4>Totales</h4>
                 <div class="sales-detail-row">
                     <span class="label">Subtotal</span>
-                    <span>€${(sale.subtotal || 0).toFixed(2)}</span>
+                    <span>$${(sale.subtotal || 0).toFixed(2)}</span>
                 </div>
                 <div class="sales-detail-row">
                     <span class="label">Descuento</span>
-                    <span>€${(sale.descuentoTotal || 0).toFixed(2)}</span>
+                    <span>$${(sale.descuentoTotal || 0).toFixed(2)}</span>
                 </div>
                 <div class="sales-detail-row">
                     <span class="label">IVA (21%)</span>
-                    <span>€${(sale.iva || 0).toFixed(2)}</span>
+                    <span>$${(sale.iva || 0).toFixed(2)}</span>
                 </div>
                 <div class="sales-detail-row">
                     <span class="label">Envío</span>
-                    <span>€${(sale.shippingCost || 0).toFixed(2)}</span>
+                    <span>$${(sale.shippingCost || 0).toFixed(2)}</span>
                 </div>
                 <div class="sales-detail-row" style="font-weight:700; font-size:1.1rem; border-top:2px solid var(--outlet-border-color); padding-top:8px; margin-top:4px;">
                     <span class="label">Total</span>
-                    <span style="color: var(--outlet-gold);">€${(sale.total || 0).toFixed(2)}</span>
+                    <span style="color: var(--outlet-gold);">$${(sale.total || 0).toFixed(2)}</span>
                 </div>
             </div>
 
@@ -589,7 +589,48 @@ async function editSaleStatus(saleId) {
 }
 
 // ========================================
-// Cancelar venta
+// Eliminar venta (permanentemente de la base de datos)
+// ========================================
+
+async function deleteSale(saleId) {
+    try {
+        const sale = await SalesService.getById(saleId, true);
+        if (!sale) {
+            await mostrarError('No encontrada', 'La venta no existe.');
+            return;
+        }
+
+        const confirm = await mostrarConfirmacion(
+            '¿Eliminar venta permanentemente?',
+            `Estás a punto de ELIMINAR PERMANENTEMENTE la venta ${sale.orderNumber} de la base de datos. Esta acción no se puede deshacer. ¿Estás seguro?`,
+            'Sí, eliminar'
+        );
+
+        if (!confirm.isConfirmed) return;
+
+        const loading = mostrarLoading('Eliminando venta de la base de datos...');
+
+        // Eliminar la venta de la base de datos
+        await SalesService.delete(saleId);
+
+        cerrarLoading();
+
+        await mostrarExito(
+            '¡Venta eliminada!',
+            `La venta ${sale.orderNumber} ha sido eliminada permanentemente de la base de datos.`
+        );
+
+        await loadSales(true);
+
+    } catch (error) {
+        cerrarLoading();
+        console.error('Error eliminando venta:', error);
+        await mostrarError('Error', error.message || 'No se pudo eliminar la venta de la base de datos.');
+    }
+}
+
+// ========================================
+// Cancelar venta (solo cambia el estado)
 // ========================================
 
 async function cancelSale(saleId) {
@@ -653,7 +694,7 @@ async function openNewSaleModal() {
             const price = p.precioFinal || p.precioVenta || 0;
             return `
                 <option value="${p.id}" data-price="${price}" data-sku="${p.sku || ''}">
-                    ${p.nombre} - €${price.toFixed(2)}
+                    ${p.nombre} - $${price.toFixed(2)}
                 </option>
             `;
         }).join('');
@@ -703,7 +744,7 @@ async function openNewSaleModal() {
             <div style="margin-top:16px; display:flex; justify-content:space-between; align-items:center; padding:12px; background:var(--outlet-bg-container-low); border-radius:8px; flex-wrap:wrap; gap:8px;">
                 <div>
                     <span style="font-size:0.75rem; color:var(--outlet-text-secondary);">Total:</span>
-                    <span id="newSaleTotal" style="font-size:1.2rem; font-weight:700; color:var(--outlet-gold);">€0.00</span>
+                    <span id="newSaleTotal" style="font-size:1.2rem; font-weight:700; color:var(--outlet-gold);">$0.00</span>
                 </div>
                 <div style="display:flex; gap:8px; flex-wrap:wrap;">
                     <button id="newSaleClearBtn" class="sales-btn-outline" style="padding:8px 16px; border-radius:6px; font-size:0.8rem;">
@@ -726,7 +767,7 @@ async function openNewSaleModal() {
 
             if (cartItems.length === 0) {
                 list.innerHTML = `<p style="color:var(--outlet-text-secondary); font-size:0.85rem;">No hay productos agregados</p>`;
-                document.getElementById('newSaleTotal').textContent = '€0.00';
+                document.getElementById('newSaleTotal').textContent = '$0.00';
                 return;
             }
 
@@ -740,10 +781,10 @@ async function openNewSaleModal() {
                         <div>
                             <span style="font-weight:500;">${item.nombre || 'Producto'}</span>
                             <span style="font-size:0.75rem;color:var(--outlet-text-secondary);margin-left:8px;">x${item.cantidad}</span>
-                            <span style="font-size:0.75rem;color:var(--outlet-text-secondary);margin-left:8px;">€${(item.precioFinal || 0).toFixed(2)} c/u</span>
+                            <span style="font-size:0.75rem;color:var(--outlet-text-secondary);margin-left:8px;">$${(item.precioFinal || 0).toFixed(2)} c/u</span>
                         </div>
                         <div style="display:flex;align-items:center;gap:12px;">
-                            <span style="font-weight:600;">€${itemTotal.toFixed(2)}</span>
+                            <span style="font-weight:600;">$${itemTotal.toFixed(2)}</span>
                             <button class="sales-action-btn delete" data-index="${index}" style="color:#dc3545;">
                                 <span class="material-symbols-outlined" style="font-size:18px;">remove_circle</span>
                             </button>
@@ -753,7 +794,7 @@ async function openNewSaleModal() {
             });
             html += '</div>';
             list.innerHTML = html;
-            document.getElementById('newSaleTotal').textContent = `€${total.toFixed(2)}`;
+            document.getElementById('newSaleTotal').textContent = `$${total.toFixed(2)}`;
 
             document.querySelectorAll('#newSaleItemsList .delete').forEach(btn => {
                 btn.addEventListener('click', () => {
@@ -832,7 +873,7 @@ async function openNewSaleModal() {
 
             const confirm = await mostrarConfirmacion(
                 '¿Crear venta?',
-                `Estás a punto de crear una venta para ${customerName} con ${cartItems.length} productos. Total: €${totalVenta.toFixed(2)}`,
+                `Estás a punto de crear una venta para ${customerName} con ${cartItems.length} productos. Total: $${totalVenta.toFixed(2)}`,
                 'Sí, crear venta'
             );
 
