@@ -2,18 +2,24 @@
    PRODUCT SERVICE - Outlet Val
    Lógica de negocio para productos
    ✅ VERSIÓN OPTIMIZADA CON ÍNDICES
+   CON SOPORTE PARA FIREBASE STORAGE
    MONEDA: PESOS MEXICANOS (MXN)
    ======================================== */
 
 import { Product } from '../classes/productModel.js';
 import { ProductRepository } from '../repositories/productRepository.js';
 import { CacheService, STORES } from '../services/cacheService.js';
+import { StorageService } from '../services/storageService.js';
 
 export const ProductService = {
     /**
      * Crear nuevo producto
+     * @param {Object} productData - Datos del producto
+     * @param {string} adminUserId - ID del admin que crea el producto
+     * @param {Object} imagePaths - Rutas de las imágenes en Storage
+     * @returns {Promise<Product>}
      */
-    async create(productData, adminUserId = null) {
+    async create(productData, adminUserId = null, imagePaths = {}) {
         // ========== VALIDACIONES ==========
         if (!productData.sku || productData.sku.trim().length < 3) {
             throw new Error('El SKU debe tener al menos 3 caracteres');
@@ -65,8 +71,8 @@ export const ProductService = {
             precioCompra: parseFloat(productData.precioCompra) || 0,
             precioVenta: parseFloat(productData.precioVenta),
             porcentajeDescuento: parseInt(productData.porcentajeDescuento) || 0,
-            imagenPrincipal: productData.imagenPrincipal,
-            galeriaImagenes: productData.galeriaImagenes || [],
+            imagenPrincipal: productData.imagenPrincipal, // URL de Firebase Storage
+            galeriaImagenes: productData.galeriaImagenes || [], // URLs de Firebase Storage
             colores: productData.colores || [],
             tallas: productData.tallas || [],
             materiales: productData.materiales || [],
@@ -77,7 +83,12 @@ export const ProductService = {
             stock: parseInt(productData.stock) || 0,
             estado: productData.estado || 'activo',
             destacado: productData.destacado || false,
-            createdBy: adminUserId
+            createdBy: adminUserId,
+            // Guardar rutas de Storage
+            imagenesStorage: {
+                main: imagePaths.main || '',
+                gallery: imagePaths.gallery || []
+            }
         });
 
         // Generar ID único basado en SKU + timestamp
@@ -98,6 +109,7 @@ export const ProductService = {
             porcentajeDescuento: product.porcentajeDescuento,
             imagenPrincipal: product.imagenPrincipal,
             galeriaImagenes: product.galeriaImagenes,
+            imagenesStorage: product.imagenesStorage,
             colores: product.colores,
             tallas: product.tallas,
             materiales: product.materiales,
@@ -304,8 +316,43 @@ export const ProductService = {
 
     /**
      * Eliminar producto
+     * @param {string} productId - ID del producto
+     * @param {boolean} hardDelete - Eliminar permanentemente
+     * @param {boolean} deleteImages - Eliminar imágenes de Storage
      */
-    async delete(productId, hardDelete = false) {
+    async delete(productId, hardDelete = false, deleteImages = true) {
+        // Obtener producto para eliminar imágenes
+        const product = await this.getById(productId, true);
+
+        if (!product) {
+            throw new Error('Producto no encontrado');
+        }
+
+        // Eliminar imágenes de Storage si se solicita
+        if (deleteImages && product.tieneImagenesEnStorage) {
+            try {
+                const pathsToDelete = [];
+
+                // Agregar imagen principal
+                if (product.rutaImagenPrincipal) {
+                    pathsToDelete.push(product.rutaImagenPrincipal);
+                }
+
+                // Agregar imágenes de galería
+                if (product.rutasGaleria.length > 0) {
+                    pathsToDelete.push(...product.rutasGaleria);
+                }
+
+                if (pathsToDelete.length > 0) {
+                    await StorageService.deleteMultipleImages(pathsToDelete);
+                    console.log(`🗑️ ${pathsToDelete.length} imágenes eliminadas de Storage`);
+                }
+            } catch (error) {
+                console.error('❌ Error al eliminar imágenes de Storage:', error);
+                // No lanzamos error, solo registramos
+            }
+        }
+
         const result = await ProductRepository.delete(productId, hardDelete);
 
         await CacheService.clearCache(STORES.PRODUCTS);
@@ -315,7 +362,8 @@ export const ProductService = {
             detail: {
                 action: 'delete',
                 productId: productId,
-                hardDelete: hardDelete
+                hardDelete: hardDelete,
+                imagesDeleted: deleteImages
             }
         }));
 
@@ -371,6 +419,69 @@ export const ProductService = {
         const products = await this.getAll(filters);
 
         return products.filter(p => p.id !== productId).slice(0, limit);
+    },
+
+    /**
+     * Eliminar imágenes de un producto de Storage
+     * @param {string} productId - ID del producto
+     * @param {string[]} specificPaths - Rutas específicas a eliminar (opcional)
+     */
+    async deleteProductImages(productId, specificPaths = null) {
+        const product = await this.getById(productId, true);
+
+        if (!product) {
+            throw new Error('Producto no encontrado');
+        }
+
+        let pathsToDelete = [];
+
+        if (specificPaths && specificPaths.length > 0) {
+            // Eliminar rutas específicas
+            pathsToDelete = specificPaths;
+        } else {
+            // Eliminar todas las imágenes
+            if (product.rutaImagenPrincipal) {
+                pathsToDelete.push(product.rutaImagenPrincipal);
+            }
+            if (product.rutasGaleria.length > 0) {
+                pathsToDelete.push(...product.rutasGaleria);
+            }
+        }
+
+        if (pathsToDelete.length === 0) {
+            return { success: [], failed: [] };
+        }
+
+        const result = await StorageService.deleteMultipleImages(pathsToDelete);
+
+        // Actualizar producto si se eliminaron todas las imágenes
+        if (!specificPaths || specificPaths.length === 0) {
+            await this.update(productId, {
+                imagenPrincipal: '',
+                galeriaImagenes: [],
+                imagenesStorage: { main: '', gallery: [] }
+            });
+        } else {
+            // Actualizar rutas específicas
+            const updatedStorage = { ...product.imagenesStorage };
+
+            // Verificar si se eliminó la principal
+            if (specificPaths.includes(product.rutaImagenPrincipal)) {
+                updatedStorage.main = '';
+            }
+
+            // Verificar si se eliminaron imágenes de galería
+            const remainingGallery = product.rutasGaleria.filter(
+                path => !specificPaths.includes(path)
+            );
+            updatedStorage.gallery = remainingGallery;
+
+            await this.update(productId, {
+                imagenesStorage: updatedStorage
+            });
+        }
+
+        return result;
     },
 
     // ========== UTILIDADES DE FORMATO ==========

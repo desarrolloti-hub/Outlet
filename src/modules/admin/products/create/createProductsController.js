@@ -5,10 +5,12 @@
    RESPONSIVE: Se adapta a cualquier tamaño
    CON SWEETALERT2 INTEGRADO
    PRECIOS EN PESOS MEXICANOS (MXN)
+   IMÁGENES EN FIREBASE STORAGE
    ======================================== */
 
 import { ProductService } from '../../../../services/productService.js';
 import { CategoryService } from '../../../../services/categoryService.js';
+import { StorageService } from '../../../../services/storageService.js';
 
 // ========================================
 // Variables de estado
@@ -18,8 +20,10 @@ let isTransitioning = false;
 let coloresArray = [];
 let tallasArray = [];
 let materialesArray = [];
-let galleryImages = [];
-let currentMainImage = null;
+let galleryImages = []; // URLs de imágenes subidas a Storage
+let galleryFiles = []; // Archivos originales para subir
+let currentMainImage = null; // URL de imagen principal subida
+let currentMainFile = null; // Archivo original de imagen principal
 let isLoading = false;
 
 // Variables para categorías
@@ -254,6 +258,7 @@ function ejecutarLimpiarFormulario() {
 
     ejecutarRemoveMainImage();
     galleryImages = [];
+    galleryFiles = [];
     renderGallery();
     if (elements.galeriaImagenes) elements.galeriaImagenes.value = '[]';
     if (elements.imagenPrincipal) elements.imagenPrincipal.value = '';
@@ -369,18 +374,84 @@ async function guardarProducto() {
     btn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> Guardando...';
     btn.disabled = true;
 
-    mostrarLoading('Guardando producto...');
+    mostrarLoading('Subiendo imágenes y guardando producto...');
 
     try {
+        // ==========================================
+        // 1. SUBIR IMAGEN PRINCIPAL A FIREBASE STORAGE
+        // ==========================================
+        let mainImageUrl = currentMainImage;
+
+        if (currentMainFile) {
+            const sku = elements.sku?.value || 'producto';
+            const timestamp = Date.now();
+            const path = `productos/${sku}/main_${timestamp}.jpg`;
+
+            const uploadResult = await StorageService.uploadImage(
+                currentMainFile,
+                path,
+                {
+                    maxSizeMB: 2,
+                    quality: 0.85
+                }
+            );
+
+            mainImageUrl = uploadResult.url;
+            console.log('✅ Imagen principal subida:', mainImageUrl);
+        }
+
+        // ==========================================
+        // 2. SUBIR IMÁGENES DE GALERÍA A FIREBASE STORAGE
+        // ==========================================
+        const galleryUrls = [];
+
+        if (galleryFiles.length > 0) {
+            const sku = elements.sku?.value || 'producto';
+
+            // Usar Promise.all para subir en paralelo
+            const uploadPromises = galleryFiles.map((file, index) => {
+                const timestamp = Date.now();
+                const path = `productos/${sku}/gallery_${timestamp}_${index}.jpg`;
+
+                return StorageService.uploadImage(
+                    file,
+                    path,
+                    {
+                        maxSizeMB: 2,
+                        quality: 0.85
+                    }
+                );
+            });
+
+            const uploadResults = await Promise.all(uploadPromises);
+            uploadResults.forEach(result => {
+                galleryUrls.push(result.url);
+            });
+
+            console.log(`✅ ${galleryUrls.length} imágenes de galería subidas`);
+        }
+
+        // ==========================================
+        // 3. RECOLECTAR DATOS Y GUARDAR EN FIRESTORE
+        // ==========================================
         var productData = recolectarDatosProducto();
+
+        // Reemplazar imágenes base64 con URLs de Storage
+        productData.imagenPrincipal = mainImageUrl;
+        productData.galeriaImagenes = galleryUrls;
+
         var productoGuardado = await ProductService.create(productData);
 
         cerrarLoading();
 
         await mostrarExito(
             '¡Producto guardado!',
-            '✅ "' + productoGuardado.nombre + '" se ha guardado exitosamente.'
+            `✅ "${productoGuardado.nombre}" se ha guardado exitosamente.\n📸 ${galleryUrls.length + 1} imágenes subidas a la nube.`
         );
+
+        // Limpiar archivos después de guardar
+        currentMainFile = null;
+        galleryFiles = [];
 
         ejecutarLimpiarFormulario();
 
@@ -472,6 +543,7 @@ function ejecutarRemoveMainImage() {
     if (elements.mainImagePreview) elements.mainImagePreview.style.display = 'none';
     if (elements.mainPreviewImg) elements.mainPreviewImg.src = '';
     currentMainImage = null;
+    currentMainFile = null;
     if (elements.imagenPrincipal) elements.imagenPrincipal.value = '';
     if (elements.mainImageInput) elements.mainImageInput.value = '';
     mostrarToast('Imagen principal eliminada', 'info');
@@ -483,15 +555,15 @@ function ejecutarRemoveMainImage() {
 function handleMainImageUpload(file) {
     if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) {
+    if (file.size > 10 * 1024 * 1024) { // 10MB máximo
         mostrarError(
             'Imagen demasiado grande',
-            'La imagen no puede superar los 5MB. Tamaño actual: ' + (file.size / 1024 / 1024).toFixed(2) + 'MB'
+            'La imagen no puede superar los 10MB. Tamaño actual: ' + (file.size / 1024 / 1024).toFixed(2) + 'MB'
         );
         return;
     }
 
-    var validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    var validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
     if (!validTypes.includes(file.type)) {
         mostrarError(
             'Formato no soportado',
@@ -500,12 +572,16 @@ function handleMainImageUpload(file) {
         return;
     }
 
+    // Guardar el archivo para subirlo a Storage después
+    currentMainFile = file;
+
+    // Mostrar preview con URL local
     var reader = new FileReader();
     reader.onload = function (e) {
         if (elements.mainPreviewImg) elements.mainPreviewImg.src = e.target.result;
         if (elements.mainImagePlaceholder) elements.mainImagePlaceholder.style.display = 'none';
         if (elements.mainImagePreview) elements.mainImagePreview.style.display = 'flex';
-        currentMainImage = e.target.result;
+        currentMainImage = e.target.result; // URL local para preview
         if (elements.imagenPrincipal) elements.imagenPrincipal.value = currentMainImage;
         mostrarExito('Imagen cargada', 'La imagen principal se ha cargado correctamente.');
     };
@@ -527,17 +603,20 @@ function addGalleryImage(file) {
         return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
+    if (file.size > 10 * 1024 * 1024) {
         mostrarError(
             'Imagen demasiado grande',
-            'La imagen no puede superar los 5MB.'
+            'La imagen no puede superar los 10MB.'
         );
         return;
     }
 
+    // Guardar el archivo para subirlo a Storage después
+    galleryFiles.push(file);
+
     var reader = new FileReader();
     reader.onload = function (e) {
-        galleryImages.push(e.target.result);
+        galleryImages.push(e.target.result); // URL local para preview
         renderGallery();
         if (elements.galeriaImagenes) elements.galeriaImagenes.value = JSON.stringify(galleryImages);
         mostrarToast('🖼️ Imagen agregada a la galería', 'success');
@@ -559,6 +638,7 @@ function removeGalleryImage(index) {
     ).then(function (result) {
         if (result.isConfirmed) {
             galleryImages.splice(index, 1);
+            galleryFiles.splice(index, 1);
             renderGallery();
             if (elements.galeriaImagenes) elements.galeriaImagenes.value = JSON.stringify(galleryImages);
             mostrarToast('Imagen eliminada de la galería', 'info');
@@ -659,7 +739,6 @@ function actualizarPrecioFinal() {
         precioFinal = precioVenta * (1 - descuento / 100);
     }
     if (elements.precioFinal) {
-        // Formato con separador de miles y 2 decimales
         var formateado = precioFinal.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         elements.precioFinal.textContent = '$' + formateado + ' MXN';
         if (descuento > 0) {
@@ -876,8 +955,8 @@ function recolectarDatosProducto() {
         precioCompra: parseFloat(elements.precioCompra?.value) || 0,
         precioVenta: parseFloat(elements.precioVenta?.value) || 0,
         porcentajeDescuento: parseFloat(elements.descuento?.value) || 0,
-        imagenPrincipal: currentMainImage,
-        galeriaImagenes: galleryImages,
+        imagenPrincipal: currentMainImage, // Temporal, se reemplazará con URL de Storage
+        galeriaImagenes: galleryImages, // Temporal, se reemplazará con URLs de Storage
         colores: coloresArray,
         tallas: tallasArray,
         materiales: materialesArray,
@@ -897,30 +976,24 @@ function recolectarDatosProducto() {
 function irAHomeAdmin() {
     console.log('🔄 Redirigiendo a Home Admin...');
 
-    // Intentar diferentes formas de redirección
     try {
-        // 1. Si existe el sistema de navegación SPA
         if (typeof window.navigateTo === 'function') {
             window.navigateTo('/homeAdmin');
             return;
         }
 
-        // 2. Probar con la ruta relativa desde la ubicación actual
         var currentPath = window.location.pathname;
         console.log('📍 Ruta actual:', currentPath);
 
-        // Si estamos en /public/createProducts.html o similar
         if (currentPath.includes('/createProducts')) {
             window.location.href = '/homeAdmin.html';
             return;
         }
 
-        // 3. Probar con la ruta desde la raíz
         window.location.href = '/homeAdmin.html';
 
     } catch (error) {
         console.error('❌ Error al redirigir:', error);
-        // Fallback: usar la ruta más simple
         window.location.href = 'homeAdmin.html';
     }
 }
@@ -947,11 +1020,10 @@ function initEventListeners() {
     elements.clearBtn?.addEventListener('click', limpiarFormulario);
     elements.saveBtn?.addEventListener('click', guardarProducto);
 
-    // ✅ BOTÓN VOLVER - REDIRIGE A HOME ADMIN (con múltiples intentos)
+    // BOTÓN VOLVER
     elements.backBtn?.addEventListener('click', function (e) {
         e.preventDefault();
 
-        // Verificar si hay datos sin guardar
         var tieneDatos = elements.sku?.value ||
             elements.nombre?.value ||
             currentMainImage ||
@@ -1050,7 +1122,7 @@ document.addEventListener('themeChanged', function (e) {
 // INICIALIZACIÓN
 // ========================================
 export async function productCreateController() {
-    console.log('📝 Product Create Controller - Alta de prendas');
+    console.log('📝 Product Create Controller - Alta de prendas (con Firebase Storage)');
 
     cacheElements();
     actualizarPrecioFinal();

@@ -2,6 +2,7 @@
    PRODUCT MODEL - Outlet Val
    Estructura de datos del producto
    MONEDA: PESOS MEXICANOS (MXN)
+   CON SOPORTE PARA FIREBASE STORAGE
    ======================================== */
 
 export class Product {
@@ -23,9 +24,15 @@ export class Product {
         this.precioVenta = data.precioVenta || 0;
         this.porcentajeDescuento = data.porcentajeDescuento || 0;
 
-        // Imágenes (base64)
+        // Imágenes (URLs de Firebase Storage)
         this.imagenPrincipal = data.imagenPrincipal || '';
         this.galeriaImagenes = data.galeriaImagenes || [];
+
+        // Rutas en Storage (para poder eliminar imágenes)
+        this.imagenesStorage = data.imagenesStorage || {
+            main: '',      // ruta de la imagen principal en Storage
+            gallery: []    // rutas de las imágenes de galería en Storage
+        };
 
         // Especificaciones
         this.colores = data.colores || [];              // Array de strings
@@ -173,5 +180,22 @@ export class Product {
     // Validar para mostrar en tienda (público)
     get visibleEnTienda() {
         return this.estado === 'activo' && this.stock > 0;
+    }
+
+    // ========== MÉTODOS PARA STORAGE ==========
+
+    // Obtener la ruta de la imagen principal en Storage
+    get rutaImagenPrincipal() {
+        return this.imagenesStorage?.main || '';
+    }
+
+    // Obtener las rutas de las imágenes de galería en Storage
+    get rutasGaleria() {
+        return this.imagenesStorage?.gallery || [];
+    }
+
+    // Verificar si tiene imágenes en Storage
+    get tieneImagenesEnStorage() {
+        return !!(this.rutaImagenPrincipal || this.rutasGaleria.length > 0);
     }
 }
