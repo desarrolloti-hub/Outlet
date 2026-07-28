@@ -4,6 +4,7 @@
    CRUD completo con el mismo estilo que productos
    RESPONSIVE: Se adapta a cualquier tamaño
    CON SWEETALERT2 INTEGRADO
+   IMÁGENES EN FIREBASE STORAGE
    ======================================== */
 
 import { CategoryService } from '../../../../services/categoryService.js';
@@ -160,9 +161,10 @@ function renderTable() {
         var safeStatus = cat.status || 'active';
         var subcategoryCount = Array.isArray(cat.subcategories) ? cat.subcategories.length : 0;
 
+        // 🖼️ Imagen desde Firebase Storage (imageUrl)
         var imageHtml = '';
-        if (cat.imageBase64 && cat.imageBase64.startsWith('data:image')) {
-            imageHtml = '<img src="' + escapeHtml(cat.imageBase64) + '" alt="' + escapeHtml(safeName) + '" style="width:40px;height:40px;object-fit:cover;border-radius:8px;border:2px solid #ddab3b;box-shadow:0 0 12px rgba(221,171,59,0.2);">';
+        if (cat.imageUrl && cat.imageUrl.trim() !== '') {
+            imageHtml = '<img src="' + escapeHtml(cat.imageUrl) + '" alt="' + escapeHtml(safeName) + '" style="width:40px;height:40px;object-fit:cover;border-radius:8px;border:2px solid #ddab3b;box-shadow:0 0 12px rgba(221,171,59,0.2);" loading="lazy">';
         } else {
             imageHtml = '<span style="color:#ccc;font-size:12px;">Sin imagen</span>';
         }
@@ -343,7 +345,7 @@ document.addEventListener('themeChanged', function (e) {
 // Inicialización
 // ========================================
 export async function readCategoriesController() {
-    console.log('📋 Read Categories Controller - Listado de categorías');
+    console.log('📋 Read Categories Controller - Listado de categorías (con Storage)');
 
     cacheElements();
     syncDarkMode();

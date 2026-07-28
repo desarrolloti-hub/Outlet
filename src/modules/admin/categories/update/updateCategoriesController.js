@@ -5,9 +5,11 @@
    INCLUYE EDICIÓN DE SUBCATEGORÍAS
    RESPONSIVE: Se adapta a cualquier tamaño
    CON SWEETALERT2 INTEGRADO
+   IMÁGENES EN FIREBASE STORAGE
    ======================================== */
 
 import { CategoryService } from '../../../../services/categoryService.js';
+import { StorageService } from '../../../../services/storageService.js';
 
 // ========================================
 // Variables de estado
@@ -16,6 +18,10 @@ var categories = [];
 var currentCategoryId = null;
 var isSubmitting = false;
 var subcategories = []; // Array de subcategorías (objetos con name y description)
+// 🖼️ Variables para imagen (Storage)
+var selectedImageFile = null;
+var currentImageUrl = '';
+var currentImageStoragePath = '';
 
 // ========================================
 // DOM Elements
@@ -33,19 +39,19 @@ function mostrarToast(mensaje, tipo) {
     tipo = tipo || 'info';
     var toastExistente = document.querySelector('.outlet-toast');
     if (toastExistente) toastExistente.remove();
-    
+
     var toast = document.createElement('div');
     toast.className = 'outlet-toast ' + tipo;
     toast.textContent = mensaje;
     document.body.appendChild(toast);
-    
-    requestAnimationFrame(function() {
+
+    requestAnimationFrame(function () {
         toast.classList.add('show');
     });
-    
-    setTimeout(function() {
+
+    setTimeout(function () {
         toast.classList.remove('show');
-        setTimeout(function() { toast.remove(); }, 300);
+        setTimeout(function () { toast.remove(); }, 300);
     }, 3200);
 }
 
@@ -61,7 +67,7 @@ function mostrarSweetAlert(options) {
             popup: 'swal2-popup'
         }
     };
-    
+
     return Swal.fire(Object.assign({}, defaultOptions, options));
 }
 
@@ -127,7 +133,7 @@ function mostrarLoading(mensaje) {
     return mostrarSweetAlert({
         title: mensaje,
         allowOutsideClick: false,
-        didOpen: function() {
+        didOpen: function () {
             Swal.showLoading();
         }
     });
@@ -146,7 +152,7 @@ function cerrarLoading() {
 function cacheElements() {
     elements = {
         backBtn: document.getElementById('backBtn'),
-        
+
         categoryForm: document.getElementById('updateCategoryForm'),
         categorySelector: document.getElementById('categorySelector'),
         categoryId: document.getElementById('categoryId'),
@@ -156,26 +162,32 @@ function cacheElements() {
         categoryOrder: document.getElementById('categoryOrder'),
         categoryStatus: document.getElementById('categoryStatus'),
         categoryCreatedAt: document.getElementById('categoryCreatedAt'),
-        
+
         formFields: document.getElementById('formFields'),
         actionButtons: document.getElementById('actionButtons'),
-        
+
         saveBtn: document.getElementById('saveBtn'),
         cancelBtn: document.getElementById('cancelBtn'),
-        
+
         previewCard: document.getElementById('previewCard'),
         subcategoriesPreview: document.getElementById('subcategoriesPreview'),
-        
+
         // Subcategorías
         subcategoriesSection: document.getElementById('subcategoriesSection'),
         subcategoriesList: document.getElementById('subcategoriesList'),
         subcategoryCount: document.getElementById('subcategoryCount'),
         addSubcategoryBtn: document.getElementById('addSubcategoryBtn'),
-        
+
         // 🖼️ Elementos de imagen
         updateImageDisplay: document.getElementById('updateImageDisplay'),
         updateImagePlaceholder: document.getElementById('updateImagePlaceholder'),
-        
+        imageUploadArea: document.getElementById('imageUploadArea'),
+        imageInput: document.getElementById('categoryImageInput'),
+        removeImageBtn: document.getElementById('removeImageBtn'),
+        uploadPlaceholder: document.getElementById('uploadPlaceholder'),
+        imagePreviewWrapper: document.getElementById('imagePreviewWrapper'),
+        imagePreview: document.getElementById('imagePreview'),
+
         toast: document.getElementById('updateToast')
     };
 }
@@ -214,9 +226,126 @@ function formatDate(dateString) {
 }
 
 // ========================================
-// 🖼️ Funciones de imagen
+// 🖼️ MANEJO DE IMAGEN (STORAGE)
 // ========================================
-function clearImagePreview() {
+
+function setupImageUpload() {
+    if (!elements.imageUploadArea || !elements.imageInput) return;
+
+    // Click en el área para abrir el selector
+    elements.imageUploadArea.addEventListener('click', function (e) {
+        if (e.target.closest('.outlet-remove-image-btn')) return;
+        elements.imageInput.click();
+    });
+
+    // Manejar selección de archivo
+    elements.imageInput.addEventListener('change', function (e) {
+        const file = this.files[0];
+        if (file) {
+            handleImageFile(file);
+        }
+    });
+
+    // Drag and drop
+    elements.imageUploadArea.addEventListener('dragover', function (e) {
+        e.preventDefault();
+        this.classList.add('drag-over');
+    });
+
+    elements.imageUploadArea.addEventListener('dragleave', function (e) {
+        e.preventDefault();
+        this.classList.remove('drag-over');
+    });
+
+    elements.imageUploadArea.addEventListener('drop', function (e) {
+        e.preventDefault();
+        this.classList.remove('drag-over');
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) {
+            handleImageFile(file);
+        } else {
+            mostrarError('Formato no válido', 'Por favor, sube un archivo de imagen válido.');
+        }
+    });
+
+    // Botón para eliminar imagen
+    if (elements.removeImageBtn) {
+        elements.removeImageBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            removeImage();
+        });
+    }
+}
+
+function handleImageFile(file) {
+    // Validar tipo
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'];
+    if (!allowedTypes.includes(file.type) && !file.type.startsWith('image/')) {
+        mostrarError('Formato no permitido', 'Usa JPG, PNG, WEBP, GIF o SVG.');
+        elements.imageInput.value = '';
+        return;
+    }
+
+    // Límite de 10MB para Storage
+    const maxSize = 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+        mostrarError('Imagen demasiado grande', 'La imagen no puede superar los 10MB.');
+        elements.imageInput.value = '';
+        return;
+    }
+
+    selectedImageFile = file;
+    showImagePreview(file);
+    mostrarToast(`Imagen seleccionada: ${file.name}`, 'success');
+}
+
+function showImagePreview(file) {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        if (elements.imagePreview) {
+            elements.imagePreview.src = e.target.result;
+        }
+        if (elements.uploadPlaceholder) {
+            elements.uploadPlaceholder.style.display = 'none';
+        }
+        if (elements.imagePreviewWrapper) {
+            elements.imagePreviewWrapper.style.display = 'flex';
+        }
+        if (elements.imageUploadArea) {
+            elements.imageUploadArea.style.minHeight = 'auto';
+        }
+        if (elements.updateImageDisplay) {
+            elements.updateImageDisplay.src = e.target.result;
+            elements.updateImageDisplay.style.display = 'block';
+        }
+        if (elements.updateImagePlaceholder) {
+            elements.updateImagePlaceholder.style.display = 'none';
+        }
+    };
+    reader.readAsDataURL(file);
+}
+
+function removeImage() {
+    selectedImageFile = null;
+    currentImageUrl = '';
+    currentImageStoragePath = '';
+
+    if (elements.imagePreview) {
+        elements.imagePreview.src = '';
+    }
+    if (elements.uploadPlaceholder) {
+        elements.uploadPlaceholder.style.display = 'flex';
+    }
+    if (elements.imagePreviewWrapper) {
+        elements.imagePreviewWrapper.style.display = 'none';
+    }
+    if (elements.imageUploadArea) {
+        elements.imageUploadArea.style.minHeight = '180px';
+        elements.imageUploadArea.classList.remove('drag-over');
+    }
+    if (elements.imageInput) {
+        elements.imageInput.value = '';
+    }
     if (elements.updateImageDisplay) {
         elements.updateImageDisplay.src = '';
         elements.updateImageDisplay.style.display = 'none';
@@ -226,18 +355,33 @@ function clearImagePreview() {
     }
 }
 
-function showImagePreview(imageBase64) {
-    if (imageBase64 && imageBase64.startsWith('data:image')) {
-        if (elements.updateImageDisplay) {
-            elements.updateImageDisplay.src = imageBase64;
-            elements.updateImageDisplay.style.display = 'block';
-        }
-        if (elements.updateImagePlaceholder) {
-            elements.updateImagePlaceholder.style.display = 'none';
-        }
-    } else {
-        clearImagePreview();
+function setCategoryImage(url, storagePath) {
+    currentImageUrl = url;
+    currentImageStoragePath = storagePath || '';
+
+    if (elements.imagePreview) {
+        elements.imagePreview.src = url;
     }
+    if (elements.uploadPlaceholder) {
+        elements.uploadPlaceholder.style.display = 'none';
+    }
+    if (elements.imagePreviewWrapper) {
+        elements.imagePreviewWrapper.style.display = 'flex';
+    }
+    if (elements.imageUploadArea) {
+        elements.imageUploadArea.style.minHeight = 'auto';
+    }
+    if (elements.updateImageDisplay) {
+        elements.updateImageDisplay.src = url;
+        elements.updateImageDisplay.style.display = 'block';
+    }
+    if (elements.updateImagePlaceholder) {
+        elements.updateImagePlaceholder.style.display = 'none';
+    }
+}
+
+function clearImagePreview() {
+    removeImage();
 }
 
 // ========================================
@@ -257,14 +401,14 @@ async function loadCategories() {
 
 function populateCategorySelector() {
     if (!elements.categorySelector) return;
-    
+
     if (categories.length === 0) {
         elements.categorySelector.innerHTML = '<option value="">-- No hay categorías disponibles --</option>';
         return;
     }
-    
+
     var html = '<option value="">-- Seleccione una categoría --</option>';
-    categories.forEach(function(cat) {
+    categories.forEach(function (cat) {
         html += '<option value="' + escapeHtml(cat.id) + '">' + escapeHtml(cat.name) + ' (ID: ' + escapeHtml(cat.id) + ')</option>';
     });
     elements.categorySelector.innerHTML = html;
@@ -287,7 +431,7 @@ function getCategoryIdFromUrl() {
  */
 function renderSubcategories() {
     if (!elements.subcategoriesList) return;
-    
+
     if (!subcategories || subcategories.length === 0) {
         elements.subcategoriesList.innerHTML = `
             <div class="updatecategory-empty-sub">
@@ -302,9 +446,9 @@ function renderSubcategories() {
         }
         return;
     }
-    
+
     var html = '';
-    subcategories.forEach(function(sub, index) {
+    subcategories.forEach(function (sub, index) {
         var name = sub.name || '';
         var description = sub.description || '';
         html += `
@@ -328,21 +472,21 @@ function renderSubcategories() {
             </div>
         `;
     });
-    
+
     elements.subcategoriesList.innerHTML = html;
-    
+
     if (elements.subcategoryCount) {
         elements.subcategoryCount.textContent = `(${subcategories.length})`;
     }
-    
+
     // Mostrar sección de subcategorías
     if (elements.subcategoriesSection) {
         elements.subcategoriesSection.style.display = 'block';
     }
-    
+
     // Actualizar vista previa en el panel derecho
     updatePreviewSubcategories();
-    
+
     // Agregar event listeners a los elementos de subcategoría
     attachSubcategoryEvents();
 }
@@ -352,47 +496,47 @@ function renderSubcategories() {
  */
 function attachSubcategoryEvents() {
     // Inputs de nombre y descripción - actualizar en tiempo real
-    document.querySelectorAll('.sub-name-input').forEach(function(input) {
-        input.addEventListener('input', function() {
+    document.querySelectorAll('.sub-name-input').forEach(function (input) {
+        input.addEventListener('input', function () {
             var index = parseInt(this.dataset.index);
             if (!isNaN(index) && subcategories[index]) {
                 subcategories[index].name = this.value;
             }
         });
     });
-    
-    document.querySelectorAll('.sub-description-input').forEach(function(input) {
-        input.addEventListener('input', function() {
+
+    document.querySelectorAll('.sub-description-input').forEach(function (input) {
+        input.addEventListener('input', function () {
             var index = parseInt(this.dataset.index);
             if (!isNaN(index) && subcategories[index]) {
                 subcategories[index].description = this.value;
             }
         });
     });
-    
+
     // Botones de eliminar
-    document.querySelectorAll('.btn-remove-sub').forEach(function(btn) {
-        btn.addEventListener('click', function() {
+    document.querySelectorAll('.btn-remove-sub').forEach(function (btn) {
+        btn.addEventListener('click', function () {
             var index = parseInt(this.dataset.index);
             if (!isNaN(index)) {
                 removeSubcategory(index);
             }
         });
     });
-    
+
     // Botones de mover arriba
-    document.querySelectorAll('.btn-move-up').forEach(function(btn) {
-        btn.addEventListener('click', function() {
+    document.querySelectorAll('.btn-move-up').forEach(function (btn) {
+        btn.addEventListener('click', function () {
             var index = parseInt(this.dataset.index);
             if (!isNaN(index) && index > 0) {
                 moveSubcategoryUp(index);
             }
         });
     });
-    
+
     // Botones de mover abajo
-    document.querySelectorAll('.btn-move-down').forEach(function(btn) {
-        btn.addEventListener('click', function() {
+    document.querySelectorAll('.btn-move-down').forEach(function (btn) {
+        btn.addEventListener('click', function () {
             var index = parseInt(this.dataset.index);
             if (!isNaN(index) && index < subcategories.length - 1) {
                 moveSubcategoryDown(index);
@@ -408,11 +552,10 @@ function addSubcategory() {
     subcategories.push({
         name: '',
         description: '',
-        // El ID se generará al guardar
         status: 'active'
     });
     renderSubcategories();
-    
+
     // Enfocar el nuevo input
     var inputs = document.querySelectorAll('.sub-name-input');
     if (inputs.length > 0) {
@@ -425,13 +568,13 @@ function addSubcategory() {
  */
 async function removeSubcategory(index) {
     var subName = subcategories[index]?.name || 'Subcategoría';
-    
+
     var result = await mostrarConfirmacion(
         '¿Eliminar subcategoría?',
         `¿Estás seguro de eliminar "${subName || 'esta subcategoría'}"?`,
         'Sí, eliminar'
     );
-    
+
     if (result.isConfirmed) {
         subcategories.splice(index, 1);
         renderSubcategories();
@@ -466,23 +609,23 @@ function moveSubcategoryDown(index) {
  */
 function updatePreviewSubcategories() {
     if (!elements.subcategoriesPreview) return;
-    
-    var validSubs = subcategories.filter(function(sub) {
+
+    var validSubs = subcategories.filter(function (sub) {
         return sub.name && sub.name.trim() !== '';
     });
-    
+
     if (validSubs.length === 0) {
         elements.subcategoriesPreview.innerHTML = '<p class="updatecategory-empty">Esta categoría no tiene subcategorías</p>';
         return;
     }
-    
+
     var html = '<div style="margin-bottom: 12px;"><small style="color: #888;">Total: ' + validSubs.length + ' subcategoría(s)</small></div><div>';
-    validSubs.forEach(function(sub) {
+    validSubs.forEach(function (sub) {
         var displayName = sub.name || 'Sin nombre';
         html += '<span class="updatecategory-subcategory-tag"><i class="material-symbols-outlined" style="font-size: 14px;">subdirectory_arrow_right</i>' + escapeHtml(displayName) + '</span>';
     });
     html += '</div>';
-    
+
     elements.subcategoriesPreview.innerHTML = html;
 }
 
@@ -491,7 +634,7 @@ function updatePreviewSubcategories() {
 // ========================================
 function onCategorySelect() {
     var selectedId = elements.categorySelector.value;
-    
+
     if (!selectedId) {
         elements.formFields.disabled = true;
         elements.actionButtons.style.display = 'none';
@@ -502,12 +645,12 @@ function onCategorySelect() {
         clearForm();
         return;
     }
-    
-    var category = categories.find(function(c) { return c.id === selectedId; });
+
+    var category = categories.find(function (c) { return c.id === selectedId; });
     if (!category) return;
-    
+
     currentCategoryId = selectedId;
-    
+
     elements.categoryId.value = category.id;
     elements.categoryName.value = category.name;
     elements.categorySlug.value = category.slug;
@@ -515,30 +658,30 @@ function onCategorySelect() {
     elements.categoryOrder.value = category.order || 0;
     elements.categoryStatus.value = category.status || 'active';
     elements.categoryCreatedAt.value = formatDate(category.createdAt);
-    
-    // 🖼️ Mostrar imagen
-    if (category.imageBase64 && category.imageBase64.startsWith('data:image')) {
-        showImagePreview(category.imageBase64);
+
+    // 🖼️ Cargar imagen desde Storage si existe
+    if (category.imageUrl && category.imageUrl.trim() !== '') {
+        setCategoryImage(category.imageUrl, category.imageStoragePath);
     } else {
         clearImagePreview();
     }
-    
+
     // Cargar subcategorías
     if (category.subcategories && Array.isArray(category.subcategories)) {
-        subcategories = category.subcategories.map(function(sub) {
+        subcategories = category.subcategories.map(function (sub) {
             return {
                 name: sub.name || '',
                 description: sub.description || '',
                 status: sub.status || 'active',
-                id: sub.id // Mantener el ID existente para actualización
+                id: sub.id
             };
         });
     } else {
         subcategories = [];
     }
-    
+
     renderSubcategories();
-    
+
     elements.formFields.disabled = false;
     elements.actionButtons.style.display = 'flex';
     elements.previewCard.style.display = 'block';
@@ -573,7 +716,7 @@ function clearForm() {
 // ========================================
 function setupSlugGeneration() {
     if (elements.categoryName) {
-        elements.categoryName.addEventListener('input', function() {
+        elements.categoryName.addEventListener('input', function () {
             var name = this.value;
             if (name && elements.formFields && !elements.formFields.disabled) {
                 elements.categorySlug.value = generarSlug(name);
@@ -583,57 +726,56 @@ function setupSlugGeneration() {
 }
 
 // ========================================
-// Actualizar categoría CON SUBCATEGORÍAS
+// Actualizar categoría CON SUBCATEGORÍAS Y STORAGE
 // ========================================
 async function updateCategory(event) {
     event.preventDefault();
-    
+
     if (isSubmitting) return;
-    
+
     if (!currentCategoryId) {
         await mostrarError('Sin categoría seleccionada', 'Seleccione una categoría para actualizar.');
         return;
     }
-    
+
     var name = elements.categoryName.value.trim();
     if (!name) {
         await mostrarError('Campo requerido', 'El nombre de la categoría es obligatorio.');
         elements.categoryName.focus();
         return;
     }
-    
+
     var slug = elements.categorySlug.value.trim();
     if (!slug) {
         await mostrarError('Campo requerido', 'El slug es obligatorio.');
         return;
     }
-    
-    // Validar subcategorías - no puede haber subcategorías con nombre vacío
-    var invalidSubs = subcategories.filter(function(sub) {
+
+    // Validar subcategorías
+    var invalidSubs = subcategories.filter(function (sub) {
         return sub.name && sub.name.trim() !== '' && sub.name.trim().length < 2;
     });
-    
+
     if (invalidSubs.length > 0) {
-        await mostrarError('Subcategorías inválidas', 
+        await mostrarError('Subcategorías inválidas',
             'Las subcategorías deben tener al menos 2 caracteres. Revisa las subcategorías marcadas.');
         return;
     }
-    
-    // Filtrar subcategorías vacías para guardar
-    var validSubcategories = subcategories.filter(function(sub) {
+
+    // Filtrar subcategorías vacías
+    var validSubcategories = subcategories.filter(function (sub) {
         return sub.name && sub.name.trim() !== '';
-    }).map(function(sub) {
+    }).map(function (sub) {
         return {
             id: sub.id || `sub_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
             name: sub.name.trim(),
             description: sub.description ? sub.description.trim() : '',
             slug: generarSlug(sub.name),
             status: sub.status || 'active',
-            // Mantener createdAt si existe
             createdAt: sub.createdAt || new Date().toISOString()
         };
     });
-    
+
     var categoryData = {
         name: name,
         slug: slug,
@@ -642,41 +784,91 @@ async function updateCategory(event) {
         status: elements.categoryStatus.value,
         subcategories: validSubcategories
     };
-    
+
+    var hasNewImage = !!selectedImageFile;
+    var hasCurrentImage = !!currentImageUrl;
+
     // Confirmación antes de actualizar
     var confirmResult = await mostrarConfirmacion(
         '¿Actualizar categoría?',
-        'Estás a punto de actualizar la categoría "' + name + '" con ' + validSubcategories.length + ' subcategoría(s).',
+        'Estás a punto de actualizar la categoría "' + name + '" con ' + validSubcategories.length + ' subcategoría(s).' +
+        (hasNewImage ? ' Se subirá una nueva imagen a Storage.' : hasCurrentImage ? ' Se mantendrá la imagen actual.' : ' Sin imagen.'),
         'Sí, actualizar'
     );
-    
+
     if (!confirmResult.isConfirmed) {
         mostrarToast('Actualización cancelada', 'info');
         return;
     }
-    
+
     isSubmitting = true;
     var btn = elements.saveBtn;
     var originalHTML = btn.innerHTML;
     btn.innerHTML = '<i class="material-symbols-outlined">hourglass_empty</i> Actualizando...';
     btn.disabled = true;
-    
+
     mostrarLoading('Actualizando categoría y subcategorías...');
-    
+
     try {
+        // 🔥 Si hay nueva imagen, subir a Storage PRIMERO
+        if (hasNewImage && selectedImageFile) {
+            try {
+                const timestamp = Date.now();
+                const cleanId = currentCategoryId.replace(/[^a-zA-Z0-9-_]/g, '');
+                const path = `categorias/${cleanId}/image_${timestamp}.jpg`;
+
+                console.log('📸 Subiendo nueva imagen a Storage:', path);
+
+                const uploadResult = await StorageService.uploadImage(selectedImageFile, path, {
+                    maxSizeMB: 5,
+                    quality: 0.85
+                });
+
+                categoryData.imageUrl = uploadResult.url;
+                categoryData.imageStoragePath = uploadResult.path;
+                categoryData.imageName = selectedImageFile.name;
+                categoryData.imageType = selectedImageFile.type;
+                categoryData.imageSize = selectedImageFile.size;
+
+                console.log('✅ Imagen subida a Storage:', uploadResult.url);
+
+            } catch (uploadError) {
+                console.error('❌ Error subiendo imagen a Storage:', uploadError);
+                const continueResult = await mostrarAdvertencia(
+                    'Error al subir imagen',
+                    'No se pudo subir la imagen a Storage: ' + uploadError.message + '. ¿Deseas continuar sin imagen?',
+                    'Continuar sin imagen'
+                );
+
+                if (!continueResult.isConfirmed) {
+                    cerrarLoading();
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
+                    isSubmitting = false;
+                    return;
+                }
+            }
+        }
+
         var updatedCategory = await CategoryService.update(currentCategoryId, categoryData);
-        
+
         cerrarLoading();
         await mostrarExito(
             '¡Categoría actualizada!',
-            '✅ "' + updatedCategory.name + '" actualizada exitosamente con ' + validSubcategories.length + ' subcategoría(s).'
+            '✅ "' + updatedCategory.name + '" actualizada exitosamente con ' + validSubcategories.length + ' subcategoría(s).' +
+            (updatedCategory.imageUrl ? ' 🖼️ Imagen incluida.' : '')
         );
-        
+
+        // Limpiar imagen seleccionada
+        if (hasNewImage) {
+            removeImage();
+        }
+
         await loadCategories();
-        
+
         elements.categorySelector.value = updatedCategory.id;
         onCategorySelect();
-        
+
     } catch (error) {
         cerrarLoading();
         console.error('Error al actualizar categoría:', error);
@@ -698,10 +890,10 @@ async function resetForm() {
             'Se perderán los cambios no guardados. ¿Deseas continuar?',
             'Sí, cancelar'
         );
-        
+
         if (!result.isConfirmed) return;
     }
-    
+
     elements.categorySelector.value = '';
     elements.formFields.disabled = true;
     elements.actionButtons.style.display = 'none';
@@ -730,16 +922,17 @@ function goBackToList() {
 // ========================================
 function initEventListeners() {
     elements.backBtn?.addEventListener('click', goBackToList);
-    
+
     elements.categorySelector?.addEventListener('change', onCategorySelect);
-    
+
     elements.cancelBtn?.addEventListener('click', resetForm);
-    
+
     elements.categoryForm?.addEventListener('submit', updateCategory);
-    
+
     elements.addSubcategoryBtn?.addEventListener('click', addSubcategory);
-    
+
     setupSlugGeneration();
+    setupImageUpload();
 }
 
 // ========================================
@@ -756,7 +949,7 @@ function syncDarkMode() {
     }
 }
 
-document.addEventListener('themeChanged', function(e) {
+document.addEventListener('themeChanged', function (e) {
     if (e.detail.isDarkMode) document.body.classList.add('dark-mode');
     else document.body.classList.remove('dark-mode');
 });
@@ -765,12 +958,12 @@ document.addEventListener('themeChanged', function(e) {
 // Inicialización
 // ========================================
 export async function updateCategoryController() {
-    console.log('✏️ Update Category Controller - Editar categorías con subcategorías');
-    
+    console.log('✏️ Update Category Controller - Editar categorías con subcategorías (con Storage)');
+
     cacheElements();
     syncDarkMode();
     initEventListeners();
-    
+
     if (elements.formFields) {
         elements.formFields.disabled = true;
     }
@@ -783,13 +976,13 @@ export async function updateCategoryController() {
     if (elements.subcategoriesSection) {
         elements.subcategoriesSection.style.display = 'none';
     }
-    
+
     await loadCategories();
-    
+
     // Si hay un ID en la URL, seleccionar automáticamente esa categoría
     var categoryIdFromUrl = getCategoryIdFromUrl();
     if (categoryIdFromUrl && elements.categorySelector) {
-        var categoryExists = categories.some(function(c) { return c.id === categoryIdFromUrl; });
+        var categoryExists = categories.some(function (c) { return c.id === categoryIdFromUrl; });
         if (categoryExists) {
             elements.categorySelector.value = categoryIdFromUrl;
             onCategorySelect();
@@ -799,6 +992,6 @@ export async function updateCategoryController() {
             mostrarToast('La categoría solicitada no existe', 'error');
         }
     }
-    
+
     console.log('✅ Update Category page loaded');
 }

@@ -2,9 +2,11 @@
 // CREATE CATEGORIES CONTROLLER - OUTLET ADMIN
 // Controlador para CREAR categorías con subcategorías e imágenes
 // CON SWEETALERT2 INTEGRADO Y SINCRONIZACIÓN CON FIREBASE
+// IMÁGENES EN FIREBASE STORAGE
 // ========================================
 
 import { CategoryService } from '../../../../services/categoryService.js';
+import { StorageService } from '../../../../services/storageService.js';
 
 // ========================================
 // Variables de estado
@@ -13,9 +15,10 @@ var isSubmitting = false;
 var subcategories = [];
 var categoriesList = [];
 var currentSelectedCategoryId = null;
-// 🖼️ Variables para imagen
+// 🖼️ Variables para imagen (Storage)
 var selectedImageFile = null;
-var currentImageBase64 = '';
+var currentImageUrl = '';
+var currentImageStoragePath = '';
 
 // ========================================
 // DOM Elements
@@ -30,19 +33,19 @@ function mostrarToast(mensaje, tipo) {
     tipo = tipo || 'info';
     var toastExistente = document.querySelector('.outlet-toast');
     if (toastExistente) toastExistente.remove();
-    
+
     var toast = document.createElement('div');
     toast.className = 'outlet-toast ' + tipo;
     toast.textContent = mensaje;
     document.body.appendChild(toast);
-    
-    requestAnimationFrame(function() {
+
+    requestAnimationFrame(function () {
         toast.classList.add('show');
     });
-    
-    setTimeout(function() {
+
+    setTimeout(function () {
         toast.classList.remove('show');
-        setTimeout(function() { toast.remove(); }, 300);
+        setTimeout(function () { toast.remove(); }, 300);
     }, 3200);
 }
 
@@ -105,7 +108,7 @@ function mostrarLoading(mensaje) {
     return mostrarSweetAlert({
         title: mensaje,
         allowOutsideClick: false,
-        didOpen: function() {
+        didOpen: function () {
             Swal.showLoading();
         }
     });
@@ -121,15 +124,15 @@ function cerrarLoading() {
 function cacheElements() {
     elements = {
         backBtn: document.getElementById('backBtn'),
-        
+
         existingCategorySelect: document.getElementById('existingCategorySelect'),
-        
+
         categoryId: document.getElementById('categoryId'),
         categoryName: document.getElementById('categoryName'),
         categoryDescription: document.getElementById('categoryDescription'),
         saveBtn: document.getElementById('saveCategoryBtn'),
         resetBtn: document.getElementById('resetBtn'),
-        
+
         // 🖼️ Elementos de imagen
         imageUploadArea: document.getElementById('imageUploadArea'),
         imageInput: document.getElementById('categoryImageInput'),
@@ -137,50 +140,50 @@ function cacheElements() {
         imagePreviewWrapper: document.getElementById('imagePreviewWrapper'),
         imagePreview: document.getElementById('imagePreview'),
         removeImageBtn: document.getElementById('removeImageBtn'),
-        
+
         subcategoryName: document.getElementById('subcategoryName'),
         subcategoryDescription: document.getElementById('subcategoryDescription'),
         addSubBtn: document.getElementById('addSubcategoryBtn'),
         subcategoriesList: document.getElementById('subcategoriesList'),
-        
+
         toast: document.getElementById('categoriesToast')
     };
 }
 
 // ========================================
-// 🖼️ MANEJO DE IMAGEN
+// 🖼️ MANEJO DE IMAGEN (STORAGE)
 // ========================================
 
 function setupImageUpload() {
     if (!elements.imageUploadArea || !elements.imageInput) return;
-    
+
     // Click en el área para abrir el selector
-    elements.imageUploadArea.addEventListener('click', function(e) {
+    elements.imageUploadArea.addEventListener('click', function (e) {
         // Evitar que el click en el botón de eliminar dispare el selector
         if (e.target.closest('.outlet-remove-image-btn')) return;
         elements.imageInput.click();
     });
-    
+
     // Manejar selección de archivo
-    elements.imageInput.addEventListener('change', function(e) {
+    elements.imageInput.addEventListener('change', function (e) {
         const file = this.files[0];
         if (file) {
             handleImageFile(file);
         }
     });
-    
+
     // Drag and drop
-    elements.imageUploadArea.addEventListener('dragover', function(e) {
+    elements.imageUploadArea.addEventListener('dragover', function (e) {
         e.preventDefault();
         this.classList.add('drag-over');
     });
-    
-    elements.imageUploadArea.addEventListener('dragleave', function(e) {
+
+    elements.imageUploadArea.addEventListener('dragleave', function (e) {
         e.preventDefault();
         this.classList.remove('drag-over');
     });
-    
-    elements.imageUploadArea.addEventListener('drop', function(e) {
+
+    elements.imageUploadArea.addEventListener('drop', function (e) {
         e.preventDefault();
         this.classList.remove('drag-over');
         const file = e.dataTransfer.files[0];
@@ -190,10 +193,10 @@ function setupImageUpload() {
             mostrarError('Formato no válido', 'Por favor, sube un archivo de imagen válido.');
         }
     });
-    
+
     // Botón para eliminar imagen
     if (elements.removeImageBtn) {
-        elements.removeImageBtn.addEventListener('click', function(e) {
+        elements.removeImageBtn.addEventListener('click', function (e) {
             e.stopPropagation();
             removeImage();
         });
@@ -208,15 +211,15 @@ function handleImageFile(file) {
         elements.imageInput.value = '';
         return;
     }
-    
-    // Límite de 5MB para Base64
-    const maxSize = 5 * 1024 * 1024;
+
+    // Límite de 10MB para Storage
+    const maxSize = 10 * 1024 * 1024;
     if (file.size > maxSize) {
-        mostrarError('Imagen demasiado grande', 'La imagen no puede superar los 5MB.');
+        mostrarError('Imagen demasiado grande', 'La imagen no puede superar los 10MB.');
         elements.imageInput.value = '';
         return;
     }
-    
+
     selectedImageFile = file;
     showImagePreview(file);
     mostrarToast(`Imagen seleccionada: ${file.name}`, 'success');
@@ -224,7 +227,7 @@ function handleImageFile(file) {
 
 function showImagePreview(file) {
     const reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = function (e) {
         if (elements.imagePreview) {
             elements.imagePreview.src = e.target.result;
         }
@@ -243,8 +246,9 @@ function showImagePreview(file) {
 
 function removeImage() {
     selectedImageFile = null;
-    currentImageBase64 = '';
-    
+    currentImageUrl = '';
+    currentImageStoragePath = '';
+
     if (elements.imagePreview) {
         elements.imagePreview.src = '';
     }
@@ -263,10 +267,12 @@ function removeImage() {
     }
 }
 
-function setCategoryImage(imageBase64) {
-    currentImageBase64 = imageBase64;
+function setCategoryImage(url, storagePath) {
+    currentImageUrl = url;
+    currentImageStoragePath = storagePath || '';
+
     if (elements.imagePreview) {
-        elements.imagePreview.src = imageBase64;
+        elements.imagePreview.src = url;
     }
     if (elements.uploadPlaceholder) {
         elements.uploadPlaceholder.style.display = 'none';
@@ -327,7 +333,7 @@ function formatFileSize(bytes) {
 }
 
 // ========================================
-// Convertir archivo a Base64
+// Convertir archivo a Base64 (para preview)
 // ========================================
 function fileToBase64(file) {
     return new Promise((resolve, reject) => {
@@ -344,27 +350,27 @@ function fileToBase64(file) {
 async function loadExistingCategories() {
     try {
         console.log('🔄 Cargando categorías existentes...');
-        
+
         if (elements.existingCategorySelect) {
             elements.existingCategorySelect.innerHTML = '<option value="">Cargando categorías...</option>';
             elements.existingCategorySelect.disabled = true;
         }
-        
+
         categoriesList = await CategoryService.getAll({}, true);
-        
+
         console.log('✅ ' + categoriesList.length + ' categorías cargadas');
-        
+
         if (elements.existingCategorySelect) {
             elements.existingCategorySelect.disabled = false;
             populateExistingCategories();
         }
-        
+
         if (categoriesList.length === 0) {
             if (elements.existingCategorySelect) {
                 elements.existingCategorySelect.innerHTML = '<option value="">No hay categorías disponibles</option>';
             }
         }
-        
+
     } catch (error) {
         console.error('❌ Error al cargar categorías:', error);
         await mostrarError('Error al cargar categorías', error.message || 'No se pudieron cargar las categorías existentes.');
@@ -377,19 +383,19 @@ async function loadExistingCategories() {
 
 function populateExistingCategories() {
     if (!elements.existingCategorySelect) return;
-    
+
     elements.existingCategorySelect.innerHTML = '';
-    
+
     var defaultOption = document.createElement('option');
     defaultOption.value = '';
     defaultOption.textContent = 'Seleccionar categoría existente';
     elements.existingCategorySelect.appendChild(defaultOption);
-    
-    categoriesList.forEach(function(cat) {
+
+    categoriesList.forEach(function (cat) {
         var option = document.createElement('option');
         option.value = cat.id;
         var subCount = cat.subcategories?.length || 0;
-        var hasImage = cat.imageBase64 ? ' 📷' : '';
+        var hasImage = cat.imageUrl ? ' 📷' : '';
         option.textContent = cat.name + ' (' + subCount + ' subcategorías)' + hasImage;
         elements.existingCategorySelect.appendChild(option);
     });
@@ -400,46 +406,46 @@ function populateExistingCategories() {
 // ========================================
 function renderSubcategories() {
     if (!elements.subcategoriesList) return;
-    
+
     if (subcategories.length === 0) {
-        elements.subcategoriesList.innerHTML = 
+        elements.subcategoriesList.innerHTML =
             '<div class="outlet-empty-message">No hay subcategorías agregadas</div>';
         return;
     }
-    
+
     var html = '';
-    subcategories.forEach(function(sub, index) {
-        html += 
+    subcategories.forEach(function (sub, index) {
+        html +=
             '<div class="outlet-subcategory-item" data-index="' + index + '">' +
-                '<div class="outlet-subcategory-info">' +
-                    '<div class="outlet-subcategory-name">' +
-                        '<span class="material-symbols-outlined">subdirectory_arrow_right</span>' +
-                        escapeHtml(sub.name) +
-                    '</div>' +
-                    (sub.description ? '<div class="outlet-subcategory-desc">' + escapeHtml(sub.description) + '</div>' : '') +
-                '</div>' +
-                '<div class="outlet-subcategory-actions">' +
-                    '<button class="outlet-subcategory-edit" data-index="' + index + '" title="Editar">' +
-                        '<span class="material-symbols-outlined">edit</span>' +
-                    '</button>' +
-                    '<button class="outlet-subcategory-delete" data-index="' + index + '" title="Eliminar">' +
-                        '<span class="material-symbols-outlined">delete</span>' +
-                    '</button>' +
-                '</div>' +
+            '<div class="outlet-subcategory-info">' +
+            '<div class="outlet-subcategory-name">' +
+            '<span class="material-symbols-outlined">subdirectory_arrow_right</span>' +
+            escapeHtml(sub.name) +
+            '</div>' +
+            (sub.description ? '<div class="outlet-subcategory-desc">' + escapeHtml(sub.description) + '</div>' : '') +
+            '</div>' +
+            '<div class="outlet-subcategory-actions">' +
+            '<button class="outlet-subcategory-edit" data-index="' + index + '" title="Editar">' +
+            '<span class="material-symbols-outlined">edit</span>' +
+            '</button>' +
+            '<button class="outlet-subcategory-delete" data-index="' + index + '" title="Eliminar">' +
+            '<span class="material-symbols-outlined">delete</span>' +
+            '</button>' +
+            '</div>' +
             '</div>';
     });
-    
+
     elements.subcategoriesList.innerHTML = html;
-    
-    document.querySelectorAll('.outlet-subcategory-edit').forEach(function(btn) {
-        btn.addEventListener('click', function() {
+
+    document.querySelectorAll('.outlet-subcategory-edit').forEach(function (btn) {
+        btn.addEventListener('click', function () {
             var index = parseInt(this.dataset.index);
             editSubcategory(index);
         });
     });
-    
-    document.querySelectorAll('.outlet-subcategory-delete').forEach(function(btn) {
-        btn.addEventListener('click', function() {
+
+    document.querySelectorAll('.outlet-subcategory-delete').forEach(function (btn) {
+        btn.addEventListener('click', function () {
             var index = parseInt(this.dataset.index);
             deleteSubcategory(index);
         });
@@ -453,45 +459,45 @@ function renderSubcategories() {
 async function addSubcategory() {
     var name = elements.subcategoryName?.value?.trim() || '';
     var description = elements.subcategoryDescription?.value?.trim() || '';
-    
+
     if (!name) {
         mostrarError('Campo requerido', 'El nombre de la subcategoría es obligatorio.');
         if (elements.subcategoryName) elements.subcategoryName.focus();
         return;
     }
-    
+
     var categoryId = elements.categoryId?.value?.trim() || '';
     var categoryName = elements.categoryName?.value?.trim() || '';
-    
+
     if (!categoryId && categoryName) {
         categoryId = generarIdDesdeNombre(categoryName);
         if (elements.categoryId) elements.categoryId.value = categoryId;
     }
-    
+
     if (!categoryId) {
         mostrarError('Categoría requerida', 'Debes ingresar un ID y nombre de categoría antes de agregar subcategorías.');
         if (elements.categoryName) elements.categoryName.focus();
         return;
     }
-    
-    var exists = subcategories.some(function(sub) { 
-        return sub.name.toLowerCase() === name.toLowerCase(); 
+
+    var exists = subcategories.some(function (sub) {
+        return sub.name.toLowerCase() === name.toLowerCase();
     });
-    
+
     if (exists) {
         mostrarError('Subcategoría duplicada', 'La subcategoría "' + name + '" ya existe en la lista.');
         return;
     }
-    
-    var newSubcategory = { 
-        name: name, 
+
+    var newSubcategory = {
+        name: name,
         description: description,
         slug: generarSlug(name)
     };
-    
+
     try {
         var loadingResult = mostrarLoading('Guardando subcategoría...');
-        
+
         if (currentSelectedCategoryId) {
             await CategoryService.addSubcategory(currentSelectedCategoryId, name, description);
             await loadCategoryData(currentSelectedCategoryId);
@@ -502,13 +508,13 @@ async function addSubcategory() {
             renderSubcategories();
             mostrarToast('Subcategoría "' + name + '" agregada (se guardará al crear la categoría)', 'success');
         }
-        
+
         if (elements.subcategoryName) elements.subcategoryName.value = '';
         if (elements.subcategoryDescription) elements.subcategoryDescription.value = '';
         if (elements.subcategoryName) elements.subcategoryName.focus();
-        
+
         cerrarLoading();
-        
+
     } catch (error) {
         cerrarLoading();
         console.error('Error al agregar subcategoría:', error);
@@ -519,69 +525,69 @@ async function addSubcategory() {
 async function editSubcategory(index) {
     var sub = subcategories[index];
     if (!sub) return;
-    
+
     var result = await mostrarSweetAlert({
         title: 'Editar subcategoría',
-        html: 
+        html:
             '<div style="text-align: left;">' +
-                '<label style="display:block;font-weight:600;margin-bottom:4px;font-size:12px;color:var(--outlet-text-secondary);">Nombre</label>' +
-                '<input id="swal-edit-name" class="swal2-input" value="' + escapeHtml(sub.name) + '" style="margin-bottom:12px;">' +
-                '<label style="display:block;font-weight:600;margin-bottom:4px;font-size:12px;color:var(--outlet-text-secondary);">Descripción (opcional)</label>' +
-                '<input id="swal-edit-desc" class="swal2-input" value="' + escapeHtml(sub.description || '') + '">' +
+            '<label style="display:block;font-weight:600;margin-bottom:4px;font-size:12px;color:var(--outlet-text-secondary);">Nombre</label>' +
+            '<input id="swal-edit-name" class="swal2-input" value="' + escapeHtml(sub.name) + '" style="margin-bottom:12px;">' +
+            '<label style="display:block;font-weight:600;margin-bottom:4px;font-size:12px;color:var(--outlet-text-secondary);">Descripción (opcional)</label>' +
+            '<input id="swal-edit-desc" class="swal2-input" value="' + escapeHtml(sub.description || '') + '">' +
             '</div>',
         showCancelButton: true,
         confirmButtonText: 'Guardar',
         cancelButtonText: 'Cancelar',
         focusConfirm: false,
-        preConfirm: function() {
+        preConfirm: function () {
             var newName = document.getElementById('swal-edit-name').value.trim();
             var newDesc = document.getElementById('swal-edit-desc').value.trim();
-            
+
             if (!newName) {
                 Swal.showValidationMessage('El nombre es obligatorio');
                 return false;
             }
-            
-            var exists = subcategories.some(function(s, i) { 
-                return i !== index && s.name.toLowerCase() === newName.toLowerCase(); 
+
+            var exists = subcategories.some(function (s, i) {
+                return i !== index && s.name.toLowerCase() === newName.toLowerCase();
             });
-            
+
             if (exists) {
                 Swal.showValidationMessage('La subcategoría "' + newName + '" ya existe');
                 return false;
             }
-            
+
             return { name: newName, description: newDesc };
         }
     });
-    
+
     if (result.isConfirmed && result.value) {
         try {
             var updatedSub = result.value;
-            
+
             if (currentSelectedCategoryId && sub.id) {
                 await CategoryService.updateSubcategory(
-                    currentSelectedCategoryId, 
-                    sub.id, 
-                    updatedSub.name, 
+                    currentSelectedCategoryId,
+                    sub.id,
+                    updatedSub.name,
                     updatedSub.description
                 );
-                
+
                 await loadCategoryData(currentSelectedCategoryId);
                 await loadExistingCategories();
-                
+
                 mostrarToast('Subcategoría actualizada en Firebase', 'success');
             } else {
-                subcategories[index] = { 
-                    ...sub, 
-                    name: updatedSub.name, 
+                subcategories[index] = {
+                    ...sub,
+                    name: updatedSub.name,
                     description: updatedSub.description,
                     slug: generarSlug(updatedSub.name)
                 };
                 renderSubcategories();
                 mostrarToast('Subcategoría actualizada', 'success');
             }
-            
+
         } catch (error) {
             console.error('Error al actualizar subcategoría:', error);
             await mostrarError('Error al actualizar', error.message || 'No se pudo actualizar la subcategoría.');
@@ -592,13 +598,13 @@ async function editSubcategory(index) {
 async function deleteSubcategory(index) {
     var sub = subcategories[index];
     if (!sub) return;
-    
+
     var result = await mostrarConfirmacion(
         '¿Eliminar subcategoría?',
         '¿Estás seguro de que quieres eliminar "' + sub.name + '"?',
         'Sí, eliminar'
     );
-    
+
     if (result.isConfirmed) {
         try {
             if (currentSelectedCategoryId && sub.id) {
@@ -611,7 +617,7 @@ async function deleteSubcategory(index) {
                 renderSubcategories();
                 mostrarToast('Subcategoría "' + sub.name + '" eliminada', 'success');
             }
-            
+
         } catch (error) {
             console.error('Error al eliminar subcategoría:', error);
             await mostrarError('Error al eliminar', error.message || 'No se pudo eliminar la subcategoría.');
@@ -624,7 +630,7 @@ async function deleteSubcategory(index) {
 // ========================================
 function setupAutoGeneration() {
     if (elements.categoryName) {
-        elements.categoryName.addEventListener('input', function() {
+        elements.categoryName.addEventListener('input', function () {
             var name = this.value;
             if (name && elements.categoryId) {
                 var generatedId = generarIdDesdeNombre(name);
@@ -639,7 +645,7 @@ function setupAutoGeneration() {
 // ========================================
 async function loadCategoryData(categoryId) {
     try {
-        var category = categoriesList.find(function(c) { return c.id === categoryId; });
+        var category = categoriesList.find(function (c) { return c.id === categoryId; });
         if (!category) {
             category = await CategoryService.getById(categoryId, true);
             if (!category) {
@@ -647,21 +653,21 @@ async function loadCategoryData(categoryId) {
                 return;
             }
         }
-        
+
         currentSelectedCategoryId = categoryId;
-        
+
         if (elements.categoryId) elements.categoryId.value = category.id || '';
         if (elements.categoryName) elements.categoryName.value = category.name || '';
         if (elements.categoryDescription) elements.categoryDescription.value = category.description || '';
-        
-        // 🖼️ Cargar imagen si existe
-        if (category.imageBase64) {
-            setCategoryImage(category.imageBase64);
+
+        // 🖼️ Cargar imagen desde Storage si existe
+        if (category.imageUrl) {
+            setCategoryImage(category.imageUrl, category.imageStoragePath);
         } else {
             removeImage();
         }
-        
-        subcategories = (category.subcategories || []).map(function(sub) {
+
+        subcategories = (category.subcategories || []).map(function (sub) {
             return {
                 id: sub.id || sub._id || null,
                 name: sub.name || '',
@@ -670,9 +676,9 @@ async function loadCategoryData(categoryId) {
             };
         });
         renderSubcategories();
-        
+
         mostrarToast('Cargada categoría "' + category.name + '"', 'success');
-        
+
     } catch (error) {
         console.error('Error al cargar categoría:', error);
         await mostrarError('Error al cargar', error.message || 'No se pudo cargar la categoría.');
@@ -680,33 +686,33 @@ async function loadCategoryData(categoryId) {
 }
 
 // ========================================
-// Guardar categoría CON SWEETALERT2
+// Guardar categoría CON SWEETALERT2 Y STORAGE
 // ========================================
 async function saveCategory() {
     if (isSubmitting) return;
-    
+
     var name = elements.categoryName?.value?.trim() || '';
     if (!name) {
         await mostrarError('Campo requerido', 'El nombre de la categoría es obligatorio.');
         if (elements.categoryName) elements.categoryName.focus();
         return;
     }
-    
+
     var categoryId = elements.categoryId?.value?.trim() || '';
     if (!categoryId) {
         await mostrarError('Campo requerido', 'El ID de la categoría es obligatorio.');
         if (elements.categoryId) elements.categoryId.focus();
         return;
     }
-    
+
     if (!validarIdFormato(categoryId)) {
         await mostrarError('Formato inválido', 'El ID solo puede contener letras minúsculas, números, guiones bajos (_) y guiones (-).');
         if (elements.categoryId) elements.categoryId.focus();
         return;
     }
-    
+
     var isExisting = currentSelectedCategoryId === categoryId;
-    
+
     if (!isExisting) {
         try {
             var existing = await CategoryService.getById(categoryId);
@@ -719,37 +725,18 @@ async function saveCategory() {
             console.warn('Error verificando ID:', error);
         }
     }
-    
+
     var hasNewImage = !!selectedImageFile;
-    var hasCurrentImage = !!currentImageBase64;
-    
-    // 🔥 Convertir imagen a Base64 si hay una nueva
-    let imageBase64 = '';
-    let imageType = '';
-    let imageName = '';
-    let imageSize = null;
-    
-    if (hasNewImage && selectedImageFile) {
-        try {
-            imageBase64 = await fileToBase64(selectedImageFile);
-            imageType = selectedImageFile.type;
-            imageName = selectedImageFile.name;
-            imageSize = selectedImageFile.size;
-            console.log('✅ Imagen convertida a Base64');
-        } catch (error) {
-            console.error('❌ Error convirtiendo imagen:', error);
-            await mostrarError('Error con la imagen', 'No se pudo procesar la imagen.');
-            return;
-        }
-    }
-    
+    var hasCurrentImage = !!currentImageUrl;
+
+    // 🔥 Preparar datos de la categoría (sin imagen aún)
     var categoryData = {
         id: categoryId,
         name: name,
         slug: generarSlug(name),
         description: elements.categoryDescription?.value?.trim() || '',
         order: categoriesList.length,
-        subcategories: subcategories.map(function(sub) {
+        subcategories: subcategories.map(function (sub) {
             return {
                 id: sub.id || null,
                 name: sub.name,
@@ -759,44 +746,83 @@ async function saveCategory() {
             };
         })
     };
-    
-    // 🖼️ Agregar imagen Base64 si existe
-    if (hasNewImage && imageBase64) {
-        categoryData.imageBase64 = imageBase64;
-        categoryData.imageType = imageType;
-        categoryData.imageName = imageName;
-        categoryData.imageSize = imageSize;
-    } else if (hasCurrentImage) {
-        categoryData.imageBase64 = currentImageBase64;
-    }
-    
+
     var confirmResult = await mostrarConfirmacion(
         isExisting ? '¿Actualizar categoría?' : '¿Crear categoría?',
-        isExisting 
+        isExisting
             ? 'Estás a punto de actualizar la categoría "' + name + '" con ' + subcategories.length + ' subcategoría(s).' +
-              (hasNewImage ? ' Se subirá una nueva imagen.' : hasCurrentImage ? ' Se mantendrá la imagen actual.' : ' Sin imagen.')
+            (hasNewImage ? ' Se subirá una nueva imagen a Storage.' : hasCurrentImage ? ' Se mantendrá la imagen actual.' : ' Sin imagen.')
             : 'Estás a punto de crear la categoría "' + name + '" con ' + subcategories.length + ' subcategoría(s).' +
-              (hasNewImage ? ' Se subirá una imagen.' : ' Sin imagen.'),
+            (hasNewImage ? ' Se subirá una imagen a Storage.' : ' Sin imagen.'),
         isExisting ? 'Sí, actualizar' : 'Sí, crear'
     );
-    
+
     if (!confirmResult.isConfirmed) {
         mostrarToast('Operación cancelada', 'info');
         return;
     }
-    
+
     isSubmitting = true;
     var btn = elements.saveBtn;
     if (btn) {
         btn.disabled = true;
         btn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> ' + (isExisting ? 'Actualizando...' : 'Creando...');
     }
-    
+
     mostrarLoading(isExisting ? 'Actualizando categoría...' : 'Creando categoría...');
-    
+
     try {
         var savedCategory;
-        
+        var imageInfo = null;
+
+        // 🔥 Si hay nueva imagen, subir a Storage PRIMERO usando StorageService directamente
+        if (hasNewImage && selectedImageFile) {
+            try {
+                // Generar ruta en Storage
+                const timestamp = Date.now();
+                const cleanId = categoryId.replace(/[^a-zA-Z0-9-_]/g, '');
+                const path = `categorias/${cleanId}/image_${timestamp}.jpg`;
+
+                console.log('📸 Subiendo imagen a Storage:', path);
+
+                // Subir imagen usando StorageService
+                const uploadResult = await StorageService.uploadImage(selectedImageFile, path, {
+                    maxSizeMB: 5,
+                    quality: 0.85
+                });
+
+                imageInfo = {
+                    url: uploadResult.url,
+                    path: uploadResult.path,
+                    fileName: selectedImageFile.name,
+                    type: selectedImageFile.type,
+                    size: selectedImageFile.size
+                };
+
+                console.log('✅ Imagen subida a Storage:', uploadResult.url);
+
+            } catch (uploadError) {
+                console.error('❌ Error subiendo imagen a Storage:', uploadError);
+                // Si falla la subida de imagen, preguntar si continuar sin imagen
+                const continueResult = await mostrarAdvertencia(
+                    'Error al subir imagen',
+                    'No se pudo subir la imagen a Storage: ' + uploadError.message + '. ¿Deseas continuar sin imagen?',
+                    'Continuar sin imagen'
+                );
+
+                if (!continueResult.isConfirmed) {
+                    cerrarLoading();
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = '<span class="material-symbols-outlined">save</span> ' + (isExisting ? 'Actualizar Categoría' : 'Crear Categoría');
+                    }
+                    isSubmitting = false;
+                    return;
+                }
+            }
+        }
+
+        // Guardar o actualizar categoría
         if (isExisting && currentSelectedCategoryId) {
             var updateData = {
                 name: categoryData.name,
@@ -804,45 +830,45 @@ async function saveCategory() {
                 description: categoryData.description,
                 subcategories: categoryData.subcategories
             };
-            
-            // 🖼️ Agregar imagen Base64 si existe
-            if (hasNewImage && imageBase64) {
-                updateData.imageBase64 = imageBase64;
-                updateData.imageType = imageType;
-                updateData.imageName = imageName;
-                updateData.imageSize = imageSize;
-            } else if (hasCurrentImage) {
-                updateData.imageBase64 = currentImageBase64;
+
+            // Si se subió nueva imagen, agregar URLs
+            if (imageInfo) {
+                updateData.imageUrl = imageInfo.url;
+                updateData.imageStoragePath = imageInfo.path;
+                updateData.imageName = imageInfo.fileName;
+                updateData.imageType = imageInfo.type;
+                updateData.imageSize = imageInfo.size;
             }
-            
+
             savedCategory = await CategoryService.update(currentSelectedCategoryId, updateData);
         } else {
-            savedCategory = await CategoryService.create(categoryData);
+            // Crear nueva categoría con la imagen (si existe)
+            savedCategory = await CategoryService.create(categoryData, null, imageInfo);
         }
-        
+
         console.log('✅ Categoría guardada:', savedCategory);
-        
+
         // Limpiar imagen seleccionada
         if (hasNewImage) {
             removeImage();
         }
-        
+
         cerrarLoading();
         await mostrarExito(
             isExisting ? '¡Categoría actualizada!' : '¡Categoría creada!',
-            '✅ "' + savedCategory.name + '" ' + (isExisting ? 'actualizada' : 'creada') + 
+            '✅ "' + savedCategory.name + '" ' + (isExisting ? 'actualizada' : 'creada') +
             ' con ' + savedCategory.subcategories.length + ' subcategoría(s).' +
-            (savedCategory.imageBase64 ? ' 🖼️ Imagen incluida.' : '')
+            (savedCategory.imageUrl ? ' 🖼️ Imagen en Storage incluida.' : '')
         );
-        
+
         resetFormLocal();
         await loadExistingCategories();
-        
+
         if (isExisting && elements.existingCategorySelect) {
             elements.existingCategorySelect.value = categoryId;
             await loadCategoryData(categoryId);
         }
-        
+
     } catch (error) {
         cerrarLoading();
         console.error('❌ Error al guardar categoría:', error);
@@ -865,36 +891,36 @@ function resetFormLocal() {
     if (elements.categoryDescription) elements.categoryDescription.value = '';
     if (elements.subcategoryName) elements.subcategoryName.value = '';
     if (elements.subcategoryDescription) elements.subcategoryDescription.value = '';
-    
+
     subcategories = [];
     currentSelectedCategoryId = null;
     removeImage();
     renderSubcategories();
-    
+
     if (elements.existingCategorySelect) {
         elements.existingCategorySelect.value = '';
     }
-    
+
     if (elements.categoryName) elements.categoryName.focus();
 }
 
 async function resetForm() {
-    var hasData = elements.categoryName?.value?.trim() || 
-                  elements.categoryDescription?.value?.trim() || 
-                  subcategories.length > 0 ||
-                  selectedImageFile ||
-                  currentImageBase64;
-    
+    var hasData = elements.categoryName?.value?.trim() ||
+        elements.categoryDescription?.value?.trim() ||
+        subcategories.length > 0 ||
+        selectedImageFile ||
+        currentImageUrl;
+
     if (hasData) {
         var result = await mostrarAdvertencia(
             '¿Resetear formulario?',
             'Se perderán todos los datos ingresados. ¿Deseas continuar?',
             'Sí, resetear'
         );
-        
+
         if (!result.isConfirmed) return;
     }
-    
+
     resetFormLocal();
     mostrarToast('Formulario reseteado', 'info');
 }
@@ -903,32 +929,32 @@ async function resetForm() {
 // Event Listeners
 // ========================================
 function initEventListeners() {
-    elements.backBtn?.addEventListener('click', function() {
+    elements.backBtn?.addEventListener('click', function () {
         if (typeof window.navigateTo === 'function') {
             window.navigateTo('/readCategories');
         } else {
             window.history.back();
         }
     });
-    
+
     elements.saveBtn?.addEventListener('click', saveCategory);
     elements.resetBtn?.addEventListener('click', resetForm);
-    
+
     elements.addSubBtn?.addEventListener('click', addSubcategory);
-    elements.subcategoryName?.addEventListener('keypress', function(e) {
+    elements.subcategoryName?.addEventListener('keypress', function (e) {
         if (e.key === 'Enter') {
             e.preventDefault();
             addSubcategory();
         }
     });
-    elements.subcategoryDescription?.addEventListener('keypress', function(e) {
+    elements.subcategoryDescription?.addEventListener('keypress', function (e) {
         if (e.key === 'Enter') {
             e.preventDefault();
             addSubcategory();
         }
     });
-    
-    elements.existingCategorySelect?.addEventListener('change', function(e) {
+
+    elements.existingCategorySelect?.addEventListener('change', function (e) {
         var selectedId = e.target.value;
         if (selectedId) {
             loadCategoryData(selectedId);
@@ -937,11 +963,11 @@ function initEventListeners() {
             currentSelectedCategoryId = null;
         }
     });
-    
-    elements.categoryId?.addEventListener('input', function() {
+
+    elements.categoryId?.addEventListener('input', function () {
         var currentId = this.value.trim();
         var selectValue = elements.existingCategorySelect?.value || '';
-        
+
         if (selectValue && currentId !== selectValue) {
             currentSelectedCategoryId = null;
             if (elements.existingCategorySelect) {
@@ -949,7 +975,7 @@ function initEventListeners() {
             }
         }
     });
-    
+
     setupAutoGeneration();
     setupImageUpload();
 }
@@ -968,7 +994,7 @@ function syncDarkMode() {
     }
 }
 
-document.addEventListener('themeChanged', function(e) {
+document.addEventListener('themeChanged', function (e) {
     if (e.detail.isDarkMode) document.body.classList.add('dark-mode');
     else document.body.classList.remove('dark-mode');
 });
@@ -977,14 +1003,14 @@ document.addEventListener('themeChanged', function(e) {
 // Inicialización
 // ========================================
 export async function categoriesCreateController() {
-    console.log('📝 Create Categories Controller - Crear categorías con subcategorías e imágenes');
-    
+    console.log('📝 Create Categories Controller - Crear categorías con subcategorías e imágenes (Storage)');
+
     cacheElements();
     syncDarkMode();
     initEventListeners();
-    
+
     resetFormLocal();
     await loadExistingCategories();
-    
+
     console.log('✅ Create Categories page loaded');
 }
