@@ -17,8 +17,7 @@ import { StorageService } from '../../../../services/storageService.js';
 var categories = [];
 var currentCategoryId = null;
 var isSubmitting = false;
-var subcategories = []; // Array de subcategorías (objetos con name y description)
-// 🖼️ Variables para imagen (Storage)
+var subcategories = [];
 var selectedImageFile = null;
 var currentImageUrl = '';
 var currentImageStoragePath = '';
@@ -32,9 +31,6 @@ var elements = {};
 // UI Helpers - CON SWEETALERT2
 // ========================================
 
-/**
- * Muestra un toast personalizado (estilo OUTLET)
- */
 function mostrarToast(mensaje, tipo) {
     tipo = tipo || 'info';
     var toastExistente = document.querySelector('.outlet-toast');
@@ -55,9 +51,6 @@ function mostrarToast(mensaje, tipo) {
     }, 3200);
 }
 
-/**
- * Muestra una SweetAlert2 personalizada
- */
 function mostrarSweetAlert(options) {
     var defaultOptions = {
         buttonsStyling: false,
@@ -71,9 +64,6 @@ function mostrarSweetAlert(options) {
     return Swal.fire(Object.assign({}, defaultOptions, options));
 }
 
-/**
- * Muestra alerta de éxito
- */
 function mostrarExito(titulo, mensaje) {
     return mostrarSweetAlert({
         icon: 'success',
@@ -83,9 +73,6 @@ function mostrarExito(titulo, mensaje) {
     });
 }
 
-/**
- * Muestra alerta de error
- */
 function mostrarError(titulo, mensaje) {
     return mostrarSweetAlert({
         icon: 'error',
@@ -95,9 +82,6 @@ function mostrarError(titulo, mensaje) {
     });
 }
 
-/**
- * Muestra alerta de advertencia
- */
 function mostrarAdvertencia(titulo, mensaje, confirmText) {
     confirmText = confirmText || 'Continuar';
     return mostrarSweetAlert({
@@ -110,9 +94,6 @@ function mostrarAdvertencia(titulo, mensaje, confirmText) {
     });
 }
 
-/**
- * Muestra alerta de confirmación
- */
 function mostrarConfirmacion(titulo, mensaje, confirmText) {
     confirmText = confirmText || 'Sí, confirmar';
     return mostrarSweetAlert({
@@ -125,9 +106,6 @@ function mostrarConfirmacion(titulo, mensaje, confirmText) {
     });
 }
 
-/**
- * Muestra un loading con SweetAlert2
- */
 function mostrarLoading(mensaje) {
     mensaje = mensaje || 'Procesando...';
     return mostrarSweetAlert({
@@ -139,9 +117,6 @@ function mostrarLoading(mensaje) {
     });
 }
 
-/**
- * Cierra la alerta de loading
- */
 function cerrarLoading() {
     Swal.close();
 }
@@ -152,7 +127,6 @@ function cerrarLoading() {
 function cacheElements() {
     elements = {
         backBtn: document.getElementById('backBtn'),
-
         categoryForm: document.getElementById('updateCategoryForm'),
         categorySelector: document.getElementById('categorySelector'),
         categoryId: document.getElementById('categoryId'),
@@ -162,23 +136,16 @@ function cacheElements() {
         categoryOrder: document.getElementById('categoryOrder'),
         categoryStatus: document.getElementById('categoryStatus'),
         categoryCreatedAt: document.getElementById('categoryCreatedAt'),
-
         formFields: document.getElementById('formFields'),
         actionButtons: document.getElementById('actionButtons'),
-
         saveBtn: document.getElementById('saveBtn'),
         cancelBtn: document.getElementById('cancelBtn'),
-
         previewCard: document.getElementById('previewCard'),
         subcategoriesPreview: document.getElementById('subcategoriesPreview'),
-
-        // Subcategorías
         subcategoriesSection: document.getElementById('subcategoriesSection'),
         subcategoriesList: document.getElementById('subcategoriesList'),
         subcategoryCount: document.getElementById('subcategoryCount'),
         addSubcategoryBtn: document.getElementById('addSubcategoryBtn'),
-
-        // 🖼️ Elementos de imagen
         updateImageDisplay: document.getElementById('updateImageDisplay'),
         updateImagePlaceholder: document.getElementById('updateImagePlaceholder'),
         imageUploadArea: document.getElementById('imageUploadArea'),
@@ -187,7 +154,6 @@ function cacheElements() {
         uploadPlaceholder: document.getElementById('uploadPlaceholder'),
         imagePreviewWrapper: document.getElementById('imagePreviewWrapper'),
         imagePreview: document.getElementById('imagePreview'),
-
         toast: document.getElementById('updateToast')
     };
 }
@@ -232,13 +198,11 @@ function formatDate(dateString) {
 function setupImageUpload() {
     if (!elements.imageUploadArea || !elements.imageInput) return;
 
-    // Click en el área para abrir el selector
     elements.imageUploadArea.addEventListener('click', function (e) {
         if (e.target.closest('.outlet-remove-image-btn')) return;
         elements.imageInput.click();
     });
 
-    // Manejar selección de archivo
     elements.imageInput.addEventListener('change', function (e) {
         const file = this.files[0];
         if (file) {
@@ -246,7 +210,6 @@ function setupImageUpload() {
         }
     });
 
-    // Drag and drop
     elements.imageUploadArea.addEventListener('dragover', function (e) {
         e.preventDefault();
         this.classList.add('drag-over');
@@ -268,7 +231,6 @@ function setupImageUpload() {
         }
     });
 
-    // Botón para eliminar imagen
     if (elements.removeImageBtn) {
         elements.removeImageBtn.addEventListener('click', function (e) {
             e.stopPropagation();
@@ -278,7 +240,6 @@ function setupImageUpload() {
 }
 
 function handleImageFile(file) {
-    // Validar tipo
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'];
     if (!allowedTypes.includes(file.type) && !file.type.startsWith('image/')) {
         mostrarError('Formato no permitido', 'Usa JPG, PNG, WEBP, GIF o SVG.');
@@ -286,7 +247,6 @@ function handleImageFile(file) {
         return;
     }
 
-    // Límite de 10MB para Storage
     const maxSize = 10 * 1024 * 1024;
     if (file.size > maxSize) {
         mostrarError('Imagen demasiado grande', 'La imagen no puede superar los 10MB.');
@@ -426,9 +386,6 @@ function getCategoryIdFromUrl() {
 // FUNCIONES DE SUBCATEGORÍAS
 // ========================================
 
-/**
- * Renderiza la lista de subcategorías editables
- */
 function renderSubcategories() {
     if (!elements.subcategoriesList) return;
 
@@ -479,23 +436,15 @@ function renderSubcategories() {
         elements.subcategoryCount.textContent = `(${subcategories.length})`;
     }
 
-    // Mostrar sección de subcategorías
     if (elements.subcategoriesSection) {
         elements.subcategoriesSection.style.display = 'block';
     }
 
-    // Actualizar vista previa en el panel derecho
     updatePreviewSubcategories();
-
-    // Agregar event listeners a los elementos de subcategoría
     attachSubcategoryEvents();
 }
 
-/**
- * Agrega event listeners para los controles de subcategorías
- */
 function attachSubcategoryEvents() {
-    // Inputs de nombre y descripción - actualizar en tiempo real
     document.querySelectorAll('.sub-name-input').forEach(function (input) {
         input.addEventListener('input', function () {
             var index = parseInt(this.dataset.index);
@@ -514,7 +463,6 @@ function attachSubcategoryEvents() {
         });
     });
 
-    // Botones de eliminar
     document.querySelectorAll('.btn-remove-sub').forEach(function (btn) {
         btn.addEventListener('click', function () {
             var index = parseInt(this.dataset.index);
@@ -524,7 +472,6 @@ function attachSubcategoryEvents() {
         });
     });
 
-    // Botones de mover arriba
     document.querySelectorAll('.btn-move-up').forEach(function (btn) {
         btn.addEventListener('click', function () {
             var index = parseInt(this.dataset.index);
@@ -534,7 +481,6 @@ function attachSubcategoryEvents() {
         });
     });
 
-    // Botones de mover abajo
     document.querySelectorAll('.btn-move-down').forEach(function (btn) {
         btn.addEventListener('click', function () {
             var index = parseInt(this.dataset.index);
@@ -545,9 +491,6 @@ function attachSubcategoryEvents() {
     });
 }
 
-/**
- * Agrega una nueva subcategoría vacía
- */
 function addSubcategory() {
     subcategories.push({
         name: '',
@@ -556,16 +499,12 @@ function addSubcategory() {
     });
     renderSubcategories();
 
-    // Enfocar el nuevo input
     var inputs = document.querySelectorAll('.sub-name-input');
     if (inputs.length > 0) {
         inputs[inputs.length - 1].focus();
     }
 }
 
-/**
- * Elimina una subcategoría
- */
 async function removeSubcategory(index) {
     var subName = subcategories[index]?.name || 'Subcategoría';
 
@@ -582,9 +521,6 @@ async function removeSubcategory(index) {
     }
 }
 
-/**
- * Mueve una subcategoría hacia arriba
- */
 function moveSubcategoryUp(index) {
     if (index <= 0) return;
     var temp = subcategories[index];
@@ -593,9 +529,6 @@ function moveSubcategoryUp(index) {
     renderSubcategories();
 }
 
-/**
- * Mueve una subcategoría hacia abajo
- */
 function moveSubcategoryDown(index) {
     if (index >= subcategories.length - 1) return;
     var temp = subcategories[index];
@@ -604,9 +537,6 @@ function moveSubcategoryDown(index) {
     renderSubcategories();
 }
 
-/**
- * Actualiza la vista previa de subcategorías en el panel derecho
- */
 function updatePreviewSubcategories() {
     if (!elements.subcategoriesPreview) return;
 
@@ -659,14 +589,12 @@ function onCategorySelect() {
     elements.categoryStatus.value = category.status || 'active';
     elements.categoryCreatedAt.value = formatDate(category.createdAt);
 
-    // 🖼️ Cargar imagen desde Storage si existe
     if (category.imageUrl && category.imageUrl.trim() !== '') {
         setCategoryImage(category.imageUrl, category.imageStoragePath);
     } else {
         clearImagePreview();
     }
 
-    // Cargar subcategorías
     if (category.subcategories && Array.isArray(category.subcategories)) {
         subcategories = category.subcategories.map(function (sub) {
             return {
@@ -751,7 +679,6 @@ async function updateCategory(event) {
         return;
     }
 
-    // Validar subcategorías
     var invalidSubs = subcategories.filter(function (sub) {
         return sub.name && sub.name.trim() !== '' && sub.name.trim().length < 2;
     });
@@ -762,7 +689,6 @@ async function updateCategory(event) {
         return;
     }
 
-    // Filtrar subcategorías vacías
     var validSubcategories = subcategories.filter(function (sub) {
         return sub.name && sub.name.trim() !== '';
     }).map(function (sub) {
@@ -788,7 +714,6 @@ async function updateCategory(event) {
     var hasNewImage = !!selectedImageFile;
     var hasCurrentImage = !!currentImageUrl;
 
-    // Confirmación antes de actualizar
     var confirmResult = await mostrarConfirmacion(
         '¿Actualizar categoría?',
         'Estás a punto de actualizar la categoría "' + name + '" con ' + validSubcategories.length + ' subcategoría(s).' +
@@ -810,7 +735,6 @@ async function updateCategory(event) {
     mostrarLoading('Actualizando categoría y subcategorías...');
 
     try {
-        // 🔥 Si hay nueva imagen, subir a Storage PRIMERO
         if (hasNewImage && selectedImageFile) {
             try {
                 const timestamp = Date.now();
@@ -859,7 +783,6 @@ async function updateCategory(event) {
             (updatedCategory.imageUrl ? ' 🖼️ Imagen incluida.' : '')
         );
 
-        // Limpiar imagen seleccionada
         if (hasNewImage) {
             removeImage();
         }
@@ -922,15 +845,10 @@ function goBackToList() {
 // ========================================
 function initEventListeners() {
     elements.backBtn?.addEventListener('click', goBackToList);
-
     elements.categorySelector?.addEventListener('change', onCategorySelect);
-
     elements.cancelBtn?.addEventListener('click', resetForm);
-
     elements.categoryForm?.addEventListener('submit', updateCategory);
-
     elements.addSubcategoryBtn?.addEventListener('click', addSubcategory);
-
     setupSlugGeneration();
     setupImageUpload();
 }
@@ -979,7 +897,6 @@ export async function updateCategoryController() {
 
     await loadCategories();
 
-    // Si hay un ID en la URL, seleccionar automáticamente esa categoría
     var categoryIdFromUrl = getCategoryIdFromUrl();
     if (categoryIdFromUrl && elements.categorySelector) {
         var categoryExists = categories.some(function (c) { return c.id === categoryIdFromUrl; });

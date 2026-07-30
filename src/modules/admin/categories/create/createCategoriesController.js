@@ -15,7 +15,6 @@ var isSubmitting = false;
 var subcategories = [];
 var categoriesList = [];
 var currentSelectedCategoryId = null;
-// 🖼️ Variables para imagen (Storage)
 var selectedImageFile = null;
 var currentImageUrl = '';
 var currentImageStoragePath = '';
@@ -124,28 +123,22 @@ function cerrarLoading() {
 function cacheElements() {
     elements = {
         backBtn: document.getElementById('backBtn'),
-
         existingCategorySelect: document.getElementById('existingCategorySelect'),
-
         categoryId: document.getElementById('categoryId'),
         categoryName: document.getElementById('categoryName'),
         categoryDescription: document.getElementById('categoryDescription'),
         saveBtn: document.getElementById('saveCategoryBtn'),
         resetBtn: document.getElementById('resetBtn'),
-
-        // 🖼️ Elementos de imagen
         imageUploadArea: document.getElementById('imageUploadArea'),
         imageInput: document.getElementById('categoryImageInput'),
         uploadPlaceholder: document.getElementById('uploadPlaceholder'),
         imagePreviewWrapper: document.getElementById('imagePreviewWrapper'),
         imagePreview: document.getElementById('imagePreview'),
         removeImageBtn: document.getElementById('removeImageBtn'),
-
         subcategoryName: document.getElementById('subcategoryName'),
         subcategoryDescription: document.getElementById('subcategoryDescription'),
         addSubBtn: document.getElementById('addSubcategoryBtn'),
         subcategoriesList: document.getElementById('subcategoriesList'),
-
         toast: document.getElementById('categoriesToast')
     };
 }
@@ -157,14 +150,11 @@ function cacheElements() {
 function setupImageUpload() {
     if (!elements.imageUploadArea || !elements.imageInput) return;
 
-    // Click en el área para abrir el selector
     elements.imageUploadArea.addEventListener('click', function (e) {
-        // Evitar que el click en el botón de eliminar dispare el selector
         if (e.target.closest('.outlet-remove-image-btn')) return;
         elements.imageInput.click();
     });
 
-    // Manejar selección de archivo
     elements.imageInput.addEventListener('change', function (e) {
         const file = this.files[0];
         if (file) {
@@ -172,7 +162,6 @@ function setupImageUpload() {
         }
     });
 
-    // Drag and drop
     elements.imageUploadArea.addEventListener('dragover', function (e) {
         e.preventDefault();
         this.classList.add('drag-over');
@@ -194,7 +183,6 @@ function setupImageUpload() {
         }
     });
 
-    // Botón para eliminar imagen
     if (elements.removeImageBtn) {
         elements.removeImageBtn.addEventListener('click', function (e) {
             e.stopPropagation();
@@ -204,7 +192,6 @@ function setupImageUpload() {
 }
 
 function handleImageFile(file) {
-    // Validar tipo
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'];
     if (!allowedTypes.includes(file.type) && !file.type.startsWith('image/')) {
         mostrarError('Formato no permitido', 'Usa JPG, PNG, WEBP, GIF o SVG.');
@@ -212,7 +199,6 @@ function handleImageFile(file) {
         return;
     }
 
-    // Límite de 10MB para Storage
     const maxSize = 10 * 1024 * 1024;
     if (file.size > maxSize) {
         mostrarError('Imagen demasiado grande', 'La imagen no puede superar los 10MB.');
@@ -660,7 +646,6 @@ async function loadCategoryData(categoryId) {
         if (elements.categoryName) elements.categoryName.value = category.name || '';
         if (elements.categoryDescription) elements.categoryDescription.value = category.description || '';
 
-        // 🖼️ Cargar imagen desde Storage si existe
         if (category.imageUrl) {
             setCategoryImage(category.imageUrl, category.imageStoragePath);
         } else {
@@ -729,7 +714,6 @@ async function saveCategory() {
     var hasNewImage = !!selectedImageFile;
     var hasCurrentImage = !!currentImageUrl;
 
-    // 🔥 Preparar datos de la categoría (sin imagen aún)
     var categoryData = {
         id: categoryId,
         name: name,
@@ -775,17 +759,14 @@ async function saveCategory() {
         var savedCategory;
         var imageInfo = null;
 
-        // 🔥 Si hay nueva imagen, subir a Storage PRIMERO usando StorageService directamente
         if (hasNewImage && selectedImageFile) {
             try {
-                // Generar ruta en Storage
                 const timestamp = Date.now();
                 const cleanId = categoryId.replace(/[^a-zA-Z0-9-_]/g, '');
                 const path = `categorias/${cleanId}/image_${timestamp}.jpg`;
 
                 console.log('📸 Subiendo imagen a Storage:', path);
 
-                // Subir imagen usando StorageService
                 const uploadResult = await StorageService.uploadImage(selectedImageFile, path, {
                     maxSizeMB: 5,
                     quality: 0.85
@@ -803,7 +784,6 @@ async function saveCategory() {
 
             } catch (uploadError) {
                 console.error('❌ Error subiendo imagen a Storage:', uploadError);
-                // Si falla la subida de imagen, preguntar si continuar sin imagen
                 const continueResult = await mostrarAdvertencia(
                     'Error al subir imagen',
                     'No se pudo subir la imagen a Storage: ' + uploadError.message + '. ¿Deseas continuar sin imagen?',
@@ -822,7 +802,6 @@ async function saveCategory() {
             }
         }
 
-        // Guardar o actualizar categoría
         if (isExisting && currentSelectedCategoryId) {
             var updateData = {
                 name: categoryData.name,
@@ -831,7 +810,6 @@ async function saveCategory() {
                 subcategories: categoryData.subcategories
             };
 
-            // Si se subió nueva imagen, agregar URLs
             if (imageInfo) {
                 updateData.imageUrl = imageInfo.url;
                 updateData.imageStoragePath = imageInfo.path;
@@ -842,13 +820,11 @@ async function saveCategory() {
 
             savedCategory = await CategoryService.update(currentSelectedCategoryId, updateData);
         } else {
-            // Crear nueva categoría con la imagen (si existe)
             savedCategory = await CategoryService.create(categoryData, null, imageInfo);
         }
 
         console.log('✅ Categoría guardada:', savedCategory);
 
-        // Limpiar imagen seleccionada
         if (hasNewImage) {
             removeImage();
         }

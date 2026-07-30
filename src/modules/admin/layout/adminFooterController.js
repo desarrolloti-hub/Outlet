@@ -137,7 +137,6 @@ function setupWindowResize() {
     };
 
     window.addEventListener('resize', resizeHandler);
-    // Guardar referencia para limpieza
     window.__footerResizeHandler = resizeHandler;
 }
 

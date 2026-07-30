@@ -561,15 +561,25 @@ svg {
 }
 
 .outlet-stat-card {
+    background: var(--outlet-bg-card);
+    border-radius: var(--outlet-radius-xl);
+    padding: var(--outlet-spacing-lg);
+    box-shadow: var(--outlet-shadow-sm);
+    border: 2px solid var(--outlet-gold) !important;
+    transition: all var(--outlet-transition-base);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: var(--outlet-spacing-md);
     justify-content: center;
     text-align: center;
-    padding: 30px;
 }
 
 .outlet-stat-card:hover {
     transform: translateY(-4px);
-    border-color: var(--outlet-border-medium);
-    box-shadow: var(--outlet-shadow-lg);
+    box-shadow: var(--outlet-shadow-gold);
+    border-color: var(--outlet-gold-light) !important;
 }
 
 .stat-card-glow {
@@ -597,6 +607,7 @@ svg {
     align-items: center;
     justify-content: center;
     transition: all var(--outlet-transition-base);
+    flex-shrink: 0;
 }
 
 .outlet-stat-icon i {
@@ -628,29 +639,32 @@ svg {
     letter-spacing: 2px;
 }
 
-.stat-trend {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 11px;
-    margin-top: 8px;
-    padding: 2px 8px;
-    border-radius: var(--outlet-radius-full);
+/* ====== VENTAS SIN ICONO ====== */
+.sales-only {
+    text-align: center;
+    width: 100%;
 }
 
-.stat-trend.positive {
-    background: rgba(46, 125, 50, 0.15);
-    color: #4caf50;
+.sales-only h3 {
+    font-size: 2.5rem;
+    color: var(--outlet-gold);
 }
 
-.stat-trend.negative {
-    background: rgba(198, 40, 40, 0.15);
-    color: #ef5350;
+.sales-only p {
+    letter-spacing: 1px;
+    font-weight: 500;
 }
 
-.stat-trend.neutral {
-    background: rgba(255, 152, 0, 0.15);
-    color: #ff9800;
+/* ====== TÍTULO DE LA TABLA CON ESTRELLA DORADA ====== */
+.table-title {
+    font-family: 'Playfair Display', serif;
+    font-weight: 600;
+    color: var(--outlet-text-primary);
+}
+
+.table-title i {
+    color: var(--outlet-gold);
+    margin-right: 8px;
 }
 
 /* ====== TABLA DE PRODUCTOS PREMIUM ====== */
@@ -769,56 +783,6 @@ svg {
     border-bottom: 1px solid var(--outlet-border-soft);
 }
 
-/* ====== TARJETAS DE ESTADÍSTICAS CON BORDE DORADO ====== */
-.outlet-stat-card {
-    background: var(--outlet-bg-card);
-    border-radius: var(--outlet-radius-xl);
-    padding: var(--outlet-spacing-lg);
-    box-shadow: var(--outlet-shadow-sm);
-    border: 2px solid var(--outlet-gold) !important;
-    transition: all var(--outlet-transition-base);
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    gap: var(--outlet-spacing-md);
-}
-
-.outlet-stat-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--outlet-shadow-gold);
-    border-color: var(--outlet-gold-light) !important;
-}
-
-/* ====== ICONOS DORADOS EN LAS TARJETAS DE ESTADÍSTICAS ====== */
-.outlet-stat-icon {
-    width: 60px;
-    height: 60px;
-    background: transparent;
-    border: 2px solid var(--outlet-gold);
-    border-radius: var(--outlet-radius-lg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all var(--outlet-transition-base);
-    flex-shrink: 0;
-}
-
-.outlet-stat-icon i {
-    font-size: 28px;
-    color: var(--outlet-gold);
-}
-
-.outlet-stat-card:hover .outlet-stat-icon {
-    background: var(--outlet-gold);
-    box-shadow: var(--outlet-shadow-gold);
-}
-
-.outlet-stat-card:hover .outlet-stat-icon i {
-    color: var(--outlet-black);
-}
-
-/* ====== BORDE DORADO EN LAS IMÁGENES DE PRODUCTOS ====== */
 .product-image {
     width: 50px;
     height: 50px;
@@ -833,49 +797,6 @@ svg {
     border-color: var(--outlet-gold-light);
     transform: scale(1.05);
     box-shadow: var(--outlet-shadow-gold);
-}
-
-/* ====== VENTAS SIN ICONO ====== */
-.sales-only {
-    text-align: center;
-    width: 100%;
-}
-
-.sales-only h3 {
-    font-size: 2.5rem;
-    color: var(--outlet-gold);
-}
-
-.sales-only p {
-    letter-spacing: 1px;
-    font-weight: 500;
-}
-
-/* ====== TÍTULO DE LA TABLA CON ESTRELLA DORADA ====== */
-.table-title {
-    font-family: 'Playfair Display', serif;
-    font-weight: 600;
-    color: var(--outlet-text-primary);
-}
-
-.table-title i {
-    color: var(--outlet-gold);
-    margin-right: 8px;
-}
-
-/* ====== ICONOS DORADOS EN EL MODAL ====== */
-.admin-form-group label i {
-    color: var(--outlet-gold);
-    margin-right: 6px;
-}
-
-#modalTitle i {
-    color: var(--outlet-gold);
-    margin-right: 10px;
-}
-
-.admin-btn-save i {
-    margin-right: 6px;
 }
 
 /* ====== BOTONES DE ACCIÓN - ESTILO READ CATEGORIES ====== */
@@ -945,6 +866,21 @@ svg {
     background: rgba(198, 40, 40, 0.1);
     color: #ef5350;
     border: 1px solid rgba(239, 83, 80, 0.3);
+}
+
+/* ====== ICONOS DORADOS EN EL MODAL ====== */
+.admin-form-group label i {
+    color: var(--outlet-gold);
+    margin-right: 6px;
+}
+
+#modalTitle i {
+    color: var(--outlet-gold);
+    margin-right: 10px;
+}
+
+.admin-btn-save i {
+    margin-right: 6px;
 }
 
 /* ====== MODAL PREMIUM ====== */
@@ -1471,7 +1407,6 @@ body.dark-mode .admin-add-btn {
         justify-content: center;
     }
 
-    /* Tabla a cards - los textos ya están centrados por defecto */
     .admin-table thead {
         display: none;
     }

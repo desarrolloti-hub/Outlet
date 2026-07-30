@@ -40,12 +40,10 @@ body {
     padding: 40px 48px;
     max-width: 1400px;
     margin: 0 auto;
-    width: 100%;
     margin-left: 280px;
     transition: margin-left 0.3s ease;
-    width: auto;
     max-width: calc(100% - 280px);
-    padding: 32px 32px 32px 32px;
+    padding: 32px;
     box-sizing: border-box;
     position: relative;
     overflow-y: visible !important;
@@ -143,7 +141,6 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-admin-container {
    BOTONES - ESTILO READ CATEGORIES
    ======================================== */
 
-/* Botón Volver - estilo consistente con readCategories */
 .outlet-btn-outline {
     background: transparent;
     border: 1px solid #e0e0e0;
@@ -171,7 +168,6 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-admin-container {
     color: var(--outlet-text-primary, #1a1a1a);
 }
 
-/* Botón Restablecer - estilo consistente */
 .outlet-btn-secondary {
     background: transparent;
     border: 1px solid #e0e0e0;
@@ -199,7 +195,6 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-admin-container {
     color: var(--outlet-text-primary, #1a1a1a);
 }
 
-/* Botón Actualizar Producto - estilo principal */
 .outlet-btn-primary {
     background: var(--outlet-gold-gradient, linear-gradient(135deg, #ddab3b 0%, #f3bf4d 100%));
     color: var(--outlet-black, #1a1a1a);
@@ -283,7 +278,6 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-admin-container {
     overflow-y: visible !important;
 }
 
-/* Secciones del formulario - estilo consistente */
 .outlet-form-section {
     background: var(--outlet-bg-card, white);
     border-radius: 16px;
@@ -318,7 +312,6 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-admin-container {
     margin: 0;
 }
 
-/* Grid del formulario */
 .outlet-form-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -329,7 +322,6 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-admin-container {
     grid-column: span 2;
 }
 
-/* Input groups */
 .outlet-input-group {
     display: flex;
     flex-direction: column;
@@ -388,15 +380,6 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-admin-container {
 }
 
 /* ========================================
-   EDIT PRODUCT PAGE - OUTLET ADMIN
-   Basado en variables globales --outlet-*
-   UNIFICADO CON ESTILO DE READ CATEGORIES
-   PRECIOS EN PESOS MEXICANOS (MXN)
-   ======================================== */
-
-/* ... (todo el CSS anterior se mantiene igual) ... */
-
-/* ========================================
    PRECIO FINAL - MXN
    ======================================== */
 
@@ -413,8 +396,6 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-admin-container {
 body.dark-mode .outlet-preview-price .outlet-price-final {
     background: rgba(221, 171, 59, 0.15);
 }
-
-/* ... (resto del CSS igual) ... */
 
 /* ========================================
    IMÁGENES
@@ -782,10 +763,6 @@ body.dark-mode .outlet-gallery-item {
     border-color: var(--outlet-border-color, #2a4a6e);
 }
 
-body.dark-mode .outlet-preview-price .outlet-price-final {
-    background: rgba(221, 171, 59, 0.15);
-}
-
 body.dark-mode .outlet-btn-outline {
     border-color: var(--outlet-border-color, #2a4a6e);
     color: var(--outlet-text-secondary, #8899aa);
@@ -969,7 +946,6 @@ body.dark-mode .outlet-tag {
    MENÚ HAMBURGUESA - ESTILOS GLOBALES
    ======================================== */
 
-/* Botón hamburguesa */
 .outlet-mobile-menu-btn {
     display: none;
     position: fixed;
@@ -993,7 +969,6 @@ body.dark-mode .outlet-tag {
     background: var(--outlet-gold-light, #e8c46e);
 }
 
-/* Ícono hamburguesa */
 .outlet-menu-icon {
     display: flex;
     flex-direction: column;
@@ -1009,7 +984,6 @@ body.dark-mode .outlet-tag {
     border-radius: 2px;
 }
 
-/* Animación para convertir hamburguesa en X */
 .outlet-menu-close .outlet-menu-line:first-child {
     transform: rotate(45deg) translate(5px, 5px);
 }
@@ -1023,7 +997,6 @@ body.dark-mode .outlet-tag {
     transform: scaleX(0);
 }
 
-/* Texto del botón */
 .outlet-menu-text {
     font-size: 12px;
     font-weight: 600;
@@ -1032,7 +1005,6 @@ body.dark-mode .outlet-tag {
     color: var(--outlet-primary, #1a1a1a);
 }
 
-/* Overlay (fondo oscuro) */
 .outlet-mobile-overlay {
     position: fixed;
     top: 0;
@@ -1052,7 +1024,6 @@ body.dark-mode .outlet-tag {
     visibility: visible;
 }
 
-/* Navbar en modo móvil */
 @media (max-width: 768px) {
     .outlet-mobile-menu-btn {
         display: flex;
@@ -1095,7 +1066,6 @@ body.dark-mode .outlet-tag {
         overflow: hidden;
     }
 
-    /* Cuando el menú está abierto, desenfocar el contenido ligeramente */
     body:has(.OUTLET-admin-nav.outlet-mobile-open) .outlet-admin-container {
         filter: blur(2px);
         pointer-events: none;
@@ -1112,7 +1082,6 @@ body.dark-mode .outlet-tag {
     }
 }
 
-/* Ajuste para escritorio (ocultar botón) */
 @media (min-width: 769px) {
     .outlet-mobile-menu-btn {
         display: none !important;

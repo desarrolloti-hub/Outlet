@@ -429,6 +429,10 @@
     transform: translateX(4px);
 }
 
+.admin-nav-footer .outlet-btn {
+    width: 100%;
+}
+
 /* ====== DARK MODE ====== */
 body.dark-mode .outlet-btn-danger {
     background: var(--outlet-red, #dc2626);
@@ -438,29 +442,6 @@ body.dark-mode .outlet-btn-danger {
 body.dark-mode .outlet-btn-danger:hover {
     background: var(--outlet-red-hover, #b91c1c);
 }
-
-/* ====== RESPONSIVE ====== */
-@media (max-width: 768px) {
-    .outlet-btn {
-        padding: 10px 20px;
-        font-size: 10px;
-    }
-
-    .outlet-btn-danger .material-symbols-outlined {
-        font-size: 18px;
-    }
-}
-
-/* Asegurar que el botón ocupe todo el ancho en el navbar */
-.admin-nav-footer .outlet-btn {
-    width: 100%;
-}
-
-/* ========================================
-   BOTÓN CERRAR SESIÓN - CUADRADO Y ROJO (ELIMINADO - REEMPLAZADO POR outlet-btn)
-   ======================================== */
-
-/* El estilo anterior admin-logout-btn ya no se usa */
 
 /* ========================================
    BOTÓN HAMBURGUESA - ESTILO DORADO
@@ -514,6 +495,15 @@ body.dark-mode .outlet-btn-danger:hover {
    ======================================== */
 
 @media (max-width: 768px) {
+    .outlet-btn {
+        padding: 10px 20px;
+        font-size: 10px;
+    }
+
+    .outlet-btn-danger .material-symbols-outlined {
+        font-size: 18px;
+    }
+
     .admin-mobile-toggle {
         display: flex;
         align-items: center;

@@ -55,7 +55,6 @@ body.dark-mode .outlet-admin-badge {
     display: flex;
     align-items: center;
     justify-content: center;
-    /* Cambiado a center */
     flex-wrap: wrap;
     gap: 16px;
 }
@@ -64,7 +63,6 @@ body.dark-mode .outlet-admin-badge {
     display: flex;
     align-items: center;
     justify-content: center;
-    /* Cambiado a center */
     gap: 6px;
     flex-wrap: wrap;
     font-size: 11px;

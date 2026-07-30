@@ -24,9 +24,6 @@ var elements = {};
 // UI Helpers - CON SWEETALERT2
 // ========================================
 
-/**
- * Muestra una SweetAlert2 personalizada
- */
 function mostrarSweetAlert(options) {
     var defaultOptions = {
         buttonsStyling: false,
@@ -40,9 +37,6 @@ function mostrarSweetAlert(options) {
     return Swal.fire(Object.assign({}, defaultOptions, options));
 }
 
-/**
- * Muestra alerta de éxito
- */
 function mostrarExito(titulo, mensaje) {
     return mostrarSweetAlert({
         icon: 'success',
@@ -52,9 +46,6 @@ function mostrarExito(titulo, mensaje) {
     });
 }
 
-/**
- * Muestra alerta de error
- */
 function mostrarError(titulo, mensaje) {
     return mostrarSweetAlert({
         icon: 'error',
@@ -64,9 +55,6 @@ function mostrarError(titulo, mensaje) {
     });
 }
 
-/**
- * Muestra alerta de confirmación
- */
 function mostrarConfirmacion(titulo, mensaje, confirmText) {
     confirmText = confirmText || 'Sí, confirmar';
     return mostrarSweetAlert({
@@ -161,7 +149,6 @@ function renderTable() {
         var safeStatus = cat.status || 'active';
         var subcategoryCount = Array.isArray(cat.subcategories) ? cat.subcategories.length : 0;
 
-        // 🖼️ Imagen desde Firebase Storage (imageUrl)
         var imageHtml = '';
         if (cat.imageUrl && cat.imageUrl.trim() !== '') {
             imageHtml = '<img src="' + escapeHtml(cat.imageUrl) + '" alt="' + escapeHtml(safeName) + '" style="width:40px;height:40px;object-fit:cover;border-radius:8px;border:2px solid #ddab3b;box-shadow:0 0 12px rgba(221,171,59,0.2);" loading="lazy">';

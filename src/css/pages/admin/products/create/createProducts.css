@@ -15,21 +15,18 @@
     box-sizing: border-box;
 }
 
-/* Responsive para tablets */
 @media (max-width: 992px) {
     .outlet-products-container {
         padding: var(--outlet-spacing-lg) var(--outlet-spacing-md);
     }
 }
 
-/* Responsive para móviles */
 @media (max-width: 768px) {
     .outlet-products-container {
         padding: var(--outlet-spacing-md);
     }
 }
 
-/* Responsive para móviles pequeños */
 @media (max-width: 480px) {
     .outlet-products-container {
         padding: var(--outlet-spacing-sm);
@@ -204,8 +201,15 @@
 }
 
 @keyframes outletLineFadeIn {
-    from { width: 0; opacity: 0; }
-    to { width: 28px; opacity: 1; }
+    from {
+        width: 0;
+        opacity: 0;
+    }
+
+    to {
+        width: 28px;
+        opacity: 1;
+    }
 }
 
 .outlet-step-label {
@@ -293,13 +297,27 @@
 }
 
 @keyframes outletFadeInUp {
-    from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 @keyframes outletFadeOutDown {
-    from { opacity: 1; transform: translateY(0); }
-    to { opacity: 0; transform: translateY(12px); }
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateY(12px);
+    }
 }
 
 /* Form Sections - responsive */
@@ -464,6 +482,7 @@
 }
 
 @media (max-width: 480px) {
+
     .outlet-input-group input,
     .outlet-input-group select,
     .outlet-input-group textarea {
@@ -514,9 +533,9 @@
     transition: width 0.3s var(--outlet-transition-elegant);
 }
 
-.outlet-input-group input:focus + .outlet-input-line,
-.outlet-input-group select:focus + .outlet-input-line,
-.outlet-input-group textarea:focus + .outlet-input-line {
+.outlet-input-group input:focus+.outlet-input-line,
+.outlet-input-group select:focus+.outlet-input-line,
+.outlet-input-group textarea:focus+.outlet-input-line {
     width: 100%;
 }
 
@@ -941,11 +960,11 @@
     border-radius: 10px;
 }
 
-.outlet-toggle-switch input:checked + label {
+.outlet-toggle-switch input:checked+label {
     background: var(--outlet-gold);
 }
 
-.outlet-toggle-switch input:checked + label::after {
+.outlet-toggle-switch input:checked+label::after {
     left: 22px;
 }
 
@@ -1021,6 +1040,7 @@
         font-size: 10px;
         gap: 2px;
     }
+
     .outlet-btn-nav .material-symbols-outlined {
         font-size: 14px;
     }
@@ -1053,11 +1073,7 @@
     background: var(--outlet-gold-light);
 }
 
-/* ========================================
-   BOTONES DE ACCIÓN - VERSIÓN COMPACTA
-   ======================================== */
-
-/* Contenedor de botones de acción */
+/* BOTONES DE ACCIÓN - VERSIÓN COMPACTA */
 .outlet-action-buttons {
     display: flex;
     justify-content: flex-end;
@@ -1072,10 +1088,10 @@
         margin-top: 16px;
         padding-top: 12px;
         gap: 8px;
+        justify-content: center;
     }
 }
 
-/* Botón Guardar - Compacto */
 .outlet-btn-primary {
     display: inline-flex;
     align-items: center;
@@ -1116,29 +1132,11 @@
     box-shadow: var(--outlet-shadow-gold);
 }
 
-/* Icono dentro del botón */
 .outlet-btn-primary .material-symbols-outlined {
     font-size: 14px;
 }
 
 @media (max-width: 480px) {
-    .outlet-btn-primary .material-symbols-outlined {
-        font-size: 12px;
-    }
-}
-
-/* Responsive móvil - botones de acción */
-@media (max-width: 768px) {
-    .outlet-action-buttons {
-        justify-content: center;
-        gap: 8px;
-    }
-    
-    .outlet-btn-primary {
-        padding: 5px 12px;
-        font-size: 9px;
-    }
-    
     .outlet-btn-primary .material-symbols-outlined {
         font-size: 12px;
     }
@@ -1185,8 +1183,15 @@
 }
 
 @keyframes outletToastSlide {
-    from { opacity: 0; transform: translateX(30px); }
-    to { opacity: 1; transform: translateX(0); }
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
 /* Ajustes adicionales para muy pequeñas pantallas */
@@ -1194,31 +1199,31 @@
     .outlet-products-header h1 {
         font-size: 1.1rem;
     }
-    
+
     .outlet-btn-outline span:not(.material-symbols-outlined) {
         display: none;
     }
-    
+
     .outlet-btn-outline .material-symbols-outlined {
         margin: 0;
     }
-    
+
     .outlet-step-label {
         display: none;
     }
-    
+
     .outlet-wizard-steps {
         justify-content: space-between;
         width: 100%;
     }
-    
+
     .outlet-step-line {
         flex: 1;
     }
 }
 
 /* ========================================
-   INTEGRACIÓN CON NAVBAR LATERAL - VERSIÓN OPTIMIZADA
+   INTEGRACIÓN CON NAVBAR LATERAL
    ======================================== */
 
 body {
@@ -1229,7 +1234,7 @@ body {
 
 .outlet-products-container {
     margin-left: 280px;
-    transition: margin-left 0.3s ease;
+    transition: margin-left 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
     width: auto;
     max-width: calc(100% - 280px);
     padding: var(--outlet-spacing-xl) var(--outlet-spacing-xl);
@@ -1240,17 +1245,13 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-products-container {
     max-width: calc(100% - 80px);
 }
 
-/* ========================================
-   RESPONSIVE OPTIMIZADO
-   ======================================== */
-
 @media (max-width: 1024px) {
     .outlet-products-container {
         margin-left: 240px;
         max-width: calc(100% - 240px);
         padding: var(--outlet-spacing-lg);
     }
-    
+
     body:has(.OUTLET-admin-nav.collapsed) .outlet-products-container {
         margin-left: 70px;
         max-width: calc(100% - 70px);
@@ -1271,10 +1272,7 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-products-container {
     }
 }
 
-/* ========================================
-   REDUCIR ESPACIOS INTERNOS
-   ======================================== */
-
+/* Reducir espacios internos */
 .outlet-products-header {
     margin-bottom: var(--outlet-spacing-lg);
     padding-bottom: var(--outlet-spacing-md);
@@ -1290,7 +1288,6 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-products-container {
     }
 }
 
-/* Wizard más compacto */
 .outlet-wizard {
     margin-bottom: var(--outlet-spacing-lg);
 }
@@ -1299,7 +1296,6 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-products-container {
     gap: 0.75rem;
 }
 
-/* Formulario más compacto */
 .outlet-form-section {
     padding: var(--outlet-spacing-lg);
     margin-bottom: var(--outlet-spacing-md);
@@ -1319,12 +1315,10 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-products-container {
     gap: var(--outlet-spacing-md);
 }
 
-/* Carrusel más compacto */
 .outlet-carousel {
     min-height: auto;
 }
 
-/* Botones de navegación más compactos */
 .outlet-nav-buttons {
     margin: var(--outlet-spacing-lg) 0 var(--outlet-spacing-md);
     padding-top: var(--outlet-spacing-sm);
@@ -1341,7 +1335,7 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-products-container {
 }
 
 /* ========================================
-   BOTÓN HAMBURGUESA
+   MENÚ HAMBURGUESA
    ======================================== */
 
 .mobile-menu-btn {
@@ -1370,7 +1364,7 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-products-container {
     .mobile-menu-btn {
         display: flex;
     }
-    
+
     .OUTLET-admin-nav {
         transform: translateX(-100%);
         transition: transform 0.3s ease;
@@ -1381,25 +1375,17 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-products-container {
         z-index: 1050;
         width: 280px !important;
     }
-    
+
     .OUTLET-admin-nav.open {
         transform: translateX(0);
     }
-    
+
     body.menu-open {
         overflow: hidden;
     }
 }
 
-.outlet-products-container {
-    transition: margin-left 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-}
-
-/* ========================================
-   MENÚ HAMBURGUESA - ESTILOS GLOBALES
-   ======================================== */
-
-/* Botón hamburguesa */
+/* Botón hamburguesa global */
 .outlet-mobile-menu-btn {
     display: none;
     position: fixed;
@@ -1423,7 +1409,6 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-products-container {
     background: var(--outlet-gold-light, #e8c46e);
 }
 
-/* Ícono hamburguesa */
 .outlet-menu-icon {
     display: flex;
     flex-direction: column;
@@ -1439,7 +1424,6 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-products-container {
     border-radius: 2px;
 }
 
-/* Animación para convertir hamburguesa en X */
 .outlet-menu-close .outlet-menu-line:first-child {
     transform: rotate(45deg) translate(5px, 5px);
 }
@@ -1453,7 +1437,6 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-products-container {
     transform: scaleX(0);
 }
 
-/* Texto del botón */
 .outlet-menu-text {
     font-size: 12px;
     font-weight: 600;
@@ -1462,7 +1445,6 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-products-container {
     color: var(--outlet-primary, #1a1a1a);
 }
 
-/* Overlay (fondo oscuro) */
 .outlet-mobile-overlay {
     position: fixed;
     top: 0;
@@ -1482,13 +1464,11 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-products-container {
     visibility: visible;
 }
 
-/* Navbar en modo móvil */
 @media (max-width: 768px) {
     .outlet-mobile-menu-btn {
         display: flex;
     }
-    
-    /* Ocultar navbar por defecto */
+
     .OUTLET-admin-nav {
         position: fixed !important;
         top: 0 !important;
@@ -1501,19 +1481,16 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-products-container {
         overflow-y: auto !important;
         box-shadow: none !important;
     }
-    
-    /* Navbar abierto */
+
     .OUTLET-admin-nav.outlet-mobile-open {
         transform: translateX(0) !important;
         box-shadow: 5px 0 25px rgba(0, 0, 0, 0.15) !important;
     }
-    
-    /* Ajuste para el contenido principal cuando el menú está abierto */
+
     body.menu-open {
         overflow: hidden;
     }
-    
-    /* Animación de entrada para el navbar */
+
     .OUTLET-admin-nav.outlet-mobile-open {
         animation: outletSlideIn 0.3s ease forwards;
     }
@@ -1523,21 +1500,21 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-products-container {
     from {
         transform: translateX(-100%);
     }
+
     to {
         transform: translateX(0);
     }
 }
 
-/* Ajuste para escritorio (ocultar botón) */
 @media (min-width: 769px) {
     .outlet-mobile-menu-btn {
         display: none !important;
     }
-    
+
     .outlet-mobile-overlay {
         display: none !important;
     }
-    
+
     .OUTLET-admin-nav {
         transform: translateX(0) !important;
         position: fixed !important;
@@ -1546,8 +1523,8 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-products-container {
     }
 }
 
-/* Ajuste para el contenido cuando el navbar está abierto en móvil */
 @media (max-width: 768px) {
+
     body .outlet-categories-container,
     body .categorieslist-container,
     body .updatecategory-container,
@@ -1557,8 +1534,7 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-products-container {
     body .admin-main-content {
         transition: margin-left 0.3s ease, filter 0.3s ease;
     }
-    
-    /* Cuando el menú está abierto, desenfocar el contenido ligeramente */
+
     body:has(.OUTLET-admin-nav.outlet-mobile-open) .outlet-categories-container,
     body:has(.OUTLET-admin-nav.outlet-mobile-open) .categorieslist-container,
     body:has(.OUTLET-admin-nav.outlet-mobile-open) .updatecategory-container,
@@ -1571,21 +1547,20 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-products-container {
     }
 }
 
-/* Scroll suave para el navbar en móvil */
 @media (max-width: 768px) {
     .OUTLET-admin-nav {
         -webkit-overflow-scrolling: touch;
         scrollbar-width: thin;
     }
-    
+
     .OUTLET-admin-nav::-webkit-scrollbar {
         width: 4px;
     }
-    
+
     .OUTLET-admin-nav::-webkit-scrollbar-track {
         background: var(--outlet-border-light, #f0f0f0);
     }
-    
+
     .OUTLET-admin-nav::-webkit-scrollbar-thumb {
         background: var(--outlet-gold, #ddab3b);
         border-radius: 4px;

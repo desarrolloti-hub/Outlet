@@ -6,15 +6,12 @@
 
 /* ====== CONTENEDOR PRINCIPAL ====== */
 .categorieslist-container {
-    padding: 40px 48px;
     max-width: 1400px;
     margin: 0 auto;
-    width: 100%;
+    padding: 32px;
     margin-left: 280px;
     transition: margin-left 0.3s ease;
-    width: auto;
     max-width: calc(100% - 280px);
-    padding: 32px 32px 32px 32px;
 }
 
 body:has(.OUTLET-admin-nav.collapsed) .categorieslist-container {

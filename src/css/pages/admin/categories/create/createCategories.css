@@ -127,6 +127,7 @@
     .outlet-form-grid {
         grid-template-columns: 1fr;
     }
+
     .outlet-full-width {
         grid-column: span 1;
     }
@@ -188,9 +189,9 @@
     transition: width 0.3s ease;
 }
 
-.outlet-input-group input:focus ~ .outlet-input-line,
-.outlet-input-group select:focus ~ .outlet-input-line,
-.outlet-input-group textarea:focus ~ .outlet-input-line {
+.outlet-input-group input:focus~.outlet-input-line,
+.outlet-input-group select:focus~.outlet-input-line,
+.outlet-input-group textarea:focus~.outlet-input-line {
     width: 100%;
 }
 
@@ -346,6 +347,7 @@
     .outlet-categories-actions {
         flex-direction: column-reverse;
     }
+
     .outlet-categories-actions button {
         width: 100%;
         justify-content: center;
@@ -439,6 +441,7 @@
         transform: translateX(100%);
         opacity: 0;
     }
+
     to {
         transform: translateX(0);
         opacity: 1;
@@ -514,6 +517,7 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-categories-container {
         margin-left: 240px;
         max-width: calc(100% - 240px);
     }
+
     body:has(.OUTLET-admin-nav.collapsed) .outlet-categories-container {
         margin-left: 70px;
         max-width: calc(100% - 70px);
@@ -526,6 +530,7 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-categories-container {
         max-width: 100% !important;
     }
 }
+
 /* ========================================
    IMAGEN UPLOAD - CATEGORIAS
    ======================================== */

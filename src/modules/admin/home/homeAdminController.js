@@ -88,7 +88,6 @@ function renderProducts() {
 
     console.log('🔄 Renderizando productos. isLoading:', isLoading, 'adminProducts.length:', adminProducts?.length || 0);
 
-    // Mostrar loading si está cargando
     if (isLoading) {
         tbody.innerHTML = `
             <tr>
@@ -101,7 +100,6 @@ function renderProducts() {
         return;
     }
 
-    // Si no hay productos
     if (!adminProducts || adminProducts.length === 0) {
         tbody.innerHTML = `
             <tr>
@@ -153,7 +151,6 @@ function renderProducts() {
         `;
     }).join('');
 
-    // Eventos - Editar
     document.querySelectorAll('.admin-btn-edit').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -162,7 +159,6 @@ function renderProducts() {
         });
     });
 
-    // Eventos - Eliminar
     document.querySelectorAll('.admin-btn-delete').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -219,7 +215,6 @@ async function loadProducts(showLoading = true) {
     }
 
     try {
-        // 1. INTENTAR DESDE FIRESTORE
         console.log('📡 Intentando cargar desde Firebase...');
         console.log('📡 ProductService disponible:', typeof ProductService !== 'undefined');
         console.log('📡 ProductService.getAll:', typeof ProductService?.getAll);
@@ -242,7 +237,6 @@ async function loadProducts(showLoading = true) {
             return;
         }
 
-        // 2. SI FIRESTORE NO TIENE DATOS, INTENTAR LOCALSTORAGE
         console.log('📂 Firebase vacío, intentando localStorage...');
         const saved = localStorage.getItem(ADMIN_STORAGE_KEY);
         console.log('📂 localStorage data:', saved ? 'encontrado' : 'no encontrado');
@@ -260,7 +254,6 @@ async function loadProducts(showLoading = true) {
             }
         }
 
-        // 3. SI NO HAY NADA, USAR DEMO
         console.log('📦 No hay datos, usando productos de demo');
         useDemoProducts();
 
@@ -268,7 +261,6 @@ async function loadProducts(showLoading = true) {
         console.error('❌ Error en loadProducts:', error);
         console.error('❌ Stack trace:', error.stack);
 
-        // Intentar localStorage como fallback
         try {
             const saved = localStorage.getItem(ADMIN_STORAGE_KEY);
             if (saved) {
@@ -286,7 +278,6 @@ async function loadProducts(showLoading = true) {
             console.warn('Error leyendo localStorage:', e);
         }
 
-        // Último recurso: demo
         useDemoProducts();
     } finally {
         isLoading = false;
@@ -551,7 +542,6 @@ export async function adminController() {
         return;
     }
 
-    // Cargar estilos
     if (!document.querySelector('link[href*="homeAdmin.css"]')) {
         const link = document.createElement('link');
         link.rel = 'stylesheet';
@@ -560,7 +550,6 @@ export async function adminController() {
         console.log('✅ Estilos homeAdmin.css cargados');
     }
 
-    // Agregar animaciones
     const style = document.createElement('style');
     style.textContent = `
         @keyframes slideInRight {
@@ -573,7 +562,6 @@ export async function adminController() {
     `;
     document.head.appendChild(style);
 
-    // CONFIGURAR EVENTOS DEL BOTÓN AGREGAR
     const addProductBtn = document.getElementById('addProductBtn');
     if (addProductBtn) {
         console.log('✅ addProductBtn encontrado, configurando evento...');
@@ -590,7 +578,6 @@ export async function adminController() {
         console.warn('⚠️ Botón #addProductBtn no encontrado en el DOM');
     }
 
-    // CONFIGURAR EVENTOS DEL MODAL
     const closeModalBtn = document.getElementById('closeModalBtn');
     const cancelModalBtn = document.getElementById('cancelModalBtn');
     const saveProductBtn = document.getElementById('saveProductBtn');
@@ -608,10 +595,8 @@ export async function adminController() {
         });
     }
 
-    // ESCUCHAR ACTUALIZACIONES
     setupRealtimeUpdates();
 
-    // CARGAR PRODUCTOS
     console.log('🚀 Iniciando carga de productos...');
     try {
         await loadProducts(true);
@@ -621,7 +606,6 @@ export async function adminController() {
         showToast('Error al cargar productos: ' + error.message, true);
     }
 
-    // Exponer para debug
     window.adminDebug = {
         products: () => adminProducts,
         refresh: () => loadProducts(true),
