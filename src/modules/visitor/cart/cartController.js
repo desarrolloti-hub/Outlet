@@ -59,19 +59,19 @@ function mostrarToast(mensaje, tipo) {
     tipo = tipo || 'info';
     var toastExistente = document.querySelector('.outlet-toast');
     if (toastExistente) toastExistente.remove();
-    
+
     var toast = document.createElement('div');
     toast.className = 'outlet-toast ' + tipo;
     toast.textContent = mensaje;
     document.body.appendChild(toast);
-    
-    requestAnimationFrame(function() {
+
+    requestAnimationFrame(function () {
         toast.classList.add('show');
     });
-    
-    setTimeout(function() {
+
+    setTimeout(function () {
         toast.classList.remove('show');
-        setTimeout(function() { toast.remove(); }, 300);
+        setTimeout(function () { toast.remove(); }, 300);
     }, 3200);
 }
 
@@ -87,7 +87,7 @@ function mostrarSweetAlert(options) {
             popup: 'swal2-popup'
         }
     };
-    
+
     return Swal.fire(Object.assign({}, defaultOptions, options));
 }
 
@@ -153,7 +153,7 @@ function mostrarLoading(mensaje) {
     return mostrarSweetAlert({
         title: mensaje,
         allowOutsideClick: false,
-        didOpen: function() {
+        didOpen: function () {
             Swal.showLoading();
         }
     });
@@ -171,7 +171,7 @@ function cerrarLoading() {
 // ========================================
 function loadStyles() {
     if (document.querySelector('link[href*="cart.css"]')) return;
-    
+
     var link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = '/src/css/pages/cart.css';
@@ -182,8 +182,8 @@ function loadStyles() {
 // Formateo de moneda
 // ========================================
 function formatMoney(amount) {
-    return new Intl.NumberFormat('es-MX', { 
-        style: 'currency', 
+    return new Intl.NumberFormat('es-MX', {
+        style: 'currency',
         currency: 'MXN',
         minimumFractionDigits: 0,
         maximumFractionDigits: 0
@@ -198,10 +198,7 @@ function loadCart() {
     if (savedCart) {
         cartItems = JSON.parse(savedCart);
     } else {
-        // Default sample cart items (prices in MXN)
-        cartItems = [
-        
-        ];
+        cartItems = [];
         saveCart();
     }
 }
@@ -220,7 +217,7 @@ function saveCart() {
 function updateCartBadge() {
     var badge = document.querySelector('.cart-count');
     if (badge) {
-        var total = cartItems.reduce(function(sum, item) { return sum + (item.quantity || 1); }, 0);
+        var total = cartItems.reduce(function (sum, item) { return sum + (item.quantity || 1); }, 0);
         badge.textContent = total;
         badge.style.opacity = total === 0 ? '0' : '1';
     }
@@ -234,17 +231,16 @@ function renderCart() {
     if (!container) return;
 
     if (cartItems.length === 0) {
-        container.innerHTML = 
+        container.innerHTML =
             '<div class="outlet-cart-empty">' +
-                '<i class="fas fa-shopping-bag"></i>' +
-                '<p>Tu carrito está vacío</p>' +
-                // ✅ Usando outlet-btn-primary de buttons.css
-                '<button class="outlet-btn outlet-btn-primary" id="continueShoppingBtn">SEGUIR COMPRANDO</button>' +
+            '<i class="fas fa-shopping-bag"></i>' +
+            '<p>Tu carrito está vacío</p>' +
+            '<button class="outlet-btn outlet-btn-primary" id="continueShoppingBtn">SEGUIR COMPRANDO</button>' +
             '</div>';
-        
+
         var continueBtn = document.getElementById('continueShoppingBtn');
         if (continueBtn) {
-            continueBtn.addEventListener('click', function() {
+            continueBtn.addEventListener('click', function () {
                 if (typeof window.navigateTo === 'function') {
                     window.navigateTo('/collection');
                 } else {
@@ -252,47 +248,46 @@ function renderCart() {
                 }
             });
         }
-        
+
         renderSummary();
         return;
     }
 
     var html = '';
-    cartItems.forEach(function(item) {
-        html += 
+    cartItems.forEach(function (item) {
+        html +=
             '<div class="outlet-cart-item" data-id="' + item.id + '">' +
-                '<div class="outlet-cart-item-inner">' +
-                    '<div class="outlet-cart-item-image">' +
-                        '<img src="' + item.image + '" alt="' + item.name + '" loading="lazy">' +
-                    '</div>' +
-                    '<div class="outlet-cart-item-details">' +
-                        '<div class="outlet-cart-item-info">' +
-                            '<p class="outlet-cart-item-brand">' + item.brand + '</p>' +
-                            '<h3 class="outlet-cart-item-name">' + item.name + '</h3>' +
-                            '<div class="outlet-cart-item-attributes">' +
-                                '<span>Talla: ' + item.size + '</span>' +
-                                '<span>Color: ' + item.color + '</span>' +
-                            '</div>' +
-                        '</div>' +
-                        '<div class="outlet-cart-item-actions">' +
-                            '<div class="outlet-cart-quantity">' +
-                                '<button class="outlet-cart-qty-btn decr" data-id="' + item.id + '">−</button>' +
-                                '<span class="outlet-cart-qty-value">' + item.quantity + '</span>' +
-                                '<button class="outlet-cart-qty-btn incr" data-id="' + item.id + '">+</button>' +
-                            '</div>' +
-                            '<div class="outlet-cart-item-price">' +
-                                '<p class="outlet-cart-price">' + formatMoney(item.price * item.quantity) + '</p>' +
-                                // ✅ Usando outlet-btn-danger de buttons.css
-                                '<button class="outlet-btn outlet-btn-danger outlet-btn-sm" data-id="' + item.id + '">' +
-                                    '<i class="fas fa-trash-alt"></i> ELIMINAR' +
-                                '</button>' +
-                            '</div>' +
-                        '</div>' +
-                    '</div>' +
-                '</div>' +
+            '<div class="outlet-cart-item-inner">' +
+            '<div class="outlet-cart-item-image">' +
+            '<img src="' + item.image + '" alt="' + item.name + '" loading="lazy">' +
+            '</div>' +
+            '<div class="outlet-cart-item-details">' +
+            '<div class="outlet-cart-item-info">' +
+            '<p class="outlet-cart-item-brand">' + item.brand + '</p>' +
+            '<h3 class="outlet-cart-item-name">' + item.name + '</h3>' +
+            '<div class="outlet-cart-item-attributes">' +
+            '<span>Talla: ' + item.size + '</span>' +
+            '<span>Color: ' + item.color + '</span>' +
+            '</div>' +
+            '</div>' +
+            '<div class="outlet-cart-item-actions">' +
+            '<div class="outlet-cart-quantity">' +
+            '<button class="outlet-cart-qty-btn decr" data-id="' + item.id + '">−</button>' +
+            '<span class="outlet-cart-qty-value">' + item.quantity + '</span>' +
+            '<button class="outlet-cart-qty-btn incr" data-id="' + item.id + '">+</button>' +
+            '</div>' +
+            '<div class="outlet-cart-item-price">' +
+            '<p class="outlet-cart-price">' + formatMoney(item.price * item.quantity) + '</p>' +
+            '<button class="outlet-btn outlet-btn-danger outlet-btn-sm" data-id="' + item.id + '">' +
+            '<i class="fas fa-trash-alt"></i> ELIMINAR' +
+            '</button>' +
+            '</div>' +
+            '</div>' +
+            '</div>' +
+            '</div>' +
             '</div>';
     });
-    
+
     container.innerHTML = html;
 
     attachCartEvents();
@@ -306,48 +301,46 @@ function renderSummary() {
     var container = document.getElementById('orderSummaryContainer');
     if (!container) return;
 
-    var subtotal = cartItems.reduce(function(acc, item) { return acc + (item.price * item.quantity); }, 0);
+    var subtotal = cartItems.reduce(function (acc, item) { return acc + (item.price * item.quantity); }, 0);
     var shipping = subtotal > 2000 ? 0 : 300;
     var tax = subtotal * 0.08;
     var total = subtotal + shipping + tax;
 
-    container.innerHTML = 
+    container.innerHTML =
         '<div class="outlet-cart-summary-card">' +
-            '<h3 class="outlet-cart-summary-title">RESUMEN DEL PEDIDO</h3>' +
-            
-            '<div class="outlet-cart-summary-row">' +
-                '<span>SUBTOTAL</span>' +
-                '<span>' + formatMoney(subtotal) + '</span>' +
-            '</div>' +
-            '<div class="outlet-cart-summary-row">' +
-                '<span>ENVÍO</span>' +
-                '<span>' + (shipping === 0 ? 'GRATIS' : formatMoney(shipping)) + '</span>' +
-            '</div>' +
-            '<div class="outlet-cart-summary-row">' +
-                '<span>IMPUESTOS (8%)</span>' +
-                '<span>' + formatMoney(tax) + '</span>' +
-            '</div>' +
-            
-            '<div class="outlet-cart-summary-divider"></div>' +
-            
-            '<div class="outlet-cart-summary-total">' +
-                '<span>TOTAL A PAGAR</span>' +
-                '<span class="outlet-cart-total-amount">' + formatMoney(total) + ' MXN</span>' +
-            '</div>' +
-            
-            '<div class="outlet-cart-promo">' +
-                '<label>¿TIENES UN CÓDIGO PROMOCIONAL?</label>' +
-                '<div class="outlet-cart-promo-input-group">' +
-                    '<input type="text" id="promoCode" placeholder="INGRESA TU CÓDIGO">' +
-                    // ✅ Usando outlet-btn-dark de buttons.css
-                    '<button class="outlet-btn outlet-btn-dark outlet-btn-sm" id="applyPromoBtn">APLICAR</button>' +
-                '</div>' +
-            '</div>' +
-            
-            // ✅ Usando outlet-btn-primary de buttons.css con hover-icon y block
-            '<button class="outlet-btn outlet-btn-primary outlet-btn-block outlet-btn-hover-icon" id="checkoutBtn">' +
-                'FINALIZAR COMPRA <i class="fas fa-arrow-right outlet-btn-icon outlet-btn-icon-right"></i>' +
-            '</button>' +
+        '<h3 class="outlet-cart-summary-title">RESUMEN DEL PEDIDO</h3>' +
+
+        '<div class="outlet-cart-summary-row">' +
+        '<span>SUBTOTAL</span>' +
+        '<span>' + formatMoney(subtotal) + '</span>' +
+        '</div>' +
+        '<div class="outlet-cart-summary-row">' +
+        '<span>ENVÍO</span>' +
+        '<span>' + (shipping === 0 ? 'GRATIS' : formatMoney(shipping)) + '</span>' +
+        '</div>' +
+        '<div class="outlet-cart-summary-row">' +
+        '<span>IMPUESTOS (8%)</span>' +
+        '<span>' + formatMoney(tax) + '</span>' +
+        '</div>' +
+
+        '<div class="outlet-cart-summary-divider"></div>' +
+
+        '<div class="outlet-cart-summary-total">' +
+        '<span>TOTAL A PAGAR</span>' +
+        '<span class="outlet-cart-total-amount">' + formatMoney(total) + ' MXN</span>' +
+        '</div>' +
+
+        '<div class="outlet-cart-promo">' +
+        '<label>¿TIENES UN CÓDIGO PROMOCIONAL?</label>' +
+        '<div class="outlet-cart-promo-input-group">' +
+        '<input type="text" id="promoCode" placeholder="INGRESA TU CÓDIGO">' +
+        '<button class="outlet-btn outlet-btn-dark outlet-btn-sm" id="applyPromoBtn">APLICAR</button>' +
+        '</div>' +
+        '</div>' +
+
+        '<button class="outlet-btn outlet-btn-primary outlet-btn-block outlet-btn-hover-icon" id="checkoutBtn">' +
+        'FINALIZAR COMPRA <i class="fas fa-arrow-right outlet-btn-icon outlet-btn-icon-right"></i>' +
+        '</button>' +
         '</div>';
 
     var applyBtn = document.getElementById('applyPromoBtn');
@@ -369,27 +362,26 @@ function renderUpsell() {
     if (!grid) return;
 
     var html = '';
-    UPSELl_ITEMS.forEach(function(item) {
-        html += 
+    UPSELl_ITEMS.forEach(function (item) {
+        html +=
             '<div class="outlet-cart-upsell-card" data-id="' + item.id + '">' +
-                '<div class="outlet-cart-upsell-image">' +
-                    '<img src="' + item.image + '" alt="' + item.name + '" loading="lazy">' +
-                '</div>' +
-                '<div class="outlet-cart-upsell-info">' +
-                    '<p class="outlet-cart-upsell-category">' + item.category + '</p>' +
-                    '<h4 class="outlet-cart-upsell-name">' + item.name + '</h4>' +
-                    '<p class="outlet-cart-upsell-price">' + formatMoney(item.price) + '</p>' +
-                '</div>' +
+            '<div class="outlet-cart-upsell-image">' +
+            '<img src="' + item.image + '" alt="' + item.name + '" loading="lazy">' +
+            '</div>' +
+            '<div class="outlet-cart-upsell-info">' +
+            '<p class="outlet-cart-upsell-category">' + item.category + '</p>' +
+            '<h4 class="outlet-cart-upsell-name">' + item.name + '</h4>' +
+            '<p class="outlet-cart-upsell-price">' + formatMoney(item.price) + '</p>' +
+            '</div>' +
             '</div>';
     });
-    
+
     grid.innerHTML = html;
 
-    // Attach upsell card events
-    document.querySelectorAll('.outlet-cart-upsell-card').forEach(function(card) {
-        card.addEventListener('click', function() {
+    document.querySelectorAll('.outlet-cart-upsell-card').forEach(function (card) {
+        card.addEventListener('click', function () {
             var id = parseInt(this.getAttribute('data-id'));
-            var product = UPSELl_ITEMS.find(function(p) { return p.id === id; });
+            var product = UPSELl_ITEMS.find(function (p) { return p.id === id; });
             if (product) {
                 addToCart(product);
             }
@@ -401,8 +393,8 @@ function renderUpsell() {
 // Añadir producto al carrito (desde upsell)
 // ========================================
 async function addToCart(product) {
-    var existingItem = cartItems.find(function(item) { return item.id === product.id; });
-    
+    var existingItem = cartItems.find(function (item) { return item.id === product.id; });
+
     if (existingItem) {
         existingItem.quantity += 1;
         mostrarToast('✨ ' + product.name + ' - Cantidad actualizada', 'success');
@@ -417,13 +409,13 @@ async function addToCart(product) {
             quantity: 1,
             image: product.image
         });
-        
+
         await mostrarExito(
             '¡Añadido al carrito!',
             product.name + ' ha sido añadido correctamente.'
         );
     }
-    
+
     saveCart();
     renderCart();
 }
@@ -434,12 +426,12 @@ async function addToCart(product) {
 async function handleApplyPromo() {
     var input = document.getElementById('promoCode');
     var code = input?.value.trim().toUpperCase();
-    
+
     if (!code) {
         await mostrarError('Código vacío', 'Ingresa un código promocional.');
         return;
     }
-    
+
     if (code === 'DESCUENTO10') {
         await mostrarExito('Código aplicado', '¡10% de descuento aplicado a tu pedido! 🎉');
         mostrarToast('✅ 10% de descuento aplicado', 'success');
@@ -459,20 +451,20 @@ async function handleCheckout() {
         await mostrarError('Carrito vacío', 'No hay productos en tu carrito para finalizar la compra.');
         return;
     }
-    
-    var totalItems = cartItems.reduce(function(sum, item) { return sum + item.quantity; }, 0);
-    var subtotal = cartItems.reduce(function(acc, item) { return acc + (item.price * item.quantity); }, 0);
-    
+
+    var totalItems = cartItems.reduce(function (sum, item) { return sum + item.quantity; }, 0);
+    var subtotal = cartItems.reduce(function (acc, item) { return acc + (item.price * item.quantity); }, 0);
+
     var confirmResult = await mostrarConfirmacion(
         '¿Finalizar compra?',
         'Estás a punto de comprar ' + totalItems + ' producto(s) por un total de ' + formatMoney(subtotal) + '.',
         'Sí, finalizar'
     );
-    
+
     if (confirmResult.isConfirmed) {
         mostrarLoading('Procesando tu pedido...');
-        
-        setTimeout(function() {
+
+        setTimeout(function () {
             cerrarLoading();
             mostrarExito(
                 '¡Pedido confirmado!',
@@ -487,7 +479,7 @@ async function handleCheckout() {
 // ========================================
 function handleIncrement(e) {
     var id = parseInt(e.currentTarget.getAttribute('data-id'));
-    var item = cartItems.find(function(i) { return i.id === id; });
+    var item = cartItems.find(function (i) { return i.id === id; });
     if (item) {
         item.quantity++;
         saveCart();
@@ -500,7 +492,7 @@ function handleIncrement(e) {
 // ========================================
 function handleDecrement(e) {
     var id = parseInt(e.currentTarget.getAttribute('data-id'));
-    var item = cartItems.find(function(i) { return i.id === id; });
+    var item = cartItems.find(function (i) { return i.id === id; });
     if (item && item.quantity > 1) {
         item.quantity--;
         saveCart();
@@ -513,17 +505,17 @@ function handleDecrement(e) {
 // ========================================
 async function handleRemove(e) {
     var id = parseInt(e.currentTarget.getAttribute('data-id'));
-    var item = cartItems.find(function(i) { return i.id === id; });
+    var item = cartItems.find(function (i) { return i.id === id; });
     var nombreProducto = item?.name || 'Producto';
-    
+
     var confirmResult = await mostrarConfirmacion(
         '¿Eliminar producto?',
         '¿Estás seguro de que quieres eliminar "' + nombreProducto + '" del carrito?',
         'Sí, eliminar'
     );
-    
+
     if (confirmResult.isConfirmed) {
-        cartItems = cartItems.filter(function(i) { return i.id !== id; });
+        cartItems = cartItems.filter(function (i) { return i.id !== id; });
         saveCart();
         renderCart();
         mostrarToast('🗑️ ' + nombreProducto + ' eliminado del carrito', 'info');
@@ -534,20 +526,17 @@ async function handleRemove(e) {
 // Adjunta eventos a los items del carrito
 // ========================================
 function attachCartEvents() {
-    // Increment quantity
-    document.querySelectorAll('.outlet-cart-qty-btn.incr').forEach(function(btn) {
+    document.querySelectorAll('.outlet-cart-qty-btn.incr').forEach(function (btn) {
         btn.removeEventListener('click', handleIncrement);
         btn.addEventListener('click', handleIncrement);
     });
-    
-    // Decrement quantity
-    document.querySelectorAll('.outlet-cart-qty-btn.decr').forEach(function(btn) {
+
+    document.querySelectorAll('.outlet-cart-qty-btn.decr').forEach(function (btn) {
         btn.removeEventListener('click', handleDecrement);
         btn.addEventListener('click', handleDecrement);
     });
-    
-    // Remove item - ahora con clase outlet-btn-danger
-    document.querySelectorAll('.outlet-btn-danger[data-id]').forEach(function(btn) {
+
+    document.querySelectorAll('.outlet-btn-danger[data-id]').forEach(function (btn) {
         btn.removeEventListener('click', handleRemove);
         btn.addEventListener('click', handleRemove);
     });
@@ -558,21 +547,16 @@ function attachCartEvents() {
 // ========================================
 export async function cartController() {
     console.log('🛒 Cart Controller - Página del carrito');
-    
-    // Load styles
+
     loadStyles();
-    
-    // Load cart data
+
     loadCart();
-    
-    // Render cart
+
     renderCart();
-    
-    // Render upsell
+
     renderUpsell();
-    
-    // Update cart badge
+
     updateCartBadge();
-    
+
     console.log('✅ Cart page loaded successfully');
 }

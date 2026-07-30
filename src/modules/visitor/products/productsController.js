@@ -4,7 +4,6 @@
    CON SWEETALERT2 INTEGRADO
    ======================================== */
 
-// Configuración de imágenes
 var THUMBNAILS = [
     "https://lh3.googleusercontent.com/aida-public/AB6AXuA8g0Esh47Sv3yioog16MU7CKt8dLC1bT82o7Al5PeVetpq8PdqiOBE-wX6JP8tSUUIURV1TrNRgugKwi8OHPdbe1wRicQJ9LcpTnmOs9zTOzsc6dpLGDuF5ADvNgXx7qXJwpn33Xt83FE9HrCeK-wwQlH27lJOZSna1X7_d7O13JAQ8NZIIFTHUJHwg9bQL1ViRtKTAKPTkc1hqy7iEeJ216dPlGc_C-NrhPphR3LDYtNKqcYuCL0__IymvVZP6ie5VeR_aqekCOMM",
     "https://lh3.googleusercontent.comaida-public/AB6AXuDXKbGmxF_ZnSN8YwkdM_VCOsXreEUpaok5Ma7e_a1-yjoMEjIACknTwVEobJSld-Uh9T0_ei6Z6m8ILyGrMbHB8GWbuQk_MX3ncldI6Qs1ePGrXXwqMwH6PQ3QnZ-mE3TMXU2XKVf7DihMHqprHrEmWN05xih_ZQiDLU0uqHLZ6qzl5iY5yqg-M_OhjR8hhk7PDHVVJrQNlstC86YwT96Ok6HxB3SxoreY0FV-lQqG_nGpUu1aGZresjVFc21eR1t36REuTKYEukCQ",
@@ -12,13 +11,11 @@ var THUMBNAILS = [
     "https://lh3.googleusercontent.com/aida-public/AB6AXuD-2aV8shTdhfM5IkOyi25WpZJrRB8HQQC4-6pmPUWOyB6DirOst44_nDMMoL8wSNBGY9VHsMlo_KQkDWnG6bGnbhCmkrJIyf4zPQm5dlumyAnJ5bgcAoNa2cIhPk6RPl0ACzhjvoSaiF4qQtGlTbVUIUeubmpEqNwlI9mO974O2gAPgThlZT60mM2fCHy3orBH1tvJCXewpWzcnkGl0WIm6rsvc5zkviy15kQUx78_pC5bra0Qh2xI58vhM-oK6BZs3jH0v3gmaL9i"
 ];
 
-// Estado de la aplicación
 var selectedSize = 'S';
 var selectedColor = 'NOIR';
 var cart = [];
 var wishlist = [];
 
-// Clave para localStorage
 var STORAGE_KEYS = {
     CART: 'outlet_cart',
     WISHLIST: 'outlet_wishlist'
@@ -28,32 +25,26 @@ var STORAGE_KEYS = {
 // UI Helpers - CON SWEETALERT2
 // ========================================
 
-/**
- * Muestra un toast personalizado (estilo OUTLET)
- */
 function mostrarToast(mensaje, tipo) {
     tipo = tipo || 'info';
     var toastExistente = document.querySelector('.outlet-toast');
     if (toastExistente) toastExistente.remove();
-    
+
     var toast = document.createElement('div');
     toast.className = 'outlet-toast ' + tipo;
     toast.textContent = mensaje;
     document.body.appendChild(toast);
-    
-    requestAnimationFrame(function() {
+
+    requestAnimationFrame(function () {
         toast.classList.add('show');
     });
-    
-    setTimeout(function() {
+
+    setTimeout(function () {
         toast.classList.remove('show');
-        setTimeout(function() { toast.remove(); }, 300);
+        setTimeout(function () { toast.remove(); }, 300);
     }, 3200);
 }
 
-/**
- * Muestra una SweetAlert2 personalizada
- */
 function mostrarSweetAlert(options) {
     var defaultOptions = {
         buttonsStyling: false,
@@ -63,13 +54,10 @@ function mostrarSweetAlert(options) {
             popup: 'swal2-popup'
         }
     };
-    
+
     return Swal.fire(Object.assign({}, defaultOptions, options));
 }
 
-/**
- * Muestra alerta de éxito
- */
 function mostrarExito(titulo, mensaje) {
     return mostrarSweetAlert({
         icon: 'success',
@@ -79,9 +67,6 @@ function mostrarExito(titulo, mensaje) {
     });
 }
 
-/**
- * Muestra alerta de error
- */
 function mostrarError(titulo, mensaje) {
     return mostrarSweetAlert({
         icon: 'error',
@@ -91,9 +76,6 @@ function mostrarError(titulo, mensaje) {
     });
 }
 
-/**
- * Muestra alerta de advertencia
- */
 function mostrarAdvertencia(titulo, mensaje, confirmText) {
     confirmText = confirmText || 'Continuar';
     return mostrarSweetAlert({
@@ -106,9 +88,6 @@ function mostrarAdvertencia(titulo, mensaje, confirmText) {
     });
 }
 
-/**
- * Muestra alerta de confirmación
- */
 function mostrarConfirmacion(titulo, mensaje, confirmText) {
     confirmText = confirmText || 'Sí, confirmar';
     return mostrarSweetAlert({
@@ -126,7 +105,7 @@ function mostrarConfirmacion(titulo, mensaje, confirmText) {
 // ========================================
 function loadStyles() {
     if (document.querySelector('link[href*="products.css"]')) return;
-    
+
     var link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = '/src/css/pages/products.css';
@@ -139,7 +118,7 @@ function loadStyles() {
 function loadStorage() {
     var savedCart = localStorage.getItem(STORAGE_KEYS.CART);
     var savedWishlist = localStorage.getItem(STORAGE_KEYS.WISHLIST);
-    
+
     if (savedCart) cart = JSON.parse(savedCart);
     if (savedWishlist) wishlist = JSON.parse(savedWishlist);
 }
@@ -165,7 +144,7 @@ function saveWishlist() {
 function updateCartBadge() {
     var badge = document.querySelector('.cart-count');
     if (badge) {
-        var total = cart.reduce(function(sum, item) { return sum + (item.quantity || 1); }, 0);
+        var total = cart.reduce(function (sum, item) { return sum + (item.quantity || 1); }, 0);
         badge.textContent = total;
         badge.style.opacity = total === 0 ? '0' : '1';
     }
@@ -176,7 +155,7 @@ function updateCartBadge() {
 // ========================================
 export async function productsController() {
     console.log('🛍️ Products Controller - Página de producto');
-    
+
     loadStyles();
     loadStorage();
     loadThumbnails();
@@ -184,7 +163,7 @@ export async function productsController() {
     initColorSelection();
     initActionButtons();
     initEnsembleCards();
-    
+
     console.log('✅ Productos page cargada correctamente');
 }
 
@@ -194,17 +173,17 @@ export async function productsController() {
 function loadThumbnails() {
     var container = document.getElementById('thumbnailContainer');
     if (!container) return;
-    
+
     container.innerHTML = '';
-    
-    THUMBNAILS.forEach(function(src, index) {
+
+    THUMBNAILS.forEach(function (src, index) {
         var div = document.createElement('div');
         div.className = 'thumbnail';
         var img = document.createElement('img');
         img.src = src;
         img.alt = 'Thumbnail ' + (index + 1);
         img.loading = 'lazy';
-        img.onclick = function() {
+        img.onclick = function () {
             var mainImage = document.getElementById('mainImage');
             if (mainImage) mainImage.src = src;
         };
@@ -219,19 +198,19 @@ function loadThumbnails() {
 function initSizeSelection() {
     var sizeBtns = document.querySelectorAll('.size-btn');
     var sizeLabel = document.getElementById('selectedSizeLabel');
-    
-    sizeBtns.forEach(function(btn) {
-        btn.addEventListener('click', function() {
+
+    sizeBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
             if (this.classList.contains('disabled')) return;
-            
+
             var size = this.getAttribute('data-size');
             selectedSize = size;
-            
+
             if (sizeLabel) sizeLabel.textContent = size;
-            
-            sizeBtns.forEach(function(b) { b.classList.remove('active'); });
+
+            sizeBtns.forEach(function (b) { b.classList.remove('active'); });
             this.classList.add('active');
-            
+
             mostrarToast('Talla ' + size + ' seleccionada', 'info');
         });
     });
@@ -243,17 +222,17 @@ function initSizeSelection() {
 function initColorSelection() {
     var colorBtns = document.querySelectorAll('.color-btn');
     var colorLabel = document.getElementById('selectedColorLabel');
-    
-    colorBtns.forEach(function(btn) {
-        btn.addEventListener('click', function() {
+
+    colorBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
             var color = this.getAttribute('data-color');
             selectedColor = color;
-            
+
             if (colorLabel) colorLabel.textContent = color;
-            
-            colorBtns.forEach(function(b) { b.classList.remove('active'); });
+
+            colorBtns.forEach(function (b) { b.classList.remove('active'); });
             this.classList.add('active');
-            
+
             mostrarToast('Color ' + color + ' seleccionado', 'info');
         });
     });
@@ -266,7 +245,7 @@ function initActionButtons() {
     var addToBagBtn = document.getElementById('addToBagBtn');
     var wishlistBtn = document.getElementById('wishlistBtn');
     var shareBtn = document.getElementById('shareBtn');
-    
+
     if (addToBagBtn) addToBagBtn.addEventListener('click', addToCart);
     if (wishlistBtn) wishlistBtn.addEventListener('click', addToWishlist);
     if (shareBtn) shareBtn.addEventListener('click', shareProduct);
@@ -286,15 +265,15 @@ async function addToCart() {
         image: THUMBNAILS[0],
         dateAdded: new Date().toISOString()
     };
-    
+
     cart.push(product);
     saveCart();
-    
+
     await mostrarExito(
         '¡Añadido al carrito!',
         product.name + ' (' + selectedSize + ', ' + selectedColor + ') ha sido añadido correctamente.'
     );
-    
+
     console.log('🛒 Carrito actualizado:', cart);
 }
 
@@ -302,8 +281,8 @@ async function addToCart() {
 // Agrega producto a wishlist CON SWEETALERT2
 // ========================================
 async function addToWishlist() {
-    var exists = wishlist.some(function(item) { return item.name === 'The Noir Hierarchy Gown'; });
-    
+    var exists = wishlist.some(function (item) { return item.name === 'The Noir Hierarchy Gown'; });
+
     if (!exists) {
         wishlist.push({
             id: Date.now(),
@@ -314,7 +293,7 @@ async function addToWishlist() {
             image: THUMBNAILS[0]
         });
         saveWishlist();
-        
+
         await mostrarExito(
             '¡Añadido a wishlist!',
             'The Noir Hierarchy Gown ha sido añadido a tu lista de deseos. ❤️'
@@ -325,9 +304,9 @@ async function addToWishlist() {
             'Este producto ya está en tu lista de deseos. ¿Quieres eliminarlo?',
             'Sí, eliminar'
         );
-        
+
         if (result.isConfirmed) {
-            wishlist = wishlist.filter(function(item) { return item.name !== 'The Noir Hierarchy Gown'; });
+            wishlist = wishlist.filter(function (item) { return item.name !== 'The Noir Hierarchy Gown'; });
             saveWishlist();
             await mostrarExito('Eliminado', 'El producto ha sido eliminado de tu wishlist.');
         }
@@ -341,7 +320,7 @@ async function addToWishlist() {
 async function shareProduct() {
     var url = window.location.href;
     var text = 'The Noir Hierarchy Gown - OUTLET';
-    
+
     if (navigator.share) {
         try {
             await navigator.share({
@@ -382,19 +361,19 @@ async function copyToClipboard(text) {
 // ========================================
 function initEnsembleCards() {
     var ensembleCards = document.querySelectorAll('.ensemble-card');
-    
-    ensembleCards.forEach(function(card) {
-        card.addEventListener('click', async function() {
+
+    ensembleCards.forEach(function (card) {
+        card.addEventListener('click', async function () {
             var name = this.querySelector('.ensemble-name')?.textContent || 'Producto';
             var priceText = this.querySelector('.ensemble-price')?.textContent || '$0';
             var price = parseInt(priceText.replace('$', '').replace(',', ''));
-            
+
             var result = await mostrarConfirmacion(
                 '¿Agregar al carrito?',
                 '¿Quieres añadir "' + name + '" a tu carrito por ' + priceText + '?',
                 'Sí, agregar'
             );
-            
+
             if (result.isConfirmed) {
                 var ensembleProduct = {
                     id: Date.now(),
@@ -405,7 +384,7 @@ function initEnsembleCards() {
                 };
                 cart.push(ensembleProduct);
                 saveCart();
-                
+
                 await mostrarExito(
                     '¡Añadido al carrito!',
                     name + ' ha sido añadido correctamente. 🛒'

@@ -4,7 +4,6 @@
    CON SWEETALERT2 INTEGRADO
    ======================================== */
 
-// Sample product data
 var sampleProducts = [
     {
         id: 1,
@@ -62,10 +61,7 @@ var sampleProducts = [
     }
 ];
 
-// Storage key
 var STORAGE_KEY = 'outlet_wishlist';
-
-// State
 var wishlistItems = [];
 var currentSort = 'newest';
 
@@ -73,32 +69,26 @@ var currentSort = 'newest';
 // UI Helpers - CON SWEETALERT2
 // ========================================
 
-/**
- * Muestra un toast personalizado (estilo OUTLET)
- */
 function mostrarToast(mensaje, tipo) {
     tipo = tipo || 'info';
     var toastExistente = document.querySelector('.outlet-toast');
     if (toastExistente) toastExistente.remove();
-    
+
     var toast = document.createElement('div');
     toast.className = 'outlet-toast ' + tipo;
     toast.textContent = mensaje;
     document.body.appendChild(toast);
-    
-    requestAnimationFrame(function() {
+
+    requestAnimationFrame(function () {
         toast.classList.add('show');
     });
-    
-    setTimeout(function() {
+
+    setTimeout(function () {
         toast.classList.remove('show');
-        setTimeout(function() { toast.remove(); }, 300);
+        setTimeout(function () { toast.remove(); }, 300);
     }, 3200);
 }
 
-/**
- * Muestra una SweetAlert2 personalizada
- */
 function mostrarSweetAlert(options) {
     var defaultOptions = {
         buttonsStyling: false,
@@ -108,13 +98,10 @@ function mostrarSweetAlert(options) {
             popup: 'swal2-popup'
         }
     };
-    
+
     return Swal.fire(Object.assign({}, defaultOptions, options));
 }
 
-/**
- * Muestra alerta de éxito
- */
 function mostrarExito(titulo, mensaje) {
     return mostrarSweetAlert({
         icon: 'success',
@@ -124,9 +111,6 @@ function mostrarExito(titulo, mensaje) {
     });
 }
 
-/**
- * Muestra alerta de error
- */
 function mostrarError(titulo, mensaje) {
     return mostrarSweetAlert({
         icon: 'error',
@@ -136,9 +120,6 @@ function mostrarError(titulo, mensaje) {
     });
 }
 
-/**
- * Muestra alerta de advertencia
- */
 function mostrarAdvertencia(titulo, mensaje, confirmText) {
     confirmText = confirmText || 'Continuar';
     return mostrarSweetAlert({
@@ -151,9 +132,6 @@ function mostrarAdvertencia(titulo, mensaje, confirmText) {
     });
 }
 
-/**
- * Muestra alerta de confirmación
- */
 function mostrarConfirmacion(titulo, mensaje, confirmText) {
     confirmText = confirmText || 'Sí, confirmar';
     return mostrarSweetAlert({
@@ -171,7 +149,7 @@ function mostrarConfirmacion(titulo, mensaje, confirmText) {
 // ========================================
 function loadStyles() {
     if (document.querySelector('link[href*="wishlist.css"]')) return;
-    
+
     var link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = '/src/css/pages/wishlist.css';
@@ -182,8 +160,8 @@ function loadStyles() {
 // Formateo de moneda
 // ========================================
 function formatMoney(amount) {
-    return new Intl.NumberFormat('en-US', { 
-        style: 'currency', 
+    return new Intl.NumberFormat('en-US', {
+        style: 'currency',
         currency: 'USD',
         minimumFractionDigits: 0
     }).format(amount);
@@ -217,58 +195,58 @@ function renderWishlist() {
     var emptyState = document.getElementById('wishlistEmptyState');
     var footer = document.getElementById('wishlistFooter');
     var itemsCountSpan = document.getElementById('wishlistItemsCount');
-    
+
     if (!grid) return;
-    
+
     var hasItems = wishlistItems.length > 0;
-    
+
     grid.style.display = hasItems ? 'grid' : 'none';
     if (emptyState) emptyState.style.display = hasItems ? 'none' : 'block';
     if (footer) footer.style.display = hasItems ? 'block' : 'none';
     if (itemsCountSpan) itemsCountSpan.textContent = wishlistItems.length + ' Item' + (wishlistItems.length !== 1 ? 's' : '') + ' Saved';
-    
+
     if (!hasItems) return;
-    
+
     var sortedItems = wishlistItems.slice(0);
     if (currentSort === 'price-asc') {
-        sortedItems.sort(function(a, b) { return a.price - b.price; });
+        sortedItems.sort(function (a, b) { return a.price - b.price; });
     } else if (currentSort === 'price-desc') {
-        sortedItems.sort(function(a, b) { return b.price - a.price; });
+        sortedItems.sort(function (a, b) { return b.price - a.price; });
     } else {
-        sortedItems.sort(function(a, b) { return b.id - a.id; });
+        sortedItems.sort(function (a, b) { return b.id - a.id; });
     }
-    
+
     var html = '';
-    sortedItems.forEach(function(product) {
+    sortedItems.forEach(function (product) {
         var badgeHtml = '';
         if (product.badge) {
             badgeHtml = '<div class="wishlist-card-badge"><span class="wishlist-badge-' + (product.badgeType === 'danger' ? 'danger' : 'primary') + '">' + product.badge + '</span></div>';
         }
-        
-        html += 
+
+        html +=
             '<div class="wishlist-product-card" data-id="' + product.id + '">' +
-                '<div class="wishlist-card-image">' +
-                    '<img src="' + product.image + '" alt="' + product.name + '" loading="lazy">' +
-                    badgeHtml +
-                    '<div class="wishlist-card-actions">' +
-                        '<button class="wishlist-heart-btn active" data-id="' + product.id + '">' +
-                            '<i class="fa-solid fa-heart"></i>' +
-                        '</button>' +
-                    '</div>' +
-                '</div>' +
-                '<div class="wishlist-card-content">' +
-                    '<p class="wishlist-card-brand">' + product.brand + '</p>' +
-                    '<h3 class="wishlist-card-title">' + product.name + '</h3>' +
-                    '<div class="wishlist-card-footer">' +
-                        '<p class="wishlist-card-price">' + formatMoney(product.price) + '</p>' +
-                        '<button class="wishlist-add-cart-btn" data-id="' + product.id + '">' +
-                            '<i class="fa-solid fa-shopping-cart"></i>' +
-                        '</button>' +
-                    '</div>' +
-                '</div>' +
+            '<div class="wishlist-card-image">' +
+            '<img src="' + product.image + '" alt="' + product.name + '" loading="lazy">' +
+            badgeHtml +
+            '<div class="wishlist-card-actions">' +
+            '<button class="wishlist-heart-btn active" data-id="' + product.id + '">' +
+            '<i class="fa-solid fa-heart"></i>' +
+            '</button>' +
+            '</div>' +
+            '</div>' +
+            '<div class="wishlist-card-content">' +
+            '<p class="wishlist-card-brand">' + product.brand + '</p>' +
+            '<h3 class="wishlist-card-title">' + product.name + '</h3>' +
+            '<div class="wishlist-card-footer">' +
+            '<p class="wishlist-card-price">' + formatMoney(product.price) + '</p>' +
+            '<button class="wishlist-add-cart-btn" data-id="' + product.id + '">' +
+            '<i class="fa-solid fa-shopping-cart"></i>' +
+            '</button>' +
+            '</div>' +
+            '</div>' +
             '</div>';
     });
-    
+
     grid.innerHTML = html;
     attachCardEvents();
 }
@@ -278,31 +256,31 @@ function renderWishlist() {
 // ========================================
 function attachCardEvents() {
     var heartBtns = document.querySelectorAll('.wishlist-heart-btn');
-    heartBtns.forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
+    heartBtns.forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
             e.preventDefault();
             e.stopPropagation();
             var productId = parseInt(this.getAttribute('data-id'));
             removeFromWishlist(productId);
         });
     });
-    
+
     var cartBtns = document.querySelectorAll('.wishlist-add-cart-btn');
-    cartBtns.forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
+    cartBtns.forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
             e.preventDefault();
             e.stopPropagation();
             var productId = parseInt(this.getAttribute('data-id'));
-            var product = wishlistItems.find(function(p) { return p.id === productId; });
+            var product = wishlistItems.find(function (p) { return p.id === productId; });
             if (product) {
                 addToCart(product);
             }
         });
     });
-    
+
     var cards = document.querySelectorAll('.wishlist-product-card');
-    cards.forEach(function(card) {
-        card.addEventListener('click', function(e) {
+    cards.forEach(function (card) {
+        card.addEventListener('click', function (e) {
             if (e.target.closest('.wishlist-heart-btn') || e.target.closest('.wishlist-add-cart-btn')) return;
             var productId = this.getAttribute('data-id');
             if (productId) {
@@ -320,17 +298,17 @@ function attachCardEvents() {
 // Elimina producto de wishlist CON SWEETALERT2
 // ========================================
 async function removeFromWishlist(productId) {
-    var product = wishlistItems.find(function(p) { return p.id === productId; });
+    var product = wishlistItems.find(function (p) { return p.id === productId; });
     if (!product) return;
-    
+
     var result = await mostrarConfirmacion(
         '¿Eliminar de wishlist?',
         '¿Estás seguro de que quieres eliminar "' + product.name + '" de tu lista de deseos?',
         'Sí, eliminar'
     );
-    
+
     if (result.isConfirmed) {
-        wishlistItems = wishlistItems.filter(function(p) { return p.id !== productId; });
+        wishlistItems = wishlistItems.filter(function (p) { return p.id !== productId; });
         saveWishlist();
         renderWishlist();
         await mostrarExito('Eliminado', '"' + product.name + '" ha sido eliminado de tu wishlist.');
@@ -342,8 +320,8 @@ async function removeFromWishlist(productId) {
 // ========================================
 async function addToCart(product) {
     var cart = JSON.parse(localStorage.getItem('outlet_cart') || '[]');
-    
-    var existingItem = cart.find(function(item) { return item.id === product.id; });
+
+    var existingItem = cart.find(function (item) { return item.id === product.id; });
     if (existingItem) {
         existingItem.quantity = (existingItem.quantity || 1) + 1;
     } else {
@@ -357,10 +335,10 @@ async function addToCart(product) {
             dateAdded: new Date().toISOString()
         });
     }
-    
+
     localStorage.setItem('outlet_cart', JSON.stringify(cart));
     updateCartBadge();
-    
+
     await mostrarExito(
         '¡Añadido al carrito!',
         '"' + product.name + '" ha sido añadido correctamente. 🛒'
@@ -375,19 +353,19 @@ async function moveAllToCart() {
         await mostrarError('Wishlist vacía', 'No hay productos en tu wishlist para mover al carrito.');
         return;
     }
-    
+
     var result = await mostrarConfirmacion(
         '¿Mover todos al carrito?',
         '¿Quieres mover los ' + wishlistItems.length + ' producto(s) de tu wishlist al carrito?',
         'Sí, mover todos'
     );
-    
+
     if (!result.isConfirmed) return;
-    
+
     var cart = JSON.parse(localStorage.getItem('outlet_cart') || '[]');
-    
-    wishlistItems.forEach(function(product) {
-        var existingItem = cart.find(function(item) { return item.id === product.id; });
+
+    wishlistItems.forEach(function (product) {
+        var existingItem = cart.find(function (item) { return item.id === product.id; });
         if (existingItem) {
             existingItem.quantity = (existingItem.quantity || 1) + 1;
         } else {
@@ -402,16 +380,15 @@ async function moveAllToCart() {
             });
         }
     });
-    
+
     localStorage.setItem('outlet_cart', JSON.stringify(cart));
     updateCartBadge();
-    
+
     await mostrarExito(
         '¡Todos movidos al carrito!',
         wishlistItems.length + ' producto(s) han sido movidos al carrito. 🛍️'
     );
-    
-    // Opcional: vaciar wishlist después de mover
+
     wishlistItems = [];
     saveWishlist();
     renderWishlist();
@@ -424,7 +401,7 @@ function updateCartBadge() {
     var cart = JSON.parse(localStorage.getItem('outlet_cart') || '[]');
     var badge = document.querySelector('.cart-count');
     if (badge) {
-        var total = cart.reduce(function(sum, item) { return sum + (item.quantity || 1); }, 0);
+        var total = cart.reduce(function (sum, item) { return sum + (item.quantity || 1); }, 0);
         badge.textContent = total;
         badge.style.opacity = total === 0 ? '0' : '1';
     }
@@ -436,7 +413,7 @@ function updateCartBadge() {
 function initEventListeners() {
     var sortBtn = document.getElementById('sortBtn');
     if (sortBtn) {
-        sortBtn.addEventListener('click', function() {
+        sortBtn.addEventListener('click', function () {
             if (currentSort === 'newest') {
                 currentSort = 'price-asc';
                 mostrarToast('Ordenando por: Precio (Menor a Mayor)', 'info');
@@ -450,16 +427,16 @@ function initEventListeners() {
             renderWishlist();
         });
     }
-    
+
     var moveAllBtn = document.getElementById('moveAllToCartBtn');
     if (moveAllBtn) {
         moveAllBtn.addEventListener('click', moveAllToCart);
     }
-    
+
     var exploreBtns = document.querySelectorAll('#exploreMoreBtn, #exploreMoreFooterBtn');
-    exploreBtns.forEach(function(btn) {
+    exploreBtns.forEach(function (btn) {
         if (btn) {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', function () {
                 if (typeof window.navigateTo === 'function') {
                     window.navigateTo('/collection');
                 } else {
@@ -475,12 +452,12 @@ function initEventListeners() {
 // ========================================
 export async function wishlistController() {
     console.log('💖 Wishlist Controller - Favorites page');
-    
+
     loadStyles();
     loadWishlist();
     renderWishlist();
     initEventListeners();
     updateCartBadge();
-    
+
     console.log('✅ Wishlist page loaded successfully');
 }

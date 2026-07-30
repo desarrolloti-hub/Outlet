@@ -29,20 +29,14 @@ const GALLERY_IMAGES = [
 
 const HERO_IMAGE = "https://lh3.googleusercontent.com/aida-public/AB6AXuDBtNHClCvXICohUTSHXDeCbNbys5DdAaT7Q-uEaHIWRwxLm9yovNIk2a5I35QNryWCMgMx7jW6-OcTq9Xx0tLOSAVolnEbxKWfFWFlKQdyKr_xAuMLnSUkYK7nrKWtka7eHTgkVPsuAe7qa8I44o1OHxQcIIfkGjmwdgeWxV_lshwAJ4AxzMiiTbZlXQeODlvTckTjwJep1vka771QFHUaRX9ea8g-plsgl7sxU6J7ojEjJjV5GBf7pMwBzOwOVmWysLX8FRQef6ev";
 
-// ============================================
-// VARIABLES DE ESTADO
-// ============================================
 let currentCategoryFilter = null;
 let allProductsCache = [];
 
-// ============================================
-// FUNCIÓN PRINCIPAL - EXPORTADA
-// ============================================
 export async function homeController() {
     console.log('🏠 Home Controller - Versión Funcional con Protección Visitor');
-    
+
     await loadAllProducts();
-    
+
     loadHeroImage();
     await loadCategories();
     renderFlashSale();
@@ -58,75 +52,58 @@ export async function homeController() {
     initCategoryScroll();
     initRefreshButton();
     setupRealtimeUpdates();
-    
-    // ✅ Solo mantener protección para clics en header y enlaces
+
     initNavigationProtection();
     initHeaderProtection();
     initCartLinkProtection();
-    
+
     console.log('✅ Home Controller listo');
 }
 
-// ============================================
-// ✅ VERIFICACIÓN DE AUTENTICACIÓN
-// ============================================
 function isUserAuthenticated() {
-    // Verifica si hay un usuario logueado en localStorage o session
     const user = localStorage.getItem('outlet_user');
     const session = sessionStorage.getItem('outlet_session');
     const userData = localStorage.getItem('userData');
     const sessionData = sessionStorage.getItem('sessionData');
     const token = localStorage.getItem('auth_token');
     const sessionToken = sessionStorage.getItem('auth_token');
-    
+
     return !!(user || session || userData || sessionData || token || sessionToken);
 }
 
-// ============================================
-// ✅ REDIRIGIR A CREATE ACCOUNT (SOLO VISITOR)
-// ============================================
 function redirectToCreateAccount() {
     console.log('🔒 Redirigiendo a /createAccount (usuario no autenticado)');
-    
+
     const route = '/createAccount';
-    
-    // 1. Intentar con el router global
+
     if (window.router && typeof window.router.navigate === 'function') {
         window.router.navigate(route);
         showToast('🔒 Inicia sesión para usar esta función');
         return;
     }
-    
-    // 2. Intentar con el sistema de navegación de la aplicación
+
     if (window.App && window.App.router && typeof window.App.router.navigate === 'function') {
         window.App.router.navigate(route);
         showToast('🔒 Inicia sesión para usar esta función');
         return;
     }
-    
-    // 3. Intentar con el Router de la aplicación (si existe)
+
     if (window.Router && typeof window.Router.navigate === 'function') {
         window.Router.navigate(route);
         showToast('🔒 Inicia sesión para usar esta función');
         return;
     }
-    
-    // 4. Fallback: usar window.location.href
+
     window.location.href = route;
     showToast('🔒 Inicia sesión para usar esta función');
 }
 
-// ============================================
-// ✅ PROTECCIÓN PARA RUTAS DIRECTAS
-// ============================================
 function initRouteProtection() {
-    // Proteger rutas de carrito y wishlist
     const protectedRoutes = ['/cart', '/wishlist', '/cartCustomer', '/wishlistCustomer'];
     const currentPath = window.location.pathname || window.location.hash.replace('#', '');
-    
+
     console.log('📍 Ruta actual:', currentPath);
-    
-    // Verificar si la ruta actual está protegida
+
     if (protectedRoutes.some(route => currentPath.includes(route))) {
         if (!isUserAuthenticated()) {
             console.log('🔒 Ruta protegida detectada, redirigiendo...');
@@ -136,28 +113,21 @@ function initRouteProtection() {
     }
 }
 
-// ============================================
-// ✅ PROTECCIÓN ESPECÍFICA PARA LISTA DE DESEOS
-// ============================================
 function initWishlistProtection() {
     console.log('🛡️ Inicializando protección para lista de deseos');
-    
-    // Buscar TODOS los enlaces que contengan "wishlist" o "favoritos"
+
     const wishlistLinks = document.querySelectorAll('a[href*="wishlist"], a[href*="favoritos"], a[href*="Wishlist"], a[href*="Favoritos"]');
-    
+
     console.log(`🔗 Enlaces de wishlist encontrados: ${wishlistLinks.length}`);
-    
+
     wishlistLinks.forEach((link, index) => {
         console.log(`  ${index + 1}. href: ${link.getAttribute('href')}`);
-        
-        // Remover event listeners anteriores para evitar duplicados
         link.removeEventListener('click', handleWishlistLinkClick);
         link.addEventListener('click', handleWishlistLinkClick);
     });
-    
-    // También buscar elementos con clase o data attribute
+
     const wishlistElements = document.querySelectorAll('.wishlist-link, [data-wishlist-link], .favorite-link, [data-favorite-link]');
-    
+
     wishlistElements.forEach((el, index) => {
         console.log(`  Elemento wishlist encontrado: ${el.tagName} ${el.className}`);
         el.removeEventListener('click', handleWishlistLinkClick);
@@ -165,12 +135,9 @@ function initWishlistProtection() {
     });
 }
 
-// ============================================
-// ✅ MANEJADOR PARA CLICKS EN ENLACES DE WISHLIST
-// ============================================
 function handleWishlistLinkClick(e) {
     console.log('🎯 Click en enlace de wishlist detectado');
-    
+
     if (!isUserAuthenticated()) {
         e.preventDefault();
         e.stopPropagation();
@@ -179,32 +146,26 @@ function handleWishlistLinkClick(e) {
         redirectToCreateAccount();
         return false;
     }
-    
+
     console.log('✅ Usuario autenticado, permitiendo navegación');
     return true;
 }
 
-// ============================================
-// ✅ PROTECCIÓN PARA ENLACES DEL CARRITO
-// ============================================
 function initCartLinkProtection() {
     console.log('🛡️ Inicializando protección para carrito');
-    
-    // Buscar TODOS los enlaces que contengan "cart" o "carrito"
+
     const cartLinks = document.querySelectorAll('a[href*="cart"], a[href*="carrito"], a[href*="Cart"], a[href*="Carrito"]');
-    
+
     console.log(`🔗 Enlaces de carrito encontrados: ${cartLinks.length}`);
-    
+
     cartLinks.forEach((link, index) => {
         console.log(`  ${index + 1}. href: ${link.getAttribute('href')}`);
-        
         link.removeEventListener('click', handleCartLinkClick);
         link.addEventListener('click', handleCartLinkClick);
     });
-    
-    // También buscar elementos con clase o data attribute
+
     const cartElements = document.querySelectorAll('.cart-link, [data-cart-link], .carrito-link, [data-carrito-link]');
-    
+
     cartElements.forEach((el, index) => {
         console.log(`  Elemento carrito encontrado: ${el.tagName} ${el.className}`);
         el.removeEventListener('click', handleCartLinkClick);
@@ -212,12 +173,9 @@ function initCartLinkProtection() {
     });
 }
 
-// ============================================
-// ✅ MANEJADOR PARA CLICKS EN ENLACES DE CARRITO
-// ============================================
 function handleCartLinkClick(e) {
     console.log('🎯 Click en enlace de carrito detectado');
-    
+
     if (!isUserAuthenticated()) {
         e.preventDefault();
         e.stopPropagation();
@@ -226,27 +184,23 @@ function handleCartLinkClick(e) {
         redirectToCreateAccount();
         return false;
     }
-    
+
     console.log('✅ Usuario autenticado, permitiendo navegación');
     return true;
 }
 
-// ============================================
-// ✅ MANEJAR CLICKS EN CARRITO (Botones de productos)
-// ============================================
 function handleCartClick(e) {
     const target = e.target.closest('[data-cart-action]');
     if (!target) return;
-    
+
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (!isUserAuthenticated()) {
         redirectToCreateAccount();
         return;
     }
-    
-    // Si está autenticado, ejecuta la acción normal del carrito
+
     const productCard = target.closest('.trending-item, .product-card');
     const productName = productCard?.querySelector('.product-name')?.textContent || 'Producto';
     addToCart(productName);
@@ -254,36 +208,29 @@ function handleCartClick(e) {
     window.dispatchEvent(new CustomEvent('cart:updated'));
 }
 
-// ============================================
-// ✅ MANEJAR CLICKS EN LISTA DE DESEOS (Botones de productos)
-// ============================================
 function handleWishlistClick(e) {
     const target = e.target.closest('[data-wishlist-action]');
     if (!target) return;
-    
+
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (!isUserAuthenticated()) {
         redirectToCreateAccount();
         return;
     }
-    
-    // Si está autenticado, ejecuta la acción normal de wishlist
+
     const productCard = target.closest('.trending-item, .product-card');
     const productName = productCard?.querySelector('.product-name')?.textContent || 'Producto';
     toggleWishlist(target, productName);
 }
 
-// ============================================
-// ✅ FUNCIÓN PARA TOGGLE WISHLIST
-// ============================================
 function toggleWishlist(button, productName) {
     let wishlist = JSON.parse(localStorage.getItem('outlet_wishlist') || '[]');
     const exists = wishlist.some(item => item.name === productName);
-    
+
     const icon = button.querySelector('i');
-    
+
     if (exists) {
         wishlist = wishlist.filter(item => item.name !== productName);
         if (icon) {
@@ -292,10 +239,10 @@ function toggleWishlist(button, productName) {
         }
         showToast(`💔 ${productName} removido de favoritos`);
     } else {
-        wishlist.push({ 
-            id: Date.now(), 
-            name: productName, 
-            date: new Date().toISOString() 
+        wishlist.push({
+            id: Date.now(),
+            name: productName,
+            date: new Date().toISOString()
         });
         if (icon) {
             icon.style.color = '#ddab3b';
@@ -303,47 +250,38 @@ function toggleWishlist(button, productName) {
         }
         showToast(`❤️ ${productName} agregado a favoritos`);
     }
-    
+
     localStorage.setItem('outlet_wishlist', JSON.stringify(wishlist));
 }
 
-// ============================================
-// ✅ PROTECCIÓN PARA HEADER (Iconos de carrito y wishlist)
-// ============================================
 function initHeaderProtection() {
     console.log('🛡️ Inicializando protección para header');
-    
-    // Buscar y proteger iconos del header
+
     const headerIcons = document.querySelectorAll('.header-cart, .header-wishlist, .cart-icon, .wishlist-icon, [data-header-cart], [data-header-wishlist]');
-    
+
     headerIcons.forEach(icon => {
         icon.removeEventListener('click', handleHeaderIconClick);
         icon.addEventListener('click', handleHeaderIconClick);
     });
 }
 
-// ============================================
-// ✅ MANEJADOR PARA CLICKS EN ICONOS DEL HEADER
-// ============================================
 function handleHeaderIconClick(e) {
     const element = this;
-    
-    // Verificar si es carrito o wishlist
-    const isCart = element.classList.contains('header-cart') || 
-                  element.classList.contains('cart-icon') || 
-                  element.matches('[data-header-cart]');
-    
-    const isWishlist = element.classList.contains('header-wishlist') || 
-                     element.classList.contains('wishlist-icon') || 
-                     element.matches('[data-header-wishlist]');
-    
-    // También verificar si el icono está dentro de un enlace
+
+    const isCart = element.classList.contains('header-cart') ||
+        element.classList.contains('cart-icon') ||
+        element.matches('[data-header-cart]');
+
+    const isWishlist = element.classList.contains('header-wishlist') ||
+        element.classList.contains('wishlist-icon') ||
+        element.matches('[data-header-wishlist]');
+
     const parentLink = element.closest('a');
     if (parentLink) {
         const href = parentLink.getAttribute('href') || '';
         const isCartLink = href.includes('cart') || href.includes('carrito');
         const isWishlistLink = href.includes('wishlist') || href.includes('favoritos');
-        
+
         if ((isCartLink || isWishlistLink) && !isUserAuthenticated()) {
             e.preventDefault();
             e.stopPropagation();
@@ -352,7 +290,7 @@ function handleHeaderIconClick(e) {
             return false;
         }
     }
-    
+
     if ((isCart || isWishlist) && !isUserAuthenticated()) {
         e.preventDefault();
         e.stopPropagation();
@@ -362,23 +300,18 @@ function handleHeaderIconClick(e) {
     }
 }
 
-// ============================================
-// ✅ PROTECCIÓN PARA NAVEGACIÓN (Enlaces en el menú)
-// ============================================
 function initNavigationProtection() {
     console.log('🛡️ Inicializando protección para navegación');
-    
-    // Proteger enlaces a carrito y wishlist en el menú
+
     document.addEventListener('click', (e) => {
         const link = e.target.closest('a');
         if (!link) return;
-        
+
         const href = link.getAttribute('href') || '';
-        
-        // Verificar si es carrito o wishlist
+
         const isCart = href.includes('cart') || href.includes('carrito') || href.includes('Cart') || href.includes('Carrito');
         const isWishlist = href.includes('wishlist') || href.includes('favoritos') || href.includes('Wishlist') || href.includes('Favoritos');
-        
+
         if ((isCart || isWishlist) && !isUserAuthenticated()) {
             console.log('🔒 Click en enlace de navegación protegido:', href);
             e.preventDefault();
@@ -386,24 +319,21 @@ function initNavigationProtection() {
             redirectToCreateAccount();
             return false;
         }
-    }, true); // Capturing phase
+    }, true);
 }
 
-// ============================================
-// ✅ CARGAR TODOS LOS PRODUCTOS
-// ============================================
 async function loadAllProducts() {
     try {
         console.log('📦 Cargando todos los productos desde Firebase...');
         allProductsCache = await ProductService.getAll({}, 'createdAt', 'desc', 100);
         console.log(`✅ ${allProductsCache.length} productos cargados`);
-        
+
         if (allProductsCache.length > 0) {
             console.log('📋 Primeros productos:');
             allProductsCache.slice(0, 5).forEach(p => {
                 console.log(`  - ${p.nombre} | Categoría: "${p.categoria}" | Descuento: ${p.porcentajeDescuento || 0}%`);
             });
-            
+
             const categorias = [...new Set(allProductsCache.map(p => p.categoria))];
             console.log(`📋 Categorías disponibles: ${categorias.join(', ')}`);
         }
@@ -413,9 +343,6 @@ async function loadAllProducts() {
     }
 }
 
-// ============================================
-// ✅ RENDERIZAR FLASH SALE
-// ============================================
 function renderFlashSale() {
     const container = document.getElementById('flash-sale-container');
     if (!container) {
@@ -427,9 +354,9 @@ function renderFlashSale() {
         const flashProducts = allProductsCache
             .filter(p => p.porcentajeDescuento > 0 && p.estado === 'activo')
             .slice(0, 6);
-        
+
         console.log(`📦 Productos en oferta: ${flashProducts.length}`);
-        
+
         if (flashProducts.length === 0) {
             container.innerHTML = `
                 <div class="empty-state" style="grid-column: 1/-1; text-align: center; padding: 40px;">
@@ -445,7 +372,7 @@ function renderFlashSale() {
             const finalPrice = p.precioFinal || p.precioVenta * (1 - discount / 100);
             const soldPercent = Math.floor(Math.random() * 60) + 20;
             const imgSrc = p.imagenPrincipal || 'https://placehold.co/300x300?text=Sin+Imagen';
-            
+
             return `
                 <div class="product-card" data-id="${p.id}">
                     <div class="product-img">
@@ -491,9 +418,6 @@ function renderFlashSale() {
     }
 }
 
-// ============================================
-// ✅ RENDERIZAR TRENDING
-// ============================================
 function renderTrending(categoryFilter = null) {
     const container = document.getElementById('trending-container');
     if (!container) {
@@ -503,17 +427,17 @@ function renderTrending(categoryFilter = null) {
 
     try {
         let products = [];
-        
+
         if (categoryFilter) {
             const filterLower = categoryFilter.toLowerCase();
-            products = allProductsCache.filter(p => 
+            products = allProductsCache.filter(p =>
                 p.categoria && p.categoria.toLowerCase() === filterLower &&
                 p.estado === 'activo'
             );
             console.log(`📦 Productos en "${categoryFilter}": ${products.length}`);
         } else {
             products = allProductsCache.filter(p => p.destacado && p.estado === 'activo');
-            
+
             if (products.length < 5) {
                 const destacadosIds = new Set(products.map(p => p.id));
                 const adicionales = allProductsCache
@@ -523,7 +447,7 @@ function renderTrending(categoryFilter = null) {
             }
             console.log(`📦 Productos trending: ${products.length}`);
         }
-        
+
         if (products.length === 0) {
             container.innerHTML = `
                 <div class="empty-state" style="grid-column: 1/-1; text-align: center; padding: 40px;">
@@ -543,7 +467,7 @@ function renderTrending(categoryFilter = null) {
             } else if (p.porcentajeDescuento > 0) {
                 badge = `<span class="new-badge" style="background: #ef4444;">-${p.porcentajeDescuento}%</span>`;
             }
-            
+
             const rating = (4 + Math.random() * 0.9).toFixed(1);
             const reviews = Math.floor(Math.random() * 200) + 10;
             const imgSrc = p.imagenPrincipal || 'https://placehold.co/300x300?text=Sin+Imagen';
@@ -568,7 +492,7 @@ function renderTrending(categoryFilter = null) {
                         <span class="body-sm rating">${rating} ★ (${reviews})</span>
                     </div>
                     <div style="font-size: 10px; color: #999; margin-top: 4px; text-align: center;">
-                        📂 ${p.categoria || 'Sin categoría'}
+                         ${p.categoria || 'Sin categoría'}
                     </div>
                 </div>
             `;
@@ -576,7 +500,7 @@ function renderTrending(categoryFilter = null) {
 
         container.innerHTML = html;
         container.setAttribute('data-loaded', 'true');
-        
+
         console.log(`✅ ${products.length} productos renderizados${categoryFilter ? ` para "${categoryFilter}"` : ''}`);
 
     } catch (error) {
@@ -589,18 +513,15 @@ function renderTrending(categoryFilter = null) {
     }
 }
 
-// ============================================
-// ✅ CARGAR CATEGORÍAS
-// ============================================
 async function loadCategories() {
     const container = document.getElementById('categories-container');
     if (!container) return;
 
     try {
         console.log('🔄 Cargando categorías desde Firebase...');
-        
+
         const categories = await CategoryService.getAll({}, true);
-        
+
         if (!categories || categories.length === 0) {
             container.innerHTML = `<div class="category-empty" style="grid-column: 1/-1; text-align: center; padding: 20px;">No hay categorías disponibles</div>`;
             return;
@@ -614,7 +535,7 @@ async function loadCategories() {
         container.innerHTML = displayCategories.map((cat, idx) => {
             const imgSrc = cat.imageBase64 || FALLBACK_IMAGES[idx % FALLBACK_IMAGES.length];
             const categoryName = cat.name;
-            
+
             return `
                 <div class="category-item" data-category="${categoryName}" style="cursor: pointer;">
                     <div class="circle-img">
@@ -626,7 +547,7 @@ async function loadCategories() {
         }).join('');
 
         container.querySelectorAll('.category-item').forEach(item => {
-            item.addEventListener('click', function(e) {
+            item.addEventListener('click', function (e) {
                 e.preventDefault();
                 const categoryName = this.dataset.category;
                 console.log(`🔍 Click en categoría: "${categoryName}"`);
@@ -646,32 +567,29 @@ async function loadCategories() {
     }
 }
 
-// ============================================
-// ✅ FILTRAR PRODUCTOS POR CATEGORÍA
-// ============================================
 function filterByCategory(categoryName) {
     console.log(`🔍 Filtrando por: "${categoryName}"`);
     currentCategoryFilter = categoryName;
-    
+
     const sectionTitle = document.querySelector('.trending .section-header h2');
     const sectionSubtitle = document.querySelector('.trending .section-header p');
     const shopAllBtn = document.getElementById('shopAllBtn');
-    
+
     if (sectionTitle) {
         sectionTitle.textContent = `👗 ${categoryName}`;
     }
-    
+
     if (sectionSubtitle) {
         sectionSubtitle.textContent = `Productos en ${categoryName}`;
     }
-    
+
     if (shopAllBtn) {
         shopAllBtn.style.display = 'inline-flex';
         shopAllBtn.textContent = 'Ver todos';
     }
-    
+
     renderTrending(categoryName);
-    
+
     const trendingSection = document.querySelector('.trending');
     if (trendingSection) {
         setTimeout(() => {
@@ -680,22 +598,18 @@ function filterByCategory(categoryName) {
     }
 }
 
-// ============================================
-// ANIMACIONES Y EVENTOS
-// ============================================
-
 function animateProgressBar(element, target) {
     let current = 0;
     const duration = 1500;
     const startTime = performance.now();
-    
+
     function update(currentTime) {
         const elapsed = currentTime - startTime;
         const progress = Math.min(elapsed / duration, 1);
         const easeProgress = 1 - Math.pow(1 - progress, 2);
         current = Math.floor(easeProgress * target);
         element.style.width = current + '%';
-        
+
         const parent = element.closest('.product-card');
         const soldOutText = parent?.querySelector('.sold-out-text');
         if (soldOutText && current > 0) {
@@ -705,7 +619,7 @@ function animateProgressBar(element, target) {
                 soldOutText.innerHTML = `${current}% Vendido`;
             }
         }
-        
+
         if (progress < 1) {
             requestAnimationFrame(update);
         }
@@ -716,7 +630,7 @@ function animateProgressBar(element, target) {
 function loadGallery() {
     const container = document.getElementById('gallery-container');
     if (!container) return;
-    
+
     container.innerHTML = GALLERY_IMAGES.map((img, idx) => `
         <div class="gallery-item">
             <img alt="Galería ${idx + 1}" src="${img}" loading="lazy"/>
@@ -738,18 +652,18 @@ function loadHeroImage() {
 function initTimer() {
     const timerDisplay = document.getElementById('timerDisplay');
     if (!timerDisplay) return;
-    
+
     let timeLeft = 2 * 3600 + 45 * 60 + 12;
-    
+
     function updateTimerDisplay() {
         const hours = Math.floor(timeLeft / 3600);
         const minutes = Math.floor((timeLeft % 3600) / 60);
         const seconds = timeLeft % 60;
         timerDisplay.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }
-    
+
     updateTimerDisplay();
-    
+
     const interval = setInterval(() => {
         if (timeLeft <= 0) {
             clearInterval(interval);
@@ -762,10 +676,7 @@ function initTimer() {
 }
 
 function initCartEvents() {
-    // Delegación de eventos para el carrito
     document.addEventListener('click', handleCartClick);
-    
-    // Delegación de eventos para la lista de deseos
     document.addEventListener('click', handleWishlistClick);
 }
 
@@ -778,7 +689,7 @@ function addToCart(productName) {
 function showToast(message) {
     const existingToast = document.querySelector('.toast-notification');
     if (existingToast) existingToast.remove();
-    
+
     const toast = document.createElement('div');
     toast.className = 'toast-notification';
     toast.textContent = message;
@@ -791,7 +702,7 @@ function showToast(message) {
         animation: slideUp 0.3s ease;
     `;
     document.body.appendChild(toast);
-    
+
     setTimeout(() => {
         toast.style.opacity = '0';
         toast.style.transition = 'opacity 0.3s';
@@ -801,7 +712,7 @@ function showToast(message) {
 
 function initScrollReveal() {
     const revealElements = document.querySelectorAll('.product-card, .trending-item, .gallery-item, .category-item');
-    
+
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -811,7 +722,7 @@ function initScrollReveal() {
             }
         });
     }, { threshold: 0.1 });
-    
+
     revealElements.forEach(el => {
         el.style.opacity = '0';
         el.style.transform = 'translateY(30px)';
@@ -864,26 +775,26 @@ function initShopButtons() {
             document.querySelector('.trending')?.scrollIntoView({ behavior: 'smooth' });
         });
     }
-    
+
     const shopAllBtn = document.getElementById('shopAllBtn');
     if (shopAllBtn) {
-        shopAllBtn.addEventListener('click', function(e) {
+        shopAllBtn.addEventListener('click', function (e) {
             e.preventDefault();
             console.log('🔄 Mostrando todos los productos');
-            
+
             currentCategoryFilter = null;
-            
+
             const sectionTitle = document.querySelector('.trending .section-header h2');
             const sectionSubtitle = document.querySelector('.trending .section-header p');
             if (sectionTitle) sectionTitle.textContent = 'Trending Now';
             if (sectionSubtitle) sectionSubtitle.textContent = 'Top pieces curated for the season.';
-            
+
             this.style.display = 'none';
-            
+
             renderTrending(null);
             document.querySelector('.trending')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         });
-        
+
         shopAllBtn.style.display = 'none';
     }
 }
@@ -891,7 +802,7 @@ function initShopButtons() {
 function initCategoryScroll() {
     const nav = document.querySelector('.category-nav');
     if (!nav) return;
-    
+
     nav.addEventListener('wheel', (e) => {
         if (e.target.closest('.category-grid')) {
             e.preventDefault();
@@ -903,21 +814,21 @@ function initCategoryScroll() {
 function initRefreshButton() {
     const refreshBtn = document.getElementById('refreshProductsBtn');
     if (!refreshBtn) return;
-    
+
     refreshBtn.addEventListener('click', async () => {
         const icon = refreshBtn.querySelector('i');
         if (icon) {
             icon.style.transform = 'rotate(360deg)';
             icon.style.transition = 'transform 0.5s';
         }
-        
+
         await CacheService.clearCache(STORES.PRODUCTS);
         await loadAllProducts();
         renderFlashSale();
         renderTrending(currentCategoryFilter);
-        
+
         showToast('✅ Productos actualizados');
-        
+
         setTimeout(() => {
             if (icon) {
                 icon.style.transform = 'rotate(0deg)';
@@ -937,9 +848,6 @@ function setupRealtimeUpdates() {
     });
 }
 
-// ============================================
-// ESTILOS BASE
-// ============================================
 if (!document.querySelector('#outlet-styles')) {
     const style = document.createElement('style');
     style.id = 'outlet-styles';

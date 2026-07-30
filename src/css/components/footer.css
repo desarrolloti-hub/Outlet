@@ -4,7 +4,6 @@
    Versión original con colores fijos (siempre oscuro)
    ======================================== */
 
-/* ========== FOOTER PRINCIPAL ========== */
 .OUTLET-footer {
     background: #0a0a0a;
     color: #ffffff;
@@ -20,7 +19,6 @@
     padding: 48px 32px 24px;
 }
 
-/* ========== DIVIDER ========== */
 .footer-divider {
     height: 1px;
     width: 100%;
@@ -28,7 +26,6 @@
     margin-bottom: 48px;
 }
 
-/* ========== GRID PRINCIPAL ========== */
 .footer-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -36,7 +33,6 @@
     padding-bottom: 48px;
 }
 
-/* Columnas */
 .footer-col-brand {
     max-width: 320px;
 }
@@ -51,7 +47,6 @@
     margin-top: 0;
 }
 
-/* ========== LOGO Y BRAND ========== */
 .footer-logo-link {
     display: inline-block;
     margin-bottom: 20px;
@@ -77,7 +72,6 @@
     margin-bottom: 24px;
 }
 
-/* ========== REDES SOCIALES ========== */
 .footer-social {
     display: flex;
     gap: 16px;
@@ -103,7 +97,6 @@
     transform: translateY(-2px);
 }
 
-/* ========== TÍTULOS DE COLUMNAS ========== */
 .footer-col-title {
     font-size: 11px;
     font-weight: 700;
@@ -113,7 +106,6 @@
     margin-bottom: 20px;
 }
 
-/* ========== LISTA DE ENLACES ========== */
 .footer-links {
     list-style: none;
     padding: 0;
@@ -137,7 +129,6 @@
     padding-left: 4px;
 }
 
-/* ========== NEWSLETTER ========== */
 .footer-newsletter-text {
     font-size: 12px;
     color: rgba(255, 255, 255, 0.5);
@@ -190,7 +181,6 @@
     transform: translateX(4px);
 }
 
-/* ========== SEGURO ========== */
 .footer-secure {
     display: flex;
     align-items: center;
@@ -211,7 +201,6 @@
     font-weight: 600;
 }
 
-/* ========== BOTTOM BAR ========== */
 .footer-bottom {
     display: flex;
     flex-wrap: wrap;
@@ -247,7 +236,6 @@
     color: #ddab3b;
 }
 
-/* ========== MÉTODOS DE PAGO ========== */
 .footer-payments {
     display: flex;
     gap: 12px;
@@ -265,22 +253,21 @@
     transform: translateY(-2px);
 }
 
-/* ========== RESPONSIVE ========== */
 @media (max-width: 1024px) {
     .footer-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 40px;
     }
-    
+
     .footer-col-brand {
         max-width: 100%;
     }
-    
+
     .footer-col-double {
         flex-direction: row;
         gap: 40px;
     }
-    
+
     .footer-col-double .footer-subcol {
         flex: 1;
     }
@@ -290,31 +277,31 @@
     .footer-container {
         padding: 40px 20px 20px;
     }
-    
+
     .footer-grid {
         grid-template-columns: 1fr;
         gap: 32px;
     }
-    
+
     .footer-col-double {
         flex-direction: column;
         gap: 32px;
     }
-    
+
     .footer-bottom {
         flex-direction: column;
         text-align: center;
         gap: 16px;
     }
-    
+
     .footer-legal {
         justify-content: center;
     }
-    
+
     .footer-payments {
         justify-content: center;
     }
-    
+
     .footer-social {
         justify-content: flex-start;
     }
@@ -324,25 +311,25 @@
     .footer-container {
         padding: 32px 16px 16px;
     }
-    
+
     .footer-divider {
         margin-bottom: 32px;
     }
-    
+
     .footer-legal {
         gap: 16px;
     }
-    
+
     .footer-legal a {
         font-size: 9px;
     }
-    
+
     .footer-logo-img {
         height: 35px;
     }
 }
 
-/* ========== MODO OSCURO - SOLO AJUSTES MÍNIMOS ========== */
+/* Solo ajuste mínimo para dark mode */
 body.dark-mode .OUTLET-footer {
     background: #0a1c2c;
 }
