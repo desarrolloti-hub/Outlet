@@ -95,19 +95,19 @@ function mostrarToast(mensaje, tipo) {
     tipo = tipo || 'info';
     var toastExistente = document.querySelector('.outlet-toast');
     if (toastExistente) toastExistente.remove();
-    
+
     var toast = document.createElement('div');
     toast.className = 'outlet-toast ' + tipo;
     toast.textContent = mensaje;
     document.body.appendChild(toast);
-    
-    requestAnimationFrame(function() {
+
+    requestAnimationFrame(function () {
         toast.classList.add('show');
     });
-    
-    setTimeout(function() {
+
+    setTimeout(function () {
         toast.classList.remove('show');
-        setTimeout(function() { toast.remove(); }, 300);
+        setTimeout(function () { toast.remove(); }, 300);
     }, 3200);
 }
 
@@ -123,7 +123,7 @@ function mostrarSweetAlert(options) {
             popup: 'swal2-popup'
         }
     };
-    
+
     return Swal.fire(Object.assign({}, defaultOptions, options));
 }
 
@@ -186,7 +186,7 @@ function mostrarConfirmacion(titulo, mensaje, confirmText) {
 // ========================================
 function loadStyles() {
     if (document.querySelector('link[href*="coleccion.css"]')) return;
-    
+
     var link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = '/src/css/pages/coleccion.css';
@@ -204,109 +204,109 @@ function injectCollectionHTML() {
 
     console.log('📄 Inyectando HTML de la colección para CUSTOMER...');
 
-    var appContainer = document.getElementById('app') || 
-                        document.getElementById('main-content') || 
-                        document.querySelector('main') || 
-                        document.body;
+    var appContainer = document.getElementById('app') ||
+        document.getElementById('main-content') ||
+        document.querySelector('main') ||
+        document.body;
 
-    var collectionHTML = 
+    var collectionHTML =
         '<main>' +
-            '<section class="coleccion-hero" id="heroSection">' +
-                '<img class="coleccion-hero-image" id="heroImage" alt="Colección" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDzu-fRuH3Pr70TzycsyqNKTq0wqXUKhvqpLQnKFosRgYpTYaHmMbiZTuR6057YH9mzWy7zyvF1Nayn_vmpuWt228rSPkB3bVGEyC4luNmuFA8zLymzV9_rpVIqWLkjNVhRh4POKNi-dzukNMftMlKjV48nwZdx-9jPYUoHEnMtd8MZWvsGmBNKlC-J5JgvgvS3TqUQb2UxHyyvWUysvPjpJ45zalixovYZXI-e_wzrc3bs-6m3CrEzBx9xQSLKPeQO6fx0aggigfMd">' +
-                '<div class="coleccion-hero-overlay">' +
-                    '<h2 class="coleccion-hero-title" id="heroTitle">COLECCIÓN MUJER</h2>' +
-                    '<div class="coleccion-hero-underline"></div>' +
-                '</div>' +
-            '</section>' +
+        '<section class="coleccion-hero" id="heroSection">' +
+        '<img class="coleccion-hero-image" id="heroImage" alt="Colección" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDzu-fRuH3Pr70TzycsyqNKTq0wqXUKhvqpLQnKFosRgYpTYaHmMbiZTuR6057YH9mzWy7zyvF1Nayn_vmpuWt228rSPkB3bVGEyC4luNmuFA8zLymzV9_rpVIqWLkjNVhRh4POKNi-dzukNMftMlKjV48nwZdx-9jPYUoHEnMtd8MZWvsGmBNKlC-J5JgvgvS3TqUQb2UxHyyvWUysvPjpJ45zalixovYZXI-e_wzrc3bs-6m3CrEzBx9xQSLKPeQO6fx0aggigfMd">' +
+        '<div class="coleccion-hero-overlay">' +
+        '<h2 class="coleccion-hero-title" id="heroTitle">COLECCIÓN MUJER</h2>' +
+        '<div class="coleccion-hero-underline"></div>' +
+        '</div>' +
+        '</section>' +
 
-            '<div class="coleccion-main-container">' +
-                '<aside class="coleccion-sidebar">' +
-                    '<h3 class="coleccion-sidebar-title">FILTROS</h3>' +
+        '<div class="coleccion-main-container">' +
+        '<aside class="coleccion-sidebar">' +
+        '<h3 class="coleccion-sidebar-title">FILTROS</h3>' +
 
-                    '<div class="coleccion-filter-group">' +
-                        '<p class="coleccion-filter-label">Talla</p>' +
-                        '<div class="coleccion-size-grid">' +
-                            '<button class="coleccion-size-btn" data-size="XS">XS</button>' +
-                            '<button class="coleccion-size-btn active" data-size="S">S</button>' +
-                            '<button class="coleccion-size-btn" data-size="M">M</button>' +
-                            '<button class="coleccion-size-btn" data-size="L">L</button>' +
-                            '<button class="coleccion-size-btn" data-size="XL">XL</button>' +
-                        '</div>' +
-                    '</div>' +
+        '<div class="coleccion-filter-group">' +
+        '<p class="coleccion-filter-label">Talla</p>' +
+        '<div class="coleccion-size-grid">' +
+        '<button class="coleccion-size-btn" data-size="XS">XS</button>' +
+        '<button class="coleccion-size-btn active" data-size="S">S</button>' +
+        '<button class="coleccion-size-btn" data-size="M">M</button>' +
+        '<button class="coleccion-size-btn" data-size="L">L</button>' +
+        '<button class="coleccion-size-btn" data-size="XL">XL</button>' +
+        '</div>' +
+        '</div>' +
 
-                    '<div class="coleccion-filter-group">' +
-                        '<p class="coleccion-filter-label">Color</p>' +
-                        '<div class="coleccion-color-options">' +
-                            '<div class="coleccion-color-swatch black" data-color="black"></div>' +
-                            '<div class="coleccion-color-swatch white" data-color="white"></div>' +
-                            '<div class="coleccion-color-swatch gold" data-color="gold"></div>' +
-                            '<div class="coleccion-color-swatch blue" data-color="blue"></div>' +
-                            '<div class="coleccion-color-swatch brown" data-color="brown"></div>' +
-                        '</div>' +
-                    '</div>' +
+        '<div class="coleccion-filter-group">' +
+        '<p class="coleccion-filter-label">Color</p>' +
+        '<div class="coleccion-color-options">' +
+        '<div class="coleccion-color-swatch black" data-color="black"></div>' +
+        '<div class="coleccion-color-swatch white" data-color="white"></div>' +
+        '<div class="coleccion-color-swatch gold" data-color="gold"></div>' +
+        '<div class="coleccion-color-swatch blue" data-color="blue"></div>' +
+        '<div class="coleccion-color-swatch brown" data-color="brown"></div>' +
+        '</div>' +
+        '</div>' +
 
-                    '<div class="coleccion-filter-group">' +
-                        '<p class="coleccion-filter-label">Diseñador</p>' +
-                        '<div class="coleccion-checkbox-group">' +
-                            '<label class="coleccion-checkbox-label">' +
-                                '<input type="checkbox" class="coleccion-checkbox" value="Maison Luxe">' +
-                                '<span>Maison Luxe</span>' +
-                            '</label>' +
-                            '<label class="coleccion-checkbox-label">' +
-                                '<input type="checkbox" class="coleccion-checkbox" value="Atelier Noir">' +
-                                '<span>Atelier Noir</span>' +
-                            '</label>' +
-                            '<label class="coleccion-checkbox-label">' +
-                                '<input type="checkbox" class="coleccion-checkbox" value="Ethereal Studio">' +
-                                '<span>Ethereal Studio</span>' +
-                            '</label>' +
-                        '</div>' +
-                    '</div>' +
+        '<div class="coleccion-filter-group">' +
+        '<p class="coleccion-filter-label">Diseñador</p>' +
+        '<div class="coleccion-checkbox-group">' +
+        '<label class="coleccion-checkbox-label">' +
+        '<input type="checkbox" class="coleccion-checkbox" value="Maison Luxe">' +
+        '<span>Maison Luxe</span>' +
+        '</label>' +
+        '<label class="coleccion-checkbox-label">' +
+        '<input type="checkbox" class="coleccion-checkbox" value="Atelier Noir">' +
+        '<span>Atelier Noir</span>' +
+        '</label>' +
+        '<label class="coleccion-checkbox-label">' +
+        '<input type="checkbox" class="coleccion-checkbox" value="Ethereal Studio">' +
+        '<span>Ethereal Studio</span>' +
+        '</label>' +
+        '</div>' +
+        '</div>' +
 
-                    '<div class="coleccion-filter-group">' +
-                        '<p class="coleccion-filter-label">Rango de Precio</p>' +
-                        '<input type="range" class="coleccion-price-range" min="0" max="5000" value="2500">' +
-                        '<div class="coleccion-price-labels">' +
-                            '<span>0€</span>' +
-                            '<span>5000€</span>' +
-                        '</div>' +
-                    '</div>' +
-                '</aside>' +
+        '<div class="coleccion-filter-group">' +
+        '<p class="coleccion-filter-label">Rango de Precio</p>' +
+        '<input type="range" class="coleccion-price-range" min="0" max="5000" value="2500">' +
+        '<div class="coleccion-price-labels">' +
+        '<span>0€</span>' +
+        '<span>5000€</span>' +
+        '</div>' +
+        '</div>' +
+        '</aside>' +
 
-                '<section class="coleccion-products-section">' +
-                    '<div class="coleccion-products-header">' +
-                        '<p class="coleccion-results-count" id="resultsCount">Mostrando 6 de 6 productos</p>' +
-                        '<div class="coleccion-sort-container">' +
-                            '<span class="coleccion-sort-label">ORDENAR POR:</span>' +
-                            '<select class="coleccion-sort-select" id="sortSelect">' +
-                                '<option value="newest">RECIÉN LLEGADOS</option>' +
-                                '<option value="price-asc">PRECIO: MENOR A MAYOR</option>' +
-                                '<option value="price-desc">PRECIO: MAYOR A MENOR</option>' +
-                            '</select>' +
-                        '</div>' +
-                    '</div>' +
+        '<section class="coleccion-products-section">' +
+        '<div class="coleccion-products-header">' +
+        '<p class="coleccion-results-count" id="resultsCount">Mostrando 6 de 6 productos</p>' +
+        '<div class="coleccion-sort-container">' +
+        '<span class="coleccion-sort-label">ORDENAR POR:</span>' +
+        '<select class="coleccion-sort-select" id="sortSelect">' +
+        '<option value="newest">RECIÉN LLEGADOS</option>' +
+        '<option value="price-asc">PRECIO: MENOR A MAYOR</option>' +
+        '<option value="price-desc">PRECIO: MAYOR A MENOR</option>' +
+        '</select>' +
+        '</div>' +
+        '</div>' +
 
-                    '<div class="coleccion-product-grid" id="productGrid">' +
-                    '</div>' +
+        '<div class="coleccion-product-grid" id="productGrid">' +
+        '</div>' +
 
-                    '<div class="coleccion-pagination">' +
-                        '<button class="coleccion-pagination-btn" id="prevPage">' +
-                            '<span class="material-symbols-outlined">chevron_left</span>' +
-                        '</button>' +
-                        '<div class="coleccion-pagination-numbers" id="paginationNumbers"></div>' +
-                        '<button class="coleccion-pagination-btn" id="nextPage">' +
-                            '<span class="material-symbols-outlined">chevron_right</span>' +
-                        '</button>' +
-                    '</div>' +
-                '</section>' +
-            '</div>' +
+        '<div class="coleccion-pagination">' +
+        '<button class="coleccion-pagination-btn" id="prevPage">' +
+        '<span class="material-symbols-outlined">chevron_left</span>' +
+        '</button>' +
+        '<div class="coleccion-pagination-numbers" id="paginationNumbers"></div>' +
+        '<button class="coleccion-pagination-btn" id="nextPage">' +
+        '<span class="material-symbols-outlined">chevron_right</span>' +
+        '</button>' +
+        '</div>' +
+        '</section>' +
+        '</div>' +
         '</main>';
 
     appContainer.innerHTML = collectionHTML;
 
     var hasContent = document.querySelector('.coleccion-main-container') !== null;
     console.log('✅ HTML de la colección inyectado: ' + hasContent);
-    
+
     return hasContent;
 }
 
@@ -315,13 +315,13 @@ function injectCollectionHTML() {
 // ========================================
 export async function collectionCustomerController() {
     console.log('🛍️ Colección Controller CUSTOMER - Página de listado');
-    
+
     var htmlInjected = injectCollectionHTML();
     if (!htmlInjected) {
         console.error('❌ Error al inyectar el HTML de la colección');
         return;
     }
-    
+
     loadStyles();
     initHero();
     renderProducts();
@@ -332,7 +332,7 @@ export async function collectionCustomerController() {
     initSorting();
     initPaginationButtons();
     initProductEvents();
-    
+
     console.log('✅ Colección CUSTOMER cargada correctamente');
 }
 
@@ -343,7 +343,7 @@ function initHero() {
     var urlParams = new URLSearchParams(window.location.search);
     var category = urlParams.get('category');
     var heroTitle = document.getElementById('heroTitle');
-    
+
     if (category === 'hombre') {
         if (heroTitle) heroTitle.textContent = "COLECCIÓN HOMBRE";
     } else {
@@ -355,10 +355,10 @@ function initHero() {
 // Formatear dinero
 // ========================================
 function formatMoney(amount) {
-    return new Intl.NumberFormat('es-ES', { 
-        style: 'currency', 
-        currency: 'EUR', 
-        minimumFractionDigits: 0 
+    return new Intl.NumberFormat('es-ES', {
+        style: 'currency',
+        currency: 'EUR',
+        minimumFractionDigits: 0
     }).format(amount);
 }
 
@@ -367,21 +367,21 @@ function formatMoney(amount) {
 // ========================================
 function applyFilters() {
     var filtered = products.slice(0);
-    
+
     if (activeFilters.size && activeFilters.size !== 'Única') {
-        filtered = filtered.filter(function(p) { return p.size.includes(activeFilters.size); });
+        filtered = filtered.filter(function (p) { return p.size.includes(activeFilters.size); });
     }
-    
+
     if (activeFilters.color) {
-        filtered = filtered.filter(function(p) { return p.color === activeFilters.color; });
+        filtered = filtered.filter(function (p) { return p.color === activeFilters.color; });
     }
-    
+
     if (activeFilters.designers.length > 0) {
-        filtered = filtered.filter(function(p) { return activeFilters.designers.includes(p.designer); });
+        filtered = filtered.filter(function (p) { return activeFilters.designers.includes(p.designer); });
     }
-    
-    filtered = filtered.filter(function(p) { return p.price <= activeFilters.maxPrice; });
-    
+
+    filtered = filtered.filter(function (p) { return p.price <= activeFilters.maxPrice; });
+
     currentProducts = filtered;
     currentPage = 1;
     renderProducts();
@@ -402,36 +402,36 @@ function renderProducts() {
     var start = (currentPage - 1) * productsPerPage;
     var end = start + productsPerPage;
     var paginatedProducts = currentProducts.slice(start, end);
-    
+
     var resultsCount = document.getElementById('resultsCount');
     if (resultsCount) {
         resultsCount.textContent = 'Mostrando ' + paginatedProducts.length + ' de ' + totalProducts + ' productos';
     }
-    
+
     var html = '';
-    paginatedProducts.forEach(function(product) {
+    paginatedProducts.forEach(function (product) {
         var badgeHtml = '';
         if (product.badge) {
             badgeHtml = '<span class="coleccion-product-badge ' + (product.badge === 'EXCLUSIVO' ? 'exclusive' : '') + '">' + product.badge + '</span>';
         }
-        
-        html += 
+
+        html +=
             '<div class="coleccion-product-card" data-id="' + product.id + '">' +
-                '<div class="coleccion-product-image-container">' +
-                    '<img class="coleccion-product-image" src="' + product.image + '" alt="' + product.name + '">' +
-                    badgeHtml +
-                    '<button class="coleccion-product-wishlist" data-id="' + product.id + '">' +
-                        '<span class="material-symbols-outlined">favorite</span>' +
-                    '</button>' +
-                '</div>' +
-                '<div class="coleccion-product-info">' +
-                    '<p class="coleccion-product-brand">' + product.brand + '</p>' +
-                    '<h4 class="coleccion-product-name">' + product.name + '</h4>' +
-                    '<p class="coleccion-product-price">' + formatMoney(product.price) + '</p>' +
-                '</div>' +
+            '<div class="coleccion-product-image-container">' +
+            '<img class="coleccion-product-image" src="' + product.image + '" alt="' + product.name + '">' +
+            badgeHtml +
+            '<button class="coleccion-product-wishlist" data-id="' + product.id + '">' +
+            '<span class="material-symbols-outlined">favorite</span>' +
+            '</button>' +
+            '</div>' +
+            '<div class="coleccion-product-info">' +
+            '<p class="coleccion-product-brand">' + product.brand + '</p>' +
+            '<h4 class="coleccion-product-name">' + product.name + '</h4>' +
+            '<p class="coleccion-product-price">' + formatMoney(product.price) + '</p>' +
+            '</div>' +
             '</div>';
     });
-    
+
     grid.innerHTML = html;
     renderPagination(totalPages);
     initProductEvents();
@@ -443,26 +443,26 @@ function renderProducts() {
 function renderPagination(totalPages) {
     var paginationNumbers = document.getElementById('paginationNumbers');
     if (!paginationNumbers) return;
-    
+
     if (totalPages <= 1) {
         paginationNumbers.innerHTML = '';
         return;
     }
-    
+
     var html = '';
     for (var i = 1; i <= Math.min(totalPages, 3); i++) {
         html += '<button class="coleccion-page-number ' + (i === currentPage ? 'active' : '') + '" data-page="' + i + '">' + i + '</button>';
     }
-    
+
     if (totalPages > 3) {
         html += '<span class="coleccion-page-dots">...</span>';
         html += '<button class="coleccion-page-number" data-page="' + totalPages + '">' + totalPages + '</button>';
     }
-    
+
     paginationNumbers.innerHTML = html;
-    
-    document.querySelectorAll('.coleccion-page-number').forEach(function(btn) {
-        btn.addEventListener('click', function() {
+
+    document.querySelectorAll('.coleccion-page-number').forEach(function (btn) {
+        btn.addEventListener('click', function () {
             currentPage = parseInt(this.getAttribute('data-page'));
             renderProducts();
         });
@@ -475,9 +475,9 @@ function renderPagination(totalPages) {
 function initPaginationButtons() {
     var prevBtn = document.getElementById('prevPage');
     var nextBtn = document.getElementById('nextPage');
-    
+
     if (prevBtn) {
-        prevBtn.addEventListener('click', function() {
+        prevBtn.addEventListener('click', function () {
             var totalPages = Math.ceil(currentProducts.length / productsPerPage);
             if (currentPage > 1) {
                 currentPage--;
@@ -485,9 +485,9 @@ function initPaginationButtons() {
             }
         });
     }
-    
+
     if (nextBtn) {
-        nextBtn.addEventListener('click', function() {
+        nextBtn.addEventListener('click', function () {
             var totalPages = Math.ceil(currentProducts.length / productsPerPage);
             if (currentPage < totalPages) {
                 currentPage++;
@@ -502,9 +502,9 @@ function initPaginationButtons() {
 // ========================================
 function initSizeFilters() {
     var sizeBtns = document.querySelectorAll('.coleccion-size-btn');
-    sizeBtns.forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            sizeBtns.forEach(function(b) { b.classList.remove('active'); });
+    sizeBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            sizeBtns.forEach(function (b) { b.classList.remove('active'); });
             this.classList.add('active');
             activeFilters.size = this.getAttribute('data-size');
             applyFilters();
@@ -517,15 +517,15 @@ function initSizeFilters() {
 // ========================================
 function initColorFilters() {
     var colorSwatches = document.querySelectorAll('.coleccion-color-swatch');
-    colorSwatches.forEach(function(swatch) {
-        swatch.addEventListener('click', function() {
+    colorSwatches.forEach(function (swatch) {
+        swatch.addEventListener('click', function () {
             var color = this.getAttribute('data-color');
             if (activeFilters.color === color) {
                 activeFilters.color = null;
                 this.style.transform = 'scale(1)';
             } else {
                 activeFilters.color = color;
-                colorSwatches.forEach(function(s) { s.style.transform = 'scale(1)'; });
+                colorSwatches.forEach(function (s) { s.style.transform = 'scale(1)'; });
                 this.style.transform = 'scale(1.1)';
             }
             applyFilters();
@@ -538,13 +538,13 @@ function initColorFilters() {
 // ========================================
 function initDesignerFilters() {
     var checkboxes = document.querySelectorAll('.coleccion-checkbox');
-    checkboxes.forEach(function(cb) {
-        cb.addEventListener('change', function() {
+    checkboxes.forEach(function (cb) {
+        cb.addEventListener('change', function () {
             var value = this.value;
             if (this.checked) {
                 activeFilters.designers.push(value);
             } else {
-                activeFilters.designers = activeFilters.designers.filter(function(d) { return d !== value; });
+                activeFilters.designers = activeFilters.designers.filter(function (d) { return d !== value; });
             }
             applyFilters();
         });
@@ -557,7 +557,7 @@ function initDesignerFilters() {
 function initPriceFilter() {
     var priceRange = document.querySelector('.coleccion-price-range');
     if (priceRange) {
-        priceRange.addEventListener('input', function(e) {
+        priceRange.addEventListener('input', function (e) {
             activeFilters.maxPrice = parseInt(e.target.value);
             applyFilters();
         });
@@ -570,24 +570,24 @@ function initPriceFilter() {
 function initSorting() {
     var sortSelect = document.getElementById('sortSelect');
     if (sortSelect) {
-        sortSelect.addEventListener('change', function() {
+        sortSelect.addEventListener('change', function () {
             var value = this.value;
             if (value === 'price-asc') {
-                currentProducts.sort(function(a, b) { return a.price - b.price; });
+                currentProducts.sort(function (a, b) { return a.price - b.price; });
             } else if (value === 'price-desc') {
-                currentProducts.sort(function(a, b) { return b.price - a.price; });
+                currentProducts.sort(function (a, b) { return b.price - a.price; });
             } else {
                 var filtered = products.slice(0);
                 if (activeFilters.size && activeFilters.size !== 'Única') {
-                    filtered = filtered.filter(function(p) { return p.size.includes(activeFilters.size); });
+                    filtered = filtered.filter(function (p) { return p.size.includes(activeFilters.size); });
                 }
                 if (activeFilters.color) {
-                    filtered = filtered.filter(function(p) { return p.color === activeFilters.color; });
+                    filtered = filtered.filter(function (p) { return p.color === activeFilters.color; });
                 }
                 if (activeFilters.designers.length > 0) {
-                    filtered = filtered.filter(function(p) { return activeFilters.designers.includes(p.designer); });
+                    filtered = filtered.filter(function (p) { return activeFilters.designers.includes(p.designer); });
                 }
-                filtered = filtered.filter(function(p) { return p.price <= activeFilters.maxPrice; });
+                filtered = filtered.filter(function (p) { return p.price <= activeFilters.maxPrice; });
                 currentProducts = filtered;
             }
             currentPage = 1;
@@ -601,10 +601,10 @@ function initSorting() {
 // ========================================
 function initProductEvents() {
     var productCards = document.querySelectorAll('.coleccion-product-card');
-    productCards.forEach(function(card) {
-        card.addEventListener('click', function(e) {
+    productCards.forEach(function (card) {
+        card.addEventListener('click', function (e) {
             if (e.target.closest('.coleccion-product-wishlist')) return;
-            
+
             var productId = this.getAttribute('data-id');
             if (productId) {
                 if (typeof window.navigateTo === 'function') {
@@ -615,13 +615,13 @@ function initProductEvents() {
             }
         });
     });
-    
+
     var wishlistBtns = document.querySelectorAll('.coleccion-product-wishlist');
-    wishlistBtns.forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
+    wishlistBtns.forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
             e.stopPropagation();
             var productId = this.getAttribute('data-id');
-            var product = products.find(function(p) { return p.id == productId; });
+            var product = products.find(function (p) { return p.id == productId; });
             if (product) {
                 addToWishlist(product);
             }
@@ -634,8 +634,8 @@ function initProductEvents() {
 // ========================================
 async function addToWishlist(product) {
     var wishlist = JSON.parse(localStorage.getItem('outlet_wishlist') || '[]');
-    var exists = wishlist.some(function(item) { return item.id === product.id; });
-    
+    var exists = wishlist.some(function (item) { return item.id === product.id; });
+
     if (!exists) {
         wishlist.push({
             id: product.id,
@@ -645,7 +645,7 @@ async function addToWishlist(product) {
             image: product.image
         });
         localStorage.setItem('outlet_wishlist', JSON.stringify(wishlist));
-        
+
         await mostrarExito(
             '¡Añadido a wishlist!',
             product.name + ' ha sido añadido a tu lista de deseos. ❤️'
@@ -656,9 +656,9 @@ async function addToWishlist(product) {
             product.name + ' ya está en tu lista de deseos. ¿Quieres eliminarlo?',
             'Sí, eliminar'
         );
-        
+
         if (result.isConfirmed) {
-            wishlist = wishlist.filter(function(item) { return item.id !== product.id; });
+            wishlist = wishlist.filter(function (item) { return item.id !== product.id; });
             localStorage.setItem('outlet_wishlist', JSON.stringify(wishlist));
             await mostrarExito('Eliminado', product.name + ' ha sido eliminado de tu wishlist.');
         }

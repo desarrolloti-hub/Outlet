@@ -155,28 +155,11 @@ function getProductById(productId) {
 }
 
 /**
- * 🔥 Verificar si un producto existe en Firebase
- * Si no existe, lo consideramos válido igual (puede ser un producto agregado desde Home)
- */
-function productExistsInFirebase(productId) {
-    const idStr = String(productId);
-    // Si es un ID numérico, debe existir en Firebase
-    if (/^\d+$/.test(idStr)) {
-        return !!productsMap[idStr];
-    }
-    // Si es un ID personalizado (ej: ZAPATILLAS_1784143743217), lo consideramos válido
-    // porque fue agregado desde Home
-    return true;
-}
-
-/**
  * ENRIQUECER item de wishlist con datos actualizados de Firebase
- * 🔥 Si el producto no existe en Firebase, mantenemos los datos guardados
  */
 function enrichWishlistItem(item) {
     const product = getProductById(item.id);
 
-    // Si el producto existe en Firebase, usar datos actualizados
     if (product) {
         console.log(`✅ Enriquecido desde Firebase: ${item.id} -> ${product.nombre}`);
 
@@ -212,79 +195,25 @@ function enrichWishlistItem(item) {
         };
     }
 
-    // 🔥 Si no existe en Firebase, mantener los datos guardados (agregado desde Home)
     console.log(`📦 Usando datos guardados para: ${item.id} - ${item.name}`);
     return {
         ...item,
         image: item.image || 'https://placehold.co/300x300?text=Sin+Imagen',
         brand: item.brand || 'Outlet',
-        // Asegurar que tenga estado
         estado: item.estado || 'activo'
     };
-}
-
-// ========================================
-// 🧹 LIMPIAR outlet_wishlist de datos estáticos (SOLO IDs numéricos que no existen)
-// ========================================
-function limpiarWishlistEstatica() {
-    try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-            const items = JSON.parse(saved);
-            // 🔥 Solo filtrar IDs numéricos que no existen en Firebase
-            // Los IDs personalizados (con letras) siempre se mantienen
-            const itemsValidos = items.filter(item => {
-                const idStr = String(item.id);
-                // Si es ID numérico, debe existir en Firebase
-                if (/^\d+$/.test(idStr)) {
-                    return !!productsMap[idStr];
-                }
-                // IDs personalizados siempre válidos
-                return true;
-            });
-
-            if (itemsValidos.length !== items.length) {
-                console.log(`🧹 Eliminados ${items.length - itemsValidos.length} items estáticos de wishlist...`);
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(itemsValidos));
-                console.log(`✅ Wishlist limpiada: ${itemsValidos.length} items válidos`);
-            }
-        }
-    } catch (e) {
-        console.warn('Error limpiando wishlist:', e);
-    }
 }
 
 // ========================================
 // CARGA WISHLIST 
 // ========================================
 function loadWishlist() {
-    // 🔥 LIMPIAR datos estáticos (solo IDs numéricos que no existen)
-    limpiarWishlistEstatica();
-
     var saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
         try {
             var rawItems = JSON.parse(saved);
-            // 🔥 FILTRAR SOLO IDs numéricos que existen en Firebase
-            // Los IDs personalizados (con letras) siempre se mantienen
-            wishlistItems = rawItems.filter(item => {
-                const idStr = String(item.id);
-                if (/^\d+$/.test(idStr)) {
-                    return !!productsMap[idStr];
-                }
-                return true;
-            });
-
-            // Si hay items que no existen en Firebase, actualizar localStorage
-            if (wishlistItems.length !== rawItems.length) {
-                console.log(`🧹 Eliminados ${rawItems.length - wishlistItems.length} items que no existen en Firebase`);
-                saveWishlist();
-            }
-
+            wishlistItems = rawItems;
             console.log(`📦 ${wishlistItems.length} items en wishlist`);
-            if (wishlistItems.length > 0) {
-                console.log('📋 Items:', wishlistItems.map(i => `${i.id} - ${i.name}`).join(', '));
-            }
         } catch (e) {
             console.warn('Error parseando wishlist:', e);
             wishlistItems = [];
@@ -322,6 +251,13 @@ function updateWishlistBadge() {
 }
 
 function updateCartBadge() {
+    // Usar la función global si está disponible
+    if (typeof window.updateCartBadge === 'function') {
+        window.updateCartBadge();
+        return;
+    }
+
+    // Fallback
     var cart = JSON.parse(localStorage.getItem('outlet_cart') || '[]');
     var badge = document.querySelector('.cart-count');
     if (badge) {
@@ -332,7 +268,7 @@ function updateCartBadge() {
 }
 
 // ========================================
-// RENDERIZA WISHLIST - CON ENRIQUECIMIENTO
+// RENDERIZA WISHLIST
 // ========================================
 function renderWishlist() {
     var grid = document.getElementById('wishlistGrid');
@@ -343,20 +279,6 @@ function renderWishlist() {
     if (!grid) {
         console.warn('⚠️ wishlistGrid no encontrado');
         return;
-    }
-
-    // 🔥 Verificar items válidos
-    var validItems = wishlistItems.filter(item => {
-        const idStr = String(item.id);
-        if (/^\d+$/.test(idStr)) {
-            return !!productsMap[idStr];
-        }
-        return true;
-    });
-
-    if (validItems.length !== wishlistItems.length) {
-        wishlistItems = validItems;
-        saveWishlist();
     }
 
     var hasItems = wishlistItems.length > 0;
@@ -371,7 +293,7 @@ function renderWishlist() {
         return;
     }
 
-    // 🔥 ENRIQUECER cada item con datos de Firebase (o mantener datos guardados)
+    // ENRIQUECER cada item con datos de Firebase
     var enrichedItems = wishlistItems
         .map(function (item) {
             return enrichWishlistItem(item);
@@ -483,10 +405,11 @@ function handleGridClick(e) {
 
         var productId = cartBtn.getAttribute('data-id');
         if (productId) {
-            var product = getProductById(productId);
-            if (product) {
-                addToCart(product);
+            // 🔥 USAR FUNCIÓN GLOBAL addToCart si está disponible
+            if (typeof window.addToCart === 'function') {
+                window.addToCart(productId);
             } else {
+                // Fallback: agregar desde el wishlist item
                 var wishlistItem = wishlistItems.find(function (p) { return String(p.id) === String(productId); });
                 if (wishlistItem) {
                     addToCartFromWishlistItem(wishlistItem);
@@ -536,47 +459,8 @@ async function removeFromWishlist(productId) {
 }
 
 // ========================================
-// AGREGAR AL CARRITO
+// AGREGAR AL CARRITO DESDE WISHLIST ITEM (FALLBACK)
 // ========================================
-async function addToCart(product) {
-    if (!product) {
-        await mostrarError('Error', 'Producto no encontrado');
-        return;
-    }
-
-    if (product.estado === 'agotado') {
-        await mostrarError('Agotado', 'Este producto no está disponible actualmente.');
-        return;
-    }
-
-    var cart = JSON.parse(localStorage.getItem('outlet_cart') || '[]');
-
-    var existingItem = cart.find(function (item) { return String(item.id) === String(product.id); });
-    if (existingItem) {
-        existingItem.quantity = (existingItem.quantity || 1) + 1;
-    } else {
-        cart.push({
-            id: String(product.id),
-            name: product.nombre || 'Producto',
-            brand: product.marca || 'Outlet',
-            price: product.precioFinal || product.precioVenta || 0,
-            image: product.imagenPrincipal || 'https://placehold.co/300x300?text=Sin+Imagen',
-            quantity: 1,
-            dateAdded: new Date().toISOString(),
-            size: 'Única',
-            color: 'Estándar'
-        });
-    }
-
-    localStorage.setItem('outlet_cart', JSON.stringify(cart));
-    updateCartBadge();
-
-    await mostrarExito(
-        '¡Añadido al carrito!',
-        '"' + (product.nombre || 'Producto') + '" ha sido añadido correctamente. 🛒'
-    );
-}
-
 async function addToCartFromWishlistItem(wishlistItem) {
     var cart = JSON.parse(localStorage.getItem('outlet_cart') || '[]');
 
@@ -746,13 +630,13 @@ export async function wishlistCustomerController() {
 
     loadStyles();
 
-    // 🔥 PRIMERO: Cargar productos de Firebase
+    // Cargar productos de Firebase para enriquecimiento
     await loadAllProducts();
 
-    // 🔥 SEGUNDO: Cargar wishlist (filtra solo IDs numéricos que no existen)
+    // Cargar wishlist
     loadWishlist();
 
-    // 🔥 TERCERO: Renderizar (todos los productos válidos)
+    // Renderizar
     renderWishlist();
     initEventListeners();
     updateCartBadge();

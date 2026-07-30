@@ -1,106 +1,447 @@
-<!-- ========================================
-   COLECCIÓN VIEW - OUTLET
-   Página de listado de productos con filtros
-   ======================================== -->
+/* ========================================
+COLECCIÓN PAGE - OUTLET
+Estilos para página de listado de productos
+======================================== */
 
-<main>
-    <!-- Hero Section -->
-    <section class="coleccion-hero" id="heroSection">
-        <img class="coleccion-hero-image" id="heroImage" alt="Colección" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDzu-fRuH3Pr70TzycsyqNKTq0wqXUKhvqpLQnKFosRgYpTYaHmMbiZTuR6057YH9mzWy7zyvF1Nayn_vmpuWt228rSPkB3bVGEyC4luNmuFA8zLymzV9_rpVIqWLkjNVhRh4POKNi-dzukNMftMlKjV48nwZdx-9jPYUoHEnMtd8MZWvsGmBNKlC-J5JgvgvS3TqUQb2UxHyyvWUysvPjpJ45zalixovYZXI-e_wzrc3bs-6m3CrEzBx9xQSLKPeQO6fx0aggigfMd">
-        <div class="coleccion-hero-overlay">
-            <h2 class="coleccion-hero-title" id="heroTitle">COLECCIÓN MUJER</h2>
-            <div class="coleccion-hero-underline"></div>
-        </div>
-    </section>
+/* ====== TIPOGRAFÍA - TÍTULOS CON MIFUENTE ====== */
+@font-face {
+font-family: 'Mifuente';
+src: url('/tipografias/LinLibertine_R.ttf') format('truetype');
+font-weight: normal;
+font-style: normal;
+}
 
-    <!-- Main Content Area -->
-    <div class="coleccion-main-container">
-        <!-- Filter Sidebar -->
-        <aside class="coleccion-sidebar">
-            <h3 class="coleccion-sidebar-title">FILTROS</h3>
+h1, h2, .coleccion-hero-title {
+font-family: 'Mifuente', serif;
+}
 
-            <!-- Talla -->
-            <div class="coleccion-filter-group">
-                <p class="coleccion-filter-label">Talla</p>
-                <div class="coleccion-size-grid">
-                    <button class="coleccion-size-btn" data-size="XS">XS</button>
-                    <button class="coleccion-size-btn active" data-size="S">S</button>
-                    <button class="coleccion-size-btn" data-size="M">M</button>
-                    <button class="coleccion-size-btn" data-size="L">L</button>
-                    <button class="coleccion-size-btn" data-size="XL">XL</button>
-                </div>
-            </div>
+/* ====== HERO ====== */
+.coleccion-hero {
+position: relative;
+width: 100%;
+height: 614px;
+overflow: hidden;
+}
 
-            <!-- Color -->
-            <div class="coleccion-filter-group">
-                <p class="coleccion-filter-label">Color</p>
-                <div class="coleccion-color-options">
-                    <div class="coleccion-color-swatch black" data-color="black"></div>
-                    <div class="coleccion-color-swatch white" data-color="white"></div>
-                    <div class="coleccion-color-swatch gold" data-color="gold"></div>
-                    <div class="coleccion-color-swatch blue" data-color="blue"></div>
-                    <div class="coleccion-color-swatch brown" data-color="brown"></div>
-                </div>
-            </div>
+.coleccion-hero-image {
+position: absolute;
+inset: 0;
+width: 100%;
+height: 100%;
+object-fit: cover;
+filter: grayscale(0.6) brightness(0.75);
+}
 
-            <!-- Diseñador -->
-            <div class="coleccion-filter-group">
-                <p class="coleccion-filter-label">Diseñador</p>
-                <div class="coleccion-checkbox-group">
-                    <label class="coleccion-checkbox-label">
-                        <input type="checkbox" class="coleccion-checkbox" value="Maison Luxe">
-                        <span>Maison Luxe</span>
-                    </label>
-                    <label class="coleccion-checkbox-label">
-                        <input type="checkbox" class="coleccion-checkbox" value="Atelier Noir">
-                        <span>Atelier Noir</span>
-                    </label>
-                    <label class="coleccion-checkbox-label">
-                        <input type="checkbox" class="coleccion-checkbox" value="Ethereal Studio">
-                        <span>Ethereal Studio</span>
-                    </label>
-                </div>
-            </div>
+.coleccion-hero-overlay {
+position: absolute;
+inset: 0;
+background-color: rgba(0, 0, 0, 0.2);
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+text-align: center;
+}
 
-            <!-- Precio -->
-            <div class="coleccion-filter-group">
-                <p class="coleccion-filter-label">Rango de Precio</p>
-                <input type="range" class="coleccion-price-range" min="0" max="5000" value="2500">
-                <div class="coleccion-price-labels">
-                    <span>0€</span>
-                    <span>5000€</span>
-                </div>
-            </div>
-        </aside>
+.coleccion-hero-title {
+color: white;
+font-size: 64px;
+font-weight: 700;
+letter-spacing: -0.02em;
+text-transform: uppercase;
+}
 
-        <!-- Product Grid -->
-        <section class="coleccion-products-section">
-            <div class="coleccion-products-header">
-                <p class="coleccion-results-count" id="resultsCount">Mostrando 6 de 6 productos</p>
-                <div class="coleccion-sort-container">
-                    <span class="coleccion-sort-label">ORDENAR POR:</span>
-                    <select class="coleccion-sort-select" id="sortSelect">
-                        <option value="newest">RECIÉN LLEGADOS</option>
-                        <option value="price-asc">PRECIO: MENOR A MAYOR</option>
-                        <option value="price-desc">PRECIO: MAYOR A MENOR</option>
-                    </select>
-                </div>
-            </div>
+@media (max-width: 768px) {
+.coleccion-hero-title {
+font-size: 40px;
+}
+}
 
-            <div class="coleccion-product-grid" id="productGrid">
-                <!-- Los productos se inyectan desde JS -->
-            </div>
+.coleccion-hero-underline {
+width: 96px;
+height: 4px;
+background-color: var(--outlet-gold);
+margin-top: 16px;
+}
 
-            <!-- Pagination -->
-            <div class="coleccion-pagination">
-                <button class="coleccion-pagination-btn" id="prevPage">
-                    <span class="material-symbols-outlined">chevron_left</span>
-                </button>
-                <div class="coleccion-pagination-numbers" id="paginationNumbers"></div>
-                <button class="coleccion-pagination-btn" id="nextPage">
-                    <span class="material-symbols-outlined">chevron_right</span>
-                </button>
-            </div>
-        </section>
-    </div>
-</main>
+/* ====== MAIN CONTAINER ====== */
+.coleccion-main-container {
+max-width: 1440px;
+margin: 0 auto;
+padding: 48px 24px;
+display: flex;
+flex-direction: column;
+gap: 48px;
+}
+
+@media (min-width: 768px) {
+.coleccion-main-container {
+flex-direction: row;
+}
+}
+
+/* ====== SIDEBAR ====== */
+.coleccion-sidebar {
+width: 100%;
+flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+.coleccion-sidebar {
+width: 256px;
+}
+}
+
+.coleccion-sidebar-title {
+font-size: 12px;
+letter-spacing: 0.15em;
+text-transform: uppercase;
+font-weight: 700;
+margin-bottom: 24px;
+color: var(--outlet-text-primary);
+}
+
+.coleccion-filter-group {
+margin-bottom: 32px;
+}
+
+.coleccion-filter-label {
+font-size: 12px;
+letter-spacing: 0.15em;
+text-transform: uppercase;
+font-weight: 700;
+color: var(--outlet-text-secondary);
+margin-bottom: 16px;
+}
+
+/* Tallas */
+.coleccion-size-grid {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 8px;
+}
+
+.coleccion-size-btn {
+padding: 8px 12px;
+border: 1px solid var(--outlet-text-primary);
+background: transparent;
+font-size: 14px;
+cursor: pointer;
+transition: all var(--outlet-transition-fast);
+color: var(--outlet-text-primary);
+border-radius: var(--outlet-radius-sm);
+}
+
+.coleccion-size-btn:hover {
+border-color: var(--outlet-gold);
+}
+
+.coleccion-size-btn.active {
+border-color: var(--outlet-gold);
+font-weight: 700;
+}
+
+/* Colores */
+.coleccion-color-options {
+display: flex;
+flex-wrap: wrap;
+gap: 16px;
+}
+
+.coleccion-color-swatch {
+width: 24px;
+height: 24px;
+border-radius: 50%;
+border: 1px solid var(--outlet-border-color);
+cursor: pointer;
+transition: transform var(--outlet-transition-fast);
+}
+
+.coleccion-color-swatch:hover {
+transform: scale(1.1);
+}
+
+.coleccion-color-swatch.black { background-color: #000000; }
+.coleccion-color-swatch.white { background-color: #ffffff; border: 1px solid #ccc; }
+.coleccion-color-swatch.gold { background-color: #ddab3b; }
+.coleccion-color-swatch.blue { background-color: #2c5183; }
+.coleccion-color-swatch.brown { background-color: #4f4635; }
+
+/* Checkboxes */
+.coleccion-checkbox-group {
+display: flex;
+flex-direction: column;
+gap: 8px;
+}
+
+.coleccion-checkbox-label {
+display: flex;
+align-items: center;
+gap: 8px;
+cursor: pointer;
+font-size: 14px;
+transition: color var(--outlet-transition-fast);
+color: var(--outlet-text-secondary);
+}
+
+.coleccion-checkbox-label:hover {
+color: var(--outlet-gold);
+}
+
+.coleccion-checkbox {
+width: 16px;
+height: 16px;
+accent-color: var(--outlet-gold);
+}
+
+/* Rango de precio */
+.coleccion-price-range {
+width: 100%;
+accent-color: var(--outlet-gold);
+cursor: pointer;
+}
+
+.coleccion-price-labels {
+display: flex;
+justify-content: space-between;
+margin-top: 8px;
+font-size: 12px;
+font-weight: 700;
+letter-spacing: 0.15em;
+text-transform: uppercase;
+color: var(--outlet-text-secondary);
+}
+
+/* ====== PRODUCTOS ====== */
+.coleccion-products-section {
+flex: 1;
+}
+
+.coleccion-products-header {
+display: flex;
+justify-content: space-between;
+align-items: flex-end;
+margin-bottom: 24px;
+flex-wrap: wrap;
+gap: 16px;
+}
+
+.coleccion-results-count {
+font-size: 14px;
+color: var(--outlet-text-secondary);
+}
+
+.coleccion-sort-container {
+display: flex;
+align-items: center;
+gap: 8px;
+}
+
+.coleccion-sort-label {
+font-size: 12px;
+letter-spacing: 0.15em;
+font-weight: 700;
+text-transform: uppercase;
+color: var(--outlet-text-secondary);
+}
+
+.coleccion-sort-select {
+background: transparent;
+border: none;
+font-size: 12px;
+letter-spacing: 0.15em;
+font-weight: 700;
+text-transform: uppercase;
+cursor: pointer;
+color: var(--outlet-text-primary);
+}
+
+.coleccion-sort-select:focus {
+outline: none;
+}
+
+/* Grid de productos */
+.coleccion-product-grid {
+display: grid;
+grid-template-columns: 1fr;
+gap: 24px;
+}
+
+@media (min-width: 640px) {
+.coleccion-product-grid {
+grid-template-columns: repeat(2, 1fr);
+}
+}
+
+@media (min-width: 1024px) {
+.coleccion-product-grid {
+grid-template-columns: repeat(3, 1fr);
+}
+}
+
+/* Tarjeta de producto */
+.coleccion-product-card {
+cursor: pointer;
+transition: all var(--outlet-transition-base);
+}
+
+.coleccion-product-card:hover {
+outline: 1px solid var(--outlet-gold);
+outline-offset: -1px;
+}
+
+.coleccion-product-image-container {
+position: relative;
+aspect-ratio: 1 / 1;
+overflow: hidden;
+background-color: var(--outlet-bg-container-high);
+}
+
+.coleccion-product-image {
+width: 100%;
+height: 100%;
+object-fit: cover;
+transition: transform 0.7s ease;
+}
+
+.coleccion-product-card:hover .coleccion-product-image {
+transform: scale(1.05);
+}
+
+.coleccion-product-badge {
+position: absolute;
+top: 16px;
+left: 16px;
+background-color: var(--outlet-text-primary);
+color: var(--outlet-bg-primary);
+font-size: 10px;
+letter-spacing: 0.15em;
+font-weight: 700;
+text-transform: uppercase;
+padding: 4px 8px;
+}
+
+.coleccion-product-badge.exclusive {
+background-color: transparent;
+border: 1px solid var(--outlet-gold);
+color: var(--outlet-gold);
+}
+
+.coleccion-product-wishlist {
+position: absolute;
+bottom: 16px;
+right: 16px;
+background-color: rgba(255, 255, 255, 0.9);
+padding: 8px;
+border-radius: 50%;
+opacity: 0;
+transition: opacity var(--outlet-transition-base);
+border: none;
+cursor: pointer;
+display: flex;
+align-items: center;
+justify-content: center;
+}
+
+body.dark-mode .coleccion-product-wishlist {
+background-color: var(--outlet-bg-container);
+}
+
+.coleccion-product-card:hover .coleccion-product-wishlist {
+opacity: 1;
+}
+
+.coleccion-product-wishlist:hover {
+color: var(--outlet-gold);
+}
+
+.coleccion-product-info {
+padding: 16px 8px;
+}
+
+.coleccion-product-brand {
+font-size: 12px;
+letter-spacing: 0.15em;
+font-weight: 700;
+text-transform: uppercase;
+color: var(--outlet-text-secondary);
+margin-bottom: 4px;
+}
+
+.coleccion-product-name {
+font-size: 16px;
+line-height: 1.6;
+color: var(--outlet-text-primary);
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+}
+
+.coleccion-product-price {
+font-size: 20px;
+line-height: 1;
+letter-spacing: -0.01em;
+font-weight: 600;
+color: var(--outlet-gold);
+margin-top: 8px;
+}
+
+/* ====== PAGINACIÓN ====== */
+.coleccion-pagination {
+margin-top: 48px;
+padding-top: 48px;
+border-top: 1px solid var(--outlet-border-color);
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 24px;
+}
+
+.coleccion-pagination-btn {
+background: none;
+border: none;
+cursor: pointer;
+color: var(--outlet-text-secondary);
+transition: color var(--outlet-transition-fast);
+display: flex;
+align-items: center;
+}
+
+.coleccion-pagination-btn:hover {
+color: var(--outlet-gold);
+}
+
+.coleccion-pagination-numbers {
+display: flex;
+align-items: center;
+gap: 16px;
+}
+
+.coleccion-page-number {
+background: none;
+border: none;
+font-size: 12px;
+letter-spacing: 0.15em;
+font-weight: 700;
+text-transform: uppercase;
+cursor: pointer;
+color: var(--outlet-text-secondary);
+transition: color var(--outlet-transition-fast);
+padding: 4px 8px;
+}
+
+.coleccion-page-number:hover {
+color: var(--outlet-text-primary);
+}
+
+.coleccion-page-number.active {
+color: var(--outlet-gold);
+border-bottom: 1px solid var(--outlet-gold);
+}
+
+.coleccion-page-dots {
+font-size: 12px;
+letter-spacing: 0.15em;
+font-weight: 700;
+color: var(--outlet-text-secondary);
+}

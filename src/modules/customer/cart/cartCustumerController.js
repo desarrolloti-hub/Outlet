@@ -264,10 +264,6 @@ function renderCart() {
  * Render order summary
  * 🔥 BOTONES CON CLASES DE buttons.css
  */
-/**
- * Render order summary
- * 🔥 BOTONES CON CLASES DE buttons.css
- */
 function renderSummary() {
     const container = document.getElementById('orderSummaryContainerCustomer');
     if (!container) {

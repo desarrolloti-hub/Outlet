@@ -110,14 +110,11 @@ function toggleSidebar(e) {
         return;
     }
 
-    // Solo funciona en móvil
     if (!state.isMobile) {
-        // En escritorio siempre visible
         dom.sidebarContent.classList.remove('open');
         return;
     }
 
-    // Alternar clase
     dom.sidebarContent.classList.toggle('open');
     state.sidebarOpen = dom.sidebarContent.classList.contains('open');
 
@@ -149,7 +146,6 @@ function setupSidebarToggle() {
         console.warn('⚠️ sidebarToggle no encontrado');
     }
 
-    // Cerrar sidebar al hacer clic fuera (en móvil)
     document.addEventListener('click', function (e) {
         if (state.isMobile && dom.sidebar && dom.sidebarContent) {
             const isClickInside = dom.sidebar.contains(e.target);
@@ -410,7 +406,6 @@ function handleResize() {
         const wasMobile = state.isMobile;
         const isMobile = checkIsMobile();
 
-        // Si cambia de móvil a escritorio, cerrar sidebar
         if (wasMobile && !isMobile) {
             closeSidebar();
             if (dom.sidebarContent) {
@@ -418,7 +413,6 @@ function handleResize() {
             }
         }
 
-        // Si cambia de escritorio a móvil, asegurar que sidebar esté cerrado
         if (!wasMobile && isMobile) {
             closeSidebar();
         }

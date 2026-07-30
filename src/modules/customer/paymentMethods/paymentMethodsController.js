@@ -252,7 +252,6 @@ function renderCards() {
         }
     }
 
-    // Event listeners
     document.querySelectorAll('.outlet-btn-card-action.star').forEach(function (btn) {
         btn.removeEventListener('click', handleStarClick);
         btn.addEventListener('click', handleStarClick);
@@ -384,7 +383,6 @@ async function guardarCambios() {
             currentCustomer = updatedCustomer;
             await mostrarExito('¡Cambios guardados!', 'Los métodos de pago han sido actualizados correctamente.');
 
-            // Notificar cambio
             window.dispatchEvent(new CustomEvent('customer:authStateChanged', {
                 detail: updatedCustomer
             }));
@@ -418,18 +416,6 @@ async function cancelarCambios() {
 }
 
 // ========================================
-// Volver al perfil (navegación)
-// ========================================
-
-function volverAlPerfil() {
-    if (typeof window.navigateTo === 'function') {
-        window.navigateTo('/perfil');
-    } else {
-        window.location.href = '/perfil';
-    }
-}
-
-// ========================================
 // Event Listeners
 // ========================================
 
@@ -453,7 +439,6 @@ function initEventListeners() {
     btnAceptar?.addEventListener('click', guardarCambios);
     btnCancelar?.addEventListener('click', cancelarCambios);
 
-    // Toggle listeners con toast
     var transferenciaToggle = document.getElementById('paymentTransferenciaToggle');
     var paypalToggle = document.getElementById('paymentPaypalToggle');
     var contraentregaToggle = document.getElementById('paymentContraentregaToggle');

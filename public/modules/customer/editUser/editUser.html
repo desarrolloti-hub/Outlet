@@ -18,12 +18,10 @@
     <div class="outlet-profile-avatar-section">
         <div class="outlet-avatar-container">
             <!-- CAMBIADO: ID único para evitar conflicto con el navbar -->
-            <img id="editUserProfileAvatar" 
-                 src="" 
-                 alt="Foto de perfil" 
-                 class="outlet-profile-avatar-img"
-                 style="display: none; width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid var(--outlet-gold, #c9a84c);">
-            <div class="outlet-avatar-placeholder" id="editUserAvatarPlaceholder" style="width: 80px; height: 80px; border-radius: 50%; background: var(--outlet-gold, #c9a84c); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 700; color: #1a1a1a; text-transform: uppercase;">
+            <img id="editUserProfileAvatar" src="" alt="Foto de perfil" class="outlet-profile-avatar-img"
+                style="display: none; width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid var(--outlet-gold, #c9a84c);">
+            <div class="outlet-avatar-placeholder" id="editUserAvatarPlaceholder"
+                style="width: 80px; height: 80px; border-radius: 50%; background: var(--outlet-gold, #c9a84c); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 700; color: #1a1a1a; text-transform: uppercase;">
                 <span id="editUserAvatarInitials">U</span>
             </div>
             <div class="outlet-avatar-overlay" id="editUserAvatarOverlay">
@@ -120,7 +118,8 @@
                     <h2>Seguridad</h2>
                 </div>
                 <div class="outlet-security-content">
-                    <p class="outlet-security-desc">Recibirás un enlace en tu correo para restablecer tu contraseña de forma segura.</p>
+                    <p class="outlet-security-desc">Recibirás un enlace en tu correo para restablecer tu contraseña de
+                        forma segura.</p>
                     <button type="button" class="outlet-btn-password" id="btnCambiarPass">
                         <span class="material-symbols-outlined">mail</span>
                         Cambiar contraseña
@@ -224,7 +223,8 @@
                     </div>
                     <div class="outlet-input-group outlet-full-width">
                         <label>Referencias</label>
-                        <textarea id="editUserReferencias" rows="2" placeholder="Ej: Entre calles, cerca del parque..."></textarea>
+                        <textarea id="editUserReferencias" rows="2"
+                            placeholder="Ej: Entre calles, cerca del parque..."></textarea>
                         <span class="outlet-input-line"></span>
                     </div>
                 </div>
@@ -344,25 +344,25 @@
         <hr class="outlet-divider">
         <div class="outlet-logout-container">
             <div class="outlet-logout-info">
-           
-       
-            <!-- ✅ BOTÓN ACTUALIZADO USANDO COMPONENTE OUTLET -->
-            <button type="button" class="outlet-btn outlet-btn-danger" id="btnLogout">
-                <span class="material-symbols-outlined">logout</span>
-                Cerrar sesión
+
+
+                <!-- ✅ BOTÓN ACTUALIZADO USANDO COMPONENTE OUTLET -->
+                <button type="button" class="outlet-btn outlet-btn-danger" id="btnLogout">
+                    <span class="material-symbols-outlined">logout</span>
+                    Cerrar sesión
+                </button>
+            </div>
+        </div>
+
+        <!-- Acciones finales -->
+        <div class="outlet-action-buttons" id="actionButtonsFinal">
+            <button type="button" class="outlet-btn-secondary" id="btnCancelar">
+                <span class="material-symbols-outlined">close</span>
+                Cancelar
+            </button>
+            <button type="button" class="outlet-btn-primary" id="btnGuardar">
+                <span class="material-symbols-outlined">save</span>
+                Guardar cambios
             </button>
         </div>
-    </div>
-
-    <!-- Acciones finales -->
-    <div class="outlet-action-buttons" id="actionButtonsFinal">
-        <button type="button" class="outlet-btn-secondary" id="btnCancelar">
-            <span class="material-symbols-outlined">close</span>
-            Cancelar
-        </button>
-        <button type="button" class="outlet-btn-primary" id="btnGuardar">
-            <span class="material-symbols-outlined">save</span>
-            Guardar cambios
-        </button>
-    </div>
 </main>

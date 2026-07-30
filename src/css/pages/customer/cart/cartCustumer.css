@@ -37,7 +37,7 @@
     .outlet-cart-header {
         text-align: left;
     }
-    
+
     .outlet-cart-title {
         font-size: 48px;
     }
@@ -284,9 +284,6 @@
     }
 }
 
-/* ✅ LOS BOTONES DE ELIMINAR AHORA USAN .outlet-btn-danger DE buttons.css */
-/* .outlet-cart-remove ELIMINADO */
-
 /* Empty cart */
 .outlet-cart-empty {
     text-align: center;
@@ -308,9 +305,6 @@
     color: var(--outlet-text-secondary);
     margin-bottom: var(--outlet-spacing-xl);
 }
-
-/* ✅ EL BOTÓN DE CARRITO VACÍO AHORA USA .outlet-btn-primary DE buttons.css */
-/* .outlet-cart-empty-btn ELIMINADO */
 
 /* ===== ORDER SUMMARY ===== */
 .outlet-cart-summary {
@@ -405,12 +399,6 @@
 .outlet-cart-promo-input-group input::placeholder {
     color: var(--outlet-text-disabled);
 }
-
-/* ✅ EL BOTÓN DE APLICAR PROMO AHORA USA .outlet-btn-dark DE buttons.css */
-/* .outlet-cart-promo-input-group button ELIMINADO */
-
-/* ✅ EL BOTÓN DE CHECKOUT AHORA USA .outlet-btn-primary DE buttons.css */
-/* .outlet-cart-checkout-btn ELIMINADO */
 
 /* ===== UPSELL SECTION ===== */
 .outlet-cart-upsell {
@@ -560,6 +548,7 @@
         transform: translateX(100%);
         opacity: 0;
     }
+
     to {
         transform: translateX(0);
         opacity: 1;
@@ -581,19 +570,19 @@
     .outlet-cart-container {
         padding: var(--outlet-spacing-xl) 0;
     }
-    
+
     .container {
         padding: 0 var(--outlet-spacing-md);
     }
-    
+
     .outlet-cart-summary-card {
         padding: var(--outlet-spacing-lg);
     }
-    
+
     .outlet-cart-promo-input-group {
         flex-direction: column;
     }
-    
+
     /* Imagen más grande en móvil */
     .outlet-cart-item-image {
         max-width: 140px;
@@ -605,7 +594,7 @@
     .outlet-cart-item-image {
         max-width: 160px;
     }
-    
+
     .outlet-cart-summary {
         position: static;
     }
@@ -632,7 +621,7 @@
         justify-content: space-between;
         align-items: center;
     }
-    
+
     .outlet-cart-item-price {
         text-align: right;
     }

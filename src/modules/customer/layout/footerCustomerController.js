@@ -13,7 +13,7 @@ export function initFooterController() {
     cacheElements();
     bindEvents();
     updateCurrentYear();
-    
+
     console.log('✅ Footer OUTLET Controller inicializado');
 }
 
@@ -40,11 +40,11 @@ function bindEvents() {
             if (email && isValidEmail(email)) {
                 // Guardar email (puedes enviar a API)
                 console.log('📧 Newsletter suscripción:', email);
-                
+
                 // Mostrar mensaje de éxito
                 alert(`✨ ¡Gracias por suscribirte! ✨\n\nRecibirás novedades en: ${email}`);
                 elements.newsletterInput.value = '';
-                
+
                 // Opcional: guardar en localStorage o enviar a backend
                 saveSubscriber(email);
             } else if (email) {
@@ -53,13 +53,13 @@ function bindEvents() {
                 alert('✉️ Por favor, ingresa tu email para suscribirte.');
             }
         };
-        
+
         elements.newsletterBtn.addEventListener('click', handleSubscribe);
         elements.newsletterInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') handleSubscribe();
         });
     }
-    
+
     // Cerrar menú móvil cuando se hace clic en enlaces del footer
     const footerLinks = document.querySelectorAll('.footer-links a, .footer-legal a, .footer-social-link');
     footerLinks.forEach(link => {
@@ -83,7 +83,7 @@ function isValidEmail(email) {
 function saveSubscriber(email) {
     // Aquí puedes enviar a tu backend
     // fetch('/api/newsletter', { method: 'POST', body: JSON.stringify({ email }) });
-    
+
     // O guardar en localStorage
     const subscribers = JSON.parse(localStorage.getItem('outlet_newsletter') || '[]');
     if (!subscribers.includes(email)) {
@@ -103,20 +103,27 @@ function updateCurrentYear() {
 
 /**
  * Cierra menú móvil si está abierto
+ * (Función simplificada - la lógica principal está en navbarCustumerController.js)
  */
 function closeMobileMenuIfOpen() {
+    // Delegar al navbar si está disponible
+    if (typeof window.closeMobileMenu === 'function') {
+        window.closeMobileMenu();
+        return;
+    }
+
+    // Fallback: intentar cerrar directamente
     const mobileMenu = document.getElementById('mobileMenu');
     const hamburgerBtn = document.getElementById('hamburgerBtn');
     const overlay = document.querySelector('.mobile-overlay');
-    
+
     if (mobileMenu?.classList.contains('open')) {
         mobileMenu.classList.remove('open');
         hamburgerBtn?.classList.remove('open');
         document.body.classList.remove('menu-open');
-        
+
         if (overlay) {
             overlay.classList.remove('open');
-            setTimeout(() => overlay.remove(), 300);
         }
     }
 }
@@ -131,3 +138,10 @@ export function getFooterState() {
         subscribers: JSON.parse(localStorage.getItem('outlet_newsletter') || '[]').length
     };
 }
+
+// Exportar funciones para uso externo
+export {
+    closeMobileMenuIfOpen,
+    isValidEmail,
+    saveSubscriber
+};

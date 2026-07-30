@@ -932,58 +932,6 @@ body.dark-mode .outlet-badge-envio.completa {
     transform: translateY(-1px);
 }
 
-/* Toast notification */
-.outlet-toast-notification {
-    position: fixed;
-    bottom: 2rem;
-    right: 2rem;
-    background: var(--outlet-toast-bg);
-    color: var(--outlet-toast-text);
-    padding: 0.85rem 1.75rem;
-    font-size: 0.85rem;
-    font-weight: 500;
-    z-index: var(--outlet-z-tooltip);
-    animation: outletToastSlide 0.45s var(--outlet-transition-elegant);
-    box-shadow: var(--outlet-shadow-lg);
-    border-left: 3px solid var(--outlet-gold);
-}
-
-@keyframes outletToastSlide {
-    from {
-        opacity: 0;
-        transform: translateX(30px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-@media (max-width: 768px) {
-    .outlet-toast-notification {
-        bottom: 1rem;
-        right: 1rem;
-        left: 1rem;
-        text-align: center;
-    }
-}
-
-/* Utilidades globales que no están en variables.css */
-:root {
-    --outlet-text-muted: #b8aa97;
-    --outlet-transition-smooth: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    --outlet-transition-elegant: cubic-bezier(0.2, 0.9, 0.4, 1.1);
-    --outlet-border-light: #eee8e0;
-    --outlet-border-medium: #d4cabb;
-}
-
-body.dark-mode {
-    --outlet-text-muted: #6a7a8a;
-    --outlet-border-light: #2a4a6a;
-    --outlet-border-medium: #4a6a8a;
-}
-
 /* ======================================== */
 /* LOGOUT SECTION - Edit User               */
 /* ======================================== */

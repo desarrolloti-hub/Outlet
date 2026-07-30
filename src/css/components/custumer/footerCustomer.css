@@ -271,16 +271,16 @@
         grid-template-columns: repeat(2, 1fr);
         gap: 40px;
     }
-    
+
     .footer-col-brand {
         max-width: 100%;
     }
-    
+
     .footer-col-double {
         flex-direction: row;
         gap: 40px;
     }
-    
+
     .footer-col-double .footer-subcol {
         flex: 1;
     }
@@ -290,31 +290,31 @@
     .footer-container {
         padding: 40px 20px 20px;
     }
-    
+
     .footer-grid {
         grid-template-columns: 1fr;
         gap: 32px;
     }
-    
+
     .footer-col-double {
         flex-direction: column;
         gap: 32px;
     }
-    
+
     .footer-bottom {
         flex-direction: column;
         text-align: center;
         gap: 16px;
     }
-    
+
     .footer-legal {
         justify-content: center;
     }
-    
+
     .footer-payments {
         justify-content: center;
     }
-    
+
     .footer-social {
         justify-content: flex-start;
     }
@@ -324,19 +324,19 @@
     .footer-container {
         padding: 32px 16px 16px;
     }
-    
+
     .footer-divider {
         margin-bottom: 32px;
     }
-    
+
     .footer-legal {
         gap: 16px;
     }
-    
+
     .footer-legal a {
         font-size: 9px;
     }
-    
+
     .footer-logo-img {
         height: 35px;
     }

@@ -557,12 +557,10 @@
         display: flex !important;
     }
 
-    /* OCULTO POR DEFECTO EN MÓVIL */
     .orders-sidebar-content {
         display: none !important;
     }
 
-    /* VISIBLE CUANDO TIENE LA CLASE 'open' */
     .orders-sidebar-content.open {
         display: block !important;
         padding-top: 1rem;
@@ -585,7 +583,6 @@
         margin-top: 0;
     }
 
-    /* Header */
     .orders-header {
         flex-direction: column;
         align-items: stretch;
@@ -601,7 +598,6 @@
         min-width: 0;
     }
 
-    /* Order Card */
     .order-card {
         padding: 1.25rem;
     }
@@ -643,7 +639,6 @@
         height: 32px;
     }
 
-    /* Pagination */
     .orders-pagination {
         gap: 0.25rem;
     }
@@ -716,7 +711,6 @@
         margin-top: 1rem;
     }
 
-    /* Order Card */
     .order-card {
         padding: 0.875rem;
     }
@@ -759,7 +753,6 @@
         word-break: break-word;
     }
 
-    /* Pagination */
     .orders-pagination {
         gap: 0.15rem;
         margin-top: 1.5rem;
@@ -790,7 +783,6 @@
         padding: 0.3rem 1.2rem 0.3rem 0.5rem;
     }
 
-    /* Empty state */
     .orders-empty {
         padding: 2rem 1rem;
     }

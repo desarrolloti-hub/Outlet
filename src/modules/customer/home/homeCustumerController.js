@@ -33,7 +33,7 @@ const HERO_IMAGE = "https://lh3.googleusercontent.com/aida-public/AB6AXuDBtNHClC
 // ============================================
 const STORAGE_KEYS = {
     CART: 'outlet_cart',
-    WISHLIST: 'outlet_wishlist'   // ← UNIFICADO (mismo que wishlist)
+    WISHLIST: 'outlet_wishlist'
 };
 
 // ============================================
@@ -66,7 +66,19 @@ export async function homeCustomerController() {
     initRefreshButton();
     setupRealtimeUpdates();
 
+    // 🔥 EXPONER FUNCIONES GLOBALMENTE PARA QUE OTROS CONTROLADORES LAS USEN
+    window.addToCart = addToCart;
+    window.addToCartWithData = addToCartWithData;
+    window.toggleWishlist = toggleWishlist;
+    window.toggleWishlistWithData = toggleWishlistWithData;
+    window.getProductFromCard = getProductFromCard;
+    window.updateCartBadge = updateCartBadge;
+    window.updateWishlistBadge = updateWishlistBadge;
+    window.allProductsCache = allProductsCache;
+    window.showToast = showToast;
+
     console.log('✅ Home Controller CUSTOMER listo');
+    console.log('🌐 Funciones globales expuestas: addToCart, toggleWishlist, updateCartBadge, updateWishlistBadge');
 }
 
 // ============================================
@@ -415,11 +427,13 @@ function getProductFromCard(card) {
  * Agregar al carrito - UNIFICADO con outlet_cart
  */
 function addToCart(productId) {
+    console.log('🛒 addToCart llamado con productId:', productId);
+
     // Buscar el producto en el cache
-    const product = allProductsCache.find(p => p.id === productId);
+    const product = allProductsCache.find(p => String(p.id) === String(productId));
 
     if (!product) {
-        console.warn('⚠️ Producto no encontrado:', productId);
+        console.warn('⚠️ Producto no encontrado en cache:', productId);
         // Intentar obtener de la card
         const card = document.querySelector(`.product-card[data-id="${productId}"], .trending-item[data-id="${productId}"]`);
         if (card) {
@@ -427,6 +441,7 @@ function addToCart(productId) {
             addToCartWithData(fallbackProduct);
             return;
         }
+        showToast('⚠️ Producto no encontrado', 'error');
         return;
     }
 
@@ -450,10 +465,12 @@ function addToCart(productId) {
  * Agregar al carrito con datos estructurados
  */
 function addToCartWithData(productData) {
+    console.log('🛒 addToCartWithData:', productData);
+
     // Usar la clave UNIFICADA
     let cart = JSON.parse(localStorage.getItem(STORAGE_KEYS.CART) || '[]');
 
-    const existingItem = cart.find(item => item.id === productData.id);
+    const existingItem = cart.find(item => String(item.id) === String(productData.id));
 
     if (existingItem) {
         existingItem.quantity = (existingItem.quantity || 1) + 1;
@@ -488,8 +505,10 @@ function addToCartWithData(productData) {
  * Toggle wishlist - UNIFICADO con outlet_wishlist
  */
 function toggleWishlist(button, productId) {
+    console.log('❤️ toggleWishlist llamado con productId:', productId);
+
     // Buscar el producto en el cache
-    const product = allProductsCache.find(p => p.id === productId);
+    const product = allProductsCache.find(p => String(p.id) === String(productId));
 
     if (!product) {
         console.warn('⚠️ Producto no encontrado:', productId);
@@ -500,6 +519,7 @@ function toggleWishlist(button, productId) {
             toggleWishlistWithData(button, fallbackProduct);
             return;
         }
+        showToast('⚠️ Producto no encontrado', 'error');
         return;
     }
 
@@ -521,14 +541,16 @@ function toggleWishlist(button, productId) {
  * Toggle wishlist con datos estructurados
  */
 function toggleWishlistWithData(button, productData) {
+    console.log('❤️ toggleWishlistWithData:', productData);
+
     // Usar la clave UNIFICADA
     let wishlist = JSON.parse(localStorage.getItem(STORAGE_KEYS.WISHLIST) || '[]');
 
-    const exists = wishlist.some(item => item.id === productData.id);
-    const icon = button.querySelector('i');
+    const exists = wishlist.some(item => String(item.id) === String(productData.id));
+    const icon = button?.querySelector('i');
 
     if (exists) {
-        wishlist = wishlist.filter(item => item.id !== productData.id);
+        wishlist = wishlist.filter(item => String(item.id) !== String(productData.id));
         if (icon) {
             icon.style.color = '#666';
             icon.style.transition = 'all 0.3s';
@@ -693,67 +715,39 @@ function initTimer() {
 }
 
 function initCartEvents() {
-    // Evento para agregar al carrito - 🔥 PASANDO EL ID DEL PRODUCTO
+    // Evento para agregar al carrito
     document.addEventListener('click', (e) => {
         const addBtn = e.target.closest('.add-cart');
         if (addBtn) {
             e.stopPropagation();
             e.preventDefault();
 
-            // Obtener el ID del producto
             const productId = addBtn.dataset.cartAction;
             if (productId) {
                 addToCart(productId);
             } else {
-                // Fallback: buscar en el card
                 const productCard = addBtn.closest('.trending-item') || addBtn.closest('.product-card');
                 if (productCard && productCard.dataset.id) {
                     addToCart(productCard.dataset.id);
-                } else {
-                    // Fallback extremo: usar el nombre
-                    const productName = productCard?.querySelector('.product-name')?.textContent || 'Producto';
-                    const productData = {
-                        id: Date.now(),
-                        nombre: productName,
-                        precio: 0,
-                        imagen: 'https://placehold.co/300x300?text=Sin+Imagen',
-                        marca: '',
-                        categoria: ''
-                    };
-                    addToCartWithData(productData);
                 }
             }
         }
     });
 
-    // Evento para wishlist - 🔥 PASANDO EL ID DEL PRODUCTO
+    // Evento para wishlist
     document.addEventListener('click', (e) => {
         const wishlistBtn = e.target.closest('.wishlist-btn');
         if (wishlistBtn) {
             e.preventDefault();
             e.stopPropagation();
 
-            // Obtener el ID del producto
             const productId = wishlistBtn.dataset.wishlistAction;
             if (productId) {
                 toggleWishlist(wishlistBtn, productId);
             } else {
-                // Fallback: buscar en el card
                 const productCard = wishlistBtn.closest('.trending-item') || wishlistBtn.closest('.product-card');
                 if (productCard && productCard.dataset.id) {
                     toggleWishlist(wishlistBtn, productCard.dataset.id);
-                } else {
-                    // Fallback extremo: usar el nombre
-                    const productName = productCard?.querySelector('.product-name')?.textContent || 'Producto';
-                    const productData = {
-                        id: Date.now(),
-                        nombre: productName,
-                        precio: 0,
-                        imagen: 'https://placehold.co/300x300?text=Sin+Imagen',
-                        marca: '',
-                        categoria: ''
-                    };
-                    toggleWishlistWithData(wishlistBtn, productData);
                 }
             }
         }
