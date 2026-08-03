@@ -24,3 +24,5 @@ dist-ssr
 *.sw?
 /draw
 /config
+# Archivos de credenciales/keys
+serviceAccountKey.json
