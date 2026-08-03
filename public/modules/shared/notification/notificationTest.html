@@ -1,0 +1,146 @@
+<!-- ========================================
+   NOTIFICATION TEST PAGE - OUTLET
+   Vista para pruebas de FCM Notifications
+   ======================================== -->
+
+<div class="notification-test-container">
+    <div class="notification-test-card">
+        <div class="notification-test-header">
+            <h2 class="headline-md" style="display: flex; align-items: center; gap: 12px;">
+                <i class="fas fa-bell" style="color: var(--outlet-gold, #ddab3b);"></i>
+                Prueba de Notificaciones FCM
+            </h2>
+            <p class="body-sm" style="color: var(--outlet-text-secondary, #4f4635);">
+                Envía notificaciones push de prueba a dispositivos registrados
+            </p>
+        </div>
+
+        <form id="notificationTestForm" class="notification-test-form">
+            <!-- Campo 1: FCM Token -->
+            <div class="form-group">
+                <label for="fcmToken" class="form-label">
+                    <i class="fas fa-key"></i>
+                    FCM Token
+                    <span class="required-badge">*</span>
+                </label>
+                <div class="input-with-actions">
+                    <input 
+                        type="text" 
+                        id="fcmToken" 
+                        name="fcmToken" 
+                        class="form-input" 
+                        placeholder="Ingresa el FCM Token del dispositivo"
+                        required
+                    />
+                    <button type="button" id="getDeviceTokenBtn" class="btn-icon" title="Obtener token del dispositivo actual">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button type="button" id="pasteTokenBtn" class="btn-icon" title="Pegar token">
+                        <i class="fas fa-paste"></i>
+                    </button>
+                </div>
+                <small class="form-help">
+                    <i class="fas fa-info-circle"></i>
+                    El token FCM identifica al dispositivo para recibir notificaciones
+                </small>
+            </div>
+
+            <!-- Campo 2: Título de la Notificación -->
+            <div class="form-group">
+                <label for="notificationTitle" class="form-label">
+                    <i class="fas fa-heading"></i>
+                    Título de la Notificación
+                    <span class="required-badge">*</span>
+                </label>
+                <input 
+                    type="text" 
+                    id="notificationTitle" 
+                    name="notificationTitle" 
+                    class="form-input" 
+                    placeholder="Ej: ¡Oferta especial para ti!"
+                    required
+                />
+            </div>
+
+            <!-- Campo 3: Descripción de la Notificación -->
+            <div class="form-group">
+                <label for="notificationBody" class="form-label">
+                    <i class="fas fa-align-left"></i>
+                    Descripción
+                    <span class="required-badge">*</span>
+                </label>
+                <textarea 
+                    id="notificationBody" 
+                    name="notificationBody" 
+                    class="form-textarea" 
+                    rows="3"
+                    placeholder="Ej: No te pierdas nuestra nueva colección con descuentos exclusivos..."
+                    required
+                ></textarea>
+            </div>
+
+            <!-- Campo adicional: Click Action (opcional) -->
+            <div class="form-group">
+                <label for="clickAction" class="form-label">
+                    <i class="fas fa-link"></i>
+                    Click Action (opcional)
+                </label>
+                <input 
+                    type="text" 
+                    id="clickAction" 
+                    name="clickAction" 
+                    class="form-input" 
+                    placeholder="Ej: /products o https://tutienda.com/novedades"
+                />
+                <small class="form-help">
+                    <i class="fas fa-info-circle"></i>
+                    Ruta donde se redirigirá al hacer clic en la notificación
+                </small>
+            </div>
+
+            <!-- Estado de conexión FCM -->
+            <div id="fcmStatus" class="fcm-status">
+                <span class="status-dot status-loading"></span>
+                <span id="fcmStatusText">Verificando conexión FCM...</span>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="form-actions">
+                <button type="submit" id="sendNotificationBtn" class="btn-primary btn-send">
+                    <i class="fas fa-paper-plane"></i>
+                    Enviar Notificación
+                </button>
+                <button type="reset" class="btn-secondary">
+                    <i class="fas fa-undo"></i>
+                    Limpiar
+                </button>
+                <button type="button" id="fillExampleBtn" class="btn-ghost">
+                    <i class="fas fa-wand-magic-sparkles"></i>
+                    Ejemplo
+                </button>
+            </div>
+
+            <!-- Resultado de envío -->
+            <div id="notificationResult" class="notification-result" style="display: none;">
+                <div class="result-content">
+                    <i class="fas fa-check-circle" style="color: #4caf50; font-size: 24px;"></i>
+                    <div>
+                        <h4>Notificación enviada</h4>
+                        <p id="resultMessage">La notificación ha sido enviada exitosamente</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-close-result" id="closeResultBtn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </form>
+
+        <!-- Historial de pruebas (opcional) -->
+        <div class="notification-test-footer">
+            <div class="test-info">
+                <i class="fas fa-flask"></i>
+                <span>Esta es una vista de pruebas. Asegúrate de tener Firebase Cloud Messaging configurado.</span>
+            </div>
+        </div>
+    </div>
+</div>

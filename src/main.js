@@ -7,6 +7,7 @@ import { loadLayout, initLayoutWatcher } from './modules/shared/layout/layoutLoa
 import { initRouter } from './router/router.js';
 import { AuthService, ROLES } from './services/authService.js';
 import { ThemeService } from './modules/shared/layout/themeService.js';
+import { NotificationService } from './services/notificationService.js';
 
 function loadExternalScripts() {
     return new Promise((resolve) => {
@@ -102,6 +103,76 @@ function setupLayoutReadyListener() {
     });
 }
 
+// ============================================
+// 🆕 REGISTRAR SERVICE WORKER
+// ============================================
+
+async function registerServiceWorker() {
+    try {
+        if ('serviceWorker' in navigator) {
+            console.log('📱 Registrando Service Worker...');
+            
+            const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+            
+            console.log('✅ Service Worker registrado con éxito');
+            console.log('📋 Scope:', registration.scope);
+            
+            // Verificar permisos de notificaciones
+            if (Notification.permission === 'granted') {
+                console.log('🔔 Permisos de notificación ya concedidos');
+            } else if (Notification.permission === 'denied') {
+                console.warn('⚠️ Permisos de notificación denegados');
+            } else {
+                console.log('⏳ Esperando permiso de notificaciones...');
+            }
+            
+            return registration;
+        } else {
+            console.warn('⚠️ Este navegador no soporta Service Workers');
+            return null;
+        }
+    } catch (error) {
+        console.error('❌ Error registrando Service Worker:', error);
+        return null;
+    }
+}
+
+// ============================================
+// NOTIFICACIONES EN PRIMER PLANO (foreground)
+// Muestra una notificación REAL del sistema operativo
+// (Windows/Android/macOS) sin importar en qué página
+// esté el usuario ni si la pestaña tiene el foco.
+// Sin esto, con la pestaña abierta Firebase solo dispara
+// un evento de JS, no una notificación visible.
+// ============================================
+
+async function setupForegroundNotifications() {
+    NotificationService.listenForegroundMessages(async (payload) => {
+        try {
+            const registration = await navigator.serviceWorker.ready;
+
+            const title = payload.notification?.title || 'OUTLET';
+            const body = payload.notification?.body || '';
+            const clickAction = payload.data?.click_action || payload.notification?.click_action || '/';
+
+            await registration.showNotification(title, {
+                body,
+                icon: '/assets/iconos/outlet_lineado_negro.png',
+                badge: '/assets/iconos/outlet_lineado_negro.png',
+                data: { ...payload.data, click_action: clickAction },
+                tag: 'outlet-notification-' + Date.now(),
+                vibrate: [200, 100, 200]
+            });
+        } catch (error) {
+            console.error('❌ Error mostrando notificación en foreground:', error);
+        }
+    });
+}
+
+// ============================================
+// FIN DE REGISTRO SERVICE WORKER
+// ============================================
+
 async function initApp() {
     try {
         console.log('🚀 Inicializando aplicación...');
@@ -120,6 +191,10 @@ async function initApp() {
         initLayoutWatcher();
 
         initRouter();
+
+        // 🆕 Registrar Service Worker y activar notificaciones reales del sistema
+        await registerServiceWorker();
+        setupForegroundNotifications();
 
         console.log('✅ Aplicación inicializada correctamente');
     } catch (error) {

@@ -53,6 +53,8 @@ import { updateAdminController } from '../modules/admin/user/update/updateAdmins
 import { salesController } from '../modules/admin/sale/saleController.js';
 import { shippingController } from '../modules/admin/shipping/shippingController.js';
 
+import { notificationTestController } from '../modules/shared/notification/notificationTest.js';
+
 export const routes = {
 
     /* ========================================
@@ -202,6 +204,11 @@ export const routes = {
         controller: paymentMethodsController
     },
 
+
+    '/notificationTest': {
+        view: '/modules/shared/notification/notificationTest.html',
+        controller: notificationTestController
+    },
 
     /* ========================================
          Rutas de error y fallback  

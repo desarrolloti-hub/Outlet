@@ -3,6 +3,7 @@
    (CARGA PRODUCTOS DESDE FIREBASE - SIN PROTECCIÓN)
    ✅ USA getAll CON FILTROS EN MEMORIA
    ✅ SIN PROTECCIÓN PARA CARRITO Y LISTA DE DESEOS
+   ✅ CON NOTIFICACIONES FCM
    ======================================== */
 
 import { ProductService } from '../../../services/productService.js';
@@ -77,8 +78,11 @@ export async function homeCustomerController() {
     window.allProductsCache = allProductsCache;
     window.showToast = showToast;
 
+    // 🆕 INICIALIZAR NOTIFICACIONES
+    initNotifications();
+
     console.log('✅ Home Controller CUSTOMER listo');
-    console.log('🌐 Funciones globales expuestas: addToCart, toggleWishlist, updateCartBadge, updateWishlistBadge');
+    console.log('🌐 Funciones globales expuestas: addToCart, toggleWishlist, updateCartBadge, updateWishlistBadge, requestNotificationPermission');
 }
 
 // ============================================
@@ -919,6 +923,202 @@ function setupRealtimeUpdates() {
 }
 
 // ============================================
+// 🔔 FUNCIONES PARA NOTIFICACIONES (NUEVO)
+// ============================================
+
+/**
+ * Verificar el estado de las notificaciones
+ */
+function getNotificationStatus() {
+    if (!('Notification' in window)) {
+        return 'unsupported';
+    }
+    return Notification.permission;
+}
+
+/**
+ * Mostrar u ocultar el banner según el estado de las notificaciones
+ */
+function handleNotificationBanner() {
+    const banner = document.getElementById('notificationBanner');
+    if (!banner) return;
+
+    const status = getNotificationStatus();
+
+    // Si ya tiene permisos o no soporta, ocultar banner
+    if (status === 'granted' || status === 'unsupported') {
+        banner.style.display = 'none';
+        return;
+    }
+
+    // Si está denegado, ocultar (el usuario ya dijo que no)
+    if (status === 'denied') {
+        banner.style.display = 'none';
+        return;
+    }
+
+    // Si es 'default' (no preguntado), mostrar banner
+    if (status === 'default') {
+        // Verificar si ya fue descartado antes
+        const dismissed = localStorage.getItem('notifications_dismissed');
+        if (dismissed === 'true') {
+            banner.style.display = 'none';
+            return;
+        }
+        banner.style.display = 'block';
+        return;
+    }
+
+    banner.style.display = 'none';
+}
+
+/**
+ * Solicitar permiso para notificaciones
+ */
+async function requestNotificationPermission() {
+    try {
+        if (!('Notification' in window)) {
+            showToast('⚠️ Este navegador no soporta notificaciones');
+            return false;
+        }
+
+        // Si ya está concedido, no hacer nada
+        if (Notification.permission === 'granted') {
+            showToast('✅ Ya tienes notificaciones activadas');
+            return true;
+        }
+
+        // Si está denegado, no se puede hacer nada
+        if (Notification.permission === 'denied') {
+            showToast('❌ Las notificaciones están bloqueadas. Cambia esto en la configuración del navegador.');
+            return false;
+        }
+
+        // Solicitar permiso
+        showToast('⏳ Solicitando permiso de notificaciones...');
+        const permission = await Notification.requestPermission();
+
+        if (permission === 'granted') {
+            showToast('✅ ¡Notificaciones activadas! Recibirás ofertas exclusivas.');
+            
+            // Ocultar banner
+            const banner = document.getElementById('notificationBanner');
+            if (banner) banner.style.display = 'none';
+
+            // Guardar que se aceptó
+            localStorage.setItem('notifications_dismissed', 'false');
+
+            // Intentar obtener el FCM token
+            await getAndSaveFCMToken();
+
+            return true;
+        } else {
+            showToast('⚠️ No se activaron las notificaciones. Puedes activarlas después.');
+            return false;
+        }
+    } catch (error) {
+        console.error('❌ Error solicitando permiso de notificaciones:', error);
+        showToast('❌ Error al solicitar permisos');
+        return false;
+    }
+}
+
+/**
+ * Obtener y guardar el FCM token
+ */
+async function getAndSaveFCMToken() {
+    try {
+        // Verificar que el SW esté registrado
+        if (!('serviceWorker' in navigator)) {
+            console.warn('⚠️ Service Workers no soportados');
+            return null;
+        }
+
+        const registration = await navigator.serviceWorker.ready;
+        if (!registration) {
+            console.warn('⚠️ Service Worker no registrado');
+            return null;
+        }
+
+        // Verificar que Firebase esté disponible
+        if (typeof firebase === 'undefined' || !firebase.messaging) {
+            console.warn('⚠️ Firebase no está disponible');
+            return null;
+        }
+
+        const messaging = firebase.messaging();
+        
+        // Intentar obtener el token
+        try {
+            const token = await messaging.getToken({
+                vapidKey: 'BI6q0uN0xXzY9wL8vM7nB6vC5xZ4aA3sS2dD1fF0gG9hH8jJ7kK6lL5mM4nN3oO2pP1qQ0rR'
+            });
+            
+            if (token) {
+                console.log('📱 FCM Token obtenido:', token);
+                localStorage.setItem('fcm_token', token);
+                return token;
+            }
+        } catch (tokenError) {
+            console.warn('⚠️ Error obteniendo token:', tokenError);
+        }
+
+        return null;
+    } catch (error) {
+        console.error('❌ Error obteniendo FCM token:', error);
+        return null;
+    }
+}
+
+/**
+ * Inicializar eventos de notificaciones
+ */
+function initNotificationEvents() {
+    // Botón para activar notificaciones
+    const enableBtn = document.getElementById('enableNotificationsBtn');
+    if (enableBtn) {
+        enableBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            await requestNotificationPermission();
+        });
+    }
+
+    // Botón para descartar banner
+    const dismissBtn = document.getElementById('dismissNotificationsBtn');
+    if (dismissBtn) {
+        dismissBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const banner = document.getElementById('notificationBanner');
+            if (banner) {
+                banner.style.display = 'none';
+                localStorage.setItem('notifications_dismissed', 'true');
+                showToast('📌 Puedes activar las notificaciones después en la configuración');
+            }
+        });
+    }
+}
+
+/**
+ * Inicializar sistema de notificaciones
+ */
+function initNotifications() {
+    console.log('🔔 Inicializando sistema de notificaciones...');
+    
+    // Esperar a que el DOM esté listo
+    setTimeout(() => {
+        handleNotificationBanner();
+        initNotificationEvents();
+        
+        // Si ya tiene permisos, obtener token
+        if (getNotificationStatus() === 'granted') {
+            setTimeout(() => {
+                getAndSaveFCMToken();
+            }, 1000);
+        }
+    }, 500);
+}
+
+// ============================================
 // INICIALIZAR BADGES AL CARGAR
 // ============================================
 function initBadges() {
@@ -979,3 +1179,9 @@ if (!document.querySelector('#outlet-styles-customer')) {
 
 // Inicializar badges
 initBadges();
+
+// ============================================
+// EXPONER FUNCIONES DE NOTIFICACIONES GLOBALMENTE
+// ============================================
+window.requestNotificationPermission = requestNotificationPermission;
+window.getAndSaveFCMToken = getAndSaveFCMToken;

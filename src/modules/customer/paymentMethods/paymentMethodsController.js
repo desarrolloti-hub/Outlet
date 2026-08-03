@@ -5,6 +5,8 @@
    ======================================== */
 
 import { CustomerService } from '../../../services/customerService.js';
+import { SalesService } from '../../../services/salesService.js';
+import { NotificationService } from '../../../services/notificationService.js';
 
 // ========================================
 // DOM Elements
@@ -395,6 +397,158 @@ async function guardarCambios() {
 }
 
 // ========================================
+// Finalizar compra: crea la venta real y notifica
+// al dispositivo del cliente que la compra fue exitosa
+// ========================================
+
+const CART_STORAGE_KEY = 'outlet_cart';
+
+function getCarritoActual() {
+    try {
+        const raw = localStorage.getItem(CART_STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+    } catch {
+        return [];
+    }
+}
+
+function limpiarCarrito() {
+    localStorage.removeItem(CART_STORAGE_KEY);
+    const badge = document.querySelector('.cart-count');
+    if (badge) {
+        badge.textContent = '0';
+        badge.style.opacity = '0';
+    }
+}
+
+function getMetodoPagoSeleccionado() {
+    if (document.getElementById('paymentPaypalToggle')?.checked) return 'paypal';
+    if (document.getElementById('paymentTransferenciaToggle')?.checked) return 'transferencia';
+    if (document.getElementById('paymentContraentregaToggle')?.checked) return 'contraentrega';
+    var defaultCard = cards.find(function (c) { return c.isDefault; });
+    return defaultCard ? 'tarjeta' : 'efectivo';
+}
+
+/**
+ * Envía la notificación push "compra exitosa" AL DISPOSITIVO ACTUAL.
+ * Usa NotificationService.initPush() para obtener el token fresco de
+ * ESTE navegador/dispositivo específico (el que acaba de comprar),
+ * no todos los tokens guardados del usuario.
+ */
+async function notificarCompraExitosa(sale) {
+    try {
+        const token = await NotificationService.initPush();
+
+        if (!token) {
+            console.warn('⚠️ No se pudo obtener el token de este dispositivo, no se envía notificación push');
+            return;
+        }
+
+        const total = new Intl.NumberFormat('es-MX', {
+            style: 'currency',
+            currency: 'MXN',
+            minimumFractionDigits: 0
+        }).format(sale.total || 0);
+
+        const response = await fetch('/api/notifications/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                token,
+                notification: {
+                    title: '✅ ¡Tu compra fue exitosa!',
+                    body: `Pedido ${sale.orderNumberFormatted || '#' + sale.orderNumber} por ${total}. ¡Gracias por tu compra!`,
+                    click_action: '/ordersCustumer'
+                },
+                data: {
+                    orderId: sale.id,
+                    orderNumber: sale.orderNumber,
+                    click_action: '/ordersCustumer'
+                }
+            })
+        });
+
+        if (!response.ok) {
+            const errorBody = await response.json().catch(function () { return {}; });
+            console.error('❌ Error enviando notificación de compra:', errorBody.message);
+            return;
+        }
+
+        console.log('📨 Notificación de compra enviada al dispositivo actual');
+    } catch (error) {
+        // La compra ya se guardó correctamente aunque falle la notificación,
+        // así que solo logueamos el error sin interrumpir el flujo del usuario.
+        console.error('❌ Error al notificar la compra:', error);
+    }
+}
+
+async function finalizarCompra() {
+    try {
+        if (!currentCustomer) {
+            await mostrarError('Sesión no activa', 'No hay una sesión activa. Por favor, inicia sesión.');
+            return;
+        }
+
+        const carrito = getCarritoActual();
+        if (!carrito || carrito.length === 0) {
+            await mostrarError('Carrito vacío', 'No tienes productos en tu carrito para finalizar la compra.');
+            return;
+        }
+
+        mostrarLoading('Procesando tu compra...');
+
+        // 1) Crear la venta real en Firestore (colección "ventas")
+        const saleData = {
+            customerId: currentCustomer.id,
+            customerName: currentCustomer.nombreCompleto || currentCustomer.nombre || 'Cliente',
+            customerEmail: currentCustomer.email || '',
+            items: carrito.map(function (item) {
+                return {
+                    productId: item.id,
+                    productName: item.name,
+                    cantidad: item.quantity || 1,
+                    precioUnitario: item.price || 0,
+                    precioFinal: item.price || 0,
+                    talla: item.size || '',
+                    color: item.color || ''
+                };
+            }),
+            paymentMethod: getMetodoPagoSeleccionado(),
+            paymentStatus: 'pagado',
+            orderStatus: 'confirmada'
+        };
+
+        const sale = await SalesService.create(saleData);
+
+        // 2) Vaciar el carrito ya que la compra se completó
+        limpiarCarrito();
+
+        cerrarLoading();
+
+        // 3) Notificar AL DISPOSITIVO ACTUAL que la compra fue exitosa
+        //    (no bloquea la UI, corre en paralelo con la confirmación visual)
+        notificarCompraExitosa(sale);
+
+        // 4) Confirmación visual
+        await mostrarExito(
+            '¡Compra realizada con éxito!',
+            'Tu pedido ' + (sale.orderNumberFormatted || ('#' + sale.orderNumber)) + ' ha sido confirmado.'
+        );
+
+        if (typeof window.navigateTo === 'function') {
+            window.navigateTo('/ordersCustumer');
+        } else {
+            window.location.href = '/ordersCustumer';
+        }
+
+    } catch (error) {
+        cerrarLoading();
+        console.error('❌ Error finalizando la compra:', error);
+        await mostrarError('Error al procesar la compra', error.message || 'Ocurrió un error al procesar tu compra.');
+    }
+}
+
+// ========================================
 // Cancelar - Recargar datos originales
 // ========================================
 
@@ -436,7 +590,7 @@ function initEventListeners() {
     var btnAceptar = document.getElementById('btnAceptar');
     var btnCancelar = document.getElementById('btnCancelar');
 
-    btnAceptar?.addEventListener('click', guardarCambios);
+    btnAceptar?.addEventListener('click', finalizarCompra);
     btnCancelar?.addEventListener('click', cancelarCambios);
 
     var transferenciaToggle = document.getElementById('paymentTransferenciaToggle');

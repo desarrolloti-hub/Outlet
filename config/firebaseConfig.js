@@ -2,12 +2,18 @@
    FIREBASE CONFIGURATION - Outlet Val
    ======================================== */
 
-// Usar URLs CDN (más estable para build)
+// Todo el SDK debe venir del mismo CDN y misma versión
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
 import { getFirestore } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
 import { getStorage } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js';
 import { getAuth } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
 import { getAnalytics } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics.js';
+import {
+    getMessaging,
+    getToken,
+    onMessage,
+    isSupported
+} from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging.js';
 
 // Tu configuración de Firebase
 const firebaseConfig = {
@@ -26,17 +32,36 @@ let db;
 let storage;
 let auth;
 let analytics;
+let messaging; // minúscula, por convención (las variables no se capitalizan)
 
 try {
     app = initializeApp(firebaseConfig);
     db = getFirestore(app);
     storage = getStorage(app);
     auth = getAuth(app);
-    analytics = getAnalytics(app);
     console.log('✅ Firebase inicializado correctamente');
 } catch (error) {
     console.error('❌ Error inicializando Firebase:', error);
 }
 
+// Analytics aparte: puede fallar por adblockers, no debe tumbar el resto
+try {
+    analytics = getAnalytics(app);
+} catch (error) {
+    console.warn('⚠️ Analytics no disponible:', error.message);
+}
+
+// Messaging aparte: no todos los navegadores lo soportan
+isSupported().then((supported) => {
+    if (supported) {
+        messaging = getMessaging(app);
+        console.log('✅ Firebase Messaging inicializado');
+    } else {
+        console.warn('⚠️ Este navegador no soporta Firebase Messaging');
+    }
+}).catch((error) => {
+    console.error('❌ Error verificando soporte de Messaging:', error);
+});
+
 // Exportar servicios
-export { app, db, storage, auth, analytics };
+export { app, db, storage, auth, analytics, messaging, getToken, onMessage };
