@@ -48,9 +48,9 @@
 @import url('./pages/customer/products/productsCustumer.css');
 @import url('./pages/customer/collection/collectionCustumer.css');
 
-@import url('./pages/customer/orders/orders.css');
-@import url('./pages/customer/paymentMethods/paymentMethods.css');
 
+@import url('./pages/customer/paymentMethods/paymentMethods.css');
+@import url('./pages/customer/sales/customerSales.css');
 
 /* admin */
 

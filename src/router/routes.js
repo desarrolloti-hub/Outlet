@@ -4,8 +4,6 @@
 
 // Importar controllers de vistas
 
-
-
 //         ---------   visitor   ---------
 
 import { homeController } from '../modules/visitor/home/homeController.js';
@@ -17,21 +15,17 @@ import { cartController } from '../modules/visitor/cart/cartController.js';
 import { createAccountController } from '../modules/visitor/createAccount/createAccount.js';
 import { productsController } from '../modules/visitor/products/productsController.js';
 
-
 //         ---------   customer   ---------
 //  importar controllers de customer de edición de perfil
 
 import { userProfileEditController } from '../modules/customer/editUser/editUser.js';
 import { homeCustomerController } from '../modules/customer/home/homeCustumerController.js';
-import { cartCustomerController } from '../modules/customer/cart/cartCustumerController.js'
-import { wishlistCustomerController } from '../modules/customer/wishlist/wishlistCustumerController.js'
+import { cartCustomerController } from '../modules/customer/cart/cartCustumerController.js';
+import { wishlistCustomerController } from '../modules/customer/wishlist/wishlistCustumerController.js';
 import { productsCustumerController } from '../modules/customer/products/productsCustumer.js';
-import { collectionCustomerController } from '../modules/customer/collection/collectionCustumerController.js'
-
-import { OrdersController } from '../modules/customer/orders/ordersController.js'
+import { collectionCustomerController } from '../modules/customer/collection/collectionCustumerController.js';
 import { paymentMethodsController } from '../modules/customer/paymentMethods/paymentMethodsController.js';
-
-
+import { customerSalesController } from '../modules/customer/sales/customerSalesController.js';
 
 //         ---------   Admin   ---------
 //  importar controllers de administración de productos
@@ -46,9 +40,9 @@ import { productCreateController } from '../modules/admin/products/create/create
 import { productListController } from '../modules/admin/products/productsListController.js';
 import { editProductController } from '../modules/admin/products/edit/editProductController.js';
 
-import { readCustomersController } from '../modules/admin/user/create/viewCustumer.js'
-import { readAdminsController } from '../modules/admin/user/read/readAdminsController.js'
-import { updateAdminController } from '../modules/admin/user/update/updateAdminsController.js'
+import { readCustomersController } from '../modules/admin/user/create/viewCustumer.js';
+import { readAdminsController } from '../modules/admin/user/read/readAdminsController.js';
+import { updateAdminController } from '../modules/admin/user/update/updateAdminsController.js';
 
 import { salesController } from '../modules/admin/sale/saleController.js';
 import { shippingController } from '../modules/admin/shipping/shippingController.js';
@@ -106,7 +100,6 @@ export const routes = {
         controller: null
     },
 
-
     /* ========================================
          Rutas de administración de productos
        ======================================== */
@@ -141,18 +134,15 @@ export const routes = {
     "/createAccountAdmin": {
         view: "/modules/admin/createAccount/createAccountAdmin.html",
         controller: createAccountAdminController
-
     },
     "/viewCustumer": {
         view: "/modules/admin/user/create/viewCustumer.html",
         controller: readCustomersController
     },
-
     "/readAdmins": {
         view: "/modules/admin/user/read/readAdmins.html",
         controller: readAdminsController
     },
-
     "/updateAdmins": {
         view: "/modules/admin/user/update/updateAdmins.html",
         controller: updateAdminController
@@ -165,7 +155,6 @@ export const routes = {
         view: "public/modules/admin/shipping/shipping.html",
         controller: shippingController
     },
-
 
     /* ========================================
       Rutas de customer 
@@ -195,15 +184,14 @@ export const routes = {
         view: "/modules/customer/collection/collectionCustomer.html",
         controller: collectionCustomerController
     },
-    "/ordersCustumer": {
-        view: "/modules/customer/orders/orders.html",
-        controller: OrdersController
-    },
     "/payment": {
         view: "/modules/customer/paymentMethods/paymentMethods.html",
         controller: paymentMethodsController
     },
-
+    "/salesCustomer": {
+        view: "/modules/customer/sales/customerSales.html",
+        controller: customerSalesController
+    },
 
     '/notificationTest': {
         view: '/modules/shared/notification/notificationTest.html',
@@ -222,5 +210,5 @@ export const routes = {
     '/verifyEmail': {
         view: '/modules/shared/email/verifyEmail.html',
         controller: null
-    },
+    }
 };

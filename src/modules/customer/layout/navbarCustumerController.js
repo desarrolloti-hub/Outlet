@@ -300,9 +300,9 @@ function handleProfileMenuItemClick(e, action) {
             console.log('📦 Navegando a compras realizadas');
             if (session) {
                 if (typeof window.navigateTo === 'function') {
-                    window.navigateTo('/ordersCustumer');
+                    window.navigateTo('/salesCustomer');
                 } else {
-                    window.location.href = 'ordersCustumer';
+                    window.location.href = 'salesCustomer';
                 }
             } else {
                 if (typeof window.navigateTo === 'function') {

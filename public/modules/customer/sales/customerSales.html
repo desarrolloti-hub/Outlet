@@ -1,0 +1,160 @@
+<!-- ========================================
+   VISTA DE PANEL DE VENTAS - CLIENTE
+   Panel para que los clientes vean su historial de compras
+   CON ESTILOS BASADOS EN TUS VARIABLES GLOBALES
+   ======================================== -->
+
+<main class="customer-sales-container">
+    <!-- Header -->
+    <div class="customer-sales-header">
+        <div>
+            <h1 class="customer-sales-title">
+                <span class="material-symbols-outlined customer-sales-title-icon">receipt_long</span>
+                Mis Compras
+            </h1>
+            <p class="customer-sales-desc">Consulta el historial y estado de tus pedidos</p>
+        </div>
+        <div class="customer-sales-header-actions">
+            <button class="customer-sales-btn-outline" id="refreshBtn">
+                <span class="material-symbols-outlined">refresh</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Cards - Versión simplificada para cliente -->
+    <div class="customer-sales-stats-grid" id="statsGrid">
+        <div class="customer-sales-stat-card">
+            <div class="customer-sales-stat-icon"
+                style="background: rgba(221, 171, 59, 0.15); color: var(--outlet-gold);">
+                <span class="material-symbols-outlined">shopping_bag</span>
+            </div>
+            <div class="customer-sales-stat-info">
+                <span class="customer-sales-stat-value" id="totalOrders">0</span>
+                <span class="customer-sales-stat-label">Total Pedidos</span>
+            </div>
+        </div>
+        <div class="customer-sales-stat-card">
+            <div class="customer-sales-stat-icon" style="background: rgba(40, 167, 69, 0.15); color: #28a745;">
+                <span class="material-symbols-outlined">payments</span>
+            </div>
+            <div class="customer-sales-stat-info">
+                <span class="customer-sales-stat-value" id="totalSpent">$0.00</span>
+                <span class="customer-sales-stat-label">Total Gastado</span>
+            </div>
+        </div>
+        <div class="customer-sales-stat-card">
+            <div class="customer-sales-stat-icon" style="background: rgba(23, 162, 184, 0.15); color: #17a2b8;">
+                <span class="material-symbols-outlined">local_shipping</span>
+            </div>
+            <div class="customer-sales-stat-info">
+                <span class="customer-sales-stat-value" id="pendingOrders">0</span>
+                <span class="customer-sales-stat-label">Pedidos en Proceso</span>
+            </div>
+        </div>
+        <div class="customer-sales-stat-card">
+            <div class="customer-sales-stat-icon" style="background: rgba(255, 193, 7, 0.15); color: #ffc107;">
+                <span class="material-symbols-outlined">check_circle</span>
+            </div>
+            <div class="customer-sales-stat-info">
+                <span class="customer-sales-stat-value" id="deliveredOrders">0</span>
+                <span class="customer-sales-stat-label">Entregados</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros - Versión simplificada para cliente -->
+    <div class="customer-sales-filters">
+        <div class="customer-sales-filter-group">
+            <div class="customer-sales-filter-item">
+                <label>Estado del Pedido</label>
+                <select id="filterStatus">
+                    <option value="">Todos</option>
+                    <option value="confirmada">Confirmada</option>
+                    <option value="preparando">Preparando</option>
+                    <option value="enviada">Enviada</option>
+                    <option value="entregada">Entregada</option>
+                    <option value="cancelada">Cancelada</option>
+                </select>
+            </div>
+            <div class="customer-sales-filter-item">
+                <label>Ordenar por</label>
+                <select id="filterSort">
+                    <option value="recent">Más recientes</option>
+                    <option value="oldest">Más antiguos</option>
+                    <option value="highest">Mayor total</option>
+                    <option value="lowest">Menor total</option>
+                </select>
+            </div>
+        </div>
+        <button class="customer-sales-btn-filter" id="applyFiltersBtn">
+            <span class="material-symbols-outlined">filter_list</span>
+            Aplicar Filtros
+        </button>
+    </div>
+
+    <!-- Tabla de Ventas -->
+    <div class="customer-sales-table-container">
+        <div class="customer-sales-table-header">
+            <div class="customer-sales-table-title">
+                <span class="material-symbols-outlined">list_alt</span>
+                <span>Historial de Compras</span>
+            </div>
+            <div class="customer-sales-table-info">
+                <span id="salesCount">0 pedidos</span>
+            </div>
+        </div>
+
+        <div class="customer-sales-table-wrapper">
+            <table class="customer-sales-table">
+                <thead>
+                    <tr>
+                        <th>Orden</th>
+                        <th>Productos</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                        <th>Pago</th>
+                        <th>Fecha</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="salesTableBody">
+                    <tr>
+                        <td colspan="7" class="customer-sales-table-empty">
+                            <div class="customer-sales-empty-state">
+                                <span class="material-symbols-outlined">inbox</span>
+                                <p>No tienes pedidos aún</p>
+                                <small>¡Empieza a comprar y tus pedidos aparecerán aquí!</small>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginación -->
+        <div class="customer-sales-pagination">
+            <button class="customer-sales-pagination-btn" id="prevPageBtn" disabled>
+                <span class="material-symbols-outlined">chevron_left</span>
+            </button>
+            <span class="customer-sales-pagination-info" id="pageInfo">Página 1</span>
+            <button class="customer-sales-pagination-btn" id="nextPageBtn">
+                <span class="material-symbols-outlined">chevron_right</span>
+            </button>
+        </div>
+    </div>
+</main>
+
+<!-- Modal para ver detalle de venta -->
+<div class="customer-sales-modal-overlay" id="saleModal" style="display: none;">
+    <div class="customer-sales-modal">
+        <div class="customer-sales-modal-header">
+            <h3 id="modalTitle">Detalle del Pedido</h3>
+            <button class="customer-sales-modal-close" id="modalCloseBtn">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <div class="customer-sales-modal-body" id="modalBody">
+            <!-- Contenido dinámico -->
+        </div>
+    </div>
+</div>
