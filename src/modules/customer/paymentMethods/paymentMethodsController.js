@@ -536,9 +536,9 @@ async function finalizarCompra() {
         );
 
         if (typeof window.navigateTo === 'function') {
-            window.navigateTo('/ordersCustumer');
+            window.navigateTo('/salesCustomer');
         } else {
-            window.location.href = '/ordersCustumer';
+            window.location.href = '/salesCustomer';
         }
 
     } catch (error) {

@@ -5,6 +5,9 @@
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   },
+  "functions": {
+    "source": "functions"
+  },
   "hosting": {
     "public": "dist",
     "ignore": [
@@ -12,12 +15,16 @@
       "**/.*",
       "**/node_modules/**"
     ],
-    "cleanUrls":true,
-    "rewrites":[
+    "cleanUrls": true,
+    "rewrites": [
       {
-      "source":"**",
-      "destination":"/index.html"
-    }
-  ]
+        "source": "/api/**",
+        "function": "api"
+      },
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
   }
 }
