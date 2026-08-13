@@ -48,6 +48,7 @@ import { salesController } from '../modules/admin/sale/saleController.js';
 import { shippingController } from '../modules/admin/shipping/shippingController.js';
 
 import { notificationTestController } from '../modules/shared/notification/notificationTest.js';
+import { adminProfileController } from '../modules/admin/profile/adminProfileController.js';
 
 export const routes = {
 
@@ -154,6 +155,10 @@ export const routes = {
     "/shipping": {
         view: "public/modules/admin/shipping/shipping.html",
         controller: shippingController
+    },
+    "/adminProfile": {
+        view: "public/modules/admin/profile/adminProfile.html",
+        controller: adminProfileController
     },
 
     /* ========================================

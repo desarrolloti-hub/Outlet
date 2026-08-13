@@ -1,0 +1,306 @@
+<!-- ========================================
+   VISTA DE PERFIL DE ADMINISTRADOR - OUTLET
+   Página para gestionar datos del administrador
+   ======================================== -->
+
+<main class="outlet-admin-profile-container">
+    <!-- Header premium -->
+    <div class="outlet-admin-header">
+        <div class="outlet-admin-title">
+            <h1 class="outlet-text-gold">Mi Perfil</h1>
+            <p class="outlet-admin-subtitle">Administra tu información personal y configuración de cuenta</p>
+        </div>
+        <div class="outlet-admin-role-badge">
+            <span class="outlet-role-tag" id="adminRoleBadge">Administrador</span>
+        </div>
+    </div>
+
+    <!-- ======================================== -->
+    <!-- SECCIÓN DE FOTO DE PERFIL                 -->
+    <!-- ======================================== -->
+    <div class="outlet-admin-avatar-section">
+        <div class="outlet-admin-avatar-container">
+            <img id="adminProfileAvatar" src="" alt="Foto de perfil" class="outlet-admin-avatar-img"
+                style="display: none; width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid var(--outlet-gold, #c9a84c);">
+            <div class="outlet-admin-avatar-placeholder" id="adminAvatarPlaceholder"
+                style="width: 100px; height: 100px; border-radius: 50%; background: var(--outlet-gold-gradient); display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: 700; color: #1a1a1a; text-transform: uppercase;">
+                <span id="adminAvatarInitials">A</span>
+            </div>
+            <div class="outlet-admin-avatar-overlay" id="adminAvatarOverlay">
+                <span class="material-symbols-outlined">photo_camera</span>
+
+            </div>
+            <input type="file" id="adminAvatarInput" accept="image/*" style="display:none">
+        </div>
+        <div class="outlet-admin-avatar-info">
+            <h3 id="adminNameDisplay">Administrador</h3>
+            <p id="adminEmailDisplay">admin@outlet.com</p>
+            <span class="outlet-admin-status" id="adminStatusBadge">Activo</span>
+        </div>
+    </div>
+
+    <!-- Wizard premium -->
+    <div class="outlet-wizard-container">
+        <div class="outlet-wizard-steps">
+            <div class="outlet-step-item active" data-step="1">
+                <div class="outlet-step-number">1</div>
+                <div class="outlet-step-label">Datos personales</div>
+            </div>
+            <div class="outlet-step-line"></div>
+            <div class="outlet-step-item" data-step="2">
+                <div class="outlet-step-number">2</div>
+                <div class="outlet-step-label">Seguridad</div>
+            </div>
+            <div class="outlet-step-line"></div>
+            <div class="outlet-step-item" data-step="3">
+                <div class="outlet-step-number">3</div>
+                <div class="outlet-step-label">Permisos</div>
+            </div>
+        </div>
+        <div class="outlet-wizard-indicator">
+            <span class="outlet-step-current" id="stepCurrent">1</span>
+            <span class="outlet-step-total">/ 3</span>
+        </div>
+    </div>
+
+    <!-- Navegación superior -->
+    <div class="outlet-carousel-navigation">
+        <button type="button" class="outlet-btn-nav" id="btnPrevTop" disabled>
+            <span class="material-symbols-outlined">arrow_back</span>
+            Anterior
+        </button>
+        <button type="button" class="outlet-btn-nav outlet-btn-nav-next" id="btnNextTop">
+            Siguiente
+            <span class="material-symbols-outlined">arrow_forward</span>
+        </button>
+    </div>
+
+    <!-- Carrusel -->
+    <div class="outlet-carousel-container" id="carouselContainer">
+        <!-- PASO 1: Datos personales -->
+        <div class="outlet-carousel-panel active" data-panel="1">
+            <div class="outlet-form-section">
+                <div class="outlet-section-title">
+                    <span class="outlet-section-icon material-symbols-outlined">badge</span>
+                    <h2>Información personal</h2>
+                </div>
+                <div class="outlet-form-grid">
+                    <div class="outlet-input-group">
+                        <label>Nombre(s)</label>
+                        <input type="text" id="adminNombre" placeholder="Tu nombre">
+                        <span class="outlet-input-line"></span>
+                    </div>
+                    <div class="outlet-input-group">
+                        <label>Apellido paterno</label>
+                        <input type="text" id="adminApellidoPa" placeholder="Apellido paterno">
+                        <span class="outlet-input-line"></span>
+                    </div>
+                    <div class="outlet-input-group">
+                        <label>Apellido materno</label>
+                        <input type="text" id="adminApellidoMa" placeholder="Apellido materno">
+                        <span class="outlet-input-line"></span>
+                    </div>
+                    <div class="outlet-input-group">
+                        <label>Correo electrónico</label>
+                        <input type="email" id="adminEmail" placeholder="correo@ejemplo.com" readonly disabled>
+                        <span class="outlet-input-line"></span>
+                        <small>El correo no se puede cambiar</small>
+                    </div>
+                    <div class="outlet-input-group outlet-full-width">
+                        <label>Teléfono de contacto</label>
+                        <input type="tel" id="adminTelefono" placeholder="Ej: 55 1234 5678">
+                        <span class="outlet-input-line"></span>
+                        <small>Teléfono de contacto para asuntos administrativos</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="outlet-form-section">
+                <div class="outlet-section-title">
+                    <span class="outlet-section-icon material-symbols-outlined">info</span>
+                    <h2>Información de cuenta</h2>
+                </div>
+                <div class="outlet-admin-info-grid">
+                    <div class="outlet-info-item">
+                        <span class="outlet-info-label">ID de usuario</span>
+                        <span class="outlet-info-value" id="adminUserId">---</span>
+                    </div>
+                    <div class="outlet-info-item">
+                        <span class="outlet-info-label">Rol</span>
+                        <span class="outlet-info-value outlet-role-value" id="adminUserRole">Administrador</span>
+                    </div>
+                    <div class="outlet-info-item">
+                        <span class="outlet-info-label">Estado</span>
+                        <span class="outlet-info-value" id="adminUserStatus">Activo</span>
+                    </div>
+                    <div class="outlet-info-item">
+                        <span class="outlet-info-label">Último acceso</span>
+                        <span class="outlet-info-value" id="adminLastAccess">---</span>
+                    </div>
+                    <div class="outlet-info-item">
+                        <span class="outlet-info-label">Fecha de registro</span>
+                        <span class="outlet-info-value" id="adminCreationDate">---</span>
+                    </div>
+                    <div class="outlet-info-item">
+                        <span class="outlet-info-label">Proveedor</span>
+                        <span class="outlet-info-value" id="adminProvider">Email</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="outlet-form-section">
+                <div class="outlet-section-title">
+                    <span class="outlet-section-icon material-symbols-outlined">notifications</span>
+                    <h2>Preferencias</h2>
+                </div>
+                <div class="outlet-preferences-list">
+                    <div class="outlet-toggle-item">
+                        <div class="outlet-toggle-info">
+                            <span class="material-symbols-outlined">mail</span>
+                            <span>Recibir notificaciones por correo</span>
+                        </div>
+                        <label class="outlet-toggle-switch">
+                            <input type="checkbox" id="adminNotificationsToggle" checked>
+                            <span class="outlet-toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="outlet-toggle-item">
+                        <div class="outlet-toggle-info">
+                            <span class="material-symbols-outlined">dashboard</span>
+                            <span>Mostrar panel de resumen al inicio</span>
+                        </div>
+                        <label class="outlet-toggle-switch">
+                            <input type="checkbox" id="adminDashboardToggle" checked>
+                            <span class="outlet-toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PASO 2: Seguridad -->
+        <div class="outlet-carousel-panel" data-panel="2">
+            <div class="outlet-form-section">
+                <div class="outlet-section-title">
+                    <span class="outlet-section-icon material-symbols-outlined">lock</span>
+                    <h2>Seguridad de la cuenta</h2>
+                </div>
+                <div class="outlet-security-grid">
+                    <div class="outlet-security-card">
+                        <div class="outlet-security-icon">
+                            <span class="material-symbols-outlined">password</span>
+                        </div>
+                        <div class="outlet-security-info">
+                            <h4>Contraseña</h4>
+                            <p>Cambia tu contraseña de acceso al panel de administración</p>
+                        </div>
+                        <button type="button" class="outlet-btn-outline" id="btnCambiarPass">
+                            <span class="material-symbols-outlined">mail</span>
+                            Enviar enlace
+                        </button>
+                    </div>
+                    <div class="outlet-security-card">
+                        <div class="outlet-security-icon">
+                            <span class="material-symbols-outlined">shield</span>
+                        </div>
+                        <div class="outlet-security-info">
+                            <h4>Verificación en dos pasos</h4>
+                            <p>Añade una capa extra de seguridad a tu cuenta</p>
+                        </div>
+                        <label class="outlet-toggle-switch">
+                            <input type="checkbox" id="adminTwoFactorToggle">
+                            <span class="outlet-toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="outlet-security-card">
+                        <div class="outlet-security-icon">
+                            <span class="material-symbols-outlined">devices</span>
+                        </div>
+                        <div class="outlet-security-info">
+                            <h4>Dispositivos conectados</h4>
+                            <p>Gestiona las sesiones activas en otros dispositivos</p>
+                        </div>
+                        <button type="button" class="outlet-btn-outline" id="btnSessions">
+                            <span class="material-symbols-outlined">visibility</span>
+                            Ver sesiones
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="outlet-form-section">
+                <div class="outlet-section-title">
+                    <span class="outlet-section-icon material-symbols-outlined">history</span>
+                    <h2>Actividad reciente</h2>
+                </div>
+                <div class="outlet-activity-list" id="adminActivityList">
+                    <div class="outlet-activity-empty">
+                        <span class="material-symbols-outlined">history</span>
+                        <p>No hay actividad reciente</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PASO 3: Permisos -->
+        <div class="outlet-carousel-panel" data-panel="3">
+            <div class="outlet-form-section">
+                <div class="outlet-section-title">
+                    <span class="outlet-section-icon material-symbols-outlined">security</span>
+                    <h2>Mis permisos</h2>
+                    <span class="outlet-permission-badge" id="permisosCount">0 permisos</span>
+                </div>
+                <div class="outlet-permissions-grid" id="adminPermissionsList">
+                    <!-- Los permisos se generarán dinámicamente -->
+                </div>
+            </div>
+
+            <div class="outlet-form-section">
+                <div class="outlet-section-title">
+                    <span class="outlet-section-icon material-symbols-outlined">info</span>
+                    <h2>Información de rol</h2>
+                </div>
+                <div class="outlet-role-info" id="adminRoleInfo">
+                    <div class="outlet-role-description">
+                        <h4 id="roleNameDisplay">Administrador</h4>
+                        <p id="roleDescriptionDisplay">Acceso completo a las funciones del panel de administración</p>
+                    </div>
+                    <div class="outlet-role-capabilities" id="roleCapabilities">
+                        <!-- Capacidades del rol -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acciones finales -->
+    <div class="outlet-action-buttons" id="actionButtonsFinal">
+        <button type="button" class="outlet-btn-secondary" id="btnCancelar">
+            <span class="material-symbols-outlined">close</span>
+            Cancelar
+        </button>
+        <button type="button" class="outlet-btn-primary" id="btnGuardar">
+            <span class="material-symbols-outlined">save</span>
+            Guardar cambios
+        </button>
+    </div>
+
+    <!-- ======================================== -->
+    <!-- SECCIÓN DE CERRAR SESIÓN                 -->
+    <!-- ======================================== -->
+    <div class="outlet-logout-section">
+        <hr class="outlet-divider">
+        <div class="outlet-logout-container">
+            <div class="outlet-logout-info">
+                <div>
+                    <h4>¿Deseas cerrar sesión?</h4>
+                    <p>Finaliza tu sesión actual y vuelve a la pantalla de inicio</p>
+                </div>
+                <button type="button" class="outlet-btn outlet-btn-danger" id="btnAdminLogout">
+                    <span class="material-symbols-outlined">logout</span>
+                    Cerrar sesión
+                </button>
+            </div>
+        </div>
+    </div>
+</main>
