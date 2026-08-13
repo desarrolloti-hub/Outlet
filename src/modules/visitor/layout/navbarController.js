@@ -4,6 +4,7 @@
    ======================================== */
 
 import ThemeService from '../../shared/layout/themeService.js';
+import { ProductService } from '../../../services/productService.js';
 
 let state = {
     isMenuOpen: false,
@@ -13,6 +14,233 @@ let state = {
 };
 
 let elements = {};
+let searchTimeout = null;
+
+// ========================================
+// FUNCIONES DE BÚSQUEDA
+// ========================================
+
+/**
+ * Manejar entrada de búsqueda
+ */
+function handleSearchInput(e) {
+    const termino = e.target.value.trim();
+    const clearBtn = document.getElementById('searchClearBtn');
+    const resultsDropdown = document.getElementById('searchResultsDropdown');
+
+    if (termino.length > 0) {
+        clearBtn.style.display = 'flex';
+    } else {
+        clearBtn.style.display = 'none';
+    }
+
+    if (searchTimeout) {
+        clearTimeout(searchTimeout);
+        searchTimeout = null;
+    }
+
+    if (termino.length < 2) {
+        showSearchPlaceholder('Escribe al menos 2 caracteres para buscar');
+        resultsDropdown.classList.remove('open');
+        return;
+    }
+
+    showSearchLoading();
+    resultsDropdown.classList.add('open');
+
+    searchTimeout = setTimeout(async () => {
+        try {
+            const results = await ProductService.search(termino, 10);
+            renderSearchResults(results, termino);
+        } catch (error) {
+            console.error('Error en búsqueda:', error);
+            showSearchError('Error al buscar productos. Intenta nuevamente.');
+        }
+    }, 300);
+}
+
+/**
+ * Manejar tecla Enter en búsqueda
+ */
+function handleSearchKeydown(e) {
+    if (e.key === 'Enter') {
+        const termino = e.target.value.trim();
+        if (termino.length >= 2) {
+            const basePath = '/';
+            if (typeof window.navigateTo === 'function') {
+                window.navigateTo(`${basePath}?search=${encodeURIComponent(termino)}`);
+            } else {
+                window.location.href = `${basePath}?search=${encodeURIComponent(termino)}`;
+            }
+            closeSearchResults();
+        }
+    }
+}
+
+/**
+ * Limpiar búsqueda
+ */
+function clearSearch() {
+    const searchInput = document.getElementById('searchInput');
+    const clearBtn = document.getElementById('searchClearBtn');
+    const resultsDropdown = document.getElementById('searchResultsDropdown');
+
+    if (searchInput) {
+        searchInput.value = '';
+        searchInput.focus();
+    }
+    if (clearBtn) {
+        clearBtn.style.display = 'none';
+    }
+    resultsDropdown.classList.remove('open');
+    showSearchPlaceholder('Escribe para buscar productos');
+}
+
+/**
+ * Mostrar estado de carga
+ */
+function showSearchLoading() {
+    const resultsDropdown = document.getElementById('searchResultsDropdown');
+    if (!resultsDropdown) return;
+
+    resultsDropdown.innerHTML = `
+        <div class="search-loading">
+            <div class="search-spinner"></div>
+            <span>Buscando...</span>
+        </div>
+    `;
+}
+
+/**
+ * Mostrar placeholder
+ */
+function showSearchPlaceholder(text) {
+    const resultsDropdown = document.getElementById('searchResultsDropdown');
+    if (!resultsDropdown) return;
+
+    resultsDropdown.innerHTML = `
+        <div class="search-placeholder">
+            <span>🔍 ${text}</span>
+        </div>
+    `;
+}
+
+/**
+ * Mostrar error
+ */
+function showSearchError(text) {
+    const resultsDropdown = document.getElementById('searchResultsDropdown');
+    if (!resultsDropdown) return;
+
+    resultsDropdown.innerHTML = `
+        <div class="search-error">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>${text}</span>
+        </div>
+    `;
+}
+
+/**
+ * Cerrar resultados
+ */
+function closeSearchResults() {
+    const resultsDropdown = document.getElementById('searchResultsDropdown');
+    if (resultsDropdown) {
+        resultsDropdown.classList.remove('open');
+    }
+}
+
+/**
+ * Renderizar resultados de búsqueda
+ */
+function renderSearchResults(products, termino) {
+    const resultsDropdown = document.getElementById('searchResultsDropdown');
+    if (!resultsDropdown) return;
+
+    if (!products || products.length === 0) {
+        resultsDropdown.innerHTML = `
+            <div class="search-no-results">
+                <span>No encontramos productos para "<strong>${termino}</strong>"</span>
+                <small>Intenta con otras palabras</small>
+            </div>
+        `;
+        resultsDropdown.classList.add('open');
+        return;
+    }
+
+    const formatPrice = (price) => {
+        return new Intl.NumberFormat('es-MX', {
+            style: 'currency',
+            currency: 'MXN',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        }).format(price);
+    };
+
+    let html = `<div class="search-results-header"><span>${products.length} resultado${products.length > 1 ? 's' : ''}</span></div>`;
+    html += `<div class="search-results-list">`;
+
+    products.forEach(product => {
+        const imagen = product.imagenPrincipal || product.primeraImagen || '';
+        const precioFinal = product.precioFinal || product.precioVenta;
+        const tieneOferta = product.porcentajeDescuento > 0;
+        const productUrl = `/?product=${product.id}`;
+
+        html += `
+            <div class="search-result-item" data-product-id="${product.id}" data-url="${productUrl}">
+                <div class="search-result-image">
+                    ${imagen ? `<img src="${imagen}" alt="${product.nombre}" loading="lazy">` :
+                `<div class="search-result-no-image"><i class="fas fa-image"></i></div>`}
+                    ${tieneOferta ? `<span class="search-result-badge">-${product.porcentajeDescuento}%</span>` : ''}
+                </div>
+                <div class="search-result-info">
+                    <div class="search-result-name">${product.nombre}</div>
+                    <div class="search-result-marca">${product.marca || ''}</div>
+                    <div class="search-result-prices">
+                        ${tieneOferta ?
+                `<span class="search-result-price-old">${formatPrice(product.precioVenta)}</span>
+                             <span class="search-result-price">${formatPrice(precioFinal)}</span>` :
+                `<span class="search-result-price">${formatPrice(precioFinal)}</span>`}
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    html += `</div>`;
+    resultsDropdown.innerHTML = html;
+    resultsDropdown.classList.add('open');
+
+    resultsDropdown.querySelectorAll('.search-result-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const url = item.dataset.url;
+            if (typeof window.navigateTo === 'function') {
+                window.navigateTo(url);
+            } else {
+                window.location.href = url;
+            }
+            closeSearchResults();
+        });
+    });
+}
+
+/**
+ * Manejar click fuera del buscador
+ */
+function handleSearchOutside(e) {
+    const searchContainer = document.getElementById('searchContainer');
+    const resultsDropdown = document.getElementById('searchResultsDropdown');
+
+    if (searchContainer && !searchContainer.contains(e.target)) {
+        if (resultsDropdown) {
+            resultsDropdown.classList.remove('open');
+        }
+    }
+}
+
+// ========================================
+// FUNCIONES EXISTENTES DEL NAVBAR
+// ========================================
 
 export function initNavbarController() {
     cacheElements();
@@ -30,6 +258,7 @@ export function initNavbarController() {
     initMegaMenu();
     applyStoredTheme();
     setActiveLink();
+    setupSearchEvents();
 
     console.log('✅ Navbar OUTLET Luxury Controller inicializado');
 }
@@ -50,6 +279,45 @@ function cacheElements() {
         cartBtn: document.getElementById('cartBtn'),
         body: document.body
     };
+}
+
+function setupSearchEvents() {
+    const searchInput = document.getElementById('searchInput');
+    const clearBtn = document.getElementById('searchClearBtn');
+
+    if (searchInput) {
+        console.log('✅ Configurando buscador del navbar visitante');
+        searchInput.addEventListener('input', handleSearchInput);
+        searchInput.addEventListener('keydown', handleSearchKeydown);
+        searchInput.addEventListener('focus', () => {
+            const termino = searchInput.value.trim();
+            if (termino.length >= 2) {
+                const resultsDropdown = document.getElementById('searchResultsDropdown');
+                if (resultsDropdown) {
+                    resultsDropdown.classList.add('open');
+                }
+            }
+        });
+    }
+
+    if (clearBtn) {
+        clearBtn.addEventListener('click', clearSearch);
+    }
+
+    document.addEventListener('click', handleSearchOutside);
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeSearchResults();
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.blur();
+            }
+        }
+    });
+
+    // Mostrar placeholder inicial
+    showSearchPlaceholder('Escribe para buscar productos');
 }
 
 function bindEvents() {
