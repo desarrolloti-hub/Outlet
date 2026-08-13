@@ -3,6 +3,8 @@
    CON SWEETALERT2 INTEGRADO
    ======================================== */
 
+import { ProductService } from '../../../services/productService.js';
+
 // Configuración de imágenes
 var THUMBNAILS = [
     "https://lh3.googleusercontent.com/aida-public/AB6AXuA8g0Esh47Sv3yioog16MU7CKt8dLC1bT82o7Al5PeVetpq8PdqiOBE-wX6JP8tSUUIURV1TrNRgugKwi8OHPdbe1wRicQJ9LcpTnmOs9zTOzsc6dpLGDuF5ADvNgXx7qXJwpn33Xt83FE9HrCeK-wwQlH27lJOZSna1X7_d7O13JAQ8NZIIFTHUJHwg9bQL1ViRtKTAKPTkc1hqy7iEeJ216dPlGc_C-NrhPphR3LDYtNKqcYuCL0__IymvVZP6ie5VeR_aqekCOMM",
@@ -44,6 +46,8 @@ export async function productsCustumerController() {
 
     loadStyles();
     loadStorage();
+    syncProductIdDisplay();
+    await loadProductFromId();
     loadThumbnails();
     initSizeSelection();
     initColorSelection();
@@ -51,6 +55,75 @@ export async function productsCustumerController() {
     initEnsembleCards();
 
     console.log('✅ Productos page CUSTOMER cargada correctamente');
+}
+
+function syncProductIdDisplay() {
+    var productIdElement = document.getElementById('productIdDisplay');
+    if (!productIdElement) return;
+
+    var productId = getProductIdFromUrl() || localStorage.getItem('lastSelectedProductId') || 'N/A';
+
+    productIdElement.textContent = productId;
+    localStorage.setItem('lastSelectedProductId', productId);
+}
+
+function getProductIdFromUrl() {
+    var pathname = window.location.pathname || '';
+    var match = pathname.match(/^\/products(?:Customer)?\/([^/]+)$/);
+    if (match && match[1]) {
+        return decodeURIComponent(match[1]);
+    }
+
+    var params = new URLSearchParams(window.location.search || '');
+    return params.get('id');
+}
+
+async function loadProductFromId() {
+    var productId = getProductIdFromUrl();
+
+    if (!productId) {
+        return;
+    }
+
+    try {
+        var product = await ProductService.getById(productId);
+        if (!product) {
+            console.warn('⚠️ Producto no encontrado por id:', productId);
+            return;
+        }
+
+        var titleElement = document.querySelector('.product-title');
+        var priceElement = document.querySelector('.product-price');
+        var descriptionElement = document.querySelector('.product-description');
+        var mainImage = document.getElementById('mainImage');
+
+        if (titleElement) titleElement.textContent = product.nombre || titleElement.textContent;
+        if (priceElement) {
+            var priceValue = Number(product.precioFinal ?? product.precioVenta ?? 0);
+            priceElement.textContent = '$' + priceValue.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+        if (descriptionElement) descriptionElement.textContent = product.descripcion || descriptionElement.textContent;
+        if (mainImage) {
+            var imageSrc = product.imagenPrincipal || (product.galeriaImagenes && product.galeriaImagenes[0]) || THUMBNAILS[0];
+            mainImage.src = imageSrc;
+            mainImage.alt = product.nombre || 'Producto';
+        }
+
+        var galleryImages = [];
+        if (Array.isArray(product.galeriaImagenes) && product.galeriaImagenes.length) {
+            galleryImages = product.galeriaImagenes;
+        } else if (product.imagenPrincipal) {
+            galleryImages = [product.imagenPrincipal];
+        }
+
+        if (galleryImages.length) {
+            THUMBNAILS.length = 0;
+            THUMBNAILS.push.apply(THUMBNAILS, galleryImages);
+            loadThumbnails();
+        }
+    } catch (error) {
+        console.error('❌ Error cargando el producto por ID:', error);
+    }
 }
 
 // ========================================
@@ -371,6 +444,9 @@ function injectProductsHTML() {
 
         '<div class="product-info">' +
         '<h1 class="product-title">Vestido La Jerarquía Noir</h1>' +
+        '<div class="product-id-box" style="margin-bottom: 1rem; padding: 0.5rem 0.75rem; background: #f6f0e6; border: 1px solid #e8d7b1; border-radius: 999px; display: inline-flex; align-items: center; gap: 0.5rem; font-size: 12px; letter-spacing: 0.08em; color: #1f1b13; font-weight: 600;">' +
+        'ID DEL PRODUCTO: <span id="productIdDisplay" style="color: #8e6b1d;">N/A</span>' +
+        '</div>' +
         '<p class="product-price">$1,250.00</p>' +
         '<p class="product-description">Una obra maestra de la sastrería arquitectónica, el Vestido La Jerarquía Noir presenta seda italiana drapeada a mano y un corsé estructural que redefine la silueta. Cada pieza está elaborada en nuestro taller de París, garantizando un ajuste inigualable y un acabado de calidad patrimonial.</p>' +
 

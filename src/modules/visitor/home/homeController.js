@@ -44,6 +44,7 @@ export async function homeController() {
     loadGallery();
     initTimer();
     initCartEvents();
+    initProductCardNavigation();
     initScrollReveal();
     initMagneticButtons();
     initNumberGlow();
@@ -320,6 +321,24 @@ function initNavigationProtection() {
             return false;
         }
     }, true);
+}
+
+function initProductCardNavigation() {
+    document.addEventListener('click', (event) => {
+        if (event.target.closest('.add-cart, .wishlist-btn')) return;
+
+        const card = event.target.closest('.trending-item, .product-card');
+        if (!card) return;
+
+        const productId = card.dataset.id;
+        if (!productId) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        const url = new URL(`/products/${encodeURIComponent(productId)}`, window.location.origin);
+        window.location.href = url.pathname;
+    });
 }
 
 async function loadAllProducts() {

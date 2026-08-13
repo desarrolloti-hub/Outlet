@@ -4,6 +4,8 @@
    CON SWEETALERT2 INTEGRADO
    ======================================== */
 
+import { ProductService } from '../../../services/productService.js';
+
 var THUMBNAILS = [
     "https://lh3.googleusercontent.com/aida-public/AB6AXuA8g0Esh47Sv3yioog16MU7CKt8dLC1bT82o7Al5PeVetpq8PdqiOBE-wX6JP8tSUUIURV1TrNRgugKwi8OHPdbe1wRicQJ9LcpTnmOs9zTOzsc6dpLGDuF5ADvNgXx7qXJwpn33Xt83FE9HrCeK-wwQlH27lJOZSna1X7_d7O13JAQ8NZIIFTHUJHwg9bQL1ViRtKTAKPTkc1hqy7iEeJ216dPlGc_C-NrhPphR3LDYtNKqcYuCL0__IymvVZP6ie5VeR_aqekCOMM",
     "https://lh3.googleusercontent.comaida-public/AB6AXuDXKbGmxF_ZnSN8YwkdM_VCOsXreEUpaok5Ma7e_a1-yjoMEjIACknTwVEobJSld-Uh9T0_ei6Z6m8ILyGrMbHB8GWbuQk_MX3ncldI6Qs1ePGrXXwqMwH6PQ3QnZ-mE3TMXU2XKVf7DihMHqprHrEmWN05xih_ZQiDLU0uqHLZ6qzl5iY5yqg-M_OhjR8hhk7PDHVVJrQNlstC86YwT96Ok6HxB3SxoreY0FV-lQqG_nGpUu1aGZresjVFc21eR1t36REuTKYEukCQ",
@@ -158,6 +160,8 @@ export async function productsController() {
 
     loadStyles();
     loadStorage();
+    syncProductIdDisplay();
+    await loadProductFromId();
     loadThumbnails();
     initSizeSelection();
     initColorSelection();
@@ -165,6 +169,75 @@ export async function productsController() {
     initEnsembleCards();
 
     console.log('✅ Productos page cargada correctamente');
+}
+
+function syncProductIdDisplay() {
+    var productIdElement = document.getElementById('productIdDisplay');
+    if (!productIdElement) return;
+
+    var productId = getProductIdFromUrl() || localStorage.getItem('lastSelectedProductId') || 'N/A';
+
+    productIdElement.textContent = productId;
+    localStorage.setItem('lastSelectedProductId', productId);
+}
+
+function getProductIdFromUrl() {
+    var pathname = window.location.pathname || '';
+    var match = pathname.match(/^\/products(?:Customer)?\/([^/]+)$/);
+    if (match && match[1]) {
+        return decodeURIComponent(match[1]);
+    }
+
+    var params = new URLSearchParams(window.location.search || '');
+    return params.get('id');
+}
+
+async function loadProductFromId() {
+    var productId = getProductIdFromUrl();
+
+    if (!productId) {
+        return;
+    }
+
+    try {
+        var product = await ProductService.getById(productId);
+        if (!product) {
+            console.warn('⚠️ Producto no encontrado por id:', productId);
+            return;
+        }
+
+        var titleElement = document.querySelector('.product-title');
+        var priceElement = document.querySelector('.product-price');
+        var descriptionElement = document.querySelector('.product-description');
+        var mainImage = document.getElementById('mainImage');
+
+        if (titleElement) titleElement.textContent = product.nombre || titleElement.textContent;
+        if (priceElement) {
+            var priceValue = Number(product.precioFinal ?? product.precioVenta ?? 0);
+            priceElement.textContent = '$' + priceValue.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+        if (descriptionElement) descriptionElement.textContent = product.descripcion || descriptionElement.textContent;
+        if (mainImage) {
+            var imageSrc = product.imagenPrincipal || (product.galeriaImagenes && product.galeriaImagenes[0]) || THUMBNAILS[0];
+            mainImage.src = imageSrc;
+            mainImage.alt = product.nombre || 'Producto';
+        }
+
+        var galleryImages = [];
+        if (Array.isArray(product.galeriaImagenes) && product.galeriaImagenes.length) {
+            galleryImages = product.galeriaImagenes;
+        } else if (product.imagenPrincipal) {
+            galleryImages = [product.imagenPrincipal];
+        }
+
+        if (galleryImages.length) {
+            THUMBNAILS.length = 0;
+            THUMBNAILS.push.apply(THUMBNAILS, galleryImages);
+            loadThumbnails();
+        }
+    } catch (error) {
+        console.error('❌ Error cargando el producto por ID:', error);
+    }
 }
 
 // ========================================

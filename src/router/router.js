@@ -133,6 +133,22 @@ export function initRouter() {
  * Obtiene la ruta correcta según el rol
  */
 function getRedirectPath(path, role) {
+    const productDetailMatch = path.match(/^\/products\/([^/]+)$/);
+    if (productDetailMatch) {
+        const productId = productDetailMatch[1];
+        if (role === 'admin') return `/productsList`;
+        if (role === 'customer') return `/productsCustomer/${productId}`;
+        return `/products/${productId}`;
+    }
+
+    const customerProductDetailMatch = path.match(/^\/productsCustomer\/([^/]+)$/);
+    if (customerProductDetailMatch) {
+        const productId = customerProductDetailMatch[1];
+        if (role === 'admin') return `/productsList`;
+        if (role === 'customer') return `/productsCustomer/${productId}`;
+        return `/products/${productId}`;
+    }
+
     const redirects = ROLE_REDIRECT[path];
     if (!redirects) return path;
 
@@ -148,6 +164,24 @@ function getRedirectPath(path, role) {
 
     // Guest o sin redirección específica
     return redirects.guest || path;
+}
+
+function resolveRoute(path) {
+    if (routes[path]) {
+        return { route: routes[path], params: {} };
+    }
+
+    const productMatch = path.match(/^\/products\/([^/]+)$/);
+    if (productMatch) {
+        return { route: routes['/products'], params: { id: productMatch[1] } };
+    }
+
+    const customerProductMatch = path.match(/^\/productsCustomer\/([^/]+)$/);
+    if (customerProductMatch) {
+        return { route: routes['/productsCustomer'], params: { id: customerProductMatch[1] } };
+    }
+
+    return { route: routes['/404'] || routes['/'], params: {} };
 }
 
 /**
@@ -248,12 +282,8 @@ async function handleRoute() {
     }));
 
     // Buscar ruta
-    let route = routes[path];
-
-    if (!route) {
-        route = routes['/404'] || routes['/'];
-    }
-
+    const resolvedRoute = resolveRoute(path);
+    const route = resolvedRoute.route;
     try {
         // Cargar vista
         const response = await fetch(route.view);
