@@ -180,11 +180,12 @@
 }
 
 .status-dot.status-connected {
-    background: #4caf50;
+/* Use semantic success token */
+background: var(--outlet-success, #4caf50);
 }
 
 .status-dot.status-error {
-    background: var(--outlet-danger, #ba1a1a);
+background: var(--outlet-danger, #ba1a1a);
 }
 
 @keyframes pulse {
@@ -256,9 +257,10 @@
 .notification-result {
     margin-top: 20px;
     padding: 16px 20px;
-    background: #f0faf0;
+    /* subtle success-tinted background using semantic token */
+    background: rgba(76, 175, 80, 0.08);
     border-radius: var(--outlet-radius-md, 8px);
-    border: 1px solid #4caf50;
+    border: 1px solid var(--outlet-success, #4caf50);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -267,11 +269,18 @@
 }
 
 .notification-result.error {
-    background: #fdf0f0;
+    /* subtle error-tinted background */
+    background: rgba(186, 26, 26, 0.08);
     border-color: var(--outlet-danger, #ba1a1a);
 }
 
-.notification-result.error i {
+/* Force result icons to use semantic colors (overrides inline styles) */
+.notification-result .result-content i {
+    font-size: 24px;
+    color: var(--outlet-success, #4caf50) !important;
+}
+
+.notification-result.error .result-content i {
     color: var(--outlet-danger, #ba1a1a) !important;
 }
 
@@ -307,6 +316,28 @@
 .btn-close-result:hover {
     background: rgba(0, 0, 0, 0.05);
     color: var(--outlet-text-primary, #1f1b13);
+}
+
+/* Accessibility: visible focus outlines for keyboard users */
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+.btn-ghost:focus-visible,
+.btn-icon:focus-visible,
+.btn-close-result:focus-visible {
+    outline: 3px solid rgba(221, 171, 59, 0.18);
+    outline-offset: 2px;
+}
+
+.form-input:focus-visible,
+.form-textarea:focus-visible {
+    outline: 3px solid rgba(221, 171, 59, 0.12);
+    outline-offset: 2px;
+}
+
+/* Small tweak to ensure close button hover looks good in dark mode */
+body.dark-mode .btn-close-result:hover {
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--outlet-text-primary, #d6e5f7);
 }
 
 @keyframes slideDown {

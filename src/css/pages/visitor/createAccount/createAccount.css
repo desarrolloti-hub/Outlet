@@ -559,3 +559,122 @@
         background-color: #303134;
     }
 }
+
+/* ========================================
+   SweetAlert2 - estilos personalizados para
+   diálogo de "¿Activar notificaciones?" y
+   otras alertas usadas en Create Account
+   ======================================== */
+.swal2-popup {
+    background: var(--outlet-bg-surface);
+    color: var(--outlet-text-primary);
+    border-radius: var(--outlet-radius-lg);
+    padding: 22px;
+    border: 1px solid var(--outlet-border-color);
+    box-shadow: var(--outlet-shadow-lg);
+    font-family: var(--outlet-font-primary);
+    max-width: 520px;
+    width: 90%;
+    z-index: var(--outlet-z-modal);
+}
+
+.swal2-title {
+    font-family: var(--outlet-font-secondary);
+    font-size: 1.25rem;
+    color: var(--outlet-text-primary);
+    margin-bottom: 6px;
+}
+
+.swal2-content {
+    color: var(--outlet-text-secondary);
+    margin-top: 6px;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+.swal2-actions {
+    margin-top: 18px;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* Botón principal: Activar */
+.swal2-confirm {
+    background: var(--outlet-gold);
+    color: #1a1a1a;
+    border: none;
+    padding: 10px 18px;
+    border-radius: var(--outlet-radius-md);
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: var(--outlet-shadow-gold);
+    transition: transform var(--outlet-transition-fast), box-shadow var(--outlet-transition-fast), background-color var(--outlet-transition-fast);
+}
+
+.swal2-confirm:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--outlet-shadow-gold-lg);
+    background: var(--outlet-gold-light);
+}
+
+/* Botón secundario: Ahora no / Cancelar */
+.swal2-cancel {
+    background: transparent;
+    color: var(--outlet-text-secondary);
+    border: 1px solid var(--outlet-border-color);
+    padding: 10px 18px;
+    border-radius: var(--outlet-radius-md);
+    cursor: pointer;
+    transition: background-color var(--outlet-transition-fast);
+}
+
+.swal2-cancel:hover {
+    background: var(--outlet-bg-container-high);
+}
+
+.swal2-popup .swal2-icon {
+    font-size: 46px;
+}
+
+.swal2-popup:focus {
+    outline: none;
+}
+
+/* Accesibilidad: focus-visible */
+.swal2-confirm:focus-visible,
+.swal2-cancel:focus-visible {
+    outline: 3px solid rgba(221,171,59,0.18);
+    outline-offset: 2px;
+}
+
+/* Modo oscuro: ajustar colores para que encajen con variables */
+body.dark-mode .swal2-popup {
+    background: var(--outlet-bg-card);
+    color: var(--outlet-text-primary);
+    border-color: var(--outlet-border-color);
+}
+
+body.dark-mode .swal2-title {
+    color: var(--outlet-text-primary);
+}
+
+body.dark-mode .swal2-content {
+    color: var(--outlet-text-secondary);
+}
+
+body.dark-mode .swal2-confirm {
+    background: var(--outlet-gold-dark);
+    color: #111;
+    box-shadow: var(--outlet-shadow-primary);
+}
+
+body.dark-mode .swal2-cancel {
+    border-color: var(--outlet-border-soft);
+    color: var(--outlet-text-secondary);
+}
+
+body.dark-mode .swal2-cancel:hover {
+    background: rgba(255,255,255,0.02);
+}
