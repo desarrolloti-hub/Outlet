@@ -8,10 +8,7 @@ import { messaging, getToken, onMessage } from '../../config/firebaseConfig.js';
 import { FcmTokenRepository } from '../repositories/fcmTokenRepository.js';
 import { AuthService } from './authService.js';
 
-// ⚠️ IMPORTANTE: reemplaza este valor con tu VAPID key real.
-// Se genera en: Firebase Console > Project settings > Cloud Messaging
-//               > Web Push certificates > Generate key pair
-const VAPID_KEY = 'BOf7dexQ6Fa_IpMWXTuscTrzAssL9XYCXeFMbA6zd_pULyM1PsulCNYznf0e5vKxnGkpHJpLfxLUnRirPrTGwLQ';
+/* VAPID_KEY is exported from src/config/firebaseConfig.js — replace it there with your Web Push certificate key from Firebase Console (Project settings > Cloud Messaging > Web Push certificates) */
 
 export const NotificationService = {
     /**
@@ -20,8 +17,15 @@ export const NotificationService = {
      * Llamar esto desde un clic del usuario (botón "Activar notificaciones"),
      * NO automáticamente al cargar la página — los navegadores penalizan
      * los prompts de permisos no solicitados.
+     *
+     * @param {string} [userId] - id explícito del cliente/admin al que guardar el
+     *   token. Úsalo justo después de un registro/login, cuando todavía no existe
+     *   sesión guardada en localStorage (p. ej. AuthService aún no la escribió).
+     *   Si se omite, se intenta detectar automáticamente con la sesión actual.
+     * @param {'customer'|'admin'} [role] - rol del userId anterior, para saber en
+     *   qué colección de Firestore guardar el token ("clientes" o "administradores").
      */
-    async initPush() {
+    async initPush(userId = null, role = null) {
         if (!('Notification' in window)) {
             console.warn('⚠️ Este navegador no soporta notificaciones');
             return null;
@@ -39,8 +43,12 @@ export const NotificationService = {
                 return null;
             }
 
-            if (VAPID_KEY === 'TU_VAPID_KEY_AQUI') {
-                console.error('❌ Falta configurar la VAPID_KEY real en notificationService.js');
+            // Cargar la VAPID_KEY en tiempo de ejecución para evitar problemas de bundling
+            const fbCfg = await import('../../config/firebaseConfig.js');
+            const runtimeVapid = fbCfg?.VAPID_KEY;
+
+            if (!runtimeVapid || runtimeVapid === 'TU_VAPID_KEY_AQUI') {
+                console.error('❌ Falta configurar la VAPID_KEY real en src/config/firebaseConfig.js');
                 return null;
             }
 
@@ -49,7 +57,7 @@ export const NotificationService = {
             const registration = await navigator.serviceWorker.ready;
 
             const token = await getToken(messaging, {
-                vapidKey: VAPID_KEY,
+                vapidKey: runtimeVapid,
                 serviceWorkerRegistration: registration
             });
 
@@ -60,9 +68,18 @@ export const NotificationService = {
 
             console.log('📱 Token FCM obtenido:', token);
 
-            const userId = this._getCurrentUserId();
-            if (userId) {
-                await FcmTokenRepository.saveToken(userId, token);
+            // Si no nos pasaron un userId/role explícito, intentamos detectarlo
+            // a partir de la sesión guardada (AuthService / localStorage).
+            let targetUserId = userId;
+            let targetRole = role;
+            if (!targetUserId) {
+                const current = this._getCurrentUser();
+                targetUserId = current?.id || null;
+                targetRole = current?.role || null;
+            }
+
+            if (targetUserId) {
+                await FcmTokenRepository.saveToken(targetUserId, token, targetRole || 'customer');
             } else {
                 console.log('ℹ️ No hay usuario logueado: el token no se guarda en Firestore');
             }
@@ -92,10 +109,10 @@ export const NotificationService = {
     },
 
     /**
-     * Obtiene el id del usuario logueado actual (admin o cliente),
+     * Obtiene el id y rol del usuario logueado actual (admin o cliente),
      * reutilizando las sesiones que ya maneja tu AuthService.
      */
-    _getCurrentUserId() {
+    _getCurrentUser() {
         try {
             const role = AuthService.getUserRoleSync();
             if (role === 'guest') return null;
@@ -103,7 +120,9 @@ export const NotificationService = {
             const storageKey = role === 'admin' ? 'outlet_admin' : 'outlet_customer';
             const stored = localStorage.getItem(storageKey);
             const data = stored ? JSON.parse(stored) : null;
-            return data?.id || null;
+            if (!data?.id) return null;
+
+            return { id: data.id, role };
         } catch (error) {
             console.error('❌ Error obteniendo el usuario actual:', error);
             return null;

@@ -63,5 +63,13 @@ isSupported().then((supported) => {
     console.error('❌ Error verificando soporte de Messaging:', error);
 });
 
+// VAPID key (Web Push certificate) — usada por notificationService.js para
+// generar tokens FCM con getToken(). Firebase Console > Project settings >
+// Cloud Messaging > Web Push certificates.
+// (Antes solo existía en src/config/firebaseConfig.js, un archivo duplicado
+// que ningún módulo del proyecto importa, así que getToken() nunca la
+// encontraba y fallaba en silencio.)
+export const VAPID_KEY = 'BOf7dexQ6Fa_IpMWXTuscTrzAssL9XYCXeFMbA6zd_pULyM1PsulCNYznf0e5vKxnGkpHJpLfxLUnRirPrTGwLQ';
+
 // Exportar servicios
 export { app, db, storage, auth, analytics, messaging, getToken, onMessage };

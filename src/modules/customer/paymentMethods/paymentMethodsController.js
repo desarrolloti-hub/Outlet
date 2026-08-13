@@ -450,7 +450,8 @@ async function notificarCompraExitosa(sale) {
             minimumFractionDigits: 0
         }).format(sale.total || 0);
 
-        const response = await fetch('/api/notifications/send', {
+        // La URL correcta para tu Cloud Function:
+        const response = await fetch('https://us-central1-otril-mx.cloudfunctions.net/api/api/notifications/send', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

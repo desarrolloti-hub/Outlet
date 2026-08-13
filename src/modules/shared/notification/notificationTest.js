@@ -193,11 +193,13 @@ export async function notificationTestController() {
             }
         };
 
-        const response = await fetch('/api/notifications/send', {
+        // ========== URL ACTUALIZADA CON LA CLOUD FUNCTION ==========
+        const response = await fetch('https://us-central1-otril-mx.cloudfunctions.net/api/api/notifications/send', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
+        // ==========================================================
 
         if (!response.ok) {
             const errorBody = await response.json().catch(() => ({}));

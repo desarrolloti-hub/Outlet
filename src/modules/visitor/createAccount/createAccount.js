@@ -5,6 +5,7 @@
    ======================================== */
 
 import { CustomerService } from '../../../services/customerService.js';
+import { NotificationService } from '../../../services/notificationService.js';
 
 // Estado del controlador
 var isLoading = false;
@@ -20,19 +21,19 @@ function mostrarToast(mensaje, tipo) {
     tipo = tipo || 'info';
     var toastExistente = document.querySelector('.outlet-toast');
     if (toastExistente) toastExistente.remove();
-    
+
     var toast = document.createElement('div');
     toast.className = 'outlet-toast ' + tipo;
     toast.textContent = mensaje;
     document.body.appendChild(toast);
-    
-    requestAnimationFrame(function() {
+
+    requestAnimationFrame(function () {
         toast.classList.add('show');
     });
-    
-    setTimeout(function() {
+
+    setTimeout(function () {
         toast.classList.remove('show');
-        setTimeout(function() { toast.remove(); }, 300);
+        setTimeout(function () { toast.remove(); }, 300);
     }, 3200);
 }
 
@@ -48,7 +49,7 @@ function mostrarSweetAlert(options) {
             popup: 'swal2-popup'
         }
     };
-    
+
     return Swal.fire(Object.assign({}, defaultOptions, options));
 }
 
@@ -99,7 +100,7 @@ function mostrarLoading(mensaje) {
     return mostrarSweetAlert({
         title: mensaje,
         allowOutsideClick: false,
-        didOpen: function() {
+        didOpen: function () {
             Swal.showLoading();
         }
     });
@@ -117,7 +118,7 @@ function cerrarLoading() {
 // ========================================
 function loadStyles() {
     if (document.querySelector('link[href*="createAccount.css"]')) return;
-    
+
     var link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = '/src/css/pages/createAccount.css';
@@ -139,7 +140,7 @@ function isValidFullName(name) {
     var trimmed = name.trim();
     if (trimmed.length < 4) return false;
     var words = trimmed.split(/\s+/);
-    return words.length >= 2 && words.every(function(w) { return w.length >= 2; });
+    return words.length >= 2 && words.every(function (w) { return w.length >= 2; });
 }
 
 // ========================================
@@ -147,11 +148,11 @@ function isValidFullName(name) {
 // ========================================
 function splitFullName(fullname) {
     var parts = fullname.trim().split(/\s+/);
-    
+
     var nombre = '';
     var apellidoPa = '';
     var apellidoMa = '';
-    
+
     if (parts.length === 1) {
         nombre = parts[0];
         apellidoPa = '';
@@ -165,7 +166,7 @@ function splitFullName(fullname) {
         apellidoPa = parts[1];
         apellidoMa = parts.slice(2).join(' ');
     }
-    
+
     return { nombre: nombre, apellidoPa: apellidoPa, apellidoMa: apellidoMa };
 }
 
@@ -184,14 +185,14 @@ function validatePassword(password) {
 // ========================================
 function updatePasswordRequirements(password) {
     var requirements = validatePassword(password);
-    
+
     var reqLength = document.getElementById('reqLength');
-    
+
     if (reqLength) {
         reqLength.innerHTML = requirements.length ? '✓ Min. 6 characters' : '✗ Min. 6 characters';
         reqLength.className = 'outlet-account-req ' + (requirements.length ? 'valid' : 'invalid');
     }
-    
+
     return requirements.length;
 }
 
@@ -200,23 +201,23 @@ function updatePasswordRequirements(password) {
 // ========================================
 function handleProfilePicture(file) {
     if (!file) return null;
-    
+
     // Validar tipo de archivo
     var validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!validTypes.includes(file.type)) {
         mostrarError('Formato no válido', 'Usa JPG, PNG, GIF o WEBP para tu foto de perfil.');
         return null;
     }
-    
+
     // Validar tamaño (máximo 5MB)
     if (file.size > 5 * 1024 * 1024) {
         mostrarError('Imagen demasiado grande', 'La imagen no debe pesar más de 5MB.');
         return null;
     }
-    
+
     var reader = new FileReader();
-    return new Promise(function(resolve) {
-        reader.onload = function(e) {
+    return new Promise(function (resolve) {
+        reader.onload = function (e) {
             var imageUrl = e.target.result;
             // Mostrar preview
             var preview = document.getElementById('profilePreview');
@@ -240,7 +241,7 @@ function handleProfilePicture(file) {
 // ========================================
 async function validateForm() {
     var isValid = true;
-    
+
     var fullname = document.getElementById('fullname').value;
     var errorFullname = document.getElementById('errorFullname');
     if (!isValidFullName(fullname)) {
@@ -249,7 +250,7 @@ async function validateForm() {
     } else {
         errorFullname.textContent = '';
     }
-    
+
     var email = document.getElementById('email').value;
     var errorEmail = document.getElementById('errorEmail');
     if (!email) {
@@ -261,7 +262,7 @@ async function validateForm() {
     } else {
         errorEmail.textContent = '';
     }
-    
+
     var password = document.getElementById('password').value;
     var errorPassword = document.getElementById('errorPassword');
     var passwordValid = validatePassword(password);
@@ -274,7 +275,7 @@ async function validateForm() {
     } else {
         errorPassword.textContent = '';
     }
-    
+
     var confirmPassword = document.getElementById('confirmPassword').value;
     var errorConfirm = document.getElementById('errorConfirm');
     if (password !== confirmPassword) {
@@ -283,14 +284,84 @@ async function validateForm() {
     } else {
         errorConfirm.textContent = '';
     }
-    
+
     var terms = document.getElementById('terms').checked;
     if (!terms) {
         await mostrarError('Acepta los términos', 'Debes aceptar los Términos y Condiciones para continuar.');
         isValid = false;
     }
-    
+
     return isValid;
+}
+
+// ========================================
+// Ofrecer activar notificaciones tras el registro
+// ========================================
+/**
+ * Muestra un SweetAlert preguntando si el nuevo cliente quiere activar
+ * notificaciones y, si acepta, pide el permiso del navegador y guarda
+ * el token FCM en su documento de "clientes".
+ * Se le pasa el id explícitamente porque justo después del registro
+ * (sobre todo con email/contraseña) todavía puede no existir una
+ * sesión guardada en localStorage.
+ */
+async function ofrecerActivarNotificaciones(customerId) {
+    console.log('🔔 ofrecerActivarNotificaciones() llamado con customerId:', customerId);
+
+    if (!customerId) {
+        console.warn('⚠️ No hay customerId, no se puede ofrecer activar notificaciones');
+        return;
+    }
+    if (!('Notification' in window)) {
+        console.warn('⚠️ Este navegador no soporta notificaciones');
+        return;
+    }
+
+    const permisoActual = Notification.permission;
+    console.log('🔔 Estado actual de Notification.permission:', permisoActual);
+
+    try {
+        if (permisoActual === 'denied') {
+            // El usuario (o una prueba anterior) ya bloqueó las notificaciones
+            // para este sitio a nivel navegador. No se puede volver a preguntar
+            // por JS; hay que decírselo para que lo reactive manualmente.
+            mostrarToast('🔕 Las notificaciones están bloqueadas para este sitio. Actívalas en la configuración del navegador si quieres recibirlas.', 'warning');
+            return;
+        }
+
+        if (permisoActual === 'granted') {
+            // Ya había concedido el permiso antes (p. ej. probando la página
+            // de pruebas de notificaciones): solo generamos y guardamos el token.
+            const token = await NotificationService.initPush(customerId, 'customer');
+            if (token) {
+                mostrarToast('🔔 ¡Notificaciones activadas!', 'success');
+            } else {
+                console.warn('⚠️ Permiso ya concedido pero no se pudo obtener/guardar el token FCM');
+            }
+            return;
+        }
+
+        // permisoActual === 'default' -> nunca se le ha preguntado, mostramos el diálogo
+        const respuesta = await mostrarSweetAlert({
+            icon: 'question',
+            title: '¿Activar notificaciones?',
+            text: 'Te avisaremos sobre el estado de tus pedidos y ofertas exclusivas.',
+            confirmButtonText: 'Activar',
+            showCancelButton: true,
+            cancelButtonText: 'Ahora no'
+        });
+
+        if (respuesta.isConfirmed) {
+            const token = await NotificationService.initPush(customerId, 'customer');
+            if (token) {
+                mostrarToast('🔔 ¡Notificaciones activadas!', 'success');
+            } else {
+                mostrarToast('⚠️ No se pudieron activar las notificaciones', 'warning');
+            }
+        }
+    } catch (error) {
+        console.error('❌ Error ofreciendo activar notificaciones:', error);
+    }
 }
 
 // ========================================
@@ -298,23 +369,23 @@ async function validateForm() {
 // ========================================
 async function handleGoogleRegister() {
     if (isLoading) return;
-    
+
     isLoading = true;
-    
+
     var googleBtn = document.getElementById('googleRegisterBtn');
     var originalText = googleBtn?.innerHTML;
-    
+
     if (googleBtn) {
         googleBtn.innerHTML = '<span>⏳ CARGANDO...</span>';
         googleBtn.disabled = true;
     }
-    
+
     // Mostrar loading
     mostrarLoading('Iniciando sesión con Google...');
-    
+
     try {
         var result = await CustomerService.login(null, null, true);
-        
+
         // Si hay foto de Google, mostrarla en el preview
         if (result.user?.photoURL) {
             var preview = document.getElementById('profilePreview');
@@ -327,35 +398,38 @@ async function handleGoogleRegister() {
                 placeholder.style.display = 'none';
             }
         }
-        
+
         cerrarLoading();
         await mostrarExito(
             '¡Cuenta creada con Google!',
             'Tu cuenta ha sido creada exitosamente con Google.'
         );
-        
+
+        // Preguntar si quiere activar notificaciones (guarda el token en "clientes")
+        await ofrecerActivarNotificaciones(result.customerData?.id);
+
         // Redirigir a la página principal
-        setTimeout(function() {
+        setTimeout(function () {
             if (typeof window.navigateTo === 'function') {
                 window.navigateTo('/');
             } else {
                 window.location.href = '/';
             }
         }, 1500);
-        
+
     } catch (error) {
         console.error('Error en registro con Google:', error);
         cerrarLoading();
-        
+
         var errorMessage = error.message;
         if (errorMessage.includes('popup-closed-by-user')) {
             errorMessage = 'Cerraste la ventana de Google. Intenta de nuevo.';
         } else if (errorMessage.includes('account-exists-with-different-credential')) {
             errorMessage = 'Ya existe una cuenta con este correo usando otro método. Inicia sesión con email y contraseña.';
         }
-        
+
         await mostrarError('Error al crear cuenta', errorMessage);
-        
+
     } finally {
         isLoading = false;
         if (googleBtn) {
@@ -370,18 +444,18 @@ async function handleGoogleRegister() {
 // ========================================
 async function handleRegister(e) {
     e.preventDefault();
-    
+
     if (isLoading) return;
-    
+
     var isValid = await validateForm();
     if (!isValid) return;
-    
+
     var fullname = document.getElementById('fullname').value.trim();
     var email = document.getElementById('email').value.trim();
     var phone = document.getElementById('phone').value.trim();
     var password = document.getElementById('password').value;
     var newsletter = document.getElementById('newsletter').checked;
-    
+
     // Obtener foto de perfil (si se subió)
     var fotoPerfil = '';
     var fileInput = document.getElementById('profilePhoto');
@@ -395,9 +469,9 @@ async function handleRegister(e) {
             console.error('Error al procesar la foto:', error);
         }
     }
-    
+
     var nombreCompleto = splitFullName(fullname);
-    
+
     var customerData = {
         nombre: nombreCompleto.nombre,
         apellidoPa: nombreCompleto.apellidoPa,
@@ -423,31 +497,31 @@ async function handleRegister(e) {
             notificaciones: true
         }
     };
-    
+
     isLoading = true;
     var submitBtn = document.querySelector('#createAccountForm button[type="submit"]');
     var originalText = submitBtn?.textContent;
-    
+
     if (submitBtn) {
         submitBtn.textContent = 'Creando cuenta...';
         submitBtn.disabled = true;
     }
-    
+
     // Mostrar loading
     mostrarLoading('Creando tu cuenta...');
-    
+
     try {
         var result = await CustomerService.register(customerData, password);
-        
+
         cerrarLoading();
         await mostrarExito(
             '¡Cuenta creada exitosamente!',
             'Te hemos enviado un correo para verificar tu cuenta. Revisa tu bandeja de entrada.'
         );
-        
+
         // Resetear formulario
         document.getElementById('createAccountForm').reset();
-        
+
         // Resetear preview
         var preview = document.getElementById('profilePreview');
         if (preview) {
@@ -458,25 +532,28 @@ async function handleRegister(e) {
         if (placeholder) {
             placeholder.style.display = 'flex';
         }
-        
+
         // Resetear requisitos de contraseña
         updatePasswordRequirements('');
-        
-        setTimeout(function() {
+
+        // Preguntar si quiere activar notificaciones (guarda el token en "clientes")
+        await ofrecerActivarNotificaciones(result.customerData?.id);
+
+        setTimeout(function () {
             if (typeof window.navigateTo === 'function') {
                 window.navigateTo('/verificar-email');
             } else {
                 window.location.href = '/verificar-email';
             }
         }, 2000);
-        
+
     } catch (error) {
         console.error('Error en registro:', error);
         cerrarLoading();
-        
+
         var errorMessage = error.message;
         var errorTitle = 'Error al crear cuenta';
-        
+
         if (errorMessage.includes('auth/email-already-in-use')) {
             errorMessage = 'Este correo electrónico ya está registrado. Inicia sesión o usa otro correo.';
         } else if (errorMessage.includes('auth/weak-password')) {
@@ -488,9 +565,9 @@ async function handleRegister(e) {
             errorMessage = error.message;
             errorTitle = 'Cuenta bloqueada';
         }
-        
+
         await mostrarError(errorTitle, errorMessage);
-        
+
     } finally {
         isLoading = false;
         if (submitBtn) {
@@ -531,37 +608,37 @@ function handleTerms(e) {
 function initProfilePictureUpload() {
     var fileInput = document.getElementById('profilePhoto');
     var dropZone = document.getElementById('profileDropZone');
-    
+
     if (!fileInput || !dropZone) return;
-    
+
     // Click en la zona de drop para abrir el selector de archivos
-    dropZone.addEventListener('click', function() {
+    dropZone.addEventListener('click', function () {
         fileInput.click();
     });
-    
+
     // Drag and drop
-    dropZone.addEventListener('dragover', function(e) {
+    dropZone.addEventListener('dragover', function (e) {
         e.preventDefault();
         dropZone.classList.add('dragover');
     });
-    
-    dropZone.addEventListener('dragleave', function() {
+
+    dropZone.addEventListener('dragleave', function () {
         dropZone.classList.remove('dragover');
     });
-    
-    dropZone.addEventListener('drop', function(e) {
+
+    dropZone.addEventListener('drop', function (e) {
         e.preventDefault();
         dropZone.classList.remove('dragover');
-        
+
         if (e.dataTransfer.files.length > 0) {
             var file = e.dataTransfer.files[0];
             fileInput.files = e.dataTransfer.files;
             handleProfilePicture(file);
         }
     });
-    
+
     // Cambio de archivo seleccionado
-    fileInput.addEventListener('change', function(e) {
+    fileInput.addEventListener('change', function (e) {
         if (e.target.files.length > 0) {
             handleProfilePicture(e.target.files[0]);
         }
@@ -574,9 +651,9 @@ function initProfilePictureUpload() {
 function initRealtimeValidation() {
     var passwordInput = document.getElementById('password');
     if (passwordInput) {
-        passwordInput.addEventListener('input', function(e) {
+        passwordInput.addEventListener('input', function (e) {
             updatePasswordRequirements(e.target.value);
-            
+
             var confirm = document.getElementById('confirmPassword');
             if (confirm.value) {
                 var errorConfirm = document.getElementById('errorConfirm');
@@ -588,10 +665,10 @@ function initRealtimeValidation() {
             }
         });
     }
-    
+
     var confirmInput = document.getElementById('confirmPassword');
     if (confirmInput) {
-        confirmInput.addEventListener('input', function(e) {
+        confirmInput.addEventListener('input', function (e) {
             var password = document.getElementById('password').value;
             var errorConfirm = document.getElementById('errorConfirm');
             if (password !== e.target.value) {
@@ -608,20 +685,20 @@ function initRealtimeValidation() {
 // ========================================
 export async function createAccountController() {
     console.log('📝 Create Account Controller - Registro de clientes con Firebase');
-    
+
     loadStyles();
     initRealtimeValidation();
     initProfilePictureUpload();
-    
+
     var registerForm = document.getElementById('createAccountForm');
     var loginBtn = document.getElementById('loginBtn');
     var termsLink = document.getElementById('termsLink');
     var googleRegisterBtn = document.getElementById('googleRegisterBtn');
-    
+
     if (registerForm) registerForm.addEventListener('submit', handleRegister);
     if (loginBtn) loginBtn.addEventListener('click', handleLoginRedirect);
     if (termsLink) termsLink.addEventListener('click', handleTerms);
     if (googleRegisterBtn) googleRegisterBtn.addEventListener('click', handleGoogleRegister);
-    
+
     console.log('✅ Create Account page loaded with CustomerService');
 }

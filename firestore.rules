@@ -13,11 +13,18 @@ service cloud.firestore {
       allow read, write: if request.time < timestamp.date(2026, 12, 31);
     }
 
-    // ✅ Regla específica y segura para los tokens FCM:
-    // solo el propio usuario autenticado puede leer/escribir su documento de tokens.
-    // Esta regla tiene prioridad sobre la de arriba para esta colección específica.
-    match /fcmTokens/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
+    // ℹ️ Los tokens FCM YA NO se guardan en una colección aparte "fcmTokens".
+    // Ahora viven dentro del propio documento del usuario, en el campo
+    // `fcmTokens` (arreglo) de "clientes/{id}" o "administradores/{id}".
+    // Cuando reemplaces la regla abierta de arriba por reglas reales,
+    // asegúrate de permitir que cada usuario actualice SU PROPIO documento
+    // (incluyendo el campo fcmTokens), por ejemplo:
+    //
+    // match /clientes/{userId} {
+    //   allow read, write: if request.auth != null && request.auth.uid == userId;
+    // }
+    // match /administradores/{userId} {
+    //   allow read, write: if request.auth != null && request.auth.uid == userId;
+    // }
   }
 }

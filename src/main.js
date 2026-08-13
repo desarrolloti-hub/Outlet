@@ -69,12 +69,12 @@ async function initLayoutControllers(role) {
 
     // Si el rol no existe en el mapa, usar GUEST por defecto
     let controllers = controllersMap[role];
-    
+
     if (!controllers) {
         console.warn(`⚠️ Rol "${role}" no tiene controladores definidos, usando GUEST por defecto`);
         controllers = controllersMap[ROLES.GUEST];
     }
-    
+
     if (!controllers) {
         console.error('❌ No hay controladores disponibles');
         return;
@@ -111,12 +111,12 @@ async function registerServiceWorker() {
     try {
         if ('serviceWorker' in navigator) {
             console.log('📱 Registrando Service Worker...');
-            
+
             const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-            
+
             console.log('✅ Service Worker registrado con éxito');
             console.log('📋 Scope:', registration.scope);
-            
+
             // Verificar permisos de notificaciones
             if (Notification.permission === 'granted') {
                 console.log('🔔 Permisos de notificación ya concedidos');
@@ -125,7 +125,7 @@ async function registerServiceWorker() {
             } else {
                 console.log('⏳ Esperando permiso de notificaciones...');
             }
-            
+
             return registration;
         } else {
             console.warn('⚠️ Este navegador no soporta Service Workers');
@@ -195,6 +195,17 @@ async function initApp() {
         // 🆕 Registrar Service Worker y activar notificaciones reales del sistema
         await registerServiceWorker();
         setupForegroundNotifications();
+
+        // ========== ESCUCHAR CUANDO EL USUARIO ACTIVA NOTIFICACIONES ==========
+        // Escuchar cuando el usuario activa notificaciones manualmente
+        document.addEventListener('notifications:activated', async (event) => {
+            const userId = event.detail?.userId;
+            const role = event.detail?.role || null;
+            if (userId) {
+                await AuthService.saveFcmTokenAfterLogin(userId, role);
+            }
+        });
+        // ====================================================================
 
         console.log('✅ Aplicación inicializada correctamente');
     } catch (error) {
