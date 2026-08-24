@@ -36,6 +36,11 @@ const ROLE_REDIRECT = {
         admin: '/wishlist',
         customer: '/wishlistCustomer',
         guest: '/wishlist'
+    },
+    '/brands': {
+        admin: '/productsList',
+        customer: '/brands',
+        guest: '/brands'
     }
 };
 

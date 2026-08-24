@@ -24,6 +24,7 @@ import { cartCustomerController } from '../modules/customer/cart/cartCustumerCon
 import { wishlistCustomerController } from '../modules/customer/wishlist/wishlistCustumerController.js';
 import { productsCustumerController } from '../modules/customer/products/productsCustumerController.js';
 import { collectionCustomerController } from '../modules/customer/collection/collectionCustumerController.js';
+import { brandsCustomerController } from '../modules/customer/brands/brandsCustomerController.js';
 import { paymentMethodsController } from '../modules/customer/paymentMethods/paymentMethodsController.js';
 import { customerSalesController } from '../modules/customer/sales/customerSalesController.js';
 
@@ -188,6 +189,10 @@ export const routes = {
     "/collectionCustomer": {
         view: "/modules/customer/collection/collectionCustomer.html",
         controller: collectionCustomerController
+    },
+    "/brands": {
+        view: "/modules/customer/brands/brandsCustomer.html",
+        controller: brandsCustomerController
     },
     "/payment": {
         view: "/modules/customer/paymentMethods/paymentMethods.html",
