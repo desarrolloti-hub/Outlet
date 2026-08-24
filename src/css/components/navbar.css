@@ -12,8 +12,16 @@
 }
 
 /* Evitar que el contenido quede oculto bajo el navbar fijo */
+/* Aplicar !important para evitar que otras hojas de estilo sobreescriban el padding-top */
 body {
-    padding-top: var(--outlet-nav-height);
+    padding-top: var(--outlet-nav-height) !important;
+}
+
+/* Hacer espacio adicional específico para la barra de categorías cuando exista */
+.category-nav {
+    position: relative;
+    z-index: 900; /* por debajo del navbar (1000) pero encima del resto */
+    margin-top: 0; /* el body ya añade el padding necesario */
 }
 
 .OUTLET-nav {
