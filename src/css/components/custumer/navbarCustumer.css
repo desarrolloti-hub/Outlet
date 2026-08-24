@@ -1,5 +1,5 @@
 /* ========================================
-   ESTILOS DEL BUSCADOR FIJO EN EL NAVBAR
+   ESTILOS DEL NAVBAR CUSTOMER - OUTLET LUXURY
    ======================================== */
 
 /* ===== CONTENEDOR DEL BUSCADOR ===== */
@@ -268,8 +268,6 @@
     font-weight: 600;
     color: var(--nav-text-secondary, #1f1b13);
     display: -webkit-box;
-    -webkit-line-clamp: 1;
-    -webkit-box-orient: vertical;
     overflow: hidden;
 }
 

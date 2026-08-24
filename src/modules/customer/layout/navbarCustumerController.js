@@ -1,7 +1,6 @@
 /* ========================================
-   CUSTOMER NAVBAR CONTROLLER - Outlet Val
+   CUSTOMER NAVBAR CONTROLLER - OUTLET VAL
    Controlador independiente para el navbar de clientes
-   CON PRIORIDAD SOBRE OTROS NAVBARS
    ======================================== */
 
 import { CustomerService } from '../../../services/customerService.js';
@@ -17,13 +16,13 @@ let eventCleanupFunctions = [];
 let searchTimeout = null;
 let isProfileMenuOpen = false;
 
-// ===== CONFIGURACIÓN DE TEMA - CON PRIORIDAD =====
+// ===== CONFIGURACIÓN DE TEMA =====
 const THEME_KEY = 'outlet_theme';
 
 /**
- * APLICAR TEMA CON PRIORIDAD - Sobrescribe cualquier otro navbar
+ * Aplicar tema
  */
-function applyThemeWithPriority(theme) {
+function applyTheme(theme) {
     if (isApplyingTheme) {
         console.log('⚠️ Ya aplicando tema, ignorando...');
         return;
@@ -32,7 +31,7 @@ function applyThemeWithPriority(theme) {
     isApplyingTheme = true;
 
     try {
-        console.log('🌓 [CUSTOMER NAVBAR] Aplicando tema con prioridad:', theme);
+        console.log('🌓 Aplicando tema:', theme);
 
         if (theme === 'dark') {
             document.body.classList.add('dark-mode');
@@ -41,7 +40,7 @@ function applyThemeWithPriority(theme) {
         }
 
         localStorage.setItem(THEME_KEY, theme);
-        forceUpdateThemeIcon();
+        updateThemeIcon();
 
         document.dispatchEvent(new CustomEvent('themeChanged', {
             detail: { isDarkMode: theme === 'dark' }
@@ -51,7 +50,7 @@ function applyThemeWithPriority(theme) {
             ThemeService.sync();
         }
 
-        console.log('✅ [CUSTOMER NAVBAR] Tema aplicado con prioridad:', theme);
+        console.log('✅ Tema aplicado:', theme);
     } catch (error) {
         console.error('❌ Error aplicando tema:', error);
     } finally {
@@ -60,14 +59,11 @@ function applyThemeWithPriority(theme) {
 }
 
 /**
- * FORZAR actualización del ícono - Sobrescribe cualquier otro
+ * Actualizar ícono del tema
  */
-function forceUpdateThemeIcon() {
+function updateThemeIcon() {
     const themeToggleBtn = document.getElementById('themeToggleBtn');
-    if (!themeToggleBtn) {
-        console.warn('⚠️ Botón de tema no encontrado');
-        return;
-    }
+    if (!themeToggleBtn) return;
 
     let icon = themeToggleBtn.querySelector('i');
     if (!icon) {
@@ -78,7 +74,6 @@ function forceUpdateThemeIcon() {
 
     const isDark = document.body.classList.contains('dark-mode');
     icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
-    console.log('🌓 [CUSTOMER NAVBAR] Ícono FORZADO a:', isDark ? '☀️ sol (dark)' : '🌙 luna (light)');
 }
 
 /**
@@ -86,19 +81,12 @@ function forceUpdateThemeIcon() {
  */
 async function loadUserProfile() {
     try {
-        console.log('📥 Cargando perfil del usuario customer...');
+        console.log('📥 Cargando perfil del usuario...');
         const customer = await CustomerService.getCurrentCustomer(true);
 
         if (customer) {
             currentUser = customer;
-            console.log('👤 Usuario cargado:', {
-                id: customer.id,
-                nombre: customer.nombreCompleto,
-                email: customer.email,
-                tieneFoto: !!customer.fotoPerfil,
-                fotoUrl: customer.fotoPerfil ? customer.fotoPerfil.substring(0, 50) + '...' : 'sin foto'
-            });
-
+            console.log('👤 Usuario cargado:', customer.nombreCompleto);
             updateUserUI(customer);
             setTimeout(updateProfileAvatar, 100);
             updateProfileDropdown();
@@ -118,37 +106,29 @@ async function loadUserProfile() {
 function updateUserUI(customer) {
     const nameElements = document.querySelectorAll('.user-name, .nav-username, .profile-name, [class*="userName"]');
     nameElements.forEach(el => {
-        if (el.tagName === 'SPAN' || el.tagName === 'DIV' || el.tagName === 'A') {
-            el.textContent = customer.nombreCompleto || customer.nombre || 'Usuario';
-        }
+        el.textContent = customer.nombreCompleto || customer.nombre || 'Usuario';
     });
 
     const emailElements = document.querySelectorAll('.user-email, .nav-email, .profile-email');
     emailElements.forEach(el => {
-        if (el.tagName === 'SPAN' || el.tagName === 'DIV') {
-            el.textContent = customer.email || '';
-        }
+        el.textContent = customer.email || '';
     });
 }
 
 /**
- * Mostrar UI de invitado - SOLO ACTUALIZA TEXTO, NO CREA BADGE
+ * Mostrar UI de invitado
  */
 function showGuestUI() {
-    console.log('👤 Mostrando UI de invitado en customer navbar');
+    console.log('👤 Mostrando UI de invitado');
 
     const nameElements = document.querySelectorAll('.user-name, .nav-username, .profile-name, .profile-dropdown-name');
     nameElements.forEach(el => {
-        if (el.tagName === 'SPAN' || el.tagName === 'DIV' || el.tagName === 'A') {
-            el.textContent = 'Invitado';
-        }
+        el.textContent = 'Invitado';
     });
 
     const emailElements = document.querySelectorAll('.user-email, .nav-email, .profile-email, .profile-dropdown-email');
     emailElements.forEach(el => {
-        if (el.tagName === 'SPAN' || el.tagName === 'DIV') {
-            el.textContent = 'invitado@outlet.com';
-        }
+        el.textContent = 'invitado@outlet.com';
     });
 
     const avatarImg = document.getElementById('profileAvatar');
@@ -163,23 +143,15 @@ function showGuestUI() {
 }
 
 /**
- * Actualizar la foto de perfil en el navbar - SIN BADGE
+ * Actualizar la foto de perfil en el navbar
  */
 function updateProfileAvatar() {
     try {
-        console.log('🔄 Actualizando avatar del navbar customer...');
-
         let session = null;
         try {
             session = JSON.parse(localStorage.getItem('outlet_customer'));
         } catch (e) {
             console.error('Error parseando sesión:', e);
-        }
-
-        console.log('📦 Sesión en navbar customer:', session ? 'existe' : 'no existe');
-        if (session) {
-            console.log('📸 Foto en sesión:', session.fotoPerfil ? '✅ tiene foto' : '❌ sin foto');
-            console.log('📸 URL foto:', session.fotoPerfil);
         }
 
         const avatarImg = document.getElementById('profileAvatar');
@@ -190,16 +162,13 @@ function updateProfileAvatar() {
         }
 
         if (!session) {
-            console.log('❌ No hay sesión, mostrando invitado');
             avatarImg.style.display = 'none';
             return;
         }
 
         const tieneFoto = session.fotoPerfil && session.fotoPerfil.startsWith('http');
-        console.log('📸 ¿Tiene foto de perfil?', tieneFoto);
 
         if (tieneFoto) {
-            console.log('🖼️ Mostrando foto de perfil:', session.fotoPerfil.substring(0, 60) + '...');
             avatarImg.src = session.fotoPerfil;
             avatarImg.style.display = 'block';
             avatarImg.style.width = '40px';
@@ -208,9 +177,7 @@ function updateProfileAvatar() {
             avatarImg.style.objectFit = 'cover';
             avatarImg.style.border = '2px solid var(--outlet-gold, #c9a84c)';
             avatarImg.style.cursor = 'pointer';
-            console.log('✅ Foto de perfil actualizada');
         } else {
-            console.log('🔤 Sin foto, ocultando avatar');
             avatarImg.style.display = 'none';
         }
     } catch (error) {
@@ -254,15 +221,13 @@ function closeProfileMenu() {
 }
 
 /**
- * Manejar click en el botón de perfil - Abre el menú desplegable
+ * Manejar click en el botón de perfil
  */
 function handleProfileClick(e) {
     if (e) {
         e.preventDefault();
         e.stopPropagation();
     }
-
-    console.log('🖱️ Click en perfil/avatar - abriendo menú desplegable');
     toggleProfileMenu(e);
 }
 
@@ -281,67 +246,35 @@ function handleProfileMenuItemClick(e, action) {
 
     switch (action) {
         case 'profile':
-            console.log('👤 Navegando a perfil');
-            if (session) {
-                if (typeof window.navigateTo === 'function') {
-                    window.navigateTo('/editUser');
-                } else {
-                    window.location.href = '/editUser';
-                }
-            } else {
-                if (typeof window.navigateTo === 'function') {
-                    window.navigateTo('/login');
-                } else {
-                    window.location.href = '/login';
-                }
-            }
+            navigateTo(session ? '/editUser' : '/login');
             break;
-
         case 'orders':
-            console.log('📦 Navegando a compras realizadas');
-            if (session) {
-                if (typeof window.navigateTo === 'function') {
-                    window.navigateTo('/salesCustomer');
-                } else {
-                    window.location.href = 'salesCustomer';
-                }
-            } else {
-                if (typeof window.navigateTo === 'function') {
-                    window.navigateTo('/login');
-                } else {
-                    window.location.href = '/login';
-                }
-            }
+            navigateTo(session ? '/salesCustomer' : '/login');
             break;
-
         case 'payment':
-            console.log('💳 Navegando a métodos de pago');
-            if (session) {
-                if (typeof window.navigateTo === 'function') {
-                    window.navigateTo('/payment');
-                } else {
-                    window.location.href = '/payment';
-                }
-            } else {
-                if (typeof window.navigateTo === 'function') {
-                    window.navigateTo('/login');
-                } else {
-                    window.location.href = '/login';
-                }
-            }
+            navigateTo(session ? '/payment' : '/login');
             break;
-
         case 'logout':
             handleLogout(e);
             break;
-
         default:
             console.warn('⚠️ Acción desconocida:', action);
     }
 }
 
 /**
- * Manejar click fuera del menú de perfil para cerrarlo
+ * Navegar a una URL
+ */
+function navigateTo(url) {
+    if (typeof window.navigateTo === 'function') {
+        window.navigateTo(url);
+    } else {
+        window.location.href = url;
+    }
+}
+
+/**
+ * Manejar click fuera del menú de perfil
  */
 function handleProfileOutside(e) {
     const profileBtn = document.getElementById('profileBtn');
@@ -387,7 +320,7 @@ function updateProfileDropdown() {
 // ========================================
 
 /**
- * Manejar click en el botón de favoritos - NAVEGAR A WISHLIST
+ * Manejar click en el botón de favoritos
  */
 function handleWishlistClick(e) {
     if (e) {
@@ -395,23 +328,8 @@ function handleWishlistClick(e) {
         e.stopPropagation();
     }
 
-    console.log('❤️ Click en favoritos - navegando a wishlist');
-
     const session = JSON.parse(localStorage.getItem('outlet_customer'));
-
-    if (session) {
-        if (typeof window.navigateTo === 'function') {
-            window.navigateTo('/wishlistCustomer');
-        } else {
-            window.location.href = '/wishlistCustomer';
-        }
-    } else {
-        if (typeof window.navigateTo === 'function') {
-            window.navigateTo('/wishlist');
-        } else {
-            window.location.href = '/wishlist';
-        }
-    }
+    navigateTo(session ? '/wishlistCustomer' : '/wishlist');
 }
 
 /**
@@ -423,23 +341,8 @@ function handleCartClick(e) {
         e.stopPropagation();
     }
 
-    console.log('🛒 Click en carrito - navegando a cart');
-
     const session = JSON.parse(localStorage.getItem('outlet_customer'));
-
-    if (session) {
-        if (typeof window.navigateTo === 'function') {
-            window.navigateTo('/cartCustomer');
-        } else {
-            window.location.href = '/cartCustomer';
-        }
-    } else {
-        if (typeof window.navigateTo === 'function') {
-            window.navigateTo('/cart');
-        } else {
-            window.location.href = '/cart';
-        }
-    }
+    navigateTo(session ? '/cartCustomer' : '/cart');
 }
 
 /**
@@ -451,27 +354,12 @@ function handleLogoClick(e) {
         e.stopPropagation();
     }
 
-    console.log('🏠 Click en logo - navegando a home');
-
     const session = JSON.parse(localStorage.getItem('outlet_customer'));
-
-    if (session) {
-        if (typeof window.navigateTo === 'function') {
-            window.navigateTo('/homeCustomer');
-        } else {
-            window.location.href = '/homeCustomer';
-        }
-    } else {
-        if (typeof window.navigateTo === 'function') {
-            window.navigateTo('/');
-        } else {
-            window.location.href = '/';
-        }
-    }
+    navigateTo(session ? '/homeCustomer' : '/');
 }
 
 /**
- * Manejar cambio de tema - CON PRIORIDAD
+ * Manejar cambio de tema
  */
 function handleThemeToggle(e) {
     if (e) {
@@ -479,15 +367,9 @@ function handleThemeToggle(e) {
         e.stopPropagation();
     }
 
-    console.log('🎨 [CUSTOMER NAVBAR] Click en botón de tema');
-
     const isDark = document.body.classList.contains('dark-mode');
     const newTheme = isDark ? 'light' : 'dark';
-
-    console.log('🌓 Tema actual:', isDark ? 'oscuro' : 'claro');
-    console.log('🌓 Nuevo tema:', newTheme);
-
-    applyThemeWithPriority(newTheme);
+    applyTheme(newTheme);
 
     setTimeout(() => {
         const allThemeBtns = document.querySelectorAll('.theme-toggle-btn');
@@ -498,8 +380,6 @@ function handleThemeToggle(e) {
             }
         });
     }, 50);
-
-    console.log('✅ [CUSTOMER NAVBAR] Tema cambiado a:', newTheme);
 }
 
 // ========================================
@@ -507,7 +387,7 @@ function handleThemeToggle(e) {
 // ========================================
 
 /**
- * Cerrar sesión - LIMPIA TODO
+ * Cerrar sesión
  */
 async function handleLogout(e) {
     if (e) {
@@ -515,12 +395,9 @@ async function handleLogout(e) {
         e.stopPropagation();
     }
 
-    console.log('🚪 Cerrando sesión desde customer...');
+    console.log('🚪 Cerrando sesión...');
 
     try {
-        // 1. Limpiar localStorage manualmente
-        console.log('🧹 Limpiando localStorage...');
-
         const keysToRemove = [
             'outlet_customer',
             'outlet_cart',
@@ -538,27 +415,21 @@ async function handleLogout(e) {
             }
         });
 
-        // 2. Intentar cerrar sesión con CustomerService
         try {
             if (CustomerService && typeof CustomerService.logout === 'function') {
                 await CustomerService.logout();
-                console.log('✅ CustomerService.logout() ejecutado');
             }
         } catch (serviceError) {
             console.warn('⚠️ Error en CustomerService.logout():', serviceError);
         }
 
-        // 3. Limpiar estado
         currentUser = null;
         closeProfileMenu();
-
-        // 4. Actualizar UI a estado de invitado
         showGuestUI();
         updateWishlistBadge();
         updateCartBadge();
-        forceUpdateThemeIcon();
+        updateThemeIcon();
 
-        // 5. Disparar evento de autenticación
         window.dispatchEvent(new CustomEvent('customer:authStateChanged', {
             detail: null
         }));
@@ -566,13 +437,8 @@ async function handleLogout(e) {
         console.log('✅ Sesión cerrada exitosamente');
         showNotification('Sesión cerrada correctamente', 'success');
 
-        // 6. Redirigir al login
         setTimeout(() => {
-            if (typeof window.navigateTo === 'function') {
-                window.navigateTo('/login');
-            } else {
-                window.location.href = '/login';
-            }
+            navigateTo('/login');
         }, 300);
 
     } catch (error) {
@@ -585,9 +451,6 @@ async function handleLogout(e) {
 // FUNCIÓN DE NOTIFICACIONES
 // ========================================
 
-/**
- * Mostrar notificación toast
- */
 function showNotification(message, type = 'info') {
     const existingToast = document.querySelector('.outlet-toast-notification');
     if (existingToast) existingToast.remove();
@@ -673,11 +536,7 @@ function handleSearchKeydown(e) {
         if (termino.length >= 2) {
             const session = JSON.parse(localStorage.getItem('outlet_customer'));
             const basePath = session ? '/homeCustomer' : '/';
-            if (typeof window.navigateTo === 'function') {
-                window.navigateTo(`${basePath}?search=${encodeURIComponent(termino)}`);
-            } else {
-                window.location.href = `${basePath}?search=${encodeURIComponent(termino)}`;
-            }
+            navigateTo(`${basePath}?search=${encodeURIComponent(termino)}`);
             closeSearchResults();
         }
     }
@@ -822,11 +681,7 @@ function renderSearchResults(products, termino) {
     resultsDropdown.querySelectorAll('.search-result-item').forEach(item => {
         item.addEventListener('click', () => {
             const url = item.dataset.url;
-            if (typeof window.navigateTo === 'function') {
-                window.navigateTo(url);
-            } else {
-                window.location.href = url;
-            }
+            navigateTo(url);
             closeSearchResults();
         });
     });
@@ -846,6 +701,9 @@ function handleSearchOutside(e) {
     }
 }
 
+/**
+ * Cargar categorías en el navbar
+ */
 async function loadCategoriesInNav() {
     const container = document.getElementById('customerCategoryGrid');
     const menu = document.getElementById('customerMegaMenuDropdown');
@@ -890,11 +748,14 @@ async function loadCategoriesInNav() {
             menu.classList.remove('open');
         }
     } catch (error) {
-        console.error('Error cargando categorías en el navbar customer:', error);
+        console.error('Error cargando categorías:', error);
         container.innerHTML = '<div class="luxury-empty">No se pudieron cargar las categorías</div>';
     }
 }
 
+/**
+ * Alternar dropdown de categorías
+ */
 function toggleCategoriesDropdown(forceOpen) {
     const trigger = document.getElementById('customerCategoriesNavBtn');
     const menu = document.getElementById('customerMegaMenuDropdown');
@@ -905,6 +766,9 @@ function toggleCategoriesDropdown(forceOpen) {
     trigger.setAttribute('aria-expanded', String(shouldOpen));
 }
 
+/**
+ * Manejar click fuera del dropdown de categorías
+ */
 function handleCategoryDropdownOutside(e) {
     const trigger = document.getElementById('customerCategoriesNavBtn');
     const menu = document.getElementById('customerMegaMenuDropdown');
@@ -919,6 +783,9 @@ function handleCategoryDropdownOutside(e) {
 // MENÚ MÓVIL
 // ========================================
 
+/**
+ * Alternar menú móvil
+ */
 function toggleMobileMenu(e) {
     if (e) e.preventDefault();
     const mobileMenu = document.getElementById('mobileMenu');
@@ -938,6 +805,9 @@ function toggleMobileMenu(e) {
     }
 }
 
+/**
+ * Cerrar menú móvil
+ */
 function closeMobileMenu() {
     const mobileMenu = document.getElementById('mobileMenu');
     const hamburgerBtn = document.getElementById('hamburgerBtn');
@@ -1006,7 +876,7 @@ function updateCartBadge() {
 // ========================================
 
 function cleanupNavbarEvents() {
-    console.log('🧹 Limpiando eventos antiguos del navbar...');
+    console.log('🧹 Limpiando eventos antiguos...');
     eventCleanupFunctions.forEach(cleanup => {
         try {
             cleanup();
@@ -1022,23 +892,21 @@ function cleanupNavbarEvents() {
 // ========================================
 
 function setupNavbarEvents() {
-    console.log('🔧 Configurando eventos del Customer Navbar...');
+    console.log('🔧 Configurando eventos del navbar...');
 
     cleanupNavbarEvents();
 
-    // ===== PERFIL - MENÚ DESPLEGABLE =====
+    // PERFIL
     const profileBtn = document.getElementById('profileBtn');
     const profileAvatar = document.getElementById('profileAvatar');
 
     if (profileBtn) {
-        console.log('✅ Configurando #profileBtn customer - menú desplegable');
         const handler = handleProfileClick;
         profileBtn.addEventListener('click', handler);
         eventCleanupFunctions.push(() => profileBtn.removeEventListener('click', handler));
     }
 
     if (profileAvatar) {
-        console.log('✅ Configurando #profileAvatar customer - menú desplegable');
         profileAvatar.style.cursor = 'pointer';
         const handler = handleProfileClick;
         profileAvatar.addEventListener('click', handler);
@@ -1048,7 +916,7 @@ function setupNavbarEvents() {
     document.addEventListener('click', handleProfileOutside);
     eventCleanupFunctions.push(() => document.removeEventListener('click', handleProfileOutside));
 
-    // ===== OPCIONES DEL MENÚ DESPLEGABLE =====
+    // OPCIONES DEL MENÚ DESPLEGABLE
     const profileMenuItems = document.querySelectorAll('.profile-dropdown-list a[data-action]');
     profileMenuItems.forEach(item => {
         const action = item.dataset.action;
@@ -1063,47 +931,42 @@ function setupNavbarEvents() {
         eventCleanupFunctions.push(() => item.removeEventListener('click', handler));
     });
 
-    // ===== WISHLIST =====
+    // WISHLIST
     const wishlistBtn = document.getElementById('wishlistBtn');
     if (wishlistBtn) {
-        console.log('✅ Configurando #wishlistBtn customer');
         const handler = handleWishlistClick;
         wishlistBtn.addEventListener('click', handler);
         eventCleanupFunctions.push(() => wishlistBtn.removeEventListener('click', handler));
     }
 
-    // ===== CARRITO =====
+    // CARRITO
     const cartBtn = document.getElementById('cartBtn');
     if (cartBtn) {
-        console.log('✅ Configurando #cartBtn customer');
         const handler = handleCartClick;
         cartBtn.addEventListener('click', handler);
         eventCleanupFunctions.push(() => cartBtn.removeEventListener('click', handler));
     }
 
-    // ===== LOGO =====
+    // LOGO
     const logoLink = document.getElementById('logoLink');
     if (logoLink) {
-        console.log('✅ Configurando #logoLink customer');
         const handler = handleLogoClick;
         logoLink.addEventListener('click', handler);
         eventCleanupFunctions.push(() => logoLink.removeEventListener('click', handler));
     }
 
-    // ===== TEMA =====
+    // TEMA
     const themeToggleBtn = document.getElementById('themeToggleBtn');
     if (themeToggleBtn) {
-        console.log('✅ Configurando #themeToggleBtn customer con prioridad');
         const handler = handleThemeToggle;
         themeToggleBtn.addEventListener('click', handler);
         eventCleanupFunctions.push(() => themeToggleBtn.removeEventListener('click', handler));
-        forceUpdateThemeIcon();
+        updateThemeIcon();
     }
 
-    // ===== CATEGORÍAS =====
+    // CATEGORÍAS
     const categoriesBtn = document.getElementById('customerCategoriesNavBtn');
     if (categoriesBtn) {
-        console.log('✅ Configurando categorías del navbar customer');
         const handler = (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -1116,12 +979,11 @@ function setupNavbarEvents() {
     document.addEventListener('click', handleCategoryDropdownOutside);
     eventCleanupFunctions.push(() => document.removeEventListener('click', handleCategoryDropdownOutside));
 
-    // ===== BUSCADOR =====
+    // BUSCADOR
     const searchInput = document.getElementById('searchInput');
     const clearBtn = document.getElementById('searchClearBtn');
 
     if (searchInput) {
-        console.log('✅ Configurando #searchInput customer');
         searchInput.addEventListener('input', handleSearchInput);
         searchInput.addEventListener('keydown', handleSearchKeydown);
         searchInput.addEventListener('focus', () => {
@@ -1138,7 +1000,6 @@ function setupNavbarEvents() {
     }
 
     if (clearBtn) {
-        console.log('✅ Configurando #searchClearBtn customer');
         clearBtn.addEventListener('click', clearSearch);
         eventCleanupFunctions.push(() => clearBtn.removeEventListener('click', clearSearch));
     }
@@ -1156,14 +1017,13 @@ function setupNavbarEvents() {
         }
     });
 
-    // ===== MENÚ MÓVIL =====
+    // MENÚ MÓVIL
     const hamburgerBtn = document.getElementById('hamburgerBtn');
     const mobileMenu = document.getElementById('mobileMenu');
     const mobileCloseBtn = document.getElementById('mobileCloseBtn');
     const mobileOverlay = document.getElementById('mobileOverlay');
 
     if (hamburgerBtn && mobileMenu) {
-        console.log('✅ Configurando menú móvil customer');
         const toggleHandler = toggleMobileMenu;
         hamburgerBtn.addEventListener('click', toggleHandler);
         eventCleanupFunctions.push(() => hamburgerBtn.removeEventListener('click', toggleHandler));
@@ -1181,10 +1041,9 @@ function setupNavbarEvents() {
         eventCleanupFunctions.push(() => mobileOverlay.removeEventListener('click', closeHandler));
     }
 
-    // ===== LOGOUT MÓVIL =====
+    // LOGOUT MÓVIL
     const mobileLogoutBtn = document.getElementById('mobileLogoutBtn');
     if (mobileLogoutBtn) {
-        console.log('✅ Configurando #mobileLogoutBtn customer');
         const handler = handleLogout;
         mobileLogoutBtn.addEventListener('click', handler);
         eventCleanupFunctions.push(() => mobileLogoutBtn.removeEventListener('click', handler));
@@ -1192,7 +1051,7 @@ function setupNavbarEvents() {
 
     updateProfileDropdown();
 
-    console.log('✅ Eventos del Customer Navbar configurados');
+    console.log('✅ Eventos del navbar configurados');
 }
 
 // ========================================
@@ -1200,12 +1059,12 @@ function setupNavbarEvents() {
 // ========================================
 
 function reconnectNavbarEvents() {
-    console.log('🔄 Re-conectando eventos del navbar...');
+    console.log('🔄 Re-conectando eventos...');
     setupNavbarEvents();
     updateProfileAvatar();
     updateWishlistBadge();
     updateCartBadge();
-    forceUpdateThemeIcon();
+    updateThemeIcon();
     updateProfileDropdown();
 }
 
@@ -1214,7 +1073,7 @@ function reconnectNavbarEvents() {
 // ========================================
 
 function initProfilePhotoSystem() {
-    console.log('🔄 Inicializando sistema de foto de perfil customer...');
+    console.log('🔄 Inicializando sistema de foto de perfil...');
 
     function updateFromSession() {
         try {
@@ -1240,7 +1099,7 @@ function initProfilePhotoSystem() {
                 }
             }
         } catch (e) {
-            console.error('Error actualizando foto customer:', e);
+            console.error('Error actualizando foto:', e);
         }
         return false;
     }
@@ -1262,14 +1121,17 @@ function initProfilePhotoSystem() {
     window.updateProfileAvatar = updateFromSession;
 }
 
+/**
+ * Inicializar el controlador del navbar customer
+ */
 export async function initCustomerNavbarController() {
     if (isNavbarInitialized) {
-        console.log('🔄 Customer Navbar ya inicializado - reconectando eventos...');
+        console.log('🔄 Navbar ya inicializado - reconectando eventos...');
         reconnectNavbarEvents();
         return;
     }
 
-    console.log('🔄 [CUSTOMER NAVBAR] Inicializando CON PRIORIDAD MÁXIMA...');
+    console.log('🔄 Inicializando navbar customer...');
 
     try {
         await new Promise(resolve => {
@@ -1283,7 +1145,7 @@ export async function initCustomerNavbarController() {
         await new Promise(resolve => setTimeout(resolve, 300));
 
         const savedTheme = localStorage.getItem(THEME_KEY);
-        applyThemeWithPriority(savedTheme === 'dark' ? 'dark' : 'light');
+        applyTheme(savedTheme === 'dark' ? 'dark' : 'light');
 
         await loadUserProfile();
         await loadCategoriesInNav();
@@ -1294,7 +1156,7 @@ export async function initCustomerNavbarController() {
         showSearchPlaceholder('Escribe para buscar productos');
 
         window.addEventListener('customer:authStateChanged', async (event) => {
-            console.log('🔄 Auth state changed en customer:', event.detail);
+            console.log('🔄 Auth state changed:', event.detail);
             await loadUserProfile();
             setTimeout(updateProfileAvatar, 100);
             setTimeout(updateProfileDropdown, 100);
@@ -1310,11 +1172,11 @@ export async function initCustomerNavbarController() {
             if (event.key === 'outlet_wishlist') updateWishlistBadge();
             if (event.key === 'outlet_cart') updateCartBadge();
             if (event.key === THEME_KEY) {
-                applyThemeWithPriority(event.newValue || 'light');
+                applyTheme(event.newValue || 'light');
             }
         });
 
-        document.addEventListener('themeChanged', forceUpdateThemeIcon);
+        document.addEventListener('themeChanged', updateThemeIcon);
         document.addEventListener('wishlistUpdated', updateWishlistBadge);
         document.addEventListener('cartUpdated', updateCartBadge);
 
@@ -1323,10 +1185,10 @@ export async function initCustomerNavbarController() {
         });
 
         isNavbarInitialized = true;
-        console.log('✅ [CUSTOMER NAVBAR] Inicializado con prioridad máxima');
+        console.log('✅ Navbar customer inicializado correctamente');
 
     } catch (error) {
-        console.error('❌ Error inicializando customer navbar:', error);
+        console.error('❌ Error inicializando navbar:', error);
     }
 }
 
@@ -1344,8 +1206,8 @@ export {
     loadUserProfile,
     updateProfileAvatar,
     showGuestUI,
-    applyThemeWithPriority,
-    forceUpdateThemeIcon,
+    applyTheme,
+    updateThemeIcon,
     handleWishlistClick,
     updateWishlistBadge,
     updateCartBadge,
@@ -1361,4 +1223,4 @@ export {
     handleLogout
 };
 
-console.log('📦 Customer Navbar Controller cargado CON PRIORIDAD - COMPLETO');
+console.log('📦 Customer Navbar Controller cargado correctamente');

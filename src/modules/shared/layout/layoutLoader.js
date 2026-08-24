@@ -19,6 +19,150 @@ const LAYOUT_PATHS = {
     }
 };
 
+// ========================================
+// ELIMINAR PROMO BANNER - SOLUCIÓN DEFINITIVA
+// ========================================
+
+function eliminarPromoBanner() {
+    console.log('🗑️ Buscando y eliminando promo banners...');
+
+    // Selectores comunes de banners
+    const selectores = [
+        '.promo-banner',
+        '.promo-bar',
+        '.banner-promo',
+        '[class*="promo"]',
+        '[id*="promo"]',
+        '[class*="banner"]',
+        '[id*="banner"]',
+        '.top-banner',
+        '.notification-bar',
+        '.alert-banner'
+    ];
+
+    let eliminados = 0;
+
+    selectores.forEach(selector => {
+        try {
+            const elementos = document.querySelectorAll(selector);
+            elementos.forEach(el => {
+                // Verificar si es un banner (por su contenido o clase)
+                const texto = el.textContent?.toLowerCase() || '';
+                const esBanner =
+                    texto.includes('oferta') ||
+                    texto.includes('descuento') ||
+                    texto.includes('promo') ||
+                    texto.includes('promoción') ||
+                    texto.includes('%') ||
+                    texto.includes('rebaja') ||
+                    el.className?.toLowerCase().includes('promo') ||
+                    el.id?.toLowerCase().includes('promo') ||
+                    el.className?.toLowerCase().includes('banner') ||
+                    el.id?.toLowerCase().includes('banner');
+
+                if (esBanner) {
+                    // Ocultar completamente
+                    el.style.display = 'none';
+                    el.style.height = '0';
+                    el.style.minHeight = '0';
+                    el.style.maxHeight = '0';
+                    el.style.overflow = 'hidden';
+                    el.style.margin = '0';
+                    el.style.padding = '0';
+                    el.style.border = 'none';
+                    el.style.opacity = '0';
+                    el.style.pointerEvents = 'none';
+                    el.style.visibility = 'hidden';
+
+                    // Si tiene contenedor padre con padding/margin, también lo ocultamos
+                    if (el.parentElement) {
+                        const parent = el.parentElement;
+                        if (parent.children.length === 1) {
+                            // Si el padre solo tiene este elemento, lo ocultamos también
+                            parent.style.margin = '0';
+                            parent.style.padding = '0';
+                            parent.style.height = '0';
+                            parent.style.minHeight = '0';
+                            parent.style.maxHeight = '0';
+                            parent.style.overflow = 'hidden';
+                            parent.style.display = 'none';
+                        }
+                    }
+
+                    eliminados++;
+                    console.log(`🗑️ Banner eliminado: ${selector}`, el);
+                }
+            });
+        } catch (e) {
+            // Ignorar errores
+        }
+    });
+
+    if (eliminados > 0) {
+        console.log(`✅ ${eliminados} banners eliminados correctamente`);
+    } else {
+        console.log('ℹ️ No se encontraron banners para eliminar');
+    }
+
+    return eliminados;
+}
+
+// ========================================
+// OBSERVADOR PARA ELIMINAR BANNERS DINÁMICOS
+// ========================================
+
+let bannerObserver = null;
+
+function iniciarObservadorBanners() {
+    // Detener observador anterior si existe
+    if (bannerObserver) {
+        bannerObserver.disconnect();
+        bannerObserver = null;
+    }
+
+    bannerObserver = new MutationObserver((mutations) => {
+        let hayCambios = false;
+
+        mutations.forEach(mutation => {
+            if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                // Verificar si algún nodo agregado es un banner
+                mutation.addedNodes.forEach(node => {
+                    if (node.nodeType === 1) { // Elemento HTML
+                        const texto = node.textContent?.toLowerCase() || '';
+                        const esBanner =
+                            texto.includes('oferta') ||
+                            texto.includes('descuento') ||
+                            texto.includes('promo') ||
+                            texto.includes('promoción') ||
+                            node.className?.toLowerCase().includes('promo') ||
+                            node.id?.toLowerCase().includes('promo') ||
+                            node.className?.toLowerCase().includes('banner') ||
+                            node.id?.toLowerCase().includes('banner');
+
+                        if (esBanner) {
+                            hayCambios = true;
+                        }
+                    }
+                });
+            }
+        });
+
+        if (hayCambios) {
+            setTimeout(eliminarPromoBanner, 50);
+        }
+    });
+
+    // Observar todo el documento
+    bannerObserver.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+
+    console.log('👀 Observador de banners iniciado');
+}
+
+// ========================================
+
 function getLayoutPaths() {
     const role = AuthService.getUserRoleSync();
     console.log('🎭 Rol detectado para layout:', role);
@@ -52,9 +196,9 @@ async function initializeControllers(role) {
         // Inicializar controlador de admin
         if (role === ROLES.ADMIN) {
             console.log('🎮 Inicializando controlador del navbar admin...');
-            
+
             const module = await import('../../admin/layout/adminNavbarController.js');
-            
+
             if (module && typeof module.initAdminNavbarController === 'function') {
                 await new Promise(resolve => setTimeout(resolve, 150));
                 module.initAdminNavbarController();
@@ -63,13 +207,16 @@ async function initializeControllers(role) {
                 console.warn('⚠️ No se encontró initAdminNavbarController en el módulo');
             }
         }
-        
+
         // ===== INICIALIZAR CONTROLADOR DE CUSTOMER =====
         if (role === ROLES.CUSTOMER) {
             console.log('🎮 Inicializando controladores de customer...');
-            
+
+            // ✅ ELIMINAR BANNERS ANTES DE INICIALIZAR
+            eliminarPromoBanner();
+
             await new Promise(resolve => setTimeout(resolve, 150));
-            
+
             // ✅ Inicializar footer controller
             try {
                 const footerModule = await import('../../customer/layout/footerCustomerController.js');
@@ -82,8 +229,8 @@ async function initializeControllers(role) {
             } catch (error) {
                 console.error('❌ Error importando footerCustomerController:', error);
             }
-            
-            // ✅ INICIALIZAR NAVBAR CUSTOMER - ESTE ES EL QUE DEBE CONTROLAR EL TEMA
+
+            // ✅ INICIALIZAR NAVBAR CUSTOMER
             try {
                 const navbarModule = await import('../../customer/layout/navbarCustumerController.js');
                 if (navbarModule && typeof navbarModule.initCustomerNavbarController === 'function') {
@@ -96,17 +243,18 @@ async function initializeControllers(role) {
             } catch (error) {
                 console.error('❌ Error importando navbarCustumerController:', error);
             }
-            
-            // ❌ ELIMINADO: Ya no inicializamos el navbar de guest para customer
-            // Cada navbar debe ser independiente
+
+            // ✅ ELIMINAR BANNERS DESPUÉS DE INICIALIZAR
+            setTimeout(eliminarPromoBanner, 300);
+            setTimeout(eliminarPromoBanner, 800);
         }
-        
+
         // Inicializar controladores de guest (visitante)
         if (role === ROLES.GUEST) {
             console.log('🎮 Inicializando controladores de guest...');
-            
+
             await new Promise(resolve => setTimeout(resolve, 150));
-            
+
             try {
                 const footerModule = await import('../../visitor/layout/footerController.js');
                 if (footerModule && typeof footerModule.initFooterController === 'function') {
@@ -116,7 +264,7 @@ async function initializeControllers(role) {
             } catch (error) {
                 console.error('❌ Error importando footerController de guest:', error);
             }
-            
+
             // Inicializar navbar de guest
             try {
                 const navbarModule = await import('../../visitor/layout/navbarController.js');
@@ -128,7 +276,7 @@ async function initializeControllers(role) {
                 console.error('❌ Error importando navbarController de guest:', error);
             }
         }
-        
+
     } catch (error) {
         console.error('❌ Error inicializando controladores:', error);
     }
@@ -149,6 +297,11 @@ export async function loadLayout() {
     // 🚀 INICIALIZAR CONTROLADORES DESPUÉS DE CARGAR EL HTML
     if (navbarLoaded || footerLoaded) {
         await initializeControllers(role);
+    }
+
+    // ✅ INICIAR OBSERVADOR DE BANNERS (solo para customer)
+    if (role === ROLES.CUSTOMER) {
+        iniciarObservadorBanners();
     }
 
     // Disparar evento layout cargado
