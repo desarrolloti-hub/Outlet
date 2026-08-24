@@ -17,6 +17,24 @@ let state = {
 let elements = {};
 let searchTimeout = null;
 
+/* Ajuste dinámico de la variable CSS --outlet-nav-height para que el navbar fijo
+   no tape elementos en pantallas grandes. Calcula la altura real del navbar y la
+   coloca en :root. */
+function debounce(fn, wait = 100) {
+    let t;
+    return (...args) => {
+        clearTimeout(t);
+        t = setTimeout(() => fn.apply(this, args), wait);
+    };
+}
+
+function adjustNavbarHeight() {
+    const navbar = document.querySelector('.OUTLET-nav');
+    if (!navbar) return;
+    const height = navbar.offsetHeight || 0;
+    document.documentElement.style.setProperty('--outlet-nav-height', `${height}px`);
+}
+
 // ========================================
 // FUNCIONES DE BÚSQUEDA
 // ========================================
@@ -251,6 +269,10 @@ export async function initNavbarController() {
         return;
     }
 
+    // Ajustar la altura del navbar para evitar solapamientos (desktop principalmente)
+    adjustNavbarHeight();
+    window.addEventListener('resize', debounce(adjustNavbarHeight, 150));
+
     bindEvents();
     handleScroll();
     updateCartCount();
@@ -261,6 +283,9 @@ export async function initNavbarController() {
     setActiveLink();
     setupSearchEvents();
     await loadCategoriesInNav();
+
+    // Reajustar después de cargar contenido dinámico (imágenes, etc.)
+    setTimeout(adjustNavbarHeight, 120);
 
     console.log('✅ Navbar OUTLET Luxury Controller inicializado');
 }
