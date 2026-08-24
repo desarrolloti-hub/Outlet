@@ -5,6 +5,14 @@
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+<!-- Inline fallback styles to ensure visitor navbar stays fixed and content is not hidden under it -->
+<style>
+:root{ --outlet-nav-height: 81px; }
+body{ padding-top: var(--outlet-nav-height) !important; }
+.OUTLET-nav{ position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: #ffffff; }
+.category-nav{ position: relative; z-index: 900; margin-top: 0; }
+</style>
+
 <nav class="OUTLET-nav">
     <!-- Banner Promocional Elegante -->
     <div class="promo-banner">
