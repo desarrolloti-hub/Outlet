@@ -9,6 +9,7 @@
 import { homeController } from '../modules/visitor/home/homeController.js';
 import { init404Controller } from '../modules/shared/errors/404Controller.js';
 import { coleccionController } from '../modules/visitor/collection/collectionController.js';
+import { saleController } from '../modules/visitor/sale/saleController.js';
 import { loginController } from '../modules/visitor/login/loginController.js';
 import { wishlistController } from '../modules/visitor/wishlist/wishlistController.js';
 import { cartController } from '../modules/visitor/cart/cartController.js';
@@ -68,6 +69,10 @@ export const routes = {
     "/collection": {
         view: "/modules/visitor/collection/collection.html",
         controller: coleccionController
+    },
+    "/sale": {
+        view: "/modules/visitor/collection/collection.html",
+        controller: saleController
     },
     "/login": {
         view: "/modules/visitor/login/login.html",

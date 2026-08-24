@@ -101,21 +101,32 @@ async function loadCollectionProducts() {
        const resolvedCategory = resolveCollectionCategory(category);
        currentCollectionCategory = resolvedCategory.key;
 
-       const productList = await ProductService.getAll({ estado: 'activo' }, 'createdAt', 'desc', 500);
-       const mappedProducts = (productList || []).map(normalizeProductForCollection);
-       products = mappedProducts.filter((product) => matchesCollectionCategory(product, currentCollectionCategory));
+       const productList = window.__outletSaleMode
+           ? await ProductService.getAll({ estado: 'activo', enOferta: true }, 'porcentajeDescuento', 'desc', 500)
+           : await ProductService.getAll({ estado: 'activo' }, 'createdAt', 'desc', 500);
 
-       if (!products.length) {
-           products = mappedProducts.filter((product) => {
-               const genero = String(product.genero || '').toLowerCase();
-               const categoria = String(product.categoria || '').toLowerCase();
-               return genero.includes(currentCollectionCategory) || categoria.includes(currentCollectionCategory);
-           });
+       const mappedProducts = (productList || []).map(normalizeProductForCollection);
+
+       if (window.__outletSaleMode) {
+           products = mappedProducts.filter((product) => Number(product.porcentajeDescuento || 0) > 0);
+           currentCollectionCategory = 'rebajas';
+       } else {
+           products = mappedProducts.filter((product) => matchesCollectionCategory(product, currentCollectionCategory));
+
+           if (!products.length) {
+               products = mappedProducts.filter((product) => {
+                   const genero = String(product.genero || '').toLowerCase();
+                   const categoria = String(product.categoria || '').toLowerCase();
+                   return genero.includes(currentCollectionCategory) || categoria.includes(currentCollectionCategory);
+               });
+           }
        }
 
        currentProducts = products.slice(0);
        currentPage = 1;
-       console.log(`📦 Productos cargados para ${resolvedCategory.label}:`, products.length);
+       console.log(window.__outletSaleMode
+           ? `📦 Productos en rebajas cargados: ${products.length}`
+           : `📦 Productos cargados para ${resolvedCategory.label}: ${products.length}`);
    } catch (error) {
        console.error('❌ Error cargando productos de la colección:', error);
        products = [];
@@ -229,6 +240,13 @@ function initHero() {
     var category = urlParams.get('category');
     var heroTitle = document.getElementById('heroTitle');
     var resolvedCategory = resolveCollectionCategory(category);
+
+    if (window.__outletSaleMode) {
+        if (heroTitle) {
+            heroTitle.textContent = 'REBAJAS';
+        }
+        return;
+    }
 
     if (heroTitle) {
         heroTitle.textContent = resolvedCategory.label;

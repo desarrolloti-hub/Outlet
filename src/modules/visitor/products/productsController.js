@@ -183,7 +183,7 @@ function syncProductIdDisplay() {
 
 function getProductIdFromUrl() {
     var pathname = window.location.pathname || '';
-    var match = pathname.match(/^\/products(?:Customer)?\/([^/]+)$/);
+    var match = pathname.match(/^\/(?:products|product)(?:Customer)?\/([^/]+)$/);
     if (match && match[1]) {
         return decodeURIComponent(match[1]);
     }

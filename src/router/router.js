@@ -138,7 +138,9 @@ export function initRouter() {
  * Obtiene la ruta correcta según el rol
  */
 function getRedirectPath(path, role) {
-    const productDetailMatch = path.match(/^\/products\/([^/]+)$/);
+    const normalizedPath = path.startsWith('/product/') ? path.replace(/^\/product\//, '/products/') : path;
+
+    const productDetailMatch = normalizedPath.match(/^\/products\/([^/]+)$/);
     if (productDetailMatch) {
         const productId = productDetailMatch[1];
         if (role === 'admin') return `/productsList`;
@@ -146,7 +148,7 @@ function getRedirectPath(path, role) {
         return `/products/${productId}`;
     }
 
-    const customerProductDetailMatch = path.match(/^\/productsCustomer\/([^/]+)$/);
+    const customerProductDetailMatch = normalizedPath.match(/^\/productsCustomer\/([^/]+)$/);
     if (customerProductDetailMatch) {
         const productId = customerProductDetailMatch[1];
         if (role === 'admin') return `/productsList`;
@@ -172,16 +174,18 @@ function getRedirectPath(path, role) {
 }
 
 function resolveRoute(path) {
-    if (routes[path]) {
-        return { route: routes[path], params: {} };
+    const normalizedPath = path.startsWith('/product/') ? path.replace(/^\/product\//, '/products/') : path;
+
+    if (routes[normalizedPath]) {
+        return { route: routes[normalizedPath], params: {} };
     }
 
-    const productMatch = path.match(/^\/products\/([^/]+)$/);
+    const productMatch = normalizedPath.match(/^\/products\/([^/]+)$/);
     if (productMatch) {
         return { route: routes['/products'], params: { id: productMatch[1] } };
     }
 
-    const customerProductMatch = path.match(/^\/productsCustomer\/([^/]+)$/);
+    const customerProductMatch = normalizedPath.match(/^\/productsCustomer\/([^/]+)$/);
     if (customerProductMatch) {
         return { route: routes['/productsCustomer'], params: { id: customerProductMatch[1] } };
     }
@@ -227,6 +231,10 @@ async function handleInitialRoute() {
 async function navigateTo(path) {
     if (isNavigating) return;
     isNavigating = true;
+
+    if (path && path.startsWith('/product/')) {
+        path = path.replace(/^\/product\//, '/products/');
+    }
 
     // ✅ Si es admin o customer, redirigir a su versión de la ruta
     const role = getUserRole();
