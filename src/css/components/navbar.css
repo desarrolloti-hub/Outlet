@@ -4,11 +4,23 @@
    ======================================== */
 
 /* ============================================================
-   🔥 NAVBAR PRINCIPAL - FIJADO EN LA PARTE SUPERIOR (STICKY)
+   🔥 NAVBAR PRINCIPAL - FIJADO EN LA PARTE SUPERIOR (FIXED)
    ============================================================ */
+:root {
+    /* Ajustar si la altura del navbar cambia */
+    --outlet-nav-height: 81px;
+}
+
+/* Evitar que el contenido quede oculto bajo el navbar fijo */
+body {
+    padding-top: var(--outlet-nav-height);
+}
+
 .OUTLET-nav {
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: 0;
+    right: 0;
     z-index: 1000;
     background: #ffffff;
     width: 100%;
