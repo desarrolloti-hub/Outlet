@@ -703,6 +703,7 @@ function applyStoredTheme() {
 
 export function setActiveLink() {
     const currentPath = window.location.pathname;
+    const currentSearch = new URLSearchParams(window.location.search);
     const navLinks = document.querySelectorAll('.nav-links a, .mobile-nav-links a');
 
     navLinks.forEach(link => {
@@ -711,11 +712,30 @@ export function setActiveLink() {
 
         link.classList.remove('active');
 
+        const linkUrl = new URL(href, window.location.origin);
+        const linkPath = linkUrl.pathname;
+        const linkParams = new URLSearchParams(linkUrl.search);
+
         if (currentPath === '/' && href === '/') {
             link.classList.add('active');
-        } else if (href !== '/' && currentPath.includes(href)) {
+            return;
+        }
+
+        if (linkPath !== currentPath) {
+            return;
+        }
+
+        const hasQuery = linkParams.toString().length > 0;
+        if (!hasQuery) {
             link.classList.add('active');
-        } else if (href.includes('?') && currentPath === href.split('?')[0]) {
+            return;
+        }
+
+        const allParamsMatch = Array.from(linkParams.entries()).every(([key, value]) => {
+            return currentSearch.get(key) === value;
+        });
+
+        if (allParamsMatch) {
             link.classList.add('active');
         }
     });

@@ -1,87 +1,127 @@
+import { ProductService } from '../../../services/productService.js';
+
 /* ========================================
    COLECCIÓN CONTROLLER - OUTLET
    Controlador para página de listado de productos
    CON SWEETALERT2 INTEGRADO
    ======================================== */
 
-var products = [
-    {
-        id: 1,
-        brand: "MAISON LUXE",
-        name: "Vestido de Seda Minimal",
-        price: 1250,
-        image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAVNmzqtVZ3G9MrYLm3haFXarVCA7PQ69Dm3ri30ApxZ6BjtHFp_3l7hmo4eflMnS9N6Q7Fx-4dedsbB22G6eOLhPFDm5vfspizyoBFrDOuZImojpmodGmtRbtNX61lX8VDm9x10rwlFdC9FhL2HO0bldkhrqhI_2dxCgmR32txANofe0281nvPDFFsvUOq6xsbH3uobRXHKZxCblnt-f4X0ZxuUWwEZ4JYwmis-BFuULG6fUZRRbXHo17at--wgNh5mpPyD9zmcgf4",
-        badge: "NUEVO",
-        size: ["XS", "S", "M", "L", "XL"],
-        color: "black",
-        designer: "Maison Luxe"
-    },
-    {
-        id: 2,
-        brand: "ATELIER NOIR",
-        name: "Blazer Estructurado Wool",
-        price: 890,
-        image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBoFBqbzemgg4D6R-YEd_GzOIVm4-Qr7J5CupE4YBzVTvuXUrumcaRp1cXHwqaktNzehF0KWhe3FE1MT7XICsBvj9-LWYhj0YjPWhfLKGxufQYYVPUPBAHhYw3Qg0RSDINmqaSLMCQKy4K1-QVEDLL4gdp1cF_2a5okyT_KggA76sgwQ_KZFznhXlR__ZktcRYqEXU7ynaM7GsIMI1kiHWIACwyeK2k6b-hgttTYxtdbjsMR8g0JXQ2a36Bl1ihuHJcBLwXUgEotQ2K",
-        badge: "EXCLUSIVO",
-        size: ["M", "L", "XL"],
-        color: "brown",
-        designer: "Atelier Noir"
-    },
-    {
-        id: 3,
-        brand: "ETHEREAL STUDIO",
-        name: "Gala Chiffon Ivory",
-        price: 2400,
-        image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCN4iloVvjKYcH7THjTYp6wooS2BJ1LYolUgx1MLqJ-jxmVBFBXrncys0eA29qrdnkHIjwfZlP0FAp-WN0SmMChaLJ-qi3vJvmeLNMoS22B36t0lbSBmtrwBUfSthquhNzGoPWrzJ-vc5aG8D4nT7AzRwbDFN_7q5K230YDIbz1Ke4hObhW-GaTWaJXb_mjhhQxn_K9mfLHlTjw5j9cHmnllQ7OhAnPLZJseW7twPBbaVlHihiKJpcdP2NnjMrCI5G1QbTNJJVIpw33",
-        badge: null,
-        size: ["XS", "S", "M"],
-        color: "white",
-        designer: "Ethereal Studio"
-    },
-    {
-        id: 4,
-        brand: "MAISON LUXE",
-        name: "Knit Cashmere Sculpt",
-        price: 650,
-        image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAtE-gUmTjbbXAdHhl0NLtuajHMWhTNhdHWmmJnQe4g3FGHXQlecQy9w7tLO8xp7mALgU2KguqcfuQoVVmdr4CAb0UbTvjodHn4pHFqB4lPOflbE5hP-r5HPFzCVIiKEvFSdheUtS0HNVLbvCEVzPOeIOC5JOH4LSFPFz0PKpK59VAgH817rY8e5kwq_OF4lIIVjlLHtg4CHuPJiTX2lLA9VxviQcBvvyqfKMgI89XIYd9dYNgs75QBBpIDkPfL5pPX2VQz30Sr8LfT",
-        badge: null,
-        size: ["S", "M", "L"],
-        color: "brown",
-        designer: "Maison Luxe"
-    },
-    {
-        id: 5,
-        brand: "ATELIER NOIR",
-        name: "Bolso Piel 'Arch' Gold",
-        price: 1800,
-        image: "https://lh3.googleusercontent.com/aida-public/AB6AXuD02slcN7JVsasTTHdQNuA4A0SO737WLXCQWNdAjV0wlzb73BD8hhBKax7tFfzZd-hEnHUFj608KoQFE3Zw_zl_1YkXMuMa8QU4MJW8bx4UWky-1rWGYwONKgY7x8rv6bEIus1aTl0FhpyqwnHP-eT1p0ptPx-P2j3O06ngEQ1sLVcR5fZBVfyF-cQOdDFG1tsb1KL1Gz_RtiVPZmx2fhBuX6cnMB-tbhPvfkawD-KK36uwh_nKGZkEjC9Wx3sK1eJTZE9nK_SxscHt",
-        badge: "NUEVO",
-        size: ["Única"],
-        color: "black",
-        designer: "Atelier Noir"
-    },
-    {
-        id: 6,
-        brand: "ETHEREAL STUDIO",
-        name: "Mono Silk Tailored",
-        price: 1450,
-        image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBcdfXGBcBeo26fl32hyEgXK-vLIKwWmntkJi4qIvToByEUnCg4UYT6SW1IIs8OUlf_vjN9tTZlHE4hoFUsal6jxhnEU5y7rCCJu1o7mFFmSN8Opszk2X-7V5OqiS499LHKGhx4Pg7_aQKxocE29cfcngG6JrW8LLCgXguBoms7jJBd25GBB6k31oLbbt8AJ3NaN5rZPqW_Op0HmhLkHUdeACQE1bnjQYr2pqa6u7QP0JSdbTPw79ogt0zXWO37b5ly2yFQtoNg1PcN",
-        badge: null,
-        size: ["XS", "S", "M", "L"],
-        color: "black",
-        designer: "Ethereal Studio"
-    }
-];
-
-var currentProducts = products.slice(0);
+var products = [];
+var currentProducts = [];
 var currentPage = 1;
 var productsPerPage = 6;
 var activeFilters = {
-    size: "S",
-    color: null,
-    designers: [],
-    maxPrice: 5000
+   size: "S",
+   color: null,
+   designers: [],
+   maxPrice: 5000
 };
+var currentCollectionCategory = 'mujer';
+
+function normalizeCollectionValue(value) {
+   return String(value || '')
+       .trim()
+       .toLowerCase()
+       .normalize('NFD')
+       .replace(/[\u0300-\u036f]/g, '')
+       .replace(/[^a-z0-9]/g, '');
+}
+
+function resolveCollectionCategory(value) {
+   const target = normalizeCollectionValue(value);
+   const mapping = {
+       mujer: { label: 'COLECCIÓN MUJER', aliases: ['mujer', 'women', 'woman', 'female', 'femenino'] },
+       hombre: { label: 'COLECCIÓN HOMBRE', aliases: ['hombre', 'men', 'man', 'male', 'masculino'] },
+       kids: { label: 'COLECCIÓN NIÑOS', aliases: ['kids', 'niños', 'ninos', 'kid', 'child', 'children', 'infantil'] }
+   };
+
+   const entry = Object.entries(mapping).find(([, config]) => config.aliases.includes(target));
+   if (entry) {
+       return { key: entry[0], label: entry[1].label };
+   }
+
+   return { key: 'mujer', label: 'COLECCIÓN MUJER' };
+}
+
+function normalizeProductForCollection(product) {
+   const normalized = product || {};
+   const tallaList = Array.isArray(normalized.tallas) && normalized.tallas.length
+       ? normalized.tallas
+       : (Array.isArray(normalized.size) ? normalized.size : ['S']);
+   const colorList = Array.isArray(normalized.colores) && normalized.colores.length
+       ? normalized.colores
+       : (normalized.color ? [normalized.color] : ['black']);
+
+   return {
+       ...normalized,
+       id: normalized.id || normalized.sku || Math.random().toString(36).slice(2),
+       brand: normalized.marca || normalized.brand || 'OUTLET',
+       name: normalized.nombre || normalized.name || 'Producto',
+       price: Number(normalized.precioFinal ?? normalized.precioVenta ?? normalized.price ?? 0),
+       image: normalized.imagenPrincipal || normalized.image || (Array.isArray(normalized.galeriaImagenes) ? normalized.galeriaImagenes[0] : ''),
+       badge: normalized.destacado ? 'NUEVO' : null,
+       size: tallaList,
+       color: String(colorList[0] || 'black').toLowerCase(),
+       designer: normalized.marca || normalized.designer || 'OUTLET'
+   };
+}
+
+function matchesCollectionCategory(product, categoryKey) {
+   const normalizedProduct = normalizeProductForCollection(product);
+   const target = normalizeCollectionValue(categoryKey);
+   const values = [
+       normalizedProduct.genero,
+       normalizedProduct.categoria,
+       normalizedProduct.subcategoria,
+       normalizedProduct.brand,
+       normalizedProduct.name,
+       normalizedProduct.designer
+   ];
+
+   return values.some((value) => {
+       const safe = normalizeCollectionValue(value);
+       if (!safe) return false;
+
+       if (target === 'mujer') {
+           return ['mujer', 'women', 'woman', 'female', 'femenino'].includes(safe) || /mujer|women|female|femenino/.test(safe);
+       }
+
+       if (target === 'hombre') {
+           return ['hombre', 'men', 'man', 'male', 'masculino'].includes(safe) || /hombre|men|male|masculino/.test(safe);
+       }
+
+       return ['kids', 'niños', 'ninos', 'kid', 'children', 'child', 'infantil'].includes(safe) || /kids|niños|ninos|child|infantil/.test(safe);
+   });
+}
+
+async function loadCollectionProducts() {
+   try {
+       const urlParams = new URLSearchParams(window.location.search);
+       const category = urlParams.get('category');
+       const resolvedCategory = resolveCollectionCategory(category);
+       currentCollectionCategory = resolvedCategory.key;
+
+       const productList = await ProductService.getAll({ estado: 'activo' }, 'createdAt', 'desc', 500);
+       const mappedProducts = (productList || []).map(normalizeProductForCollection);
+       products = mappedProducts.filter((product) => matchesCollectionCategory(product, currentCollectionCategory));
+
+       if (!products.length) {
+           products = mappedProducts.filter((product) => {
+               const genero = String(product.genero || '').toLowerCase();
+               const categoria = String(product.categoria || '').toLowerCase();
+               return genero.includes(currentCollectionCategory) || categoria.includes(currentCollectionCategory);
+           });
+       }
+
+       currentProducts = products.slice(0);
+       currentPage = 1;
+       console.log(`📦 Productos cargados para ${resolvedCategory.label}:`, products.length);
+   } catch (error) {
+       console.error('❌ Error cargando productos de la colección:', error);
+       products = [];
+       currentProducts = [];
+   }
+}
 
 // ========================================
 // UI Helpers - CON SWEETALERT2
@@ -160,10 +200,11 @@ function loadStyles() {
 }
 
 function formatMoney(amount) {
-    return new Intl.NumberFormat('es-ES', {
+    return new Intl.NumberFormat('es-MX', {
         style: 'currency',
-        currency: 'EUR',
-        minimumFractionDigits: 0
+        currency: 'MXN',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
     }).format(amount);
 }
 
@@ -171,6 +212,7 @@ export async function coleccionController() {
     console.log('🛍️ Colección Controller - Página de listado');
 
     loadStyles();
+    await loadCollectionProducts();
     initHero();
     renderProducts();
     initSizeFilters();
@@ -186,11 +228,10 @@ function initHero() {
     var urlParams = new URLSearchParams(window.location.search);
     var category = urlParams.get('category');
     var heroTitle = document.getElementById('heroTitle');
+    var resolvedCategory = resolveCollectionCategory(category);
 
-    if (category === 'hombre') {
-        if (heroTitle) heroTitle.textContent = "COLECCIÓN HOMBRE";
-    } else {
-        if (heroTitle) heroTitle.textContent = "COLECCIÓN MUJER";
+    if (heroTitle) {
+        heroTitle.textContent = resolvedCategory.label;
     }
 }
 
