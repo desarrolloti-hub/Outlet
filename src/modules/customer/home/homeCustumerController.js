@@ -37,6 +37,8 @@ const STORAGE_KEYS = {
     WISHLIST: 'outlet_wishlist'
 };
 
+const ALL_PRODUCTS_LIMIT = 1000;
+
 // ============================================
 // VARIABLES DE ESTADO
 // ============================================
@@ -53,6 +55,7 @@ export async function homeCustomerController() {
 
     loadHeroImage();
     await loadCategories();
+    applyOutletModeFromUrl();
     applyCategoryFromUrl();
     renderFlashSale();
     renderTrending();
@@ -93,7 +96,7 @@ export async function homeCustomerController() {
 async function loadAllProducts() {
     try {
         console.log('📦 Cargando todos los productos desde Firebase...');
-        allProductsCache = await ProductService.getAll({}, 'createdAt', 'desc', 100);
+        allProductsCache = await ProductService.getAll({}, 'createdAt', 'desc', ALL_PRODUCTS_LIMIT);
         console.log(`✅ ${allProductsCache.length} productos cargados`);
 
         if (allProductsCache.length > 0) {
@@ -201,7 +204,32 @@ function renderFlashSale() {
 // ============================================
 // ✅ RENDERIZAR TRENDING
 // ============================================
-function renderTrending(categoryFilter = null) {
+function sortProductsForOutlet(products, sortValue) {
+    const normalized = [...products];
+    const toPrice = (product) => Number(product.precioFinal ?? product.precioVenta ?? 0);
+
+    switch (sortValue) {
+        case 'price-asc':
+            normalized.sort((a, b) => toPrice(a) - toPrice(b));
+            break;
+        case 'price-desc':
+            normalized.sort((a, b) => toPrice(b) - toPrice(a));
+            break;
+        case 'newest':
+            normalized.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+            break;
+        case 'discount':
+            normalized.sort((a, b) => (b.porcentajeDescuento || 0) - (a.porcentajeDescuento || 0));
+            break;
+        default:
+            normalized.sort((a, b) => Number(b.destacado || false) - Number(a.destacado || false));
+            break;
+    }
+
+    return normalized;
+}
+
+function renderTrending(categoryFilter = null, options = {}) {
     const container = document.getElementById('trending-container-customer');
     if (!container) {
         console.warn('⚠️ trending-container-customer no encontrado');
@@ -210,8 +238,14 @@ function renderTrending(categoryFilter = null) {
 
     try {
         let products = [];
+        const showAllProducts = options.showAllProducts === true;
+        const selectedCategory = options.category || 'all';
+        const sortValue = options.sort || 'featured';
 
-        if (categoryFilter) {
+        if (showAllProducts) {
+            products = allProductsCache.filter(p => p.estado === 'activo');
+            console.log(`📦 Todos los productos en Outlet: ${products.length}`);
+        } else if (categoryFilter) {
             products = allProductsCache.filter(p => {
                 return p.estado === 'activo' && matchesCategory(p, categoryFilter);
             });
@@ -229,6 +263,15 @@ function renderTrending(categoryFilter = null) {
             console.log(`📦 Productos trending: ${products.length}`);
         }
 
+        if (showAllProducts && selectedCategory !== 'all') {
+            products = products.filter((p) => {
+                const productCategory = normalizeCategoryValue(p.categoria || p.genero || 'general');
+                return productCategory === normalizeCategoryValue(selectedCategory);
+            });
+        }
+
+        products = sortProductsForOutlet(products, sortValue);
+
         if (products.length === 0) {
             container.innerHTML = `
                 <div class="empty-state" style="grid-column: 1/-1; text-align: center; padding: 40px;">
@@ -240,6 +283,40 @@ function renderTrending(categoryFilter = null) {
             container.setAttribute('data-loaded', 'true');
             return;
         }
+
+        const outletCategories = [...new Set(allProductsCache
+            .filter(p => p.estado === 'activo')
+            .map(p => p.categoria || p.genero || 'General'))]
+            .filter(Boolean)
+            .sort((a, b) => a.localeCompare(b));
+
+        const toolbar = showAllProducts ? `
+            <div class="outlet-catalog-toolbar" style="grid-column: 1 / -1; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; margin: 0 0 24px; padding: 16px 18px; border: 1px solid rgba(205,167,82,0.35); background: linear-gradient(135deg, rgba(205,167,82,0.08), rgba(255,255,255,0.02)); border-radius: 18px; box-shadow: 0 10px 25px rgba(0,0,0,0.04);">
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <span style="font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: #8a6a1b; font-weight: 700;">OUTLET</span>
+                    <span style="font-size: 12px; color: #666;">${products.length} piezas</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #444; text-transform: uppercase; letter-spacing: 0.08em;">
+                        <span>Categoría</span>
+                        <select data-outlet-category-selector style="padding: 9px 12px; border: 1px solid #d9d2c2; border-radius: 10px; background: #fff; color: #1b1a19; min-width: 170px; font-size: 12px;">
+                            <option value="all" ${selectedCategory === 'all' ? 'selected' : ''}>Todas</option>
+                            ${outletCategories.map(cat => `<option value="${cat}" ${selectedCategory === cat ? 'selected' : ''}>${cat}</option>`).join('')}
+                        </select>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #444; text-transform: uppercase; letter-spacing: 0.08em;">
+                        <span>Orden</span>
+                        <select data-outlet-sort-selector style="padding: 9px 12px; border: 1px solid #d9d2c2; border-radius: 10px; background: #fff; color: #1b1a19; min-width: 170px; font-size: 12px;">
+                            <option value="featured" ${sortValue === 'featured' ? 'selected' : ''}>Destacados</option>
+                            <option value="price-asc" ${sortValue === 'price-asc' ? 'selected' : ''}>Precio: menor a mayor</option>
+                            <option value="price-desc" ${sortValue === 'price-desc' ? 'selected' : ''}>Precio: mayor a menor</option>
+                            <option value="discount" ${sortValue === 'discount' ? 'selected' : ''}>Mayor descuento</option>
+                            <option value="newest" ${sortValue === 'newest' ? 'selected' : ''}>Más nuevos</option>
+                        </select>
+                    </label>
+                </div>
+            </div>
+        ` : '';
 
         const html = products.map(p => {
             let badge = '';
@@ -288,8 +365,31 @@ function renderTrending(categoryFilter = null) {
             `;
         }).join('');
 
-        container.innerHTML = html;
+        container.innerHTML = `${toolbar}${html}`;
         container.setAttribute('data-loaded', 'true');
+
+        const categorySelector = container.querySelector('[data-outlet-category-selector]');
+        const sortSelector = container.querySelector('[data-outlet-sort-selector]');
+
+        if (categorySelector) {
+            categorySelector.addEventListener('change', (event) => {
+                renderTrending(null, {
+                    showAllProducts: true,
+                    category: event.target.value,
+                    sort: sortSelector ? sortSelector.value : 'featured'
+                });
+            });
+        }
+
+        if (sortSelector) {
+            sortSelector.addEventListener('change', (event) => {
+                renderTrending(null, {
+                    showAllProducts: true,
+                    category: categorySelector ? categorySelector.value : 'all',
+                    sort: event.target.value
+                });
+            });
+        }
 
         console.log(`✅ ${products.length} productos renderizados${categoryFilter ? ` para "${categoryFilter}"` : ''}`);
 
@@ -390,8 +490,57 @@ function matchesCategory(product, requestedCategory) {
     return candidates.some(value => normalizeCategoryValue(value) === target);
 }
 
+async function applyOutletModeFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const outletMode = params.get('allProducts') === 'true' || params.get('outlet') === 'true';
+    if (!outletMode) return;
+
+    const sectionHeader = document.querySelector('.trending .section-header');
+    const sectionTitle = document.querySelector('.trending .section-header h2');
+    const sectionSubtitle = document.querySelector('.trending .section-header p');
+    const shopAllBtn = document.getElementById('shopAllBtnCustomer');
+    const sectionsToHide = document.querySelectorAll('.notification-banner, .category-nav, .hero, .flash-sale, .gallery');
+
+    sectionsToHide.forEach(section => {
+        if (section) {
+            section.style.display = 'none';
+        }
+    });
+
+    const trendingSection = document.querySelector('.trending');
+    if (trendingSection) {
+        trendingSection.style.display = 'block';
+        trendingSection.style.marginTop = '24px';
+    }
+
+    if (sectionHeader) {
+        sectionHeader.classList.add('outlet-page-header');
+        sectionHeader.style.borderBottom = 'none';
+        sectionHeader.style.textAlign = 'center';
+    }
+
+    if (sectionTitle) {
+        sectionTitle.textContent = 'OUTLET';
+        sectionTitle.classList.add('outlet-page-title');
+        sectionTitle.style.color = '';
+    }
+
+    if (sectionSubtitle) {
+        sectionSubtitle.textContent = 'Todos los productos disponibles';
+        sectionSubtitle.classList.add('outlet-page-subtitle');
+        sectionSubtitle.style.color = '';
+    }
+
+    if (shopAllBtn) {
+        shopAllBtn.style.display = 'none';
+    }
+
+    renderTrending(null, { showAllProducts: true });
+}
+
 async function applyCategoryFromUrl() {
     const params = new URLSearchParams(window.location.search);
+    if (params.get('allProducts') === 'true' || params.get('outlet') === 'true') return;
     const category = params.get('category');
     if (!category) return;
     filterByCategory(decodeURIComponent(category));
