@@ -39,6 +39,7 @@ export async function homeController() {
 
     loadHeroImage();
     await loadCategories();
+    applyCategoryFromUrl();
     renderFlashSale();
     renderTrending();
     loadGallery();
@@ -448,11 +449,9 @@ function renderTrending(categoryFilter = null) {
         let products = [];
 
         if (categoryFilter) {
-            const filterLower = categoryFilter.toLowerCase();
-            products = allProductsCache.filter(p =>
-                p.categoria && p.categoria.toLowerCase() === filterLower &&
-                p.estado === 'activo'
-            );
+            products = allProductsCache.filter(p => {
+                return p.estado === 'activo' && matchesCategory(p, categoryFilter);
+            });
             console.log(`📦 Productos en "${categoryFilter}": ${products.length}`);
         } else {
             products = allProductsCache.filter(p => p.destacado && p.estado === 'activo');
@@ -554,9 +553,10 @@ async function loadCategories() {
         container.innerHTML = displayCategories.map((cat, idx) => {
             const imgSrc = cat.imageBase64 || FALLBACK_IMAGES[idx % FALLBACK_IMAGES.length];
             const categoryName = cat.name;
+            const categoryKey = cat.slug || categoryName;
 
             return `
-                <div class="category-item" data-category="${categoryName}" style="cursor: pointer;">
+                <div class="category-item" data-category="${categoryName}" data-category-slug="${categoryKey}" style="cursor: pointer;">
                     <div class="circle-img">
                         <img alt="${cat.name}" src="${imgSrc}" loading="lazy"/>
                     </div>
@@ -568,7 +568,7 @@ async function loadCategories() {
         container.querySelectorAll('.category-item').forEach(item => {
             item.addEventListener('click', function (e) {
                 e.preventDefault();
-                const categoryName = this.dataset.category;
+                const categoryName = this.dataset.categorySlug || this.dataset.category;
                 console.log(`🔍 Click en categoría: "${categoryName}"`);
                 filterByCategory(categoryName);
             });
@@ -586,20 +586,83 @@ async function loadCategories() {
     }
 }
 
-function filterByCategory(categoryName) {
-    console.log(`🔍 Filtrando por: "${categoryName}"`);
-    currentCategoryFilter = categoryName;
+function normalizeCategoryValue(value) {
+    return String(value || '')
+        .trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+}
+
+function matchesCategory(product, requestedCategory) {
+    const target = normalizeCategoryValue(requestedCategory);
+    if (!target) return false;
+
+    const candidates = [
+        product?.categoria,
+        product?.category,
+        product?.genero,
+        product?.subcategoria,
+        product?.name,
+        product?.nombre
+    ];
+
+    return candidates.some(value => normalizeCategoryValue(value) === target);
+}
+
+async function applyCategoryFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const category = params.get('category');
+    if (!category) return;
+    // fire-and-forget is fine for navigation
+    filterByCategory(decodeURIComponent(category));
+}
+
+async function filterByCategory(categoryName) {
+    const safeCategoryName = decodeURIComponent(String(categoryName || '')).trim();
+    if (!safeCategoryName) return;
+
+    console.log(`🔍 Filtrando por: "${safeCategoryName}"`);
+    currentCategoryFilter = safeCategoryName;
 
     const sectionTitle = document.querySelector('.trending .section-header h2');
     const sectionSubtitle = document.querySelector('.trending .section-header p');
     const shopAllBtn = document.getElementById('shopAllBtn');
 
+    // Resolve slug -> category name if possible
+    let resolvedLabel = safeCategoryName;
+    try {
+        // Try direct slug lookup
+        const catObj = await CategoryService.getBySlug(safeCategoryName);
+        if (catObj && catObj.name) {
+            resolvedLabel = catObj.name;
+            console.log('🔗 Category slug resolved to name:', resolvedLabel);
+        } else {
+            // Try fuzzy match against categories list (prefix or exact)
+            const allCats = await CategoryService.getAll({}, true);
+            const target = normalizeCategoryValue(safeCategoryName);
+            const found = allCats.find(c => {
+                const sName = normalizeCategoryValue(c.name || '');
+                const sSlug = normalizeCategoryValue(c.slug || '');
+                return sName === target || sSlug === target || sName.startsWith(target) || sSlug.startsWith(target) || target.startsWith(sName) || target.startsWith(sSlug);
+            });
+            if (found) {
+                resolvedLabel = found.name;
+                console.log('🔍 Category fuzzy-matched to:', resolvedLabel);
+            }
+        }
+    } catch (e) {
+        console.warn('⚠️ Error resolving category slug:', e.message);
+    }
+
     if (sectionTitle) {
-        sectionTitle.textContent = `👗 ${categoryName}`;
+        sectionTitle.textContent = `👗 ${resolvedLabel}`;
     }
 
     if (sectionSubtitle) {
-        sectionSubtitle.textContent = `Productos en ${categoryName}`;
+        sectionSubtitle.textContent = `Productos en ${resolvedLabel}`;
     }
 
     if (shopAllBtn) {
@@ -607,7 +670,8 @@ function filterByCategory(categoryName) {
         shopAllBtn.textContent = 'Ver todos';
     }
 
-    renderTrending(categoryName);
+    // Filter products using resolvedLabel (this will use matchesCategory under the hood)
+    renderTrending(resolvedLabel);
 
     const trendingSection = document.querySelector('.trending');
     if (trendingSection) {

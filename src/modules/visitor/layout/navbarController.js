@@ -5,6 +5,7 @@
 
 import ThemeService from '../../shared/layout/themeService.js';
 import { ProductService } from '../../../services/productService.js';
+import { CategoryService } from '../../../services/categoryService.js';
 
 let state = {
     isMenuOpen: false,
@@ -242,7 +243,7 @@ function handleSearchOutside(e) {
 // FUNCIONES EXISTENTES DEL NAVBAR
 // ========================================
 
-export function initNavbarController() {
+export async function initNavbarController() {
     cacheElements();
 
     if (!elements.navbar) {
@@ -259,8 +260,50 @@ export function initNavbarController() {
     applyStoredTheme();
     setActiveLink();
     setupSearchEvents();
+    await loadCategoriesInNav();
 
     console.log('✅ Navbar OUTLET Luxury Controller inicializado');
+}
+
+async function loadCategoriesInNav() {
+    const container = document.getElementById('visitorMegaMenuCategories');
+    if (!container) return;
+
+    try {
+        const categories = await CategoryService.getAll({}, true);
+        const items = (categories || []).filter(cat => cat && cat.name).slice(0, 6);
+
+        if (!items.length) {
+            container.innerHTML = '<div class="luxury-empty">No hay categorías disponibles</div>';
+            return;
+        }
+
+        const fallbackImage = 'https://images.pexels.com/photos/1462637/pexels-photo-1462637.jpeg?auto=compress&cs=tinysrgb&w=200';
+
+        container.innerHTML = items.map((cat) => {
+            const image = cat.imageUrl || cat.imageBase64 || fallbackImage;
+            const categoryKey = cat.slug || cat.name;
+            const countText = Array.isArray(cat.subcategories) && cat.subcategories.length > 0
+                ? `${cat.subcategories.length} subcategorías`
+                : 'Colección exclusiva';
+
+            return `
+                <a href="/?category=${encodeURIComponent(categoryKey)}" data-link class="luxury-category">
+                    <div class="luxury-category-image">
+                        <img src="${image}" alt="${cat.name}" loading="lazy">
+                        <div class="luxury-overlay"></div>
+                    </div>
+                    <div class="luxury-category-info">
+                        <h4>${cat.name}</h4>
+                        <p>${countText}</p>
+                    </div>
+                </a>
+            `;
+        }).join('');
+    } catch (error) {
+        console.error('Error cargando categorías en el navbar visitante:', error);
+        container.innerHTML = '<div class="luxury-empty">No se pudieron cargar las categorías</div>';
+    }
 }
 
 function cacheElements() {

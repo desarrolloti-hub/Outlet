@@ -54,7 +54,34 @@
         <!-- ENLACES DE NAVEGACIÓN (DESKTOP) -->
         <ul class="nav-links" id="desktopNavLinks">
             <li><a href="/" data-link>Inicio</a></li>
-            <li><a href="/categories" data-link>Categorías</a></li>
+            <li class="categories-dropdown">
+                <a href="#" id="customerCategoriesNavBtn">Categorías <i class="fas fa-chevron-down"></i></a>
+                <div class="mega-menu-luxury" id="customerMegaMenuDropdown">
+                    <div class="mega-luxury-container">
+                        <div class="mega-luxury-section">
+                            <div class="luxury-grid" id="customerCategoryGrid">
+                                <div class="luxury-grid-loading">Cargando categorías...</div>
+                            </div>
+                        </div>
+                        <div class="luxury-divider"></div>
+                        <div class="mega-luxury-featured">
+                            <h3 class="luxury-title">COLECCIONES DESTACADAS</h3>
+                            <div class="featured-collections">
+                                <a href="/sale" data-link class="featured-collection">
+                                    <i class="fas fa-fire"></i>
+                                    <span>Hot Sale</span>
+                                    <small>Hasta 50% OFF</small>
+                                </a>
+                                <a href="/products" data-link class="featured-collection">
+                                    <i class="fas fa-star"></i>
+                                    <span>Nuevo</span>
+                                    <small>Últimas tendencias</small>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </li>
             <li><a href="/sale" data-link>Outlet</a></li>
             <li><a href="/brands" data-link>Marcas</a></li>
         </ul>
