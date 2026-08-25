@@ -53,6 +53,35 @@ h3,
     min-height: 100vh;
 }
 
+.admin-page-header {
+    margin-bottom: 2rem;
+    padding: 0.5rem 0 1rem;
+}
+
+.admin-page-eyebrow {
+    margin: 0 0 0.45rem;
+    color: var(--outlet-gold);
+    font-family: 'Playfair Display', var(--outlet-font-secondary, serif);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.18rem;
+    text-transform: uppercase;
+}
+
+.admin-page-title {
+    margin: 0;
+    font-family: 'Playfair Display', var(--outlet-font-secondary, serif);
+    font-size: clamp(2rem, 3vw, 2.8rem);
+    line-height: 1.15;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    background: var(--outlet-gold-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    display: inline-block;
+}
+
 /* ========= SIDEBAR Lujoso ========= */
 .sidebar {
     width: 280px;

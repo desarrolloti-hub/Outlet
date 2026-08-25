@@ -434,6 +434,15 @@
 }
 
 /* ====== DARK MODE ====== */
+/* En modo oscuro mostrar solo los títulos principales en blanco */
+body.dark-mode .admin-page-title,
+body.dark-mode .page-title h1 {
+    color: #ffffff !important;
+    background: none !important;
+    -webkit-background-clip: initial !important;
+    background-clip: initial !important;
+}
+
 body.dark-mode .outlet-btn-danger {
     background: var(--outlet-red, #dc2626);
     color: #ffffff;
