@@ -6,15 +6,26 @@
 
 /* Contenedor principal */
 .outlet-admin-profile-container {
+    width: calc(100% - 280px);
     max-width: 1000px;
-    margin: 0 auto;
+    margin: 0 0 0 280px;
     padding: var(--outlet-spacing-xl) var(--outlet-spacing-lg);
     position: relative;
     z-index: 1;
+    box-sizing: border-box;
+}
+
+body:has(.OUTLET-admin-nav.collapsed) .outlet-admin-profile-container {
+    width: calc(100% - 80px);
+    margin-left: 80px;
+    max-width: 1000px;
 }
 
 @media (max-width: 768px) {
     .outlet-admin-profile-container {
+        width: 100%;
+        max-width: 100%;
+        margin-left: 0;
         padding: var(--outlet-spacing-md);
     }
 }
