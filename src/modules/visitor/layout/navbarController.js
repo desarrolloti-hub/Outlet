@@ -85,6 +85,17 @@ function handleSearchKeydown(e) {
     if (e.key === 'Enter') {
         const termino = e.target.value.trim();
         if (termino.length >= 2) {
+            const firstResult = document.querySelector('#searchResultsDropdown .search-result-item');
+            if (firstResult && firstResult.dataset && firstResult.dataset.url) {
+                if (typeof window.navigateTo === 'function') {
+                    window.navigateTo(firstResult.dataset.url);
+                } else {
+                    window.location.href = firstResult.dataset.url;
+                }
+                closeSearchResults();
+                return;
+            }
+
             const basePath = '/';
             if (typeof window.navigateTo === 'function') {
                 window.navigateTo(`${basePath}?search=${encodeURIComponent(termino)}`);
@@ -201,9 +212,9 @@ function renderSearchResults(products, termino) {
 
     products.forEach(product => {
         const imagen = product.imagenPrincipal || product.primeraImagen || '';
-        const precioFinal = product.precioFinal || product.precioVenta;
-        const tieneOferta = product.porcentajeDescuento > 0;
-        const productUrl = `/?product=${product.id}`;
+        const precioFinal = product.precioFinal ?? product.precioVenta;
+        const tieneOferta = Number(product.porcentajeDescuento || 0) > 0;
+        const productUrl = `/products/${encodeURIComponent(product.id)}`;
 
         html += `
             <div class="search-result-item" data-product-id="${product.id}" data-url="${productUrl}">

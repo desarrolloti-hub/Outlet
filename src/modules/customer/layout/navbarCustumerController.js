@@ -534,6 +534,13 @@ function handleSearchKeydown(e) {
     if (e.key === 'Enter') {
         const termino = e.target.value.trim();
         if (termino.length >= 2) {
+            const firstResult = document.querySelector('#searchResultsDropdown .search-result-item');
+            if (firstResult && firstResult.dataset && firstResult.dataset.url) {
+                navigateTo(firstResult.dataset.url);
+                closeSearchResults();
+                return;
+            }
+
             const session = JSON.parse(localStorage.getItem('outlet_customer'));
             const basePath = session ? '/homeCustomer' : '/';
             navigateTo(`${basePath}?search=${encodeURIComponent(termino)}`);
@@ -647,11 +654,9 @@ function renderSearchResults(products, termino) {
 
     products.forEach(product => {
         const imagen = product.imagenPrincipal || product.primeraImagen || '';
-        const precioFinal = product.precioFinal || product.precioVenta;
-        const tieneOferta = product.porcentajeDescuento > 0;
-        const session = JSON.parse(localStorage.getItem('outlet_customer'));
-        const basePath = session ? '/homeCustomer' : '/';
-        const productUrl = `${basePath}?product=${product.id}`;
+        const precioFinal = product.precioFinal ?? product.precioVenta;
+        const tieneOferta = Number(product.porcentajeDescuento || 0) > 0;
+        const productUrl = `/productsCustomer/${encodeURIComponent(product.id)}`;
 
         html += `
             <div class="search-result-item" data-product-id="${product.id}" data-url="${productUrl}">
