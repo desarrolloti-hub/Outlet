@@ -19,7 +19,7 @@
     font-weight: 500;
     z-index: 9999;
     animation: outletToastSlideIn 0.3s ease-out;
-    box-shadow: var(--outlet-shadow-md, 0 5px 15px rgba(0,0,0,0.08));
+    box-shadow: var(--outlet-shadow-md, 0 5px 15px rgba(0, 0, 0, 0.08));
     border-left: 4px solid var(--outlet-gold, #ddab3b);
     max-width: 450px;
     font-family: var(--outlet-font-primary, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif);
@@ -52,6 +52,7 @@
         transform: translateX(100%);
         opacity: 0;
     }
+
     to {
         transform: translateX(0);
         opacity: 1;
@@ -63,6 +64,7 @@
         opacity: 1;
         transform: translateX(0);
     }
+
     to {
         opacity: 0;
         transform: translateX(30px);
@@ -79,7 +81,7 @@
     background: var(--outlet-bg-surface, #ffffff) !important;
     color: var(--outlet-text-primary, #1f1b13) !important;
     border-radius: var(--outlet-radius-xl, 16px) !important;
-    box-shadow: var(--outlet-shadow-xl, 0 20px 40px rgba(0,0,0,0.15)) !important;
+    box-shadow: var(--outlet-shadow-xl, 0 20px 40px rgba(0, 0, 0, 0.15)) !important;
     border: 1px solid var(--outlet-border-soft, #e2d9cc) !important;
     padding: 2.5rem 2.5rem 2rem 2.5rem !important;
     width: 520px !important;
@@ -118,7 +120,7 @@
 
 .swal2-confirm:hover {
     transform: translateY(-2px) !important;
-    box-shadow: var(--outlet-shadow-gold, 0 0 20px rgba(221,171,59,0.3)) !important;
+    box-shadow: var(--outlet-shadow-gold, 0 0 20px rgba(221, 171, 59, 0.3)) !important;
 }
 
 .swal2-confirm:active {
@@ -167,17 +169,33 @@
     font-size: 3.5rem !important;
 }
 
-/* Icono de éxito */
+/* Icono de éxito
+   SweetAlert2 dibuja el check con varias piezas (ring, fix, líneas, arcos)
+   pensadas para su tamaño por defecto; al forzar width/height arriba, esas
+   piezas quedan mal ubicadas y se ve como una lupa en vez de una palomita.
+   Solución: ocultamos todas esas piezas y dibujamos nosotros una palomita
+   simple y centrada con CSS puro (siempre dentro del círculo). */
 .swal2-icon.swal2-success {
     border-color: var(--outlet-success, #2e7d32) !important;
+    align-items: center !important;
+    justify-content: center !important;
 }
 
-.swal2-icon.swal2-success .swal2-success-ring {
-    border-color: var(--outlet-success, #2e7d32) !important;
+.swal2-icon.swal2-success .swal2-success-ring,
+.swal2-icon.swal2-success .swal2-success-fix,
+.swal2-icon.swal2-success [class^="swal2-success-line"],
+.swal2-icon.swal2-success [class^="swal2-success-circular-line"] {
+    display: none !important;
 }
 
-.swal2-icon.swal2-success .swal2-icon-content {
-    color: var(--outlet-success, #2e7d32) !important;
+.swal2-icon.swal2-success::before {
+    content: "";
+    display: block;
+    width: 28px;
+    height: 14px;
+    border-left: 5px solid var(--outlet-success, #2e7d32);
+    border-bottom: 5px solid var(--outlet-success, #2e7d32);
+    transform: rotate(-45deg) translate(2px, -3px);
 }
 
 /* Icono de error */
@@ -262,6 +280,7 @@
    ======================================== */
 
 @media (max-width: 768px) {
+
     /* Toast */
     .outlet-toast {
         bottom: 1rem;
@@ -303,6 +322,12 @@
     .swal2-icon .swal2-icon-content {
         font-size: 2.8rem !important;
     }
+
+    .swal2-icon.swal2-success::before {
+        width: 22px !important;
+        height: 11px !important;
+        border-width: 4px !important;
+    }
 }
 
 @media (max-width: 480px) {
@@ -333,6 +358,13 @@
 
     .swal2-icon .swal2-icon-content {
         font-size: 2.2rem !important;
+    }
+
+    .swal2-icon.swal2-success::before {
+        width: 18px !important;
+        height: 9px !important;
+        border-width: 3px !important;
+        transform: rotate(-45deg) translate(1px, -2px);
     }
 
     .swal2-actions {
