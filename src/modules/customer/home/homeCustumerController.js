@@ -20,13 +20,6 @@ const FALLBACK_IMAGES = [
     "https://lh3.googleusercontent.com/aida-public/AB6AXuAMLUpsb4z_kmPPRr7SNFmJzhQca6vRy9f6mYTZXfeN2DveISlKOiLdPMR9YXJs76KL_XkI_IGvLMIbAycg5TV0TqRM9lGKCaIsYioaInmOMgayFC_p68Lgqn5rtzqcfFpBJG4a-9SYRXh8lROsm5UCwfNulB9Q7TlSNr09Cys6e-9ply60QBkaCJ-33WcZuT6AV7HVOYWj-dH0cQyvpdnuuEC54nq40GNV72x2B34D_mfuANqKA4XKWXjM0DgACe5ThWYMCqnC2j51"
 ];
 
-const GALLERY_IMAGES = [
-    "https://lh3.googleusercontent.com/aida-public/AB6AXuDZqg3PhiQcyPx9qvbvfRC7iQUY952pX3kM5GkXqJXvUdnbSGwDAOUdqna-ep1_T6oRUpFfk8bfIfOD_y0Ux9cQj-zbgL8GWutPS_fBYwWEMNoDF0GJ2tI5X-1hmVWVAVrzredmlqqQ2VJ05aYRgCYFx8uz5JWXwf12Nmzw6w-ZU6LDThAOCZVruPAxD72MY9PVJDC-nX_Pjt8syhhFzqz2CHSKem0ME6wcYcNizQ948Dv5vOWrgqBgnp89rvOw3Yrv-Ll4uTmZeuXJ",
-    "https://lh3.googleusercontent.com/aida-public/AB6AXuCLtfxBJHzGNyW7S2r8PW8UQEHi3Z95AiwvvvFcgXN_hNFljU5xDClu2lssWY6IbYEC4edbKUKNLGf7qG2g2XSS4FKM6nBHZywoiZuPnRqFcOkZlGNNFXKBx-BOGn6ur_pJ3V2ou-YtZhJS9jasGgca3Zn3XDpIif4NDtVf20VhbnwMPBays54-jz3tg7jaRI521AMak_IjSPuW2oGrwBe4CRuUM9Nd0nNJhP3FAVFYozcs1fUdWID0FIqEoDpFZM8y7uhZGL5WyTPA",
-    "https://lh3.googleusercontent.com/aida-public/AB6AXuAMLUpsb4z_kmPPRr7SNFmJzhQca6vRy9f6mYTZXfeN2DveISlKOiLdPMR9YXJs76KL_XkI_IGvLMIbAycg5TV0TqRM9lGKCaIsYioaInmOMgayFC_p68Lgqn5rtzqcfFpBJG4a-9SYRXh8lROsm5UCwfNulB9Q7TlSNr09Cys6e-9ply60QBkaCJ-33WcZuT6AV7HVOYWj-dH0cQyvpdnuuEC54nq40GNV72x2B34D_mfuANqKA4XKWXjM0DgACe5ThWYMCqnC2j51",
-    "https://lh3.googleusercontent.com/aida-public/AB6AXuDBtNHClCvXICohUTSHXDeCbNbys5DdAaT7Q-uEaHIWRwxLm9yovNIk2a5I35QNryWCMgMx7jW6-OcTq9Xx0tLOSAVolnEbxKWfFWFlKQdyKr_xAuMLnSUkYK7nrKWtka7eHTgkVPsuAe7qa8I44o1OHxQcIIfkGjmwdgeWxV_lshwAJ4AxzMiiTbZlXQeODlvTckTjwJep1vka771QFHUaRX9ea8g-plsgl7sxU6J7ojEjJjV5GBf7pMwBzOwOVmWysLX8FRQef6ev"
-];
-
 const HERO_IMAGE = "https://lh3.googleusercontent.com/aida-public/AB6AXuDBtNHClCvXICohUTSHXDeCbNbys5DdAaT7Q-uEaHIWRwxLm9yovNIk2a5I35QNryWCMgMx7jW6-OcTq9Xx0tLOSAVolnEbxKWfFWFlKQdyKr_xAuMLnSUkYK7nrKWtka7eHTgkVPsuAe7qa8I44o1OHxQcIIfkGjmwdgeWxV_lshwAJ4AxzMiiTbZlXQeODlvTckTjwJep1vka771QFHUaRX9ea8g-plsgl7sxU6J7ojEjJjV5GBf7pMwBzOwOVmWysLX8FRQef6ev";
 
 // ============================================
@@ -884,14 +877,49 @@ function loadGallery() {
     const container = document.getElementById('gallery-container-customer');
     if (!container) return;
 
-    container.innerHTML = GALLERY_IMAGES.map((img, idx) => `
-        <div class="gallery-item">
-            <img alt="Galería ${idx + 1}" src="${img}" loading="lazy"/>
-            <div class="gallery-overlay">
-                <span class="label-caps">COMPRA ESTE LOOK</span>
+    try {
+        // Solo productos activos con al menos una imagen real
+        const productosConImagen = allProductsCache.filter(p =>
+            p.estado === 'activo' &&
+            (p.imagenPrincipal || (Array.isArray(p.galeriaImagenes) && p.galeriaImagenes.length > 0))
+        );
+
+        if (productosConImagen.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state" style="grid-column: 1/-1; text-align:center; padding:40px;">
+                    <p style="color:#666;">No hay productos disponibles por el momento.</p>
+                </div>
+            `;
+            return;
+        }
+
+        const productos = productosConImagen.slice(0, 4);
+
+        container.innerHTML = productos.map((p) => {
+            const imgSrc = p.imagenPrincipal ||
+                (Array.isArray(p.galeriaImagenes) && p.galeriaImagenes[0]) ||
+                'https://placehold.co/600x600?text=Sin+Imagen';
+            const nombre = p.nombre || 'Producto';
+
+            return `
+                <div class="gallery-item" data-id="${p.id}">
+                    <img alt="${nombre}" src="${imgSrc}" loading="lazy"/>
+                    <div class="gallery-overlay">
+                        <span class="label-caps">VER PRODUCTO</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        console.log(`✅ ${productos.length} productos renderizados en la galería`);
+    } catch (error) {
+        console.error('❌ Error renderizando la galería:', error);
+        container.innerHTML = `
+            <div class="error-state" style="grid-column: 1/-1; text-align: center; padding: 40px;">
+                <p style="color: #ef4444;">Error al cargar la galería: ${error.message}</p>
             </div>
-        </div>
-    `).join('');
+        `;
+    }
 }
 
 function loadHeroImage() {
@@ -972,7 +1000,7 @@ function initProductCardNavigation() {
     document.addEventListener('click', (event) => {
         if (event.target.closest('.add-cart, .wishlist-btn')) return;
 
-        const card = event.target.closest('.trending-item, .product-card');
+        const card = event.target.closest('.trending-item, .product-card, .gallery-item');
         if (!card) return;
 
         const productId = card.dataset.id;
