@@ -754,8 +754,9 @@ function setupEditUserAvatar() {
             var file = e.target.files[0];
             if (!file) return;
 
-            if (!file.type.startsWith('image/')) {
-                await mostrarError('Tipo no válido', 'Por favor, selecciona una imagen válida (JPG, PNG, GIF).');
+            var allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+            if (!allowedTypes.includes(file.type)) {
+                await mostrarError('Formato no válido', 'Solo se permiten imágenes en formato JPG, PNG o GIF.');
                 avatarInput.value = '';
                 return;
             }

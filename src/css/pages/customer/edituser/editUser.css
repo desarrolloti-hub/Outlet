@@ -39,7 +39,90 @@
     position: relative;
 }
 
+/* ========================================
+   SECCIÓN DE FOTO DE PERFIL ("Cambiar foto")
+   Estas clases corresponden al bloque de avatar
+   marcado como "NUEVA" en editUser.html; antes
+   no tenían ninguna regla de CSS asociada.
+   ======================================== */
+.outlet-profile-avatar-section {
+    display: flex;
+    justify-content: center;
+    margin-bottom: var(--outlet-spacing-xl);
+    padding-bottom: var(--outlet-spacing-lg);
+    border-bottom: 2px solid var(--outlet-border-medium);
+}
+
+.outlet-avatar-container {
+    position: relative;
+    width: 96px;
+    height: 96px;
+    flex-shrink: 0;
+    display: inline-block;
+    border-radius: 50%;
+    box-shadow: var(--outlet-shadow-gold);
+    transition: box-shadow 0.3s var(--outlet-transition-base), transform 0.3s var(--outlet-transition-base);
+}
+
+.outlet-avatar-container:hover {
+    box-shadow: var(--outlet-shadow-gold-lg);
+    transform: scale(1.02);
+}
+
+.outlet-profile-avatar-img,
+.outlet-avatar-placeholder {
+    border-radius: 50% !important;
+    overflow: hidden;
+}
+
+/* ======================================== */
+/* BOTÓN DE CÁMARA - OVERLAY */
+/* ======================================== */
+.outlet-avatar-overlay {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--outlet-gold, #c9a84c);
+    border: 2px solid var(--outlet-bg-card, #fff);
+    color: var(--outlet-primary, #1a1a1a);
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s var(--outlet-transition-smooth, ease);
+    box-shadow: var(--outlet-shadow-md, 0 4px 12px rgba(0, 0, 0, 0.15));
+    padding: 0;
+    z-index: 10;
+}
+
+.outlet-avatar-overlay:hover {
+    transform: scale(1.15);
+    box-shadow: var(--outlet-shadow-gold-lg, 0 4px 20px rgba(201, 168, 76, 0.4));
+}
+
+.outlet-avatar-overlay .material-symbols-outlined {
+    font-size: 18px;
+    color: var(--outlet-primary, #1a1a1a);
+}
+
+.outlet-avatar-overlay:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--outlet-gold, #c9a84c);
+}
+
+body.dark-mode .outlet-avatar-overlay {
+    border-color: var(--outlet-bg-card, #2d2d2d);
+}
+
+body.dark-mode .outlet-avatar-overlay .material-symbols-outlined {
+    color: var(--outlet-primary, #1a1a1a);
+}
+
 .outlet-avatar-circle {
+    position: relative;
     width: 80px;
     height: 80px;
     background: var(--outlet-gold-gradient);
@@ -51,7 +134,7 @@
     font-weight: 500;
     color: var(--outlet-primary);
     box-shadow: var(--outlet-shadow-gold);
-    transition: all 0.4s var(--outlet-transition-elegant);
+    transition: all 0.4s var(--outlet-transition-base);
 }
 
 .outlet-avatar-circle:hover {

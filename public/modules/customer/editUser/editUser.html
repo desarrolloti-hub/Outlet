@@ -19,20 +19,16 @@
         <div class="outlet-avatar-container">
             <!-- CAMBIADO: ID único para evitar conflicto con el navbar -->
             <img id="editUserProfileAvatar" src="" alt="Foto de perfil" class="outlet-profile-avatar-img"
-                style="display: none; width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid var(--outlet-gold, #c9a84c);">
+                style="display: none; width: 96px; height: 96px; border-radius: 50%; object-fit: cover; border: 3px solid var(--outlet-gold, #c9a84c);">
             <div class="outlet-avatar-placeholder" id="editUserAvatarPlaceholder"
-                style="width: 80px; height: 80px; border-radius: 50%; background: var(--outlet-gold, #c9a84c); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 700; color: #1a1a1a; text-transform: uppercase;">
+                style="width: 96px; height: 96px; border-radius: 50%; background: var(--outlet-gold, #c9a84c); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 700; color: #1a1a1a; text-transform: uppercase;">
                 <span id="editUserAvatarInitials">U</span>
             </div>
-            <div class="outlet-avatar-overlay" id="editUserAvatarOverlay">
+            <button type="button" class="outlet-avatar-overlay" id="editUserAvatarOverlay"
+                aria-label="Cambiar foto de perfil. Formatos permitidos: JPG, PNG o GIF. Tamaño máximo 5MB.">
                 <span class="material-symbols-outlined">photo_camera</span>
-                <span>Cambiar foto</span>
-            </div>
-            <input type="file" id="editUserAvatarInput" accept="image/*" style="display:none">
-        </div>
-        <div class="outlet-avatar-info">
-            <h3 id="editUserNameDisplay">Usuario</h3>
-            <p id="editUserEmailDisplay">usuario@email.com</p>
+            </button>
+            <input type="file" id="editUserAvatarInput" accept="image/png, image/jpeg, image/gif" style="display:none">
         </div>
     </div>
 
