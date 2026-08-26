@@ -180,7 +180,7 @@ export const routes = {
         controller: homeCustomerController
     },
     "/cartCustomer": {
-        view: "/modules/customer/cart/cartCustomer.html",
+        view: "/modules/customer/cart/cartCustumer.html",
         controller: cartCustomerController
     },
     "/wishlistCustomer": {
@@ -188,11 +188,11 @@ export const routes = {
         controller: wishlistCustomerController
     },
     "/productsCustomer": {
-        view: "/modules/customer/products/productsCustomer.html",
+        view: "/modules/customer/products/productsCustumer.html",
         controller: productsCustumerController
     },
     "/collectionCustomer": {
-        view: "/modules/customer/collection/collectionCustomer.html",
+        view: "/modules/customer/collection/collectionCustumer.html",
         controller: collectionCustomerController
     },
     "/brands": {

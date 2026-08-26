@@ -270,6 +270,12 @@
     color: var(--outlet-gold);
 }
 
+/* Estado activo del botón de wishlist cuando el producto ya está guardado */
+.action-link.active {
+    color: var(--outlet-gold);
+    font-weight: 700;
+}
+
 /* ===== COMPLETE THE ENSEMBLE SECTION ===== */
 .ensemble-section {
     margin-top: 4rem;

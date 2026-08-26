@@ -186,6 +186,8 @@ async function loadProductFromId() {
             mainImage.alt = product.nombre || 'Producto';
         }
 
+        actualizarBreadcrumbCategoria(product);
+
         var galleryImages = [];
         if (Array.isArray(product.galeriaImagenes) && product.galeriaImagenes.length) {
             galleryImages = product.galeriaImagenes;
@@ -202,6 +204,40 @@ async function loadProductFromId() {
         console.error('❌ Error cargando el producto por ID:', error);
     }
 }
+
+// ========================================
+// Actualiza la miga de pan (breadcrumb) según el género/categoría
+// real del producto, y la enlaza a su colección correspondiente.
+// Usa el mismo mapeo que collectionCustumerController para que
+// "MUJER"/"HOMBRE"/"NIÑOS" siempre lleven a la colección correcta.
+// ========================================
+function resolverCategoriaBreadcrumb(product) {
+    var valor = String(
+        (product && (product.genero || product.categoria)) || ''
+    ).toLowerCase();
+
+    var mapa = {
+        mujer: { key: 'mujer', label: 'MUJER', aliases: ['mujer', 'women', 'woman', 'female', 'femenino'] },
+        hombre: { key: 'hombre', label: 'HOMBRE', aliases: ['hombre', 'men', 'man', 'male', 'masculino'] },
+        kids: { key: 'kids', label: 'NIÑOS', aliases: ['kids', 'niños', 'ninos', 'kid', 'child', 'children', 'infantil'] }
+    };
+
+    var match = Object.keys(mapa).find(function (clave) {
+        return mapa[clave].aliases.some(function (alias) { return valor.indexOf(alias) !== -1; });
+    });
+
+    return match ? mapa[match] : mapa.mujer;
+}
+
+function actualizarBreadcrumbCategoria(product) {
+    var link = document.getElementById('breadcrumbCategory');
+    if (!link) return;
+
+    var categoria = resolverCategoriaBreadcrumb(product);
+    link.textContent = categoria.label;
+    link.setAttribute('href', '/collectionCustomer?category=' + categoria.key);
+}
+
 
 // ========================================
 // Carga datos desde localStorage
@@ -322,12 +358,35 @@ function initColorSelection() {
 // ========================================
 function initActionButtons() {
     var addToBagBtn = document.getElementById('addToBagBtn');
-    var wishlistBtn = document.getElementById('wishlistBtn');
+    var wishlistBtn = document.getElementById('productWishlistBtn');
     var shareBtn = document.getElementById('shareBtn');
 
     if (addToBagBtn) addToBagBtn.addEventListener('click', addToCart);
     if (wishlistBtn) wishlistBtn.addEventListener('click', addToWishlist);
     if (shareBtn) shareBtn.addEventListener('click', shareProduct);
+
+    syncWishlistButtonState();
+}
+
+// ========================================
+// Refleja en el botón si el producto ya está en la lista de deseos
+// ========================================
+function syncWishlistButtonState() {
+    var wishlistBtn = document.getElementById('productWishlistBtn');
+    if (!wishlistBtn) return;
+
+    var productId = (currentProduct && currentProduct.id) || getProductIdFromUrl();
+    var name = (currentProduct && currentProduct.nombre) ||
+        document.querySelector('.product-title')?.textContent || 'Producto';
+
+    var yaGuardado = wishlist.some(function (item) {
+        return item.productId === productId || item.name === name;
+    });
+
+    wishlistBtn.textContent = yaGuardado
+        ? '♥ EN TU LISTA DE DESEOS'
+        : '♡ GUARDAR EN LISTA DE DESEOS';
+    wishlistBtn.classList.toggle('active', yaGuardado);
 }
 
 // ========================================
@@ -427,6 +486,7 @@ async function addToWishlist() {
             await mostrarExito('Eliminado', 'El producto ha sido eliminado de tu lista de deseos.');
         }
     }
+    syncWishlistButtonState();
     console.log('💖 Wishlist actualizada:', wishlist);
 }
 
@@ -599,26 +659,24 @@ function injectProductsHTML() {
         '<div class="outlet-breadcrumbs">' +
         '<a href="/" data-link>INICIO</a>' +
         '<span class="separator">›</span>' +
-        '<a href="/category/women" data-link>MUJER</a>' +
-        '<span class="separator">›</span>' +
-        '<span>COLECCIÓN</span>' +
+        '<a href="/collectionCustomer?category=mujer" data-link id="breadcrumbCategory">MUJER</a>' +
         '</div>' +
 
         '<div class="outlet-product-grid">' +
         '<div class="product-gallery">' +
         '<div class="main-image">' +
-        '<img id="mainImage" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAuCiwxZIm72yTydw1gOXrSiy8Q6xYOwd453QTXq46PTrh_lkJFVC4OogogoCMuevAUrcMs0QY2TMW1Th5ptrr_DYX_JQwH58A2qtTNEAdBQp1SMuf7vl3lImVl-u2mJ0xiG3xkzRHnessLrsUuI3kUq29_SB-hPhY-__BLy24_EOZk6-h2El0A2pz4WgX-0Jcm5r7Pp3Ssw-YhvS22pwbjbyCb9LwVyXn9qctuM7cTTPQ0hsWqfu-xxRe-kNEnYjcqGG7Z86bI2olR" alt="Vestido La Jerarquía Noir">' +
+        '<img id="mainImage" src="data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'800\' height=\'1000\'%3E%3Crect width=\'100%25\' height=\'100%25\' fill=\'%23e9e4d8\'/%3E%3C/svg%3E" alt="Cargando producto...">' +
         '</div>' +
         '<div class="thumbnails" id="thumbnailContainer"></div>' +
         '</div>' +
 
         '<div class="product-info">' +
-        '<h1 class="product-title">Vestido La Jerarquía Noir</h1>' +
+        '<h1 class="product-title">Cargando producto…</h1>' +
         '<div class="product-id-box" style="margin-bottom: 1rem; padding: 0.5rem 0.75rem; background: #f6f0e6; border: 1px solid #e8d7b1; border-radius: 999px; display: inline-flex; align-items: center; gap: 0.5rem; font-size: 12px; letter-spacing: 0.08em; color: #1f1b13; font-weight: 600;">' +
         'ID DEL PRODUCTO: <span id="productIdDisplay" style="color: #8e6b1d;">N/A</span>' +
         '</div>' +
-        '<p class="product-price">$1,250.00</p>' +
-        '<p class="product-description">Una obra maestra de la sastrería arquitectónica, el Vestido La Jerarquía Noir presenta seda italiana drapeada a mano y un corsé estructural que redefine la silueta. Cada pieza está elaborada en nuestro taller de París, garantizando un ajuste inigualable y un acabado de calidad patrimonial.</p>' +
+        '<p class="product-price"></p>' +
+        '<p class="product-description"></p>' +
 
         '<div class="option-group">' +
         '<div class="option-label">COLOR: <span id="selectedColorLabel">NEGRO</span></div>' +
@@ -643,7 +701,7 @@ function injectProductsHTML() {
         '<button id="addToBagBtn" class="outlet-btn-primary">AÑADIR A LA BOLSA</button>' +
 
         '<div class="action-links">' +
-        '<button id="wishlistBtn" class="action-link">♡ GUARDAR EN LISTA DE DESEOS</button>' +
+        '<button id="productWishlistBtn" class="action-link">♡ GUARDAR EN LISTA DE DESEOS</button>' +
         '<button id="shareBtn" class="action-link">↗ COMPARTIR</button>' +
         '</div>' +
         '</div>' +

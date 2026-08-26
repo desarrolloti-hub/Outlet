@@ -23,6 +23,34 @@ const LAYOUT_PATHS = {
 // ELIMINAR PROMO BANNER - SOLUCIÓN DEFINITIVA
 // ========================================
 
+/**
+ * Determina si un elemento es realmente un banner PROMOCIONAL (ofertas,
+ * descuentos, rebajas), y no cualquier otro componente cuya clase o id
+ * simplemente contenga la palabra "banner" (ej. el banner de "Activar
+ * notificaciones", que no debe ocultarse).
+ */
+function esPromoBanner(el) {
+    const texto = el.textContent?.toLowerCase() || '';
+    const clase = el.className?.toString().toLowerCase() || '';
+    const id = el.id?.toLowerCase() || '';
+
+    // Exclusión explícita: banners que NO son promocionales aunque su
+    // clase/id contenga "banner" (ej. notification-banner-*)
+    const esExcluido = clase.includes('notification') || id.includes('notification');
+    if (esExcluido) return false;
+
+    return (
+        texto.includes('oferta') ||
+        texto.includes('descuento') ||
+        texto.includes('promo') ||
+        texto.includes('promoción') ||
+        texto.includes('%') ||
+        texto.includes('rebaja') ||
+        clase.includes('promo') ||
+        id.includes('promo')
+    );
+}
+
 function eliminarPromoBanner() {
     console.log('🗑️ Buscando y eliminando promo banners...');
 
@@ -46,19 +74,8 @@ function eliminarPromoBanner() {
         try {
             const elementos = document.querySelectorAll(selector);
             elementos.forEach(el => {
-                // Verificar si es un banner (por su contenido o clase)
-                const texto = el.textContent?.toLowerCase() || '';
-                const esBanner =
-                    texto.includes('oferta') ||
-                    texto.includes('descuento') ||
-                    texto.includes('promo') ||
-                    texto.includes('promoción') ||
-                    texto.includes('%') ||
-                    texto.includes('rebaja') ||
-                    el.className?.toLowerCase().includes('promo') ||
-                    el.id?.toLowerCase().includes('promo') ||
-                    el.className?.toLowerCase().includes('banner') ||
-                    el.id?.toLowerCase().includes('banner');
+                // Verificar si es un banner PROMOCIONAL (por su contenido o clase)
+                const esBanner = esPromoBanner(el);
 
                 if (esBanner) {
                     // Ocultar completamente
@@ -125,21 +142,10 @@ function iniciarObservadorBanners() {
 
         mutations.forEach(mutation => {
             if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-                // Verificar si algún nodo agregado es un banner
+                // Verificar si algún nodo agregado es un banner PROMOCIONAL
                 mutation.addedNodes.forEach(node => {
                     if (node.nodeType === 1) { // Elemento HTML
-                        const texto = node.textContent?.toLowerCase() || '';
-                        const esBanner =
-                            texto.includes('oferta') ||
-                            texto.includes('descuento') ||
-                            texto.includes('promo') ||
-                            texto.includes('promoción') ||
-                            node.className?.toLowerCase().includes('promo') ||
-                            node.id?.toLowerCase().includes('promo') ||
-                            node.className?.toLowerCase().includes('banner') ||
-                            node.id?.toLowerCase().includes('banner');
-
-                        if (esBanner) {
+                        if (esPromoBanner(node)) {
                             hayCambios = true;
                         }
                     }
