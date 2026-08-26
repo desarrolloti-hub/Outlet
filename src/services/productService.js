@@ -405,20 +405,45 @@ export const ProductService = {
 
     /**
      * Obtener productos relacionados
+     * Intenta por categoría+género, si no hay resultados relaja los filtros
+     * en cascada para siempre devolver productos reales de la base de datos
+     * cuando existan, en vez de una lista vacía.
      */
     async getRelatedProducts(productId, limit = 4) {
         const product = await this.getById(productId);
 
         if (!product) return [];
 
-        const filters = {
-            categoria: product.categoria,
-            genero: product.genero
-        };
+        const excludeSelf = (list) => list.filter(p => p.id !== productId);
 
-        const products = await this.getAll(filters);
+        // Nivel 1: misma categoría y mismo género
+        if (product.categoria && product.genero) {
+            const exact = excludeSelf(await this.getAll({
+                categoria: product.categoria,
+                genero: product.genero
+            }, 'createdAt', 'desc', limit + 1));
+            if (exact.length > 0) return exact.slice(0, limit);
+        }
 
-        return products.filter(p => p.id !== productId).slice(0, limit);
+        // Nivel 2: misma categoría (cualquier género)
+        if (product.categoria) {
+            const sameCategory = excludeSelf(await this.getAll({
+                categoria: product.categoria
+            }, 'createdAt', 'desc', limit + 1));
+            if (sameCategory.length > 0) return sameCategory.slice(0, limit);
+        }
+
+        // Nivel 3: mismo género (cualquier categoría)
+        if (product.genero) {
+            const sameGender = excludeSelf(await this.getAll({
+                genero: product.genero
+            }, 'createdAt', 'desc', limit + 1));
+            if (sameGender.length > 0) return sameGender.slice(0, limit);
+        }
+
+        // Nivel 4: fallback general - productos más recientes del catálogo
+        const fallback = excludeSelf(await this.getAll({}, 'createdAt', 'desc', limit + 1));
+        return fallback.slice(0, limit);
     },
 
     /**

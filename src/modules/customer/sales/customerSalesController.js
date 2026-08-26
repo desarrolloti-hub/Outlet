@@ -793,8 +793,3 @@ export async function customerSalesController() {
 
     console.log('✅ Customer Sales Dashboard loaded');
 }
-
-// Si el módulo se carga directamente, inicializar
-if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    customerSalesController();
-}

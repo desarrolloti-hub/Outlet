@@ -346,7 +346,7 @@ function renderWishlist() {
             '<img src="' + (displayItem.image || 'https://placehold.co/300x300?text=Sin+Imagen') + '" alt="' + displayItem.name + '" loading="lazy" onerror="this.src=\'https://placehold.co/300x300?text=Error\'">' +
             badgeHtml +
             '<div class="wishlist-card-actions">' +
-            '<button class="wishlist-heart-btn active" data-id="' + displayItem.id + '" aria-label="Eliminar de favoritos">' +
+            '<button class="wishlist-heart-btn active" data-id="' + displayItem.id + '" aria-label="Eliminar de mi lista de deseos">' +
             '<i class="fa-solid fa-heart"></i>' +
             '</button>' +
             '</div>' +
@@ -445,7 +445,7 @@ async function removeFromWishlist(productId) {
     }
 
     var result = await mostrarConfirmacion(
-        '¿Eliminar de wishlist?',
+        '¿Eliminar de tu lista de deseos?',
         '¿Estás seguro de que quieres eliminar "' + product.name + '" de tu lista de deseos?',
         'Sí, eliminar'
     );
@@ -454,7 +454,7 @@ async function removeFromWishlist(productId) {
         wishlistItems = wishlistItems.filter(function (p) { return String(p.id) !== String(productId); });
         saveWishlist();
         renderWishlist();
-        await mostrarExito('Eliminado', '"' + product.name + '" ha sido eliminado de tu wishlist.');
+        await mostrarExito('Eliminado', '"' + product.name + '" ha sido eliminado de tu lista de deseos.');
     }
 }
 
@@ -495,7 +495,7 @@ async function addToCartFromWishlistItem(wishlistItem) {
 // ========================================
 async function moveAllToCart() {
     if (wishlistItems.length === 0) {
-        await mostrarError('Wishlist vacía', 'No hay productos en tu wishlist para mover al carrito.');
+        await mostrarError('Lista de deseos vacía', 'No hay productos en tu lista de deseos para mover al carrito.');
         return;
     }
 
@@ -507,11 +507,11 @@ async function moveAllToCart() {
     var unavailableItems = enriched.filter(function (item) { return item.estado === 'agotado'; });
 
     if (availableItems.length === 0) {
-        await mostrarError('Sin stock', 'Ninguno de los productos en tu wishlist está disponible actualmente.');
+        await mostrarError('Sin stock', 'Ninguno de los productos en tu lista de deseos está disponible actualmente.');
         return;
     }
 
-    var mensajeConfirmacion = '¿Quieres mover los ' + availableItems.length + ' producto(s) disponibles de tu wishlist al carrito?';
+    var mensajeConfirmacion = '¿Quieres mover los ' + availableItems.length + ' producto(s) disponibles de tu lista de deseos al carrito?';
     if (unavailableItems.length > 0) {
         mensajeConfirmacion += ' (' + unavailableItems.length + ' producto(s) no están disponibles)';
     }

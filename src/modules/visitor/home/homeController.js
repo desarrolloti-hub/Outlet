@@ -239,7 +239,7 @@ function toggleWishlist(button, productName) {
             icon.style.color = '#666';
             icon.style.transition = 'all 0.3s';
         }
-        showToast(`💔 ${productName} removido de favoritos`);
+        showToast(`💔 ${productName} removido de tu lista de deseos`);
     } else {
         wishlist.push({
             id: Date.now(),
@@ -250,7 +250,7 @@ function toggleWishlist(button, productName) {
             icon.style.color = '#ddab3b';
             icon.style.transition = 'all 0.3s';
         }
-        showToast(`❤️ ${productName} agregado a favoritos`);
+        showToast(`❤️ ${productName} agregado a tu lista de deseos`);
     }
 
     localStorage.setItem('outlet_wishlist', JSON.stringify(wishlist));

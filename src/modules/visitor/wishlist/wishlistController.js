@@ -302,7 +302,7 @@ async function removeFromWishlist(productId) {
     if (!product) return;
 
     var result = await mostrarConfirmacion(
-        '¿Eliminar de wishlist?',
+        '¿Eliminar de tu lista de deseos?',
         '¿Estás seguro de que quieres eliminar "' + product.name + '" de tu lista de deseos?',
         'Sí, eliminar'
     );
@@ -311,7 +311,7 @@ async function removeFromWishlist(productId) {
         wishlistItems = wishlistItems.filter(function (p) { return p.id !== productId; });
         saveWishlist();
         renderWishlist();
-        await mostrarExito('Eliminado', '"' + product.name + '" ha sido eliminado de tu wishlist.');
+        await mostrarExito('Eliminado', '"' + product.name + '" ha sido eliminado de tu lista de deseos.');
     }
 }
 
@@ -350,13 +350,13 @@ async function addToCart(product) {
 // ========================================
 async function moveAllToCart() {
     if (wishlistItems.length === 0) {
-        await mostrarError('Wishlist vacía', 'No hay productos en tu wishlist para mover al carrito.');
+        await mostrarError('Lista de deseos vacía', 'No hay productos en tu lista de deseos para mover al carrito.');
         return;
     }
 
     var result = await mostrarConfirmacion(
         '¿Mover todos al carrito?',
-        '¿Quieres mover los ' + wishlistItems.length + ' producto(s) de tu wishlist al carrito?',
+        '¿Quieres mover los ' + wishlistItems.length + ' producto(s) de tu lista de deseos al carrito?',
         'Sí, mover todos'
     );
 

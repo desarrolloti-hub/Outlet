@@ -38,7 +38,7 @@ async function loadAllProducts() {
  * Obtener producto completo por ID desde Firebase
  */
 function getProductById(productId) {
-    return allProducts.find(p => p.id === productId);
+    return allProducts.find(p => String(p.id) === String(productId));
 }
 
 // ========================================
@@ -50,11 +50,11 @@ function getProductById(productId) {
  */
 function getUpsellItems() {
     // Tomar productos destacados o con descuento, excluyendo los que ya están en el carrito
-    const cartIds = new Set(cartItems.map(item => item.id));
+    const cartIds = new Set(cartItems.map(item => String(item.id)));
 
     let candidates = allProducts.filter(p =>
         p.estado === 'activo' &&
-        !cartIds.has(p.id) &&
+        !cartIds.has(String(p.id)) &&
         (p.destacado || p.porcentajeDescuento > 0)
     );
 
@@ -62,7 +62,7 @@ function getUpsellItems() {
     if (candidates.length < 4) {
         const additional = allProducts.filter(p =>
             p.estado === 'activo' &&
-            !cartIds.has(p.id) &&
+            !cartIds.has(String(p.id)) &&
             !candidates.includes(p)
         );
         candidates = [...candidates, ...additional];
@@ -398,53 +398,25 @@ function renderUpsell() {
         </div>
     `).join('');
 
-    // Attach upsell card events
+    // Attach upsell card events - navega al detalle del producto (no agrega al carrito automáticamente)
     document.querySelectorAll('.outlet-cart-upsell-card').forEach(card => {
-        card.addEventListener('click', () => {
+        card.setAttribute('tabindex', '0');
+        card.setAttribute('role', 'button');
+
+        const goToProduct = () => {
             const id = card.getAttribute('data-id');
-            const product = allProducts.find(p => p.id === id);
-            if (product) {
-                addToCart(product);
+            if (!id) return;
+            window.location.href = '/productsCustomer/' + encodeURIComponent(id);
+        };
+
+        card.addEventListener('click', goToProduct);
+        card.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                goToProduct();
             }
         });
     });
-}
-
-/**
- * Add product to cart (from upsell)
- */
-function addToCart(product) {
-    if (!product) return;
-
-    // Verificar si está agotado
-    if (product.estado === 'agotado') {
-        showNotification('❌ Producto agotado', true);
-        return;
-    }
-
-    const existingItem = cartItems.find(item => item.id === product.id);
-
-    if (existingItem) {
-        existingItem.quantity += 1;
-        showNotification(`✨ ${product.nombre} - Cantidad actualizada`);
-    } else {
-        cartItems.push({
-            id: product.id,
-            brand: product.marca || 'Outlet',
-            name: product.nombre,
-            size: 'Única',
-            color: 'Estándar',
-            price: product.precioFinal || product.precioVenta || 0,
-            quantity: 1,
-            image: product.imagenPrincipal || 'https://placehold.co/300x300?text=Sin+Imagen',
-            dateAdded: new Date().toISOString()
-        });
-        showNotification(`✨ ${product.nombre} añadido al carrito`);
-    }
-
-    saveCart();
-    renderCart();
-    renderUpsell(); // Actualizar upsell después de agregar
 }
 
 /**
@@ -475,7 +447,7 @@ function attachCartEvents() {
  */
 function handleIncrement(e) {
     const id = e.currentTarget.getAttribute('data-id');
-    const item = cartItems.find(i => i.id === id);
+    const item = cartItems.find(i => String(i.id) === String(id));
     if (item) {
         // Verificar disponibilidad
         const product = getProductById(id);
@@ -494,7 +466,7 @@ function handleIncrement(e) {
  */
 function handleDecrement(e) {
     const id = e.currentTarget.getAttribute('data-id');
-    const item = cartItems.find(i => i.id === id);
+    const item = cartItems.find(i => String(i.id) === String(id));
     if (item && item.quantity > 1) {
         item.quantity--;
         saveCart();
@@ -507,8 +479,8 @@ function handleDecrement(e) {
  */
 function handleRemove(e) {
     const id = e.currentTarget.getAttribute('data-id');
-    const item = cartItems.find(i => i.id === id);
-    cartItems = cartItems.filter(i => i.id !== id);
+    const item = cartItems.find(i => String(i.id) === String(id));
+    cartItems = cartItems.filter(i => String(i.id) !== String(id));
     saveCart();
     renderCart();
     renderUpsell(); // Actualizar upsell después de eliminar

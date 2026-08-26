@@ -368,12 +368,12 @@ async function addToWishlist() {
         saveWishlist();
 
         await mostrarExito(
-            '¡Añadido a wishlist!',
+            '¡Añadido a tu lista de deseos!',
             'The Noir Hierarchy Gown ha sido añadido a tu lista de deseos. ❤️'
         );
     } else {
         var result = await mostrarAdvertencia(
-            'Ya está en tu wishlist',
+            'Ya está en tu lista de deseos',
             'Este producto ya está en tu lista de deseos. ¿Quieres eliminarlo?',
             'Sí, eliminar'
         );
@@ -381,7 +381,7 @@ async function addToWishlist() {
         if (result.isConfirmed) {
             wishlist = wishlist.filter(function (item) { return item.name !== 'The Noir Hierarchy Gown'; });
             saveWishlist();
-            await mostrarExito('Eliminado', 'El producto ha sido eliminado de tu wishlist.');
+            await mostrarExito('Eliminado', 'El producto ha sido eliminado de tu lista de deseos.');
         }
     }
     console.log('💖 Wishlist actualizada:', wishlist);

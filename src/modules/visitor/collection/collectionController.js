@@ -11,127 +11,127 @@ var currentProducts = [];
 var currentPage = 1;
 var productsPerPage = 6;
 var activeFilters = {
-   size: "S",
-   color: null,
-   designers: [],
-   maxPrice: 5000
+    size: "S",
+    color: null,
+    designers: [],
+    maxPrice: 5000
 };
 var currentCollectionCategory = 'mujer';
 
 function normalizeCollectionValue(value) {
-   return String(value || '')
-       .trim()
-       .toLowerCase()
-       .normalize('NFD')
-       .replace(/[\u0300-\u036f]/g, '')
-       .replace(/[^a-z0-9]/g, '');
+    return String(value || '')
+        .trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]/g, '');
 }
 
 function resolveCollectionCategory(value) {
-   const target = normalizeCollectionValue(value);
-   const mapping = {
-       mujer: { label: 'COLECCIÓN MUJER', aliases: ['mujer', 'women', 'woman', 'female', 'femenino'] },
-       hombre: { label: 'COLECCIÓN HOMBRE', aliases: ['hombre', 'men', 'man', 'male', 'masculino'] },
-       kids: { label: 'COLECCIÓN NIÑOS', aliases: ['kids', 'niños', 'ninos', 'kid', 'child', 'children', 'infantil'] }
-   };
+    const target = normalizeCollectionValue(value);
+    const mapping = {
+        mujer: { label: 'COLECCIÓN MUJER', aliases: ['mujer', 'women', 'woman', 'female', 'femenino'] },
+        hombre: { label: 'COLECCIÓN HOMBRE', aliases: ['hombre', 'men', 'man', 'male', 'masculino'] },
+        kids: { label: 'COLECCIÓN NIÑOS', aliases: ['kids', 'niños', 'ninos', 'kid', 'child', 'children', 'infantil'] }
+    };
 
-   const entry = Object.entries(mapping).find(([, config]) => config.aliases.includes(target));
-   if (entry) {
-       return { key: entry[0], label: entry[1].label };
-   }
+    const entry = Object.entries(mapping).find(([, config]) => config.aliases.includes(target));
+    if (entry) {
+        return { key: entry[0], label: entry[1].label };
+    }
 
-   return { key: 'mujer', label: 'COLECCIÓN MUJER' };
+    return { key: 'mujer', label: 'COLECCIÓN MUJER' };
 }
 
 function normalizeProductForCollection(product) {
-   const normalized = product || {};
-   const tallaList = Array.isArray(normalized.tallas) && normalized.tallas.length
-       ? normalized.tallas
-       : (Array.isArray(normalized.size) ? normalized.size : ['S']);
-   const colorList = Array.isArray(normalized.colores) && normalized.colores.length
-       ? normalized.colores
-       : (normalized.color ? [normalized.color] : ['black']);
+    const normalized = product || {};
+    const tallaList = Array.isArray(normalized.tallas) && normalized.tallas.length
+        ? normalized.tallas
+        : (Array.isArray(normalized.size) ? normalized.size : ['S']);
+    const colorList = Array.isArray(normalized.colores) && normalized.colores.length
+        ? normalized.colores
+        : (normalized.color ? [normalized.color] : ['black']);
 
-   return {
-       ...normalized,
-       id: normalized.id || normalized.sku || Math.random().toString(36).slice(2),
-       brand: normalized.marca || normalized.brand || 'OUTLET',
-       name: normalized.nombre || normalized.name || 'Producto',
-       price: Number(normalized.precioFinal ?? normalized.precioVenta ?? normalized.price ?? 0),
-       image: normalized.imagenPrincipal || normalized.image || (Array.isArray(normalized.galeriaImagenes) ? normalized.galeriaImagenes[0] : ''),
-       badge: normalized.destacado ? 'NUEVO' : null,
-       size: tallaList,
-       color: String(colorList[0] || 'black').toLowerCase(),
-       designer: normalized.marca || normalized.designer || 'OUTLET'
-   };
+    return {
+        ...normalized,
+        id: normalized.id || normalized.sku || Math.random().toString(36).slice(2),
+        brand: normalized.marca || normalized.brand || 'OUTLET',
+        name: normalized.nombre || normalized.name || 'Producto',
+        price: Number(normalized.precioFinal ?? normalized.precioVenta ?? normalized.price ?? 0),
+        image: normalized.imagenPrincipal || normalized.image || (Array.isArray(normalized.galeriaImagenes) ? normalized.galeriaImagenes[0] : ''),
+        badge: normalized.destacado ? 'NUEVO' : null,
+        size: tallaList,
+        color: String(colorList[0] || 'black').toLowerCase(),
+        designer: normalized.marca || normalized.designer || 'OUTLET'
+    };
 }
 
 function matchesCollectionCategory(product, categoryKey) {
-   const normalizedProduct = normalizeProductForCollection(product);
-   const target = normalizeCollectionValue(categoryKey);
-   const values = [
-       normalizedProduct.genero,
-       normalizedProduct.categoria,
-       normalizedProduct.subcategoria,
-       normalizedProduct.brand,
-       normalizedProduct.name,
-       normalizedProduct.designer
-   ];
+    const normalizedProduct = normalizeProductForCollection(product);
+    const target = normalizeCollectionValue(categoryKey);
+    const values = [
+        normalizedProduct.genero,
+        normalizedProduct.categoria,
+        normalizedProduct.subcategoria,
+        normalizedProduct.brand,
+        normalizedProduct.name,
+        normalizedProduct.designer
+    ];
 
-   return values.some((value) => {
-       const safe = normalizeCollectionValue(value);
-       if (!safe) return false;
+    return values.some((value) => {
+        const safe = normalizeCollectionValue(value);
+        if (!safe) return false;
 
-       if (target === 'mujer') {
-           return ['mujer', 'women', 'woman', 'female', 'femenino'].includes(safe) || /mujer|women|female|femenino/.test(safe);
-       }
+        if (target === 'mujer') {
+            return ['mujer', 'women', 'woman', 'female', 'femenino'].includes(safe) || /mujer|women|female|femenino/.test(safe);
+        }
 
-       if (target === 'hombre') {
-           return ['hombre', 'men', 'man', 'male', 'masculino'].includes(safe) || /hombre|men|male|masculino/.test(safe);
-       }
+        if (target === 'hombre') {
+            return ['hombre', 'men', 'man', 'male', 'masculino'].includes(safe) || /hombre|men|male|masculino/.test(safe);
+        }
 
-       return ['kids', 'niños', 'ninos', 'kid', 'children', 'child', 'infantil'].includes(safe) || /kids|niños|ninos|child|infantil/.test(safe);
-   });
+        return ['kids', 'niños', 'ninos', 'kid', 'children', 'child', 'infantil'].includes(safe) || /kids|niños|ninos|child|infantil/.test(safe);
+    });
 }
 
 async function loadCollectionProducts() {
-   try {
-       const urlParams = new URLSearchParams(window.location.search);
-       const category = urlParams.get('category');
-       const resolvedCategory = resolveCollectionCategory(category);
-       currentCollectionCategory = resolvedCategory.key;
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const category = urlParams.get('category');
+        const resolvedCategory = resolveCollectionCategory(category);
+        currentCollectionCategory = resolvedCategory.key;
 
-       const productList = window.__outletSaleMode
-           ? await ProductService.getAll({ estado: 'activo', enOferta: true }, 'porcentajeDescuento', 'desc', 500)
-           : await ProductService.getAll({ estado: 'activo' }, 'createdAt', 'desc', 500);
+        const productList = window.__outletSaleMode
+            ? await ProductService.getAll({ estado: 'activo', enOferta: true }, 'porcentajeDescuento', 'desc', 500)
+            : await ProductService.getAll({ estado: 'activo' }, 'createdAt', 'desc', 500);
 
-       const mappedProducts = (productList || []).map(normalizeProductForCollection);
+        const mappedProducts = (productList || []).map(normalizeProductForCollection);
 
-       if (window.__outletSaleMode) {
-           products = mappedProducts.filter((product) => Number(product.porcentajeDescuento || 0) > 0);
-           currentCollectionCategory = 'rebajas';
-       } else {
-           products = mappedProducts.filter((product) => matchesCollectionCategory(product, currentCollectionCategory));
+        if (window.__outletSaleMode) {
+            products = mappedProducts.filter((product) => Number(product.porcentajeDescuento || 0) > 0);
+            currentCollectionCategory = 'rebajas';
+        } else {
+            products = mappedProducts.filter((product) => matchesCollectionCategory(product, currentCollectionCategory));
 
-           if (!products.length) {
-               products = mappedProducts.filter((product) => {
-                   const genero = String(product.genero || '').toLowerCase();
-                   const categoria = String(product.categoria || '').toLowerCase();
-                   return genero.includes(currentCollectionCategory) || categoria.includes(currentCollectionCategory);
-               });
-           }
-       }
+            if (!products.length) {
+                products = mappedProducts.filter((product) => {
+                    const genero = String(product.genero || '').toLowerCase();
+                    const categoria = String(product.categoria || '').toLowerCase();
+                    return genero.includes(currentCollectionCategory) || categoria.includes(currentCollectionCategory);
+                });
+            }
+        }
 
-       currentProducts = products.slice(0);
-       currentPage = 1;
-       console.log(window.__outletSaleMode
-           ? `📦 Productos en rebajas cargados: ${products.length}`
-           : `📦 Productos cargados para ${resolvedCategory.label}: ${products.length}`);
-   } catch (error) {
-       console.error('❌ Error cargando productos de la colección:', error);
-       products = [];
-       currentProducts = [];
-   }
+        currentProducts = products.slice(0);
+        currentPage = 1;
+        console.log(window.__outletSaleMode
+            ? `📦 Productos en rebajas cargados: ${products.length}`
+            : `📦 Productos cargados para ${resolvedCategory.label}: ${products.length}`);
+    } catch (error) {
+        console.error('❌ Error cargando productos de la colección:', error);
+        products = [];
+        currentProducts = [];
+    }
 }
 
 // ========================================
@@ -502,12 +502,12 @@ async function addToWishlist(product) {
         localStorage.setItem('outlet_wishlist', JSON.stringify(wishlist));
 
         await mostrarExito(
-            '¡Añadido a wishlist!',
+            '¡Añadido a tu lista de deseos!',
             product.name + ' ha sido añadido a tu lista de deseos. ❤️'
         );
     } else {
         var result = await mostrarAdvertencia(
-            'Ya está en tu wishlist',
+            'Ya está en tu lista de deseos',
             product.name + ' ya está en tu lista de deseos. ¿Quieres eliminarlo?',
             'Sí, eliminar'
         );
@@ -515,7 +515,7 @@ async function addToWishlist(product) {
         if (result.isConfirmed) {
             wishlist = wishlist.filter(function (item) { return item.id !== product.id; });
             localStorage.setItem('outlet_wishlist', JSON.stringify(wishlist));
-            await mostrarExito('Eliminado', product.name + ' ha sido eliminado de tu wishlist.');
+            await mostrarExito('Eliminado', product.name + ' ha sido eliminado de tu lista de deseos.');
         }
     }
 }

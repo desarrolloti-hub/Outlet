@@ -771,7 +771,7 @@ function toggleWishlistWithData(button, productData) {
             icon.style.transform = 'scale(0.8)';
             setTimeout(() => { icon.style.transform = 'scale(1)'; }, 300);
         }
-        showToast(`💔 ${productData.nombre || productData.name} removido de favoritos`);
+        showToast(`💔 ${productData.nombre || productData.name} removido de tu lista de deseos`);
     } else {
         const wishlistItem = {
             id: productData.id,
@@ -790,7 +790,7 @@ function toggleWishlistWithData(button, productData) {
             icon.style.transform = 'scale(1.3)';
             setTimeout(() => { icon.style.transform = 'scale(1)'; }, 300);
         }
-        showToast(`❤️ ${wishlistItem.name} agregado a favoritos`);
+        showToast(`❤️ ${wishlistItem.name} agregado a tu lista de deseos`);
     }
 
     localStorage.setItem(STORAGE_KEYS.WISHLIST, JSON.stringify(wishlist));
@@ -1228,7 +1228,7 @@ async function requestNotificationPermission() {
 
         if (permission === 'granted') {
             showToast('✅ ¡Notificaciones activadas! Recibirás ofertas exclusivas.');
-            
+
             // Ocultar banner
             const banner = document.getElementById('notificationBanner');
             if (banner) banner.style.display = 'none';
@@ -1275,13 +1275,13 @@ async function getAndSaveFCMToken() {
         }
 
         const messaging = firebase.messaging();
-        
+
         // Intentar obtener el token
         try {
             const token = await messaging.getToken({
                 vapidKey: 'BI6q0uN0xXzY9wL8vM7nB6vC5xZ4aA3sS2dD1fF0gG9hH8jJ7kK6lL5mM4nN3oO2pP1qQ0rR'
             });
-            
+
             if (token) {
                 console.log('📱 FCM Token obtenido:', token);
                 localStorage.setItem('fcm_token', token);
@@ -1331,12 +1331,12 @@ function initNotificationEvents() {
  */
 function initNotifications() {
     console.log('🔔 Inicializando sistema de notificaciones...');
-    
+
     // Esperar a que el DOM esté listo
     setTimeout(() => {
         handleNotificationBanner();
         initNotificationEvents();
-        
+
         // Si ya tiene permisos, obtener token
         if (getNotificationStatus() === 'granted') {
             setTimeout(() => {

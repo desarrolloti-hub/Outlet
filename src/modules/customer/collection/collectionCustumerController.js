@@ -689,12 +689,12 @@ async function addToWishlist(product) {
         localStorage.setItem('outlet_wishlist', JSON.stringify(wishlist));
 
         await mostrarExito(
-            '¡Añadido a wishlist!',
+            '¡Añadido a tu lista de deseos!',
             product.name + ' ha sido añadido a tu lista de deseos. ❤️'
         );
     } else {
         var result = await mostrarAdvertencia(
-            'Ya está en tu wishlist',
+            'Ya está en tu lista de deseos',
             product.name + ' ya está en tu lista de deseos. ¿Quieres eliminarlo?',
             'Sí, eliminar'
         );
@@ -702,7 +702,7 @@ async function addToWishlist(product) {
         if (result.isConfirmed) {
             wishlist = wishlist.filter(function (item) { return item.id !== product.id; });
             localStorage.setItem('outlet_wishlist', JSON.stringify(wishlist));
-            await mostrarExito('Eliminado', product.name + ' ha sido eliminado de tu wishlist.');
+            await mostrarExito('Eliminado', product.name + ' ha sido eliminado de tu lista de deseos.');
         }
     }
 }

@@ -18,6 +18,7 @@ var selectedSize = 'S';
 var selectedColor = 'NOIR';
 var cart = [];
 var wishlist = [];
+var currentProduct = null; // Producto real cargado desde Firebase (loadProductFromId)
 
 // Clave para localStorage
 var STORAGE_KEYS = {
@@ -27,10 +28,84 @@ var STORAGE_KEYS = {
 
 // ========================================
 // UI Helpers - CON SWEETALERT2
-// (Las funciones mostrarToast, mostrarSweetAlert, mostrarExito,
-// mostrarError, mostrarAdvertencia, mostrarConfirmacion y loadStyles
-// se han eliminado para evitar duplicación con otros controladores)
 // ========================================
+
+function mostrarToast(mensaje, tipo) {
+    tipo = tipo || 'info';
+    var toastExistente = document.querySelector('.outlet-toast');
+    if (toastExistente) toastExistente.remove();
+
+    var toast = document.createElement('div');
+    toast.className = 'outlet-toast ' + tipo;
+    toast.textContent = mensaje;
+    document.body.appendChild(toast);
+
+    requestAnimationFrame(function () {
+        toast.classList.add('show');
+    });
+
+    setTimeout(function () {
+        toast.classList.remove('show');
+        setTimeout(function () { toast.remove(); }, 300);
+    }, 3200);
+}
+
+function mostrarSweetAlert(options) {
+    var defaultOptions = {
+        buttonsStyling: false,
+        customClass: {
+            confirmButton: 'swal2-confirm',
+            cancelButton: 'swal2-cancel',
+            popup: 'swal2-popup'
+        }
+    };
+
+    return Swal.fire(Object.assign({}, defaultOptions, options));
+}
+
+function mostrarExito(titulo, mensaje) {
+    return mostrarSweetAlert({
+        icon: 'success',
+        title: titulo || '¡Perfecto!',
+        text: mensaje || 'La acción se completó con éxito.',
+        confirmButtonText: 'Aceptar',
+        timer: 2200,
+        timerProgressBar: true
+    });
+}
+
+function mostrarError(titulo, mensaje) {
+    return mostrarSweetAlert({
+        icon: 'error',
+        title: titulo || '¡Oops!',
+        text: mensaje || 'Ocurrió un error inesperado.',
+        confirmButtonText: 'Entendido'
+    });
+}
+
+function mostrarAdvertencia(titulo, mensaje, confirmText) {
+    confirmText = confirmText || 'Continuar';
+    return mostrarSweetAlert({
+        icon: 'warning',
+        title: titulo || '¡Cuidado!',
+        text: mensaje || 'Estás a punto de realizar una acción importante.',
+        confirmButtonText: confirmText,
+        showCancelButton: true,
+        cancelButtonText: 'Cancelar'
+    });
+}
+
+function mostrarConfirmacion(titulo, mensaje, confirmText) {
+    confirmText = confirmText || 'Sí, confirmar';
+    return mostrarSweetAlert({
+        title: titulo || '¿Estás seguro?',
+        text: mensaje || 'Esta acción requiere tu confirmación.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: confirmText,
+        cancelButtonText: 'Cancelar'
+    });
+}
 
 // ========================================
 // Controller principal
@@ -52,7 +127,7 @@ export async function productsCustumerController() {
     initSizeSelection();
     initColorSelection();
     initActionButtons();
-    initEnsembleCards();
+    await loadRelatedProducts();
 
     console.log('✅ Productos page CUSTOMER cargada correctamente');
 }
@@ -91,6 +166,8 @@ async function loadProductFromId() {
             console.warn('⚠️ Producto no encontrado por id:', productId);
             return;
         }
+
+        currentProduct = product;
 
         var titleElement = document.querySelector('.product-title');
         var priceElement = document.querySelector('.product-price');
@@ -257,60 +334,97 @@ function initActionButtons() {
 // Agrega producto al carrito CON SWEETALERT2
 // ========================================
 async function addToCart() {
+    var addToBagBtn = document.getElementById('addToBagBtn');
+    var name = (currentProduct && currentProduct.nombre) ||
+        document.querySelector('.product-title')?.textContent || 'Producto';
+    var price = currentProduct
+        ? Number(currentProduct.precioFinal ?? currentProduct.precioVenta ?? 0)
+        : 1250;
+    var image = (currentProduct && (currentProduct.imagenPrincipal ||
+        (Array.isArray(currentProduct.galeriaImagenes) && currentProduct.galeriaImagenes[0]))) ||
+        THUMBNAILS[0];
+    var productId = (currentProduct && currentProduct.id) || getProductIdFromUrl();
+
     var product = {
         id: Date.now(),
-        name: 'The Noir Hierarchy Gown',
+        productId: productId,
+        name: name,
         size: selectedSize,
         color: selectedColor,
-        price: 1250,
+        price: price,
         quantity: 1,
-        image: THUMBNAILS[0],
+        image: image,
         dateAdded: new Date().toISOString()
     };
 
-    cart.push(product);
-    saveCart();
+    // Deshabilitar el botón brevemente para evitar doble clic mientras se confirma
+    if (addToBagBtn) addToBagBtn.disabled = true;
 
-    await mostrarExito(
-        '¡Añadido al carrito!',
-        product.name + ' (' + selectedSize + ', ' + selectedColor + ') ha sido añadido correctamente.'
-    );
+    try {
+        cart.push(product);
+        saveCart();
 
-    console.log('🛒 Carrito actualizado:', cart);
+        mostrarToast(name + ' añadido a la bolsa 🛍️', 'success');
+
+        await mostrarExito(
+            '¡Añadido a la bolsa!',
+            name + ' (' + selectedSize + ', ' + selectedColor + ') ha sido añadido correctamente.'
+        );
+
+        console.log('🛒 Carrito actualizado:', cart);
+    } catch (error) {
+        console.error('❌ Error al añadir al carrito:', error);
+        await mostrarError('No se pudo añadir', 'Ocurrió un problema al añadir el producto a tu bolsa. Intenta de nuevo.');
+    } finally {
+        if (addToBagBtn) addToBagBtn.disabled = false;
+    }
 }
 
 // ========================================
 // Agrega producto a wishlist CON SWEETALERT2
 // ========================================
 async function addToWishlist() {
-    var exists = wishlist.some(function (item) { return item.name === 'The Noir Hierarchy Gown'; });
+    var name = (currentProduct && currentProduct.nombre) ||
+        document.querySelector('.product-title')?.textContent || 'Producto';
+    var price = currentProduct
+        ? Number(currentProduct.precioFinal ?? currentProduct.precioVenta ?? 0)
+        : 1250;
+    var image = (currentProduct && (currentProduct.imagenPrincipal ||
+        (Array.isArray(currentProduct.galeriaImagenes) && currentProduct.galeriaImagenes[0]))) ||
+        THUMBNAILS[0];
+    var productId = (currentProduct && currentProduct.id) || getProductIdFromUrl();
+
+    var exists = wishlist.some(function (item) { return item.productId === productId || item.name === name; });
 
     if (!exists) {
         wishlist.push({
             id: Date.now(),
-            name: 'The Noir Hierarchy Gown',
-            price: 1250,
+            productId: productId,
+            name: name,
+            price: price,
             color: selectedColor,
             size: selectedSize,
-            image: THUMBNAILS[0]
+            image: image
         });
         saveWishlist();
 
+        mostrarToast(name + ' añadido a tu lista de deseos ❤️', 'success');
         await mostrarExito(
-            '¡Añadido a wishlist!',
-            'The Noir Hierarchy Gown ha sido añadido a tu lista de deseos. ❤️'
+            '¡Añadido a tu lista de deseos!',
+            name + ' ha sido añadido a tu lista de deseos. ❤️'
         );
     } else {
         var result = await mostrarAdvertencia(
-            'Ya está en tu wishlist',
+            'Ya está en tu lista de deseos',
             'Este producto ya está en tu lista de deseos. ¿Quieres eliminarlo?',
             'Sí, eliminar'
         );
 
         if (result.isConfirmed) {
-            wishlist = wishlist.filter(function (item) { return item.name !== 'The Noir Hierarchy Gown'; });
+            wishlist = wishlist.filter(function (item) { return item.productId !== productId && item.name !== name; });
             saveWishlist();
-            await mostrarExito('Eliminado', 'El producto ha sido eliminado de tu wishlist.');
+            mostrarToast('Eliminado de tu lista de deseos', 'info');
+            await mostrarExito('Eliminado', 'El producto ha sido eliminado de tu lista de deseos.');
         }
     }
     console.log('💖 Wishlist actualizada:', wishlist);
@@ -321,12 +435,14 @@ async function addToWishlist() {
 // ========================================
 async function shareProduct() {
     var url = window.location.href;
-    var text = 'The Noir Hierarchy Gown - OUTLET';
+    var name = (currentProduct && currentProduct.nombre) ||
+        document.querySelector('.product-title')?.textContent || 'Producto';
+    var text = name + ' - OUTLET';
 
     if (navigator.share) {
         try {
             await navigator.share({
-                title: 'OUTLET - The Noir Hierarchy Gown',
+                title: 'OUTLET - ' + name,
                 text: text,
                 url: url
             });
@@ -361,38 +477,92 @@ async function copyToClipboard(text) {
 // ========================================
 // Inicializa las cards de ensemble CON SWEETALERT2
 // ========================================
-function initEnsembleCards() {
-    var ensembleCards = document.querySelectorAll('.ensemble-card');
+// ========================================
+// "COMPLETA EL CONJUNTO" - Productos relacionados reales
+// ========================================
 
-    ensembleCards.forEach(function (card) {
-        card.addEventListener('click', async function () {
-            var name = this.querySelector('.ensemble-name')?.textContent || 'Producto';
-            var priceText = this.querySelector('.ensemble-price')?.textContent || '$0';
-            var price = parseInt(priceText.replace('$', '').replace(',', ''));
+async function loadRelatedProducts() {
+    var grid = document.getElementById('ensembleGrid');
+    var section = document.getElementById('ensembleSection');
+    if (!grid) return;
 
-            var result = await mostrarConfirmacion(
-                '¿Agregar al carrito?',
-                '¿Quieres añadir "' + name + '" a tu carrito por ' + priceText + '?',
-                'Sí, agregar'
-            );
+    var productId = getProductIdFromUrl();
+    console.log('🔎 [Ensemble] productId actual:', productId);
+    if (!productId) {
+        console.warn('⚠️ [Ensemble] No se detectó productId en la URL, se oculta la sección');
+        if (section) section.style.display = 'none';
+        return;
+    }
 
-            if (result.isConfirmed) {
-                var ensembleProduct = {
-                    id: Date.now(),
-                    name: name,
-                    price: price,
-                    quantity: 1,
-                    dateAdded: new Date().toISOString()
-                };
-                cart.push(ensembleProduct);
-                saveCart();
+    try {
+        var relatedProducts = await ProductService.getRelatedProducts(productId, 4);
+        console.log('🔎 [Ensemble] Productos relacionados obtenidos:', relatedProducts?.length || 0, relatedProducts);
 
-                await mostrarExito(
-                    '¡Añadido al carrito!',
-                    name + ' ha sido añadido correctamente. 🛒'
-                );
-            }
-        });
+        if (!relatedProducts || relatedProducts.length === 0) {
+            console.warn('⚠️ [Ensemble] No hay productos relacionados (ni siquiera con fallback). Revisa que existan otros productos activos en la colección "productos".');
+            if (section) section.style.display = 'none';
+            return;
+        }
+
+        if (section) section.style.display = '';
+        renderEnsembleCards(relatedProducts);
+        initEnsembleCardsNavigation();
+    } catch (error) {
+        console.error('❌ [Ensemble] Error cargando productos relacionados:', error);
+        if (section) section.style.display = 'none';
+    }
+}
+
+function renderEnsembleCards(products) {
+    var grid = document.getElementById('ensembleGrid');
+    if (!grid) return;
+
+    grid.innerHTML = products.map(function (product) {
+        var image = product.imagenPrincipal ||
+            (Array.isArray(product.galeriaImagenes) && product.galeriaImagenes[0]) ||
+            THUMBNAILS[0];
+        var priceValue = Number(product.precioFinal ?? product.precioVenta ?? 0);
+        var priceLabel = '$' + priceValue.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        var categoryLabel = (product.categoria || 'PRODUCTO').toString().toUpperCase();
+        var name = product.nombre || 'Producto';
+
+        return (
+            '<div class="ensemble-card" data-id="' + product.id + '" tabindex="0" role="button" aria-label="Ver detalle de ' + name + '">' +
+            '<div class="ensemble-image">' +
+            '<img src="' + image + '" alt="' + name + '">' +
+            '</div>' +
+            '<p class="ensemble-category">' + categoryLabel + '</p>' +
+            '<h3 class="ensemble-name">' + name + '</h3>' +
+            '<p class="ensemble-price">' + priceLabel + '</p>' +
+            '</div>'
+        );
+    }).join('');
+}
+
+function initEnsembleCardsNavigation() {
+    var grid = document.getElementById('ensembleGrid');
+    if (!grid || grid.dataset.navBound === '1') return;
+    grid.dataset.navBound = '1';
+
+    function goToProduct(card) {
+        var productId = card.getAttribute('data-id');
+        if (!productId) return;
+        window.location.href = '/productsCustomer/' + encodeURIComponent(productId);
+    }
+
+    grid.addEventListener('click', function (e) {
+        var card = e.target.closest('.ensemble-card');
+        if (!card) return;
+        goToProduct(card);
+    });
+
+    // Soporte de teclado (accesibilidad) ya que las tarjetas son focuseables
+    grid.addEventListener('keydown', function (e) {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        var card = e.target.closest('.ensemble-card');
+        if (!card) return;
+        e.preventDefault();
+        goToProduct(card);
     });
 }
 
@@ -479,45 +649,9 @@ function injectProductsHTML() {
         '</div>' +
         '</div>' +
 
-        '<section class="ensemble-section">' +
+        '<section class="ensemble-section" id="ensembleSection">' +
         '<h2 class="ensemble-title">COMPLETA EL CONJUNTO</h2>' +
-        '<div class="ensemble-grid">' +
-        '<div class="ensemble-card" data-id="ensemble1">' +
-        '<div class="ensemble-image">' +
-        '<img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDwj2zYEHhhnr8os8c15ujR4ypzQ4q29EikILtR4YhWyvwFvdGB-SrJMy_IYzgmtuYpGnuLJsthroMkmm4g-EKLXzaMrGg_QvQ2VnJhBa84dMOdzSsgbNMtVTdEFQdXqK2Wo2XB_LwgBvOo2w0ZXPTC29Bkx2cmM3i-ctysgrvTpSPw2n_KtZ9IPaAqDNMEh2OLYnDUwRgmH0sVByHUnCUkcYpo9sR_RBLVZEkf0Hxkyyqs8AyaXx7CHbqdxyz8d3df9J68DyW-s9An" alt="Gotas Doradas Jerarquía">' +
-        '</div>' +
-        '<p class="ensemble-category">JOYERÍA</p>' +
-        '<h3 class="ensemble-name">Gotas Doradas Jerarquía</h3>' +
-        '<p class="ensemble-price">$450</p>' +
-        '</div>' +
-
-        '<div class="ensemble-card" data-id="ensemble2">' +
-        '<div class="ensemble-image">' +
-        '<img src="https://lh3.googleusercontent.com/aida-public/AB6AXuA9PGYuCZnjaGLE-4RbfLWlyt89ygxAB6B9UxuW6Atxth1aR_M_1ef7d48fR8okFw3TZkrAMsdWH-N_bREnx0zVI-0nHe5kSW3-TggVyB0jnTlVgjWUDsz4oKzILchLJW5Ws04j_w3k3pGhf3o_9Z0wMqiP1xxwIo425sHQk6A1X5G5-n0vXrp7mvk_xKVD_Lq3Q9wqNpcXR90KP4kAIG1jFgJysyaYwmVHc4ewnoeG23qxfNR39ZgnTtPc1cDcayTgsuwwyUPZ2wRe" alt="Tacón Obsidiana">' +
-        '</div>' +
-        '<p class="ensemble-category">CALZADO</p>' +
-        '<h3 class="ensemble-name">Tacón Obsidiana</h3>' +
-        '<p class="ensemble-price">$890</p>' +
-        '</div>' +
-
-        '<div class="ensemble-card" data-id="ensemble3">' +
-        '<div class="ensemble-image">' +
-        '<img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDY0LziiCJ3iFCNoy_6fp2h2AdwyYgmu47lV3chvwbPbEiYAwJpeKAdBhuVn_XYfyqkzuHkaIMOWFjTeQ8teVZka-q0sJKo2kP6zWFUEhySilI8OgATw6_NIcy4AV8TO29bFCdjcIN61DbiWgGsiFc5aBrFJWCimmiWjt0K71PJezQ_d9IFmQNNBfuWE0WchjqYp_hfZNfgzeTLkdxJaKUeg7GHfT5WCOtxcxDcCKKuHOQSq5RGSzpcqfykVzD_d5K3ZhIJq0W6f_V" alt="Bolso de Noche Noir">' +
-        '</div>' +
-        '<p class="ensemble-category">ACCESORIOS</p>' +
-        '<h3 class="ensemble-name">Bolso de Noche Noir</h3>' +
-        '<p class="ensemble-price">$1,100</p>' +
-        '</div>' +
-
-        '<div class="ensemble-card" data-id="ensemble4">' +
-        '<div class="ensemble-image">' +
-        '<img src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-qLH9HoOAfcx6nl0wrsUEfGFqNOoUYGyWRxVeL0N9IZPaRfSliJkPByl7LM2wd1kdtjmWepu7eaHrDuRkNbTNiyOvMK_tbeyeV1zZfuwsALXmf0KOVfWh1y90ctyAazRcsYusTw4G4yf5gw_rwQ-WPws1HrqqlESf0X_7XKK3eHnNDaaehp0y9EZ8DuFuuvpdmjKtZ7kXX6nvkpeqPH3xaQwMLdWpYvEfsdY4EeoBkR3lFpnqhsh6vqZ2YsuCDzzHuIvzs2fEetcS" alt="Bufanda de Seda Gossamer">' +
-        '</div>' +
-        '<p class="ensemble-category">ACCESORIOS</p>' +
-        '<h3 class="ensemble-name">Bufanda de Seda Gossamer</h3>' +
-        '<p class="ensemble-price">$220</p>' +
-        '</div>' +
-        '</div>' +
+        '<div class="ensemble-grid" id="ensembleGrid"></div>' +
         '</section>' +
         '</main>';
 
