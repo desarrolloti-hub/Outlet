@@ -30,19 +30,19 @@ function mostrarToast(mensaje, tipo) {
     tipo = tipo || 'info';
     var toastExistente = document.querySelector('.outlet-toast');
     if (toastExistente) toastExistente.remove();
-    
+
     var toast = document.createElement('div');
     toast.className = 'outlet-toast ' + tipo;
     toast.textContent = mensaje;
     document.body.appendChild(toast);
-    
-    requestAnimationFrame(function() {
+
+    requestAnimationFrame(function () {
         toast.classList.add('show');
     });
-    
-    setTimeout(function() {
+
+    setTimeout(function () {
         toast.classList.remove('show');
-        setTimeout(function() { toast.remove(); }, 300);
+        setTimeout(function () { toast.remove(); }, 300);
     }, 3200);
 }
 
@@ -58,7 +58,7 @@ function mostrarSweetAlert(options) {
             popup: 'swal2-popup'
         }
     };
-    
+
     return Swal.fire(Object.assign({}, defaultOptions, options));
 }
 
@@ -124,7 +124,7 @@ function mostrarLoading(mensaje) {
     return mostrarSweetAlert({
         title: mensaje,
         allowOutsideClick: false,
-        didOpen: function() {
+        didOpen: function () {
             Swal.showLoading();
         }
     });
@@ -144,7 +144,8 @@ function cacheElements() {
     elements = {
         totalAdmins: document.getElementById('totalAdmins'),
         tableBody: document.getElementById('adminsTableBody'),
-        
+        cardsGrid: document.getElementById('adminsCardsGrid'),
+
         adminModal: document.getElementById('adminModal'),
         modalTitle: document.getElementById('modalTitle'),
         adminId: document.getElementById('adminId'),
@@ -160,13 +161,13 @@ function cacheElements() {
         adminForm: document.getElementById('adminForm'),
         closeModalBtn: document.getElementById('closeModalBtn'),
         confirmPasswordGroup: document.getElementById('confirmPasswordGroup'),
-        
+
         deleteModal: document.getElementById('deleteModal'),
         deleteItemName: document.getElementById('deleteItemName'),
         confirmDeleteBtn: document.getElementById('confirmDeleteBtn'),
         cancelDeleteBtn: document.getElementById('cancelDeleteBtn'),
         closeDeleteModalBtn: document.getElementById('closeDeleteModalBtn'),
-        
+
         toast: document.getElementById('adminsToast')
     };
 }
@@ -240,16 +241,21 @@ function getIniciales(admin) {
 // ========================================
 function renderTable() {
     if (!elements.tableBody) return;
-    
+
     if (!admins || admins.length === 0) {
-        elements.tableBody.innerHTML = 
+        elements.tableBody.innerHTML =
             '<tr><td colspan="8" class="adminslist-loading"><div class="adminslist-spinner"></div><span>Cargando administradores...</span></td></tr>';
+        if (elements.cardsGrid) {
+            elements.cardsGrid.innerHTML =
+                '<div class="adminslist-loading"><div class="adminslist-spinner"></div><span>Cargando administradores...</span></div>';
+        }
         if (elements.totalAdmins) elements.totalAdmins.textContent = '0';
         return;
     }
-    
+
     var html = '';
-    admins.forEach(function(admin) {
+    var cardsHtml = '';
+    admins.forEach(function (admin) {
         var nombreCompleto = getNombreCompleto(admin);
         var iniciales = getIniciales(admin);
         var email = admin.email || 'Sin email';
@@ -258,38 +264,61 @@ function renderTable() {
         var telefono = admin.telefono || admin.phone || '—';
         var icono = admin.icon || admin.avatar || 'person';
         var idCorto = admin.id ? admin.id.substring(0, 8) : '—';
-        
-        html += 
+        var estadoActivo = estado === 'activo' || estado === 'active';
+
+        html +=
             '<tr data-id="' + admin.id + '">' +
-                '<td><div class="adminslist-avatar"><i class="material-symbols-outlined">' + escapeHtml(icono) + '</i></div></td>' +
-                '<td><code style="font-size: 12px;">' + escapeHtml(idCorto) + '</code></td>' +
-                '<td><strong>' + escapeHtml(nombreCompleto) + '</strong></td>' +
-                '<td>' + escapeHtml(email) + '</td>' +
-                '<td><span class="adminslist-role-badge ' + getRoleClass(rol) + '">' + getRoleLabel(rol) + '</span></td>' +
-                '<td>' + escapeHtml(telefono) + '</td>' +
-                '<td><span class="adminslist-status-badge ' + (estado === 'activo' || estado === 'active' ? 'adminslist-status-active' : 'adminslist-status-inactive') + '">' + (estado === 'activo' || estado === 'active' ? 'Activo' : 'Inactivo') + '</span></td>' +
-                '<td><div class="adminslist-actions-cell">' +
-                    '<button class="adminslist-btn-edit" data-id="' + admin.id + '" title="Editar administrador"><i class="material-symbols-outlined">edit</i><span>Editar</span></button>' +
-                    '<button class="adminslist-btn-delete" data-id="' + admin.id + '" data-name="' + escapeHtml(nombreCompleto) + '" title="Eliminar administrador"><i class="material-symbols-outlined">delete</i><span>Eliminar</span></button>' +
-                '</div></td>' +
+            '<td><div class="adminslist-avatar"><i class="material-symbols-outlined">' + escapeHtml(icono) + '</i></div></td>' +
+            '<td><code style="font-size: 12px;">' + escapeHtml(idCorto) + '</code></td>' +
+            '<td><strong>' + escapeHtml(nombreCompleto) + '</strong></td>' +
+            '<td>' + escapeHtml(email) + '</td>' +
+            '<td><span class="adminslist-role-badge ' + getRoleClass(rol) + '">' + getRoleLabel(rol) + '</span></td>' +
+            '<td>' + escapeHtml(telefono) + '</td>' +
+            '<td><span class="adminslist-status-badge ' + (estadoActivo ? 'adminslist-status-active' : 'adminslist-status-inactive') + '">' + (estadoActivo ? 'Activo' : 'Inactivo') + '</span></td>' +
+            '<td><div class="adminslist-actions-cell">' +
+            '<button class="adminslist-btn-edit" data-id="' + admin.id + '" title="Editar administrador"><i class="material-symbols-outlined">edit</i><span>Editar</span></button>' +
+            '<button class="adminslist-btn-delete" data-id="' + admin.id + '" data-name="' + escapeHtml(nombreCompleto) + '" title="Eliminar administrador"><i class="material-symbols-outlined">delete</i><span>Eliminar</span></button>' +
+            '</div></td>' +
             '</tr>';
+
+        cardsHtml +=
+            '<div class="adminslist-card" data-id="' + admin.id + '">' +
+            '<div class="adminslist-card-top">' +
+            '<div class="adminslist-avatar"><i class="material-symbols-outlined">' + escapeHtml(icono) + '</i></div>' +
+            '<div class="adminslist-card-identity">' +
+            '<strong class="adminslist-card-name">' + escapeHtml(nombreCompleto) + '</strong>' +
+            '<span class="adminslist-card-email">' + escapeHtml(email) + '</span>' +
+            '</div>' +
+            '<span class="adminslist-status-badge ' + (estadoActivo ? 'adminslist-status-active' : 'adminslist-status-inactive') + '">' + (estadoActivo ? 'Activo' : 'Inactivo') + '</span>' +
+            '</div>' +
+            '<div class="adminslist-card-body">' +
+            '<div class="adminslist-card-row"><span class="adminslist-card-label">Rol</span><span class="adminslist-role-badge ' + getRoleClass(rol) + '">' + getRoleLabel(rol) + '</span></div>' +
+            '<div class="adminslist-card-row"><span class="adminslist-card-label">Teléfono</span><span>' + escapeHtml(telefono) + '</span></div>' +
+            '<div class="adminslist-card-row"><span class="adminslist-card-label">ID</span><code style="font-size: 12px;">' + escapeHtml(idCorto) + '</code></div>' +
+            '</div>' +
+            '<div class="adminslist-card-actions">' +
+            '<button class="adminslist-btn-edit" data-id="' + admin.id + '" title="Editar administrador"><i class="material-symbols-outlined">edit</i><span>Editar</span></button>' +
+            '<button class="adminslist-btn-delete" data-id="' + admin.id + '" data-name="' + escapeHtml(nombreCompleto) + '" title="Eliminar administrador"><i class="material-symbols-outlined">delete</i><span>Eliminar</span></button>' +
+            '</div>' +
+            '</div>';
     });
-    
+
     elements.tableBody.innerHTML = html;
-    
+    if (elements.cardsGrid) elements.cardsGrid.innerHTML = cardsHtml;
+
     if (elements.totalAdmins) {
         elements.totalAdmins.textContent = admins.length;
     }
-    
-    document.querySelectorAll('.adminslist-btn-edit').forEach(function(btn) {
-        btn.addEventListener('click', function() {
+
+    document.querySelectorAll('.adminslist-btn-edit').forEach(function (btn) {
+        btn.addEventListener('click', function () {
             var id = this.dataset.id;
             editAdmin(id);
         });
     });
-    
-    document.querySelectorAll('.adminslist-btn-delete').forEach(function(btn) {
-        btn.addEventListener('click', function() {
+
+    document.querySelectorAll('.adminslist-btn-delete').forEach(function (btn) {
+        btn.addEventListener('click', function () {
             var id = this.dataset.id;
             var name = this.dataset.name;
             showDeleteModal('admin', id, name);
@@ -330,14 +359,14 @@ function resetAdminForm() {
 }
 
 async function editAdmin(id) {
-    var admin = admins.find(function(a) { return a.id === id; });
+    var admin = admins.find(function (a) { return a.id === id; });
     if (!admin) {
         await mostrarError('Administrador no encontrado', 'No se encontró el administrador que deseas editar.');
         return;
     }
-    
+
     console.log('✏️ Editando admin:', admin);
-    
+
     isEditMode = true;
     elements.adminId.value = admin.id;
     elements.adminName.value = admin.nombre || '';
@@ -350,31 +379,31 @@ async function editAdmin(id) {
     elements.adminIcon.value = admin.icon || admin.avatar || 'person';
     elements.adminCreatedAt.value = formatDate(admin.fechaCreacion);
     elements.modalTitle.textContent = 'Editar Administrador';
-    
+
     showModal(elements.adminModal);
 }
 
 async function saveAdmin(event) {
     event.preventDefault();
-    
+
     var name = elements.adminName.value.trim();
     if (!name) {
         await mostrarError('Campo requerido', 'El nombre es obligatorio.');
         elements.adminName.focus();
         return;
     }
-    
+
     var email = elements.adminEmail.value.trim();
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         await mostrarError('Email inválido', 'Ingrese un correo electrónico válido.');
         elements.adminEmail.focus();
         return;
     }
-    
+
     var adminId = elements.adminId.value;
     var password = elements.adminPassword.value;
     var confirmPassword = elements.adminConfirmPassword.value;
-    
+
     if (password) {
         if (password.length < 6) {
             await mostrarError('Contraseña corta', 'La contraseña debe tener al menos 6 caracteres.');
@@ -387,7 +416,7 @@ async function saveAdmin(event) {
             return;
         }
     }
-    
+
     var adminData = {
         nombre: name,
         email: email,
@@ -396,25 +425,25 @@ async function saveAdmin(event) {
         estado: elements.adminStatus.value,
         icon: elements.adminIcon.value.trim() || 'person'
     };
-    
+
     if (password) {
         adminData.password = password;
     }
-    
+
     // Confirmación antes de guardar
     var confirmResult = await mostrarConfirmacion(
         '¿Guardar cambios?',
         'Estás a punto de actualizar el administrador "' + name + '".',
         'Sí, guardar'
     );
-    
+
     if (!confirmResult.isConfirmed) {
         mostrarToast('Edición cancelada', 'info');
         return;
     }
-    
+
     mostrarLoading('Actualizando administrador...');
-    
+
     try {
         var updatedAdmin = await AdminService.updateAdmin(adminId, adminData);
         cerrarLoading();
@@ -449,7 +478,7 @@ async function showDeleteModal(type, id, name) {
         '¿Estás seguro de que quieres eliminar a "' + name + '"? Esta acción no se puede deshacer.',
         'Sí, eliminar'
     );
-    
+
     if (result.isConfirmed) {
         deleteTarget = { type: type, id: id, name: name };
         await confirmDelete();
@@ -469,13 +498,13 @@ async function confirmDelete() {
 // ========================================
 function initEventListeners() {
     elements.adminForm?.addEventListener('submit', saveAdmin);
-    elements.closeModalBtn?.addEventListener('click', function() { hideModal(elements.adminModal); });
-    
+    elements.closeModalBtn?.addEventListener('click', function () { hideModal(elements.adminModal); });
+
     elements.confirmDeleteBtn?.addEventListener('click', confirmDelete);
-    elements.cancelDeleteBtn?.addEventListener('click', function() { deleteTarget = null; });
-    elements.closeDeleteModalBtn?.addEventListener('click', function() { deleteTarget = null; });
-    
-    document.addEventListener('keydown', function(e) {
+    elements.cancelDeleteBtn?.addEventListener('click', function () { deleteTarget = null; });
+    elements.closeDeleteModalBtn?.addEventListener('click', function () { deleteTarget = null; });
+
+    document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
             if (elements.deleteModal?.style.display === 'flex') {
                 deleteTarget = null;
@@ -484,11 +513,11 @@ function initEventListeners() {
             if (elements.adminModal?.style.display === 'flex') hideModal(elements.adminModal);
         }
     });
-    
-    elements.adminModal?.addEventListener('click', function(e) {
+
+    elements.adminModal?.addEventListener('click', function (e) {
         if (e.target === elements.adminModal) hideModal(elements.adminModal);
     });
-    elements.deleteModal?.addEventListener('click', function(e) {
+    elements.deleteModal?.addEventListener('click', function (e) {
         if (e.target === elements.deleteModal) {
             deleteTarget = null;
             hideModal(elements.deleteModal);
@@ -510,7 +539,7 @@ function syncDarkMode() {
     }
 }
 
-document.addEventListener('themeChanged', function(e) {
+document.addEventListener('themeChanged', function (e) {
     if (e.detail.isDarkMode) document.body.classList.add('dark-mode');
     else document.body.classList.remove('dark-mode');
 });
@@ -520,30 +549,30 @@ document.addEventListener('themeChanged', function(e) {
 // ========================================
 export async function readAdminsController() {
     console.log('📋 Read Admins Controller - Listado y gestión de administradores');
-    
+
     cacheElements();
     syncDarkMode();
     initEventListeners();
-    
+
     var session = AdminService.getCurrentSession();
     console.log('🔐 Sesión actual:', session);
     console.log('🔐 Rol en sesión:', session?.rol);
     console.log('🔐 ID del admin:', session?.id);
-    
+
     if (!session) {
         console.warn('⚠️ No hay sesión activa');
         await mostrarError('Sin sesión activa', 'No hay sesión activa. Inicia sesión nuevamente.');
         return;
     }
-    
+
     if (session.rol !== 'admin' && session.rol !== 'super_admin') {
         console.warn('⚠️ El usuario no tiene rol de administrador:', session.rol);
         await mostrarError('Sin permisos', 'No tienes permisos de administrador. Rol actual: ' + session.rol);
         return;
     }
-    
+
     await loadAdmins();
-    
+
     console.log('✅ Read Admins page loaded');
 }
 

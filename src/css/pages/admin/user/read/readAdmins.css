@@ -208,6 +208,98 @@
     color: white;
 }
 
+/* ========================================
+   GRID DE TARJETAS (RESPONSIVE - MÓVIL/TABLET)
+   ======================================== */
+.adminslist-cards-grid {
+    display: none;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.adminslist-card {
+    background: var(--outlet-bg-card, white);
+    border-radius: 18px;
+    border: 1px solid rgba(221, 171, 59, 0.12);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+    padding: 18px;
+    transition: all 0.25s ease;
+    min-width: 0;
+}
+
+.adminslist-card:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    border-color: rgba(221, 171, 59, 0.3);
+}
+
+.adminslist-card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding-bottom: 14px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.adminslist-card-identity {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.adminslist-card-name {
+    font-size: 15px;
+    color: var(--outlet-text-primary, #1a1a1a);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.adminslist-card-email {
+    font-size: 12px;
+    color: var(--outlet-text-secondary, #6b6b6b);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.adminslist-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.adminslist-card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: var(--outlet-text-primary, #1a1a1a);
+    gap: 10px;
+}
+
+.adminslist-card-label {
+    color: var(--outlet-text-secondary, #6b6b6b);
+    font-size: 12px;
+    flex-shrink: 0;
+}
+
+.adminslist-card-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.adminslist-card-actions .adminslist-btn-edit,
+.adminslist-card-actions .adminslist-btn-delete {
+    flex: 1 1 100px;
+    justify-content: center;
+}
+
 /* ====== LOADING ====== */
 .adminslist-loading {
     text-align: center;
@@ -226,7 +318,9 @@
 }
 
 @keyframes adminslistSpin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* ====== MODAL ====== */
@@ -446,6 +540,7 @@
         transform: translateX(100%);
         opacity: 0;
     }
+
     to {
         transform: translateX(0);
         opacity: 1;
@@ -468,6 +563,23 @@ body.dark-mode .adminslist-table th {
 
 body.dark-mode .adminslist-table td {
     border-bottom-color: var(--outlet-border-color, #2a4a6e);
+    color: var(--outlet-text-primary, #d6e5f7);
+}
+
+body.dark-mode .adminslist-card {
+    background: var(--outlet-bg-card, #0f243d);
+    border-color: var(--outlet-border-color, #2a4a6e);
+}
+
+body.dark-mode .adminslist-card-top {
+    border-bottom-color: var(--outlet-border-color, #2a4a6e);
+}
+
+body.dark-mode .adminslist-card-name {
+    color: var(--outlet-text-primary, #d6e5f7);
+}
+
+body.dark-mode .adminslist-card-row {
     color: var(--outlet-text-primary, #d6e5f7);
 }
 
@@ -519,7 +631,7 @@ body.dark-mode #createdAtGroup input {
     .adminslist-container {
         padding: 32px;
     }
-    
+
     .adminslist-title {
         font-size: 26px;
     }
@@ -537,49 +649,41 @@ body.dark-mode #createdAtGroup input {
         gap: 16px;
         margin-bottom: 32px;
     }
-    
+
     .adminslist-title {
         font-size: 24px;
     }
-    
+
     .adminslist-header-actions {
         width: 100%;
         justify-content: flex-start;
     }
-    
-    .adminslist-table th {
-        padding: 12px 12px;
-        font-size: 11px;
-    }
-    
-    .adminslist-table td {
-        padding: 12px 12px;
-        font-size: 13px;
-    }
-    
-    .adminslist-btn-edit span,
-    .adminslist-btn-delete span {
+
+    /* Ocultar tabla, mostrar tarjetas */
+    .adminslist-table-container {
         display: none;
     }
-    
-    .adminslist-btn-edit,
-    .adminslist-btn-delete {
-        padding: 8px 12px;
+
+    .adminslist-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 16px;
     }
-    
-    .adminslist-actions-cell {
-        gap: 4px;
+
+    .adminslist-card-actions .adminslist-btn-edit span,
+    .adminslist-card-actions .adminslist-btn-delete span {
+        display: inline;
     }
-    
+
     .adminslist-modal-content {
         padding: 24px;
         width: 95%;
     }
-    
+
     .adminslist-modal-header h3 {
         font-size: 20px;
     }
-    
+
     .adminslist-form-row {
         grid-template-columns: 1fr;
         gap: 12px;
@@ -596,87 +700,86 @@ body.dark-mode #createdAtGroup input {
         margin-bottom: 24px;
         padding-bottom: 16px;
     }
-    
+
     .adminslist-title {
         font-size: 20px;
     }
-    
+
     .adminslist-subtitle {
         font-size: 12px;
     }
-    
+
     .adminslist-total {
         font-size: 12px;
         padding: 6px 14px;
     }
-    
+
     .adminslist-total strong {
         font-size: 15px;
     }
-    
+
     .adminslist-avatar {
         width: 36px;
         height: 36px;
     }
-    
+
     .adminslist-avatar i {
         font-size: 18px;
     }
-    
-    .adminslist-table th {
-        padding: 8px 6px;
-        font-size: 9px;
+
+    .adminslist-cards-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
     }
-    
-    .adminslist-table td {
-        padding: 8px 6px;
+
+    .adminslist-card {
+        padding: 14px;
+    }
+
+    .adminslist-card-actions .adminslist-btn-edit,
+    .adminslist-card-actions .adminslist-btn-delete {
+        padding: 8px 10px;
         font-size: 11px;
     }
-    
-    .adminslist-btn-edit,
-    .adminslist-btn-delete {
-        padding: 4px 8px;
-        font-size: 10px;
+
+    .adminslist-card-actions .adminslist-btn-edit i,
+    .adminslist-card-actions .adminslist-btn-delete i {
+        font-size: 15px;
     }
-    
-    .adminslist-btn-edit i,
-    .adminslist-btn-delete i {
-        font-size: 14px;
-    }
-    
+
     .adminslist-modal-content {
         padding: 16px;
     }
-    
+
     .adminslist-modal-header h3 {
         font-size: 17px;
     }
-    
+
     .adminslist-form-group {
         margin-bottom: 14px;
     }
-    
+
     .adminslist-form-group label {
         font-size: 11px;
     }
-    
+
     .adminslist-form-group input,
     .adminslist-form-group select {
         padding: 10px 12px;
         font-size: 13px;
     }
-    
+
     .adminslist-btn-submit {
         font-size: 13px;
         padding: 12px;
     }
-    
+
     .adminslist-btn-danger,
     .adminslist-btn-cancel {
         padding: 8px 16px;
         font-size: 12px;
     }
-    
+
     .adminslist-toast {
         bottom: 1rem;
         right: 1rem;
@@ -716,7 +819,7 @@ body:has(.OUTLET-admin-nav.collapsed) .adminslist-container {
         max-width: calc(100% - 240px);
         padding: 28px;
     }
-    
+
     body:has(.OUTLET-admin-nav.collapsed) .adminslist-container {
         margin-left: 70px;
         max-width: calc(100% - 70px);
@@ -823,7 +926,7 @@ body:has(.OUTLET-admin-nav.collapsed) .adminslist-container {
     .outlet-mobile-menu-btn {
         display: flex;
     }
-    
+
     .OUTLET-admin-nav {
         position: fixed !important;
         top: 0 !important;
@@ -836,12 +939,12 @@ body:has(.OUTLET-admin-nav.collapsed) .adminslist-container {
         overflow-y: auto !important;
         box-shadow: none !important;
     }
-    
+
     .OUTLET-admin-nav.outlet-mobile-open {
         transform: translateX(0) !important;
         box-shadow: 5px 0 25px rgba(0, 0, 0, 0.15) !important;
     }
-    
+
     body.menu-open {
         overflow: hidden;
     }
@@ -851,6 +954,7 @@ body:has(.OUTLET-admin-nav.collapsed) .adminslist-container {
     from {
         transform: translateX(-100%);
     }
+
     to {
         transform: translateX(0);
     }
@@ -860,11 +964,11 @@ body:has(.OUTLET-admin-nav.collapsed) .adminslist-container {
     .outlet-mobile-menu-btn {
         display: none !important;
     }
-    
+
     .outlet-mobile-overlay {
         display: none !important;
     }
-    
+
     .OUTLET-admin-nav {
         transform: translateX(0) !important;
         position: fixed !important;
@@ -877,7 +981,7 @@ body:has(.OUTLET-admin-nav.collapsed) .adminslist-container {
     body .adminslist-container {
         transition: margin-left 0.3s ease, filter 0.3s ease;
     }
-    
+
     body:has(.OUTLET-admin-nav.outlet-mobile-open) .adminslist-container {
         filter: blur(2px);
         pointer-events: none;
@@ -889,15 +993,15 @@ body:has(.OUTLET-admin-nav.collapsed) .adminslist-container {
         -webkit-overflow-scrolling: touch;
         scrollbar-width: thin;
     }
-    
+
     .OUTLET-admin-nav::-webkit-scrollbar {
         width: 4px;
     }
-    
+
     .OUTLET-admin-nav::-webkit-scrollbar-track {
         background: var(--outlet-border-light, #f0f0f0);
     }
-    
+
     .OUTLET-admin-nav::-webkit-scrollbar-thumb {
         background: var(--outlet-gold, #ddab3b);
         border-radius: 4px;
