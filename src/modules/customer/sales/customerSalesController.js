@@ -106,6 +106,7 @@ function cacheElements() {
 
         // Tabla
         salesTableBody: document.getElementById('salesTableBody'),
+        salesCardsGrid: document.getElementById('salesCardsGrid'),
         salesCount: document.getElementById('salesCount'),
 
         // Paginación
@@ -171,6 +172,15 @@ function renderSalesTable() {
                 </td>
             </tr>
         `;
+        if (elements.salesCardsGrid) {
+            elements.salesCardsGrid.innerHTML = `
+                <div class="customer-sales-empty-state">
+                    <span class="material-symbols-outlined">login</span>
+                    <p>Inicia sesión para ver tus pedidos</p>
+                    <small>Tu historial de compras aparecerá aquí</small>
+                </div>
+            `;
+        }
         if (elements.salesCount) {
             elements.salesCount.textContent = '0 pedidos';
         }
@@ -189,6 +199,15 @@ function renderSalesTable() {
                 </td>
             </tr>
         `;
+        if (elements.salesCardsGrid) {
+            elements.salesCardsGrid.innerHTML = `
+                <div class="customer-sales-empty-state">
+                    <span class="material-symbols-outlined">inbox</span>
+                    <p>No tienes pedidos aún</p>
+                    <small>¡Empieza a comprar y tus pedidos aparecerán aquí!</small>
+                </div>
+            `;
+        }
         if (elements.salesCount) {
             elements.salesCount.textContent = '0 pedidos';
         }
@@ -196,6 +215,7 @@ function renderSalesTable() {
     }
 
     let html = '';
+    let cardsHtml = '';
     sales.forEach(sale => {
         const statusClass = `status-${sale.orderStatus || 'confirmada'}`;
         const paymentClass = `payment-${sale.paymentStatus || 'pendiente'}`;
@@ -249,9 +269,51 @@ function renderSalesTable() {
                 </td>
             </tr>
         `;
+
+        cardsHtml += `
+            <div class="customer-sales-card" data-id="${sale.id}">
+                <div class="customer-sales-card-top">
+                    <strong class="customer-sales-card-number" style="color: var(--outlet-gold);">${sale.orderNumber || 'N/A'}</strong>
+                    <strong style="color: var(--outlet-gold); font-size:1rem;">$${(sale.total || 0).toFixed(2)}</strong>
+                </div>
+                <div class="customer-sales-card-body">
+                    <div class="customer-sales-card-row">
+                        <span class="customer-sales-card-label">Productos</span>
+                        <span>${sale.totalItems || 0} items · ${sale.uniqueProducts || sale.items?.length || 0} productos</span>
+                    </div>
+                    <div class="customer-sales-card-row">
+                        <span class="customer-sales-card-label">Estado</span>
+                        <span class="customer-sales-status-badge ${statusClass}">
+                            <span class="status-dot"></span>
+                            ${sale.orderStatusLabel || sale.orderStatus || 'Confirmada'}
+                        </span>
+                    </div>
+                    <div class="customer-sales-card-row">
+                        <span class="customer-sales-card-label">Pago</span>
+                        <span class="customer-sales-payment-badge ${paymentClass}">
+                            <span class="payment-dot"></span>
+                            ${sale.paymentMethodLabel || sale.paymentStatus || 'Pendiente'}
+                        </span>
+                    </div>
+                    <div class="customer-sales-card-row">
+                        <span class="customer-sales-card-label">Fecha</span>
+                        <span style="font-size:0.75rem; color: var(--outlet-text-secondary);">
+                            ${sale.orderDate ? new Date(sale.orderDate).toLocaleDateString('es-ES') : '-'}
+                        </span>
+                    </div>
+                </div>
+                <div class="customer-sales-actions-cell customer-sales-card-actions">
+                    <button class="customer-sales-action-btn view" data-id="${sale.id}" title="Ver detalle">
+                        <span class="material-symbols-outlined">visibility</span>
+                        <span>Ver detalle</span>
+                    </button>
+                </div>
+            </div>
+        `;
     });
 
     elements.salesTableBody.innerHTML = html;
+    if (elements.salesCardsGrid) elements.salesCardsGrid.innerHTML = cardsHtml;
 
     if (elements.salesCount) {
         elements.salesCount.textContent = `${sales.length} pedidos`;
@@ -269,6 +331,15 @@ function renderSalesTable() {
     document.querySelectorAll('.customer-sales-table tbody tr').forEach(row => {
         row.addEventListener('click', () => {
             const id = row.dataset.id;
+            if (id) viewSale(id);
+        });
+    });
+
+    // Click en la tarjeta para ver detalle también
+    document.querySelectorAll('.customer-sales-card').forEach(card => {
+        card.addEventListener('click', (e) => {
+            if (e.target.closest('.customer-sales-action-btn')) return;
+            const id = card.dataset.id;
             if (id) viewSale(id);
         });
     });

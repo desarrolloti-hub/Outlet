@@ -473,6 +473,7 @@
     padding: 4px 8px;
     transition: all 0.2s ease;
     border-radius: 4px;
+    flex-shrink: 0;
 }
 
 .sales-action-btn:hover {
@@ -495,6 +496,89 @@
 .sales-actions-cell {
     display: flex;
     gap: 4px;
+}
+
+/* ========================================
+   GRID DE TARJETAS (RESPONSIVE - MÓVIL/TABLET)
+   ======================================== */
+.sales-cards-grid {
+    display: none;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    padding: var(--outlet-spacing-md) var(--outlet-spacing-lg);
+}
+
+.sales-card {
+    background: var(--outlet-bg-container-low);
+    border: 1px solid var(--outlet-border-soft);
+    border-radius: 14px;
+    padding: 16px;
+    transition: all 0.2s ease;
+    min-width: 0;
+}
+
+.sales-card:hover {
+    border-color: var(--outlet-gold);
+}
+
+.sales-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.sales-card-number {
+    font-size: 0.9rem;
+}
+
+.sales-card-customer {
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--outlet-border-soft);
+}
+
+.sales-card-customer-name {
+    font-weight: 500;
+    color: var(--outlet-text-primary);
+    font-size: 0.85rem;
+}
+
+.sales-card-customer-email {
+    color: var(--outlet-text-secondary);
+    font-size: 0.7rem;
+}
+
+.sales-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.sales-card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.8rem;
+    color: var(--outlet-text-primary);
+}
+
+.sales-card-label {
+    color: var(--outlet-text-secondary);
+    font-size: 0.7rem;
+    flex-shrink: 0;
+}
+
+.sales-card-actions {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    padding-top: 10px;
+    border-top: 1px solid var(--outlet-border-soft);
 }
 
 /* ========================================
@@ -819,6 +903,18 @@
         font-size: 0.75rem;
     }
 
+    /* Ocultar tabla, mostrar tarjetas */
+    .sales-table-wrapper {
+        display: none;
+    }
+
+    .sales-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 14px;
+        padding: var(--outlet-spacing-sm) var(--outlet-spacing-md);
+    }
+
     .sales-actions-cell {
         flex-wrap: wrap;
     }
@@ -870,11 +966,14 @@
         font-size: 1rem;
     }
 
-    .sales-table th:nth-child(3),
-    .sales-table td:nth-child(3),
-    .sales-table th:nth-child(6),
-    .sales-table td:nth-child(6) {
-        display: none;
+    .sales-cards-grid {
+        grid-template-columns: 1fr;
+        padding: var(--outlet-spacing-sm);
+        gap: 10px;
+    }
+
+    .sales-card {
+        padding: 12px;
     }
 }
 

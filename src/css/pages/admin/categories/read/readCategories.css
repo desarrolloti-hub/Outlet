@@ -286,6 +286,104 @@ body:has(.OUTLET-admin-nav.collapsed) .categorieslist-container {
     color: white;
 }
 
+/* ========================================
+   GRID DE TARJETAS (RESPONSIVE - MÓVIL/TABLET)
+   ======================================== */
+.categorieslist-cards-grid {
+    display: none;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.categorieslist-card {
+    background: var(--outlet-bg-card, white);
+    border-radius: 18px;
+    border: 1px solid rgba(221, 171, 59, 0.12);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+    padding: 18px;
+    transition: all 0.25s ease;
+    min-width: 0;
+}
+
+.categorieslist-card:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    border-color: rgba(221, 171, 59, 0.3);
+}
+
+.categorieslist-card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding-bottom: 14px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.categorieslist-card-image {
+    width: 52px;
+    height: 52px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.categorieslist-card-identity {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.categorieslist-card-name {
+    font-size: 15px;
+    color: var(--outlet-text-primary, #1a1a1a);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.categorieslist-card-slug {
+    font-size: 11px;
+    color: var(--outlet-text-secondary, #6b6b6b);
+}
+
+.categorieslist-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.categorieslist-card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: var(--outlet-text-primary, #1a1a1a);
+    gap: 10px;
+}
+
+.categorieslist-card-label {
+    color: var(--outlet-text-secondary, #6b6b6b);
+    font-size: 12px;
+    flex-shrink: 0;
+}
+
+.categorieslist-card-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.categorieslist-card-actions .categorieslist-btn-edit,
+.categorieslist-card-actions .categorieslist-btn-delete {
+    flex: 1 1 100px;
+    justify-content: center;
+}
+
 /* ====== LOADING ====== */
 .categorieslist-loading {
     text-align: center;
@@ -661,6 +759,23 @@ body.dark-mode .categorieslist-table td {
     color: var(--outlet-text-primary, #d6e5f7);
 }
 
+body.dark-mode .categorieslist-card {
+    background: var(--outlet-bg-card, #0f243d);
+    border-color: var(--outlet-border-color, #2a4a6e);
+}
+
+body.dark-mode .categorieslist-card-top {
+    border-bottom-color: var(--outlet-border-color, #2a4a6e);
+}
+
+body.dark-mode .categorieslist-card-name {
+    color: var(--outlet-text-primary, #d6e5f7);
+}
+
+body.dark-mode .categorieslist-card-row {
+    color: var(--outlet-text-primary, #d6e5f7);
+}
+
 body.dark-mode .categorieslist-form-group input,
 body.dark-mode .categorieslist-form-group select,
 body.dark-mode .categorieslist-form-group textarea,
@@ -755,30 +870,15 @@ body.dark-mode .categorieslist-btn-add {
         padding: 10px 20px;
     }
 
-    .categorieslist-table th {
-        padding: 12px 12px;
-        font-size: 11px;
-    }
-
-    .categorieslist-table td {
-        padding: 12px 12px;
-        font-size: 13px;
-    }
-
-    .categorieslist-btn-edit span,
-    .categorieslist-btn-delete span,
-    .categorieslist-btn-subcategories span {
+    /* Ocultar tabla, mostrar tarjetas */
+    .categorieslist-table-container {
         display: none;
     }
 
-    .categorieslist-btn-edit,
-    .categorieslist-btn-delete,
-    .categorieslist-btn-subcategories {
-        padding: 8px 12px;
-    }
-
-    .categorieslist-actions-cell {
-        gap: 6px;
+    .categorieslist-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 16px;
     }
 
     .categorieslist-modal-content {
@@ -819,24 +919,19 @@ body.dark-mode .categorieslist-btn-add {
         padding: 10px 16px;
     }
 
-    .categorieslist-table th {
-        padding: 10px 8px;
-        font-size: 10px;
+    .categorieslist-cards-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
     }
 
-    .categorieslist-table td {
-        padding: 10px 8px;
-        font-size: 12px;
+    .categorieslist-card {
+        padding: 14px;
     }
 
-    .categorieslist-btn-edit,
-    .categorieslist-btn-delete,
-    .categorieslist-btn-subcategories {
-        padding: 6px 10px;
-    }
-
-    .categorieslist-actions-cell {
-        gap: 4px;
+    .categorieslist-card-actions .categorieslist-btn-edit,
+    .categorieslist-card-actions .categorieslist-btn-delete {
+        padding: 8px 10px;
+        font-size: 11px;
     }
 
     .categorieslist-modal-content {

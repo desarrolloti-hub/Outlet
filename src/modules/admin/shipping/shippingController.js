@@ -130,6 +130,7 @@ function cacheElements() {
 
         // Tabla
         shippingTableBody: document.getElementById('shippingTableBody'),
+        shippingCardsGrid: document.getElementById('shippingCardsGrid'),
         shipmentsCount: document.getElementById('shipmentsCount'),
 
         // Paginación
@@ -173,6 +174,15 @@ function renderShippingTable() {
                 </td>
             </tr>
         `;
+        if (elements.shippingCardsGrid) {
+            elements.shippingCardsGrid.innerHTML = `
+                <div class="shipping-empty-state">
+                    <span class="material-symbols-outlined">inbox</span>
+                    <p>No hay envíos que coincidan con los filtros</p>
+                    <small>Intenta ajustar los filtros o crear un nuevo envío</small>
+                </div>
+            `;
+        }
         if (elements.shipmentsCount) {
             elements.shipmentsCount.textContent = '0 envíos';
         }
@@ -180,6 +190,7 @@ function renderShippingTable() {
     }
 
     let html = '';
+    let cardsHtml = '';
     shipments.forEach(shipment => {
         const statusClass = `status-${shipment.status || 'pendiente'}`;
         const carrier = shipment.carrier || 'no_asignado';
@@ -250,9 +261,66 @@ function renderShippingTable() {
                 </td>
             </tr>
         `;
+
+        cardsHtml += `
+            <div class="shipping-card">
+                <div class="shipping-card-top">
+                    <strong class="shipping-card-number" style="color: var(--outlet-gold);">${shipment.shipmentNumber || 'N/A'}</strong>
+                    <span class="shipping-status-badge ${statusClass}">
+                        <span class="status-dot"></span>
+                        ${getStatusLabel(shipment.status)}
+                    </span>
+                </div>
+                <div class="shipping-card-customer">
+                    <span class="shipping-card-customer-name">${shipment.customerName || 'Cliente'}</span>
+                    <small class="shipping-card-customer-email">${shipment.customerEmail || ''}</small>
+                </div>
+                <div class="shipping-card-body">
+                    <div class="shipping-card-row">
+                        <span class="shipping-card-label">Orden</span>
+                        <span>${shipment.orderNumber || 'N/A'}</span>
+                    </div>
+                    <div class="shipping-card-row">
+                        <span class="shipping-card-label">Paquetería</span>
+                        <span class="shipping-carrier-badge">
+                            <span class="carrier-icon">${getCarrierIcon(carrier)}</span>
+                            ${carrierLabels[carrier] || carrier}
+                        </span>
+                    </div>
+                    <div class="shipping-card-row">
+                        <span class="shipping-card-label">Tracking</span>
+                        ${shipment.trackingNumber ?
+                `<span class="shipping-tracking" title="Haz clic para copiar">${shipment.trackingNumber}</span>` :
+                `<span style="color: var(--outlet-text-disabled); font-size:0.75rem;">Sin tracking</span>`
+            }
+                    </div>
+                    <div class="shipping-card-row">
+                        <span class="shipping-card-label">Fecha</span>
+                        <span style="font-size:0.75rem; color: var(--outlet-text-secondary);">
+                            ${shipment.createdAt ? new Date(shipment.createdAt).toLocaleDateString('es-ES') : '-'}
+                        </span>
+                    </div>
+                </div>
+                <div class="shipping-actions-cell shipping-card-actions">
+                    <button class="shipping-action-btn view" data-id="${shipment.id}" title="Ver detalle">
+                        <span class="material-symbols-outlined">visibility</span>
+                    </button>
+                    <button class="shipping-action-btn track" data-id="${shipment.id}" title="Actualizar tracking">
+                        <span class="material-symbols-outlined">track_changes</span>
+                    </button>
+                    <button class="shipping-action-btn edit" data-id="${shipment.id}" title="Editar estado">
+                        <span class="material-symbols-outlined">edit</span>
+                    </button>
+                    <button class="shipping-action-btn delete" data-id="${shipment.id}" title="Eliminar envío">
+                        <span class="material-symbols-outlined">delete_forever</span>
+                    </button>
+                </div>
+            </div>
+        `;
     });
 
     elements.shippingTableBody.innerHTML = html;
+    if (elements.shippingCardsGrid) elements.shippingCardsGrid.innerHTML = cardsHtml;
 
     if (elements.shipmentsCount) {
         elements.shipmentsCount.textContent = `${shipments.length} envíos`;

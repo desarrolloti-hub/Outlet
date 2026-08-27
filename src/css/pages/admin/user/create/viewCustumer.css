@@ -193,6 +193,106 @@
     color: white;
 }
 
+/* ========================================
+   GRID DE TARJETAS (RESPONSIVE - MÓVIL/TABLET)
+   ======================================== */
+.customerslist-cards-grid {
+    display: none;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.customerslist-card {
+    background: var(--outlet-bg-card, white);
+    border-radius: 18px;
+    border: 1px solid rgba(221, 171, 59, 0.12);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+    padding: 18px;
+    transition: all 0.25s ease;
+    min-width: 0;
+}
+
+.customerslist-card:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    border-color: rgba(221, 171, 59, 0.3);
+}
+
+.customerslist-card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding-bottom: 14px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.customerslist-card-identity {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.customerslist-card-name {
+    font-size: 15px;
+    color: var(--outlet-text-primary, #1a1a1a);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.customerslist-card-email {
+    font-size: 12px;
+    color: var(--outlet-text-secondary, #6b6b6b);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.customerslist-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.customerslist-card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: var(--outlet-text-primary, #1a1a1a);
+    gap: 10px;
+}
+
+.customerslist-card-row span:last-child {
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 60%;
+}
+
+.customerslist-card-label {
+    color: var(--outlet-text-secondary, #6b6b6b);
+    font-size: 12px;
+    flex-shrink: 0;
+}
+
+.customerslist-card-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.customerslist-card-actions .customerslist-btn-edit,
+.customerslist-card-actions .customerslist-btn-delete {
+    flex: 1 1 100px;
+    justify-content: center;
+}
+
 /* ====== LOADING ====== */
 .customerslist-loading {
     text-align: center;
@@ -211,7 +311,9 @@
 }
 
 @keyframes customerslistSpin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* ====== MODAL ====== */
@@ -433,6 +535,7 @@
         transform: translateX(100%);
         opacity: 0;
     }
+
     to {
         transform: translateX(0);
         opacity: 1;
@@ -455,6 +558,23 @@ body.dark-mode .customerslist-table th {
 
 body.dark-mode .customerslist-table td {
     border-bottom-color: var(--outlet-border-color, #2a4a6e);
+    color: var(--outlet-text-primary, #d6e5f7);
+}
+
+body.dark-mode .customerslist-card {
+    background: var(--outlet-bg-card, #0f243d);
+    border-color: var(--outlet-border-color, #2a4a6e);
+}
+
+body.dark-mode .customerslist-card-top {
+    border-bottom-color: var(--outlet-border-color, #2a4a6e);
+}
+
+body.dark-mode .customerslist-card-name {
+    color: var(--outlet-text-primary, #d6e5f7);
+}
+
+body.dark-mode .customerslist-card-row {
     color: var(--outlet-text-primary, #d6e5f7);
 }
 
@@ -506,7 +626,7 @@ body.dark-mode .customerslist-form-group input[readonly] {
     .customerslist-container {
         padding: 32px;
     }
-    
+
     .customerslist-title {
         font-size: 26px;
     }
@@ -524,49 +644,36 @@ body.dark-mode .customerslist-form-group input[readonly] {
         gap: 16px;
         margin-bottom: 32px;
     }
-    
+
     .customerslist-title {
         font-size: 24px;
     }
-    
+
     .customerslist-header-actions {
         width: 100%;
         justify-content: flex-start;
     }
-    
-    .customerslist-table th {
-        padding: 12px 12px;
-        font-size: 11px;
-    }
-    
-    .customerslist-table td {
-        padding: 12px 12px;
-        font-size: 13px;
-    }
-    
-    .customerslist-btn-edit span,
-    .customerslist-btn-delete span {
+
+    /* Ocultar tabla, mostrar tarjetas */
+    .customerslist-table-container {
         display: none;
     }
-    
-    .customerslist-btn-edit,
-    .customerslist-btn-delete {
-        padding: 8px 12px;
+
+    .customerslist-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 16px;
     }
-    
-    .customerslist-actions-cell {
-        gap: 4px;
-    }
-    
+
     .customerslist-modal-content {
         padding: 24px;
         width: 95%;
     }
-    
+
     .customerslist-modal-header h3 {
         font-size: 20px;
     }
-    
+
     .customerslist-form-row {
         grid-template-columns: 1fr;
         gap: 12px;
@@ -583,87 +690,86 @@ body.dark-mode .customerslist-form-group input[readonly] {
         margin-bottom: 24px;
         padding-bottom: 16px;
     }
-    
+
     .customerslist-title {
         font-size: 20px;
     }
-    
+
     .customerslist-subtitle {
         font-size: 12px;
     }
-    
+
     .customerslist-total {
         font-size: 12px;
         padding: 6px 14px;
     }
-    
+
     .customerslist-total strong {
         font-size: 15px;
     }
-    
+
     .customerslist-avatar {
         width: 36px;
         height: 36px;
     }
-    
+
     .customerslist-avatar i {
         font-size: 18px;
     }
-    
-    .customerslist-table th {
-        padding: 8px 6px;
-        font-size: 9px;
+
+    .customerslist-cards-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
     }
-    
-    .customerslist-table td {
-        padding: 8px 6px;
+
+    .customerslist-card {
+        padding: 14px;
+    }
+
+    .customerslist-card-actions .customerslist-btn-edit,
+    .customerslist-card-actions .customerslist-btn-delete {
+        padding: 8px 10px;
         font-size: 11px;
     }
-    
-    .customerslist-btn-edit,
-    .customerslist-btn-delete {
-        padding: 4px 8px;
-        font-size: 10px;
+
+    .customerslist-card-actions .customerslist-btn-edit i,
+    .customerslist-card-actions .customerslist-btn-delete i {
+        font-size: 15px;
     }
-    
-    .customerslist-btn-edit i,
-    .customerslist-btn-delete i {
-        font-size: 14px;
-    }
-    
+
     .customerslist-modal-content {
         padding: 16px;
     }
-    
+
     .customerslist-modal-header h3 {
         font-size: 17px;
     }
-    
+
     .customerslist-form-group {
         margin-bottom: 14px;
     }
-    
+
     .customerslist-form-group label {
         font-size: 11px;
     }
-    
+
     .customerslist-form-group input,
     .customerslist-form-group select {
         padding: 10px 12px;
         font-size: 13px;
     }
-    
+
     .customerslist-btn-submit {
         font-size: 13px;
         padding: 12px;
     }
-    
+
     .customerslist-btn-danger,
     .customerslist-btn-cancel {
         padding: 8px 16px;
         font-size: 12px;
     }
-    
+
     .customerslist-toast {
         bottom: 1rem;
         right: 1rem;
@@ -703,7 +809,7 @@ body:has(.OUTLET-admin-nav.collapsed) .customerslist-container {
         max-width: calc(100% - 240px);
         padding: 28px;
     }
-    
+
     body:has(.OUTLET-admin-nav.collapsed) .customerslist-container {
         margin-left: 70px;
         max-width: calc(100% - 70px);

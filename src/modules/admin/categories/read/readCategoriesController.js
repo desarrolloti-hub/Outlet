@@ -74,6 +74,7 @@ function cacheElements() {
     elements = {
         addBtn: document.getElementById('addCategoryBtn'),
         tableBody: document.getElementById('categoriesTableBody'),
+        cardsGrid: document.getElementById('categoriesCardsGrid'),
         deleteModal: document.getElementById('deleteModal'),
         deleteItemName: document.getElementById('deleteItemName'),
         confirmDeleteBtn: document.getElementById('confirmDeleteBtn'),
@@ -137,10 +138,15 @@ function renderTable() {
     if (!categories || categories.length === 0) {
         elements.tableBody.innerHTML =
             '<tr><td colspan="7" class="categorieslist-loading"><div class="categorieslist-spinner"></div><span>Cargando categorías...</span></td></tr>';
+        if (elements.cardsGrid) {
+            elements.cardsGrid.innerHTML =
+                '<div class="categorieslist-loading"><div class="categorieslist-spinner"></div><span>Cargando categorías...</span></div>';
+        }
         return;
     }
 
     var html = '';
+    var cardsHtml = '';
     categories.forEach(function (cat) {
         var safeId = cat.id || '';
         var safeName = cat.name || '';
@@ -148,12 +154,19 @@ function renderTable() {
         var safeOrder = cat.order || 0;
         var safeStatus = cat.status || 'active';
         var subcategoryCount = Array.isArray(cat.subcategories) ? cat.subcategories.length : 0;
+        var isActive = safeStatus === 'active';
 
         var imageHtml = '';
         if (cat.imageUrl && cat.imageUrl.trim() !== '') {
             imageHtml = '<img src="' + escapeHtml(cat.imageUrl) + '" alt="' + escapeHtml(safeName) + '" style="width:40px;height:40px;object-fit:cover;border-radius:8px;border:2px solid #ddab3b;box-shadow:0 0 12px rgba(221,171,59,0.2);" loading="lazy">';
         } else {
             imageHtml = '<span style="color:#ccc;font-size:12px;">Sin imagen</span>';
+        }
+        var cardImageHtml = '';
+        if (cat.imageUrl && cat.imageUrl.trim() !== '') {
+            cardImageHtml = '<img src="' + escapeHtml(cat.imageUrl) + '" alt="' + escapeHtml(safeName) + '" style="width:52px;height:52px;object-fit:cover;border-radius:10px;border:2px solid #ddab3b;box-shadow:0 0 12px rgba(221,171,59,0.2);" loading="lazy">';
+        } else {
+            cardImageHtml = '<span style="color:#ccc;font-size:11px;">Sin imagen</span>';
         }
 
         html +=
@@ -164,7 +177,7 @@ function renderTable() {
             '<td><code style="font-size: 12px;">' + escapeHtml(safeSlug) + '</code></td>' +
             '<td><span class="categorieslist-subcategory-count"><i class="material-symbols-outlined">local_offer</i> ' + subcategoryCount + '</span></td>' +
             '<td>' + safeOrder + '</td>' +
-            '<td><span class="categorieslist-status-badge ' + (safeStatus === 'active' ? 'categorieslist-status-active' : 'categorieslist-status-inactive') + '">' + (safeStatus === 'active' ? 'Activo' : 'Inactivo') + '</span></td>' +
+            '<td><span class="categorieslist-status-badge ' + (isActive ? 'categorieslist-status-active' : 'categorieslist-status-inactive') + '">' + (isActive ? 'Activo' : 'Inactivo') + '</span></td>' +
             '<td><div class="categorieslist-actions-cell">' +
             '<button class="categorieslist-btn-edit" data-id="' + escapeHtml(safeId) + '" title="Editar">' +
             '<i class="material-symbols-outlined">edit</i><span>Editar</span>' +
@@ -174,9 +187,35 @@ function renderTable() {
             '</button>' +
             '</div></td>' +
             '</tr>';
+
+        cardsHtml +=
+            '<div class="categorieslist-card" data-id="' + escapeHtml(safeId) + '">' +
+            '<div class="categorieslist-card-top">' +
+            '<div class="categorieslist-card-image">' + cardImageHtml + '</div>' +
+            '<div class="categorieslist-card-identity">' +
+            '<strong class="categorieslist-card-name">' + escapeHtml(safeName) + '</strong>' +
+            '<code class="categorieslist-card-slug">' + escapeHtml(safeSlug) + '</code>' +
+            '</div>' +
+            '<span class="categorieslist-status-badge ' + (isActive ? 'categorieslist-status-active' : 'categorieslist-status-inactive') + '">' + (isActive ? 'Activo' : 'Inactivo') + '</span>' +
+            '</div>' +
+            '<div class="categorieslist-card-body">' +
+            '<div class="categorieslist-card-row"><span class="categorieslist-card-label">Subcategorías</span><span class="categorieslist-subcategory-count"><i class="material-symbols-outlined">local_offer</i> ' + subcategoryCount + '</span></div>' +
+            '<div class="categorieslist-card-row"><span class="categorieslist-card-label">Orden</span><span>' + safeOrder + '</span></div>' +
+            '<div class="categorieslist-card-row"><span class="categorieslist-card-label">ID</span><code style="font-size: 12px;">' + escapeHtml(safeId) + '</code></div>' +
+            '</div>' +
+            '<div class="categorieslist-card-actions">' +
+            '<button class="categorieslist-btn-edit" data-id="' + escapeHtml(safeId) + '" title="Editar">' +
+            '<i class="material-symbols-outlined">edit</i><span>Editar</span>' +
+            '</button>' +
+            '<button class="categorieslist-btn-delete" data-id="' + escapeHtml(safeId) + '" data-name="' + escapeHtml(safeName) + '" title="Eliminar">' +
+            '<i class="material-symbols-outlined">delete</i><span>Eliminar</span>' +
+            '</button>' +
+            '</div>' +
+            '</div>';
     });
 
     elements.tableBody.innerHTML = html;
+    if (elements.cardsGrid) elements.cardsGrid.innerHTML = cardsHtml;
 
     document.querySelectorAll('.categorieslist-btn-edit').forEach(function (btn) {
         btn.addEventListener('click', function () {

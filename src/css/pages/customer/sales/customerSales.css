@@ -449,6 +449,7 @@
     padding: 4px 8px;
     transition: all 0.2s ease;
     border-radius: 4px;
+    flex-shrink: 0;
 }
 
 .customer-sales-action-btn:hover {
@@ -467,6 +468,79 @@
 
 .customer-sales-actions-cell .view:hover {
     color: var(--outlet-gold);
+}
+
+/* ========================================
+   GRID DE TARJETAS (RESPONSIVE - MÓVIL/TABLET)
+   ======================================== */
+.customer-sales-cards-grid {
+    display: none;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    padding: var(--outlet-spacing-md) var(--outlet-spacing-lg);
+}
+
+.customer-sales-card {
+    background: var(--outlet-bg-container-low);
+    border: 1px solid var(--outlet-border-soft);
+    border-radius: 14px;
+    padding: 16px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    min-width: 0;
+}
+
+.customer-sales-card:hover {
+    border-color: var(--outlet-gold);
+}
+
+.customer-sales-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--outlet-border-soft);
+}
+
+.customer-sales-card-number {
+    font-size: 0.9rem;
+}
+
+.customer-sales-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.customer-sales-card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.8rem;
+    color: var(--outlet-text-primary);
+}
+
+.customer-sales-card-label {
+    color: var(--outlet-text-secondary);
+    font-size: 0.7rem;
+    flex-shrink: 0;
+}
+
+.customer-sales-card-actions {
+    justify-content: flex-end;
+    padding-top: 10px;
+    border-top: 1px solid var(--outlet-border-soft);
+}
+
+.customer-sales-card-actions .customer-sales-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
 }
 
 /* ========================================
@@ -771,9 +845,16 @@
         font-size: 0.75rem;
     }
 
-    .customer-sales-table th:nth-child(2),
-    .customer-sales-table td:nth-child(2) {
-        min-width: 120px;
+    /* Ocultar tabla, mostrar tarjetas */
+    .customer-sales-table-wrapper {
+        display: none;
+    }
+
+    .customer-sales-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 14px;
+        padding: var(--outlet-spacing-sm) var(--outlet-spacing-md);
     }
 
     .customer-sales-modal {
@@ -814,11 +895,14 @@
         font-size: 0.95rem;
     }
 
-    .customer-sales-table th:nth-child(3),
-    .customer-sales-table td:nth-child(3),
-    .customer-sales-table th:nth-child(5),
-    .customer-sales-table td:nth-child(5) {
-        display: none;
+    .customer-sales-cards-grid {
+        grid-template-columns: 1fr;
+        padding: var(--outlet-spacing-sm);
+        gap: 10px;
+    }
+
+    .customer-sales-card {
+        padding: 12px;
     }
 }
 

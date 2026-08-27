@@ -133,6 +133,7 @@ function cacheElements() {
 
         // Tabla
         salesTableBody: document.getElementById('salesTableBody'),
+        salesCardsGrid: document.getElementById('salesCardsGrid'),
         salesCount: document.getElementById('salesCount'),
 
         // Paginación
@@ -176,6 +177,15 @@ function renderSalesTable() {
                 </td>
             </tr>
         `;
+        if (elements.salesCardsGrid) {
+            elements.salesCardsGrid.innerHTML = `
+                <div class="sales-empty-state">
+                    <span class="material-symbols-outlined">inbox</span>
+                    <p>No hay ventas que coincidan con los filtros</p>
+                    <small>Intenta ajustar los filtros o crear una nueva venta</small>
+                </div>
+            `;
+        }
         if (elements.salesCount) {
             elements.salesCount.textContent = '0 ventas';
         }
@@ -183,6 +193,7 @@ function renderSalesTable() {
     }
 
     let html = '';
+    let cardsHtml = '';
     sales.forEach(sale => {
         const statusClass = `status-${sale.orderStatus || 'confirmada'}`;
         const paymentClass = `payment-${sale.paymentStatus || 'pendiente'}`;
@@ -239,9 +250,60 @@ function renderSalesTable() {
                 </td>
             </tr>
         `;
+
+        cardsHtml += `
+            <div class="sales-card">
+                <div class="sales-card-top">
+                    <strong class="sales-card-number" style="color: var(--outlet-gold);">${sale.orderNumber || 'N/A'}</strong>
+                    <strong style="color: var(--outlet-gold); font-size:1rem;">$${(sale.total || 0).toFixed(2)}</strong>
+                </div>
+                <div class="sales-card-customer">
+                    <span class="sales-card-customer-name">${sale.customerName || 'Cliente'}</span>
+                    <small class="sales-card-customer-email">${sale.customerEmail || ''}</small>
+                </div>
+                <div class="sales-card-body">
+                    <div class="sales-card-row">
+                        <span class="sales-card-label">Productos</span>
+                        <span>${sale.totalItems || 0} items · ${sale.uniqueProducts || sale.items?.length || 0} únicos</span>
+                    </div>
+                    <div class="sales-card-row">
+                        <span class="sales-card-label">Estado</span>
+                        <span class="sales-status-badge ${statusClass}">
+                            <span class="status-dot"></span>
+                            ${sale.orderStatusLabel || sale.orderStatus || 'Confirmada'}
+                        </span>
+                    </div>
+                    <div class="sales-card-row">
+                        <span class="sales-card-label">Pago</span>
+                        <span class="sales-payment-badge ${paymentClass}">
+                            <span class="payment-dot"></span>
+                            ${sale.paymentMethodLabel || sale.paymentStatus || 'Pendiente'}
+                        </span>
+                    </div>
+                    <div class="sales-card-row">
+                        <span class="sales-card-label">Fecha</span>
+                        <span style="font-size:0.75rem; color: var(--outlet-text-secondary);">
+                            ${sale.orderDate ? new Date(sale.orderDate).toLocaleDateString('es-ES') : '-'}
+                        </span>
+                    </div>
+                </div>
+                <div class="sales-actions-cell sales-card-actions">
+                    <button class="sales-action-btn view" data-id="${sale.id}" title="Ver detalle">
+                        <span class="material-symbols-outlined">visibility</span>
+                    </button>
+                    <button class="sales-action-btn edit" data-id="${sale.id}" title="Editar estado">
+                        <span class="material-symbols-outlined">edit</span>
+                    </button>
+                    <button class="sales-action-btn delete" data-id="${sale.id}" title="Eliminar venta">
+                        <span class="material-symbols-outlined">delete_forever</span>
+                    </button>
+                </div>
+            </div>
+        `;
     });
 
     elements.salesTableBody.innerHTML = html;
+    if (elements.salesCardsGrid) elements.salesCardsGrid.innerHTML = cardsHtml;
 
     if (elements.salesCount) {
         elements.salesCount.textContent = `${sales.length} ventas`;

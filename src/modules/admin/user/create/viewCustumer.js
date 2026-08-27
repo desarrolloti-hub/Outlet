@@ -29,19 +29,19 @@ function mostrarToast(mensaje, tipo) {
     tipo = tipo || 'info';
     var toastExistente = document.querySelector('.outlet-toast');
     if (toastExistente) toastExistente.remove();
-    
+
     var toast = document.createElement('div');
     toast.className = 'outlet-toast ' + tipo;
     toast.textContent = mensaje;
     document.body.appendChild(toast);
-    
-    requestAnimationFrame(function() {
+
+    requestAnimationFrame(function () {
         toast.classList.add('show');
     });
-    
-    setTimeout(function() {
+
+    setTimeout(function () {
         toast.classList.remove('show');
-        setTimeout(function() { toast.remove(); }, 300);
+        setTimeout(function () { toast.remove(); }, 300);
     }, 3200);
 }
 
@@ -57,7 +57,7 @@ function mostrarSweetAlert(options) {
             popup: 'swal2-popup'
         }
     };
-    
+
     return Swal.fire(Object.assign({}, defaultOptions, options));
 }
 
@@ -123,7 +123,7 @@ function mostrarLoading(mensaje) {
     return mostrarSweetAlert({
         title: mensaje,
         allowOutsideClick: false,
-        didOpen: function() {
+        didOpen: function () {
             Swal.showLoading();
         }
     });
@@ -143,7 +143,8 @@ function cacheElements() {
     elements = {
         totalCustomers: document.getElementById('totalCustomers'),
         tableBody: document.getElementById('customersTableBody'),
-        
+        cardsGrid: document.getElementById('customersCardsGrid'),
+
         customerModal: document.getElementById('customerModal'),
         modalTitle: document.getElementById('modalTitle'),
         customerId: document.getElementById('customerId'),
@@ -156,13 +157,13 @@ function cacheElements() {
         customerCreatedAt: document.getElementById('customerCreatedAt'),
         customerForm: document.getElementById('customerForm'),
         closeModalBtn: document.getElementById('closeModalBtn'),
-        
+
         deleteModal: document.getElementById('deleteModal'),
         deleteItemName: document.getElementById('deleteItemName'),
         confirmDeleteBtn: document.getElementById('confirmDeleteBtn'),
         cancelDeleteBtn: document.getElementById('cancelDeleteBtn'),
         closeDeleteModalBtn: document.getElementById('closeDeleteModalBtn'),
-        
+
         toast: document.getElementById('customersToast')
     };
 }
@@ -228,10 +229,10 @@ function transformCustomerForDisplay(customer) {
         id: customer.id,
         name: customer.nombre || customer.name || 'Sin nombre',
         email: customer.email || '',
-        phone: customer.telefono || customer.phone || 
-               (customer.direccion?.telefono1 || ''),
-        address: customer.direccion ? 
-            (customer.direccion.calle || '') + ' ' + (customer.direccion.numeroExterior || '') : 
+        phone: customer.telefono || customer.phone ||
+            (customer.direccion?.telefono1 || ''),
+        address: customer.direccion ?
+            (customer.direccion.calle || '') + ' ' + (customer.direccion.numeroExterior || '') :
             customer.address || '',
         status: customer.estado || customer.status || 'inactivo',
         icon: customer.icon || 'person',
@@ -245,53 +246,59 @@ function transformCustomerForDisplay(customer) {
 // ========================================
 function renderTable() {
     if (!elements.tableBody) return;
-    
+
     if (customers.length === 0) {
-        elements.tableBody.innerHTML = 
-            '<tr><td colspan="8" class="customerslist-loading"><div class="customerslist-spinner"></div><span>Cargando clientes...</span></td></tr>';
+        elements.tableBody.innerHTML =
+            '<tr><td colspan="7" class="customerslist-loading"><div class="customerslist-spinner"></div><span>Cargando clientes...</span></td></tr>';
+        if (elements.cardsGrid) {
+            elements.cardsGrid.innerHTML =
+                '<div class="customerslist-loading"><div class="customerslist-spinner"></div><span>Cargando clientes...</span></div>';
+        }
         if (elements.totalCustomers) elements.totalCustomers.textContent = '0';
         return;
     }
-    
+
     var html = '';
-    customers.forEach(function(customer) {
+    var cardsHtml = '';
+    customers.forEach(function (customer) {
         var display = transformCustomerForDisplay(customer);
-        html += 
+        var idCorto = escapeHtml(display.id.substring(0, 8));
+
+        html +=
             '<tr data-id="' + display.id + '">' +
-                '<td><div class="customerslist-avatar"><i class="material-symbols-outlined">' + display.icon + '</i></div></td>' +
-                '<td><code style="font-size: 12px;">' + escapeHtml(display.id.substring(0, 8)) + '</code></td>' +
-                '<td><strong>' + escapeHtml(display.name) + '</strong></td>' +
-                '<td>' + escapeHtml(display.email) + '</td>' +
-                '<td>' + (escapeHtml(display.phone) || '—') + '</td>' +
-                '<td><span class="customerslist-address" title="' + escapeHtml(display.address || '') + '">' + (display.address ? escapeHtml(display.address) : '—') + '</span></td>' +
-                '<td><span class="customerslist-status-badge ' + getStatusClass(display.status) + '">' + getStatusLabel(display.status) + '</span></td>' +
-                '<td><div class="customerslist-actions-cell">' +
-                    '<button class="customerslist-btn-edit" data-id="' + display.id + '" title="Editar cliente"><i class="material-symbols-outlined">edit</i><span>Editar</span></button>' +
-                    '<button class="customerslist-btn-delete" data-id="' + display.id + '" data-name="' + escapeHtml(display.name) + '" title="Eliminar cliente"><i class="material-symbols-outlined">delete</i><span>Eliminar</span></button>' +
-                '</div></td>' +
+            '<td><div class="customerslist-avatar"><i class="material-symbols-outlined">' + display.icon + '</i></div></td>' +
+            '<td><code style="font-size: 12px;">' + idCorto + '</code></td>' +
+            '<td><strong>' + escapeHtml(display.name) + '</strong></td>' +
+            '<td>' + escapeHtml(display.email) + '</td>' +
+            '<td>' + (escapeHtml(display.phone) || '—') + '</td>' +
+            '<td><span class="customerslist-address" title="' + escapeHtml(display.address || '') + '">' + (display.address ? escapeHtml(display.address) : '—') + '</span></td>' +
+            '<td><span class="customerslist-status-badge ' + getStatusClass(display.status) + '">' + getStatusLabel(display.status) + '</span></td>' +
             '</tr>';
+
+        cardsHtml +=
+            '<div class="customerslist-card" data-id="' + display.id + '">' +
+            '<div class="customerslist-card-top">' +
+            '<div class="customerslist-avatar"><i class="material-symbols-outlined">' + display.icon + '</i></div>' +
+            '<div class="customerslist-card-identity">' +
+            '<strong class="customerslist-card-name">' + escapeHtml(display.name) + '</strong>' +
+            '<span class="customerslist-card-email">' + escapeHtml(display.email) + '</span>' +
+            '</div>' +
+            '<span class="customerslist-status-badge ' + getStatusClass(display.status) + '">' + getStatusLabel(display.status) + '</span>' +
+            '</div>' +
+            '<div class="customerslist-card-body">' +
+            '<div class="customerslist-card-row"><span class="customerslist-card-label">Teléfono</span><span>' + (escapeHtml(display.phone) || '—') + '</span></div>' +
+            '<div class="customerslist-card-row"><span class="customerslist-card-label">Dirección</span><span title="' + escapeHtml(display.address || '') + '">' + (display.address ? escapeHtml(display.address) : '—') + '</span></div>' +
+            '<div class="customerslist-card-row"><span class="customerslist-card-label">ID</span><code style="font-size: 12px;">' + idCorto + '</code></div>' +
+            '</div>' +
+            '</div>';
     });
-    
+
     elements.tableBody.innerHTML = html;
-    
+    if (elements.cardsGrid) elements.cardsGrid.innerHTML = cardsHtml;
+
     if (elements.totalCustomers) {
         elements.totalCustomers.textContent = customers.length;
     }
-    
-    document.querySelectorAll('.customerslist-btn-edit').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            var id = this.dataset.id;
-            editCustomer(id);
-        });
-    });
-    
-    document.querySelectorAll('.customerslist-btn-delete').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            var id = this.dataset.id;
-            var name = this.dataset.name;
-            showDeleteModal('customer', id, name);
-        });
-    });
 }
 
 // ========================================
@@ -329,19 +336,19 @@ async function editCustomer(id) {
             await mostrarError('Cliente no encontrado', 'No se encontró el cliente que deseas editar.');
             return;
         }
-        
+
         isEditMode = true;
         elements.customerId.value = customer.id;
         elements.customerName.value = customer.nombre || '';
         elements.customerEmail.value = customer.email || '';
         elements.customerPhone.value = customer.direccion?.telefono1 || '';
-        elements.customerAddress.value = customer.direccion ? 
+        elements.customerAddress.value = customer.direccion ?
             (customer.direccion.calle || '') + ' ' + (customer.direccion.numeroExterior || '') + ' ' + (customer.direccion.colonia || '') + ' ' + (customer.direccion.ciudad || '') + ' ' + (customer.direccion.estado || '') : '';
         elements.customerStatus.value = customer.estado || 'activo';
         elements.customerIcon.value = customer.icon || 'person';
         elements.customerCreatedAt.value = formatDate(customer.fechaRegistro);
         elements.modalTitle.textContent = 'Editar Cliente';
-        
+
         showModal(elements.customerModal);
     } catch (error) {
         console.error('Error al cargar cliente para editar:', error);
@@ -351,23 +358,23 @@ async function editCustomer(id) {
 
 async function saveCustomer(event) {
     event.preventDefault();
-    
+
     var name = elements.customerName.value.trim();
     if (!name) {
         await mostrarError('Campo requerido', 'El nombre es obligatorio.');
         elements.customerName.focus();
         return;
     }
-    
+
     var email = elements.customerEmail.value.trim();
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         await mostrarError('Email inválido', 'Ingrese un correo electrónico válido.');
         elements.customerEmail.focus();
         return;
     }
-    
+
     var customerId = elements.customerId.value;
-    
+
     var customerData = {
         nombre: name,
         email: email,
@@ -378,21 +385,21 @@ async function saveCustomer(event) {
         estado: elements.customerStatus.value,
         icon: elements.customerIcon.value.trim() || 'person'
     };
-    
+
     // Confirmación antes de guardar
     var confirmResult = await mostrarConfirmacion(
         '¿Guardar cambios?',
         'Estás a punto de actualizar el cliente "' + name + '".',
         'Sí, guardar'
     );
-    
+
     if (!confirmResult.isConfirmed) {
         mostrarToast('Edición cancelada', 'info');
         return;
     }
-    
+
     mostrarLoading('Actualizando cliente...');
-    
+
     try {
         var updatedCustomer = await CustomerService.updateProfile(customerId, customerData);
         cerrarLoading();
@@ -427,7 +434,7 @@ async function showDeleteModal(type, id, name) {
         '¿Estás seguro de que quieres eliminar a "' + name + '"? Esta acción no se puede deshacer.',
         'Sí, eliminar'
     );
-    
+
     if (result.isConfirmed) {
         deleteTarget = { type: type, id: id, name: name };
         await confirmDelete();
@@ -447,13 +454,13 @@ async function confirmDelete() {
 // ========================================
 function initEventListeners() {
     elements.customerForm?.addEventListener('submit', saveCustomer);
-    elements.closeModalBtn?.addEventListener('click', function() { hideModal(elements.customerModal); });
-    
+    elements.closeModalBtn?.addEventListener('click', function () { hideModal(elements.customerModal); });
+
     elements.confirmDeleteBtn?.addEventListener('click', confirmDelete);
-    elements.cancelDeleteBtn?.addEventListener('click', function() { deleteTarget = { type: null, id: null, name: null }; });
-    elements.closeDeleteModalBtn?.addEventListener('click', function() { deleteTarget = { type: null, id: null, name: null }; });
-    
-    document.addEventListener('keydown', function(e) {
+    elements.cancelDeleteBtn?.addEventListener('click', function () { deleteTarget = { type: null, id: null, name: null }; });
+    elements.closeDeleteModalBtn?.addEventListener('click', function () { deleteTarget = { type: null, id: null, name: null }; });
+
+    document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
             if (elements.deleteModal?.style.display === 'flex') {
                 deleteTarget = { type: null, id: null, name: null };
@@ -462,11 +469,11 @@ function initEventListeners() {
             if (elements.customerModal?.style.display === 'flex') hideModal(elements.customerModal);
         }
     });
-    
-    elements.customerModal?.addEventListener('click', function(e) {
+
+    elements.customerModal?.addEventListener('click', function (e) {
         if (e.target === elements.customerModal) hideModal(elements.customerModal);
     });
-    elements.deleteModal?.addEventListener('click', function(e) {
+    elements.deleteModal?.addEventListener('click', function (e) {
         if (e.target === elements.deleteModal) {
             deleteTarget = { type: null, id: null, name: null };
             hideModal(elements.deleteModal);
@@ -488,7 +495,7 @@ function syncDarkMode() {
     }
 }
 
-document.addEventListener('themeChanged', function(e) {
+document.addEventListener('themeChanged', function (e) {
     if (e.detail.isDarkMode) document.body.classList.add('dark-mode');
     else document.body.classList.remove('dark-mode');
 });
@@ -498,13 +505,13 @@ document.addEventListener('themeChanged', function(e) {
 // ========================================
 export async function readCustomersController() {
     console.log('📋 Read Customers Controller - Listado y gestión de clientes');
-    
+
     cacheElements();
     syncDarkMode();
     initEventListeners();
-    
+
     await loadCustomers();
-    
+
     console.log('✅ Read Customers page loaded');
 }
 

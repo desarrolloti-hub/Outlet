@@ -479,6 +479,7 @@
     padding: 4px 8px;
     transition: all 0.2s ease;
     border-radius: 4px;
+    flex-shrink: 0;
 }
 
 .shipping-action-btn:hover {
@@ -505,6 +506,89 @@
 .shipping-actions-cell {
     display: flex;
     gap: 4px;
+}
+
+/* ========================================
+   GRID DE TARJETAS (RESPONSIVE - MÓVIL/TABLET)
+   ======================================== */
+.shipping-cards-grid {
+    display: none;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    padding: var(--outlet-spacing-md) var(--outlet-spacing-lg);
+}
+
+.shipping-card {
+    background: var(--outlet-bg-container-low);
+    border: 1px solid var(--outlet-border-soft);
+    border-radius: 14px;
+    padding: 16px;
+    transition: all 0.2s ease;
+    min-width: 0;
+}
+
+.shipping-card:hover {
+    border-color: var(--outlet-gold);
+}
+
+.shipping-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.shipping-card-number {
+    font-size: 0.9rem;
+}
+
+.shipping-card-customer {
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--outlet-border-soft);
+}
+
+.shipping-card-customer-name {
+    font-weight: 500;
+    color: var(--outlet-text-primary);
+    font-size: 0.85rem;
+}
+
+.shipping-card-customer-email {
+    color: var(--outlet-text-secondary);
+    font-size: 0.7rem;
+}
+
+.shipping-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.shipping-card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.8rem;
+    color: var(--outlet-text-primary);
+}
+
+.shipping-card-label {
+    color: var(--outlet-text-secondary);
+    font-size: 0.7rem;
+    flex-shrink: 0;
+}
+
+.shipping-card-actions {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    padding-top: 10px;
+    border-top: 1px solid var(--outlet-border-soft);
 }
 
 /* ========================================
@@ -841,6 +925,18 @@
         font-size: 0.75rem;
     }
 
+    /* Ocultar tabla, mostrar tarjetas */
+    .shipping-table-wrapper {
+        display: none;
+    }
+
+    .shipping-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 14px;
+        padding: var(--outlet-spacing-sm) var(--outlet-spacing-md);
+    }
+
     .shipping-actions-cell {
         flex-wrap: wrap;
     }
@@ -887,11 +983,14 @@
         font-size: 1rem;
     }
 
-    .shipping-table th:nth-child(3),
-    .shipping-table td:nth-child(3),
-    .shipping-table th:nth-child(4),
-    .shipping-table td:nth-child(4) {
-        display: none;
+    .shipping-cards-grid {
+        grid-template-columns: 1fr;
+        padding: var(--outlet-spacing-sm);
+        gap: 10px;
+    }
+
+    .shipping-card {
+        padding: 12px;
     }
 }
 
