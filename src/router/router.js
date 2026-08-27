@@ -196,7 +196,7 @@ function resolveRoute(path) {
         return { route: routes['/productsCustomer'], params: { id: customerProductMatch[1] } };
     }
 
-    return { route: routes['/404'] || routes['/'], params: {} };
+    return { route: routes['/'], params: {} };
 }
 
 /**
@@ -303,6 +303,18 @@ async function handleRoute() {
     // Buscar ruta
     const resolvedRoute = resolveRoute(path);
     const route = resolvedRoute.route;
+
+    // ✅ Si la ruta no existe, redirigir silenciosamente al inicio
+    // (ya no se muestra una página de error 404)
+    const normalizedPath = path.startsWith('/product/') ? path.replace(/^\/product\//, '/products/') : path;
+    const isKnownRoute = !!routes[normalizedPath] ||
+        /^\/products\/([^/]+)$/.test(normalizedPath) ||
+        /^\/productsCustomer\/([^/]+)$/.test(normalizedPath);
+
+    if (!isKnownRoute) {
+        window.history.replaceState({}, '', '/');
+    }
+
     try {
         // Cargar vista
         const response = await fetch(route.view);

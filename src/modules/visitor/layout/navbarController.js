@@ -93,6 +93,7 @@ function handleSearchKeydown(e) {
                     window.location.href = firstResult.dataset.url;
                 }
                 closeSearchResults();
+                closeMobileSearch();
                 return;
             }
 
@@ -103,6 +104,7 @@ function handleSearchKeydown(e) {
                 window.location.href = `${basePath}?search=${encodeURIComponent(termino)}`;
             }
             closeSearchResults();
+            closeMobileSearch();
         }
     }
 }
@@ -250,6 +252,7 @@ function renderSearchResults(products, termino) {
                 window.location.href = url;
             }
             closeSearchResults();
+            closeMobileSearch();
         });
     });
 }
@@ -383,11 +386,20 @@ function setupSearchEvents() {
         clearBtn.addEventListener('click', clearSearch);
     }
 
+    const mobileCloseSearchBtn = document.getElementById('searchMobileCloseBtn');
+    if (mobileCloseSearchBtn) {
+        mobileCloseSearchBtn.addEventListener('click', () => {
+            closeMobileSearch();
+        });
+    }
+
     document.addEventListener('click', handleSearchOutside);
+    document.addEventListener('click', handleMobileSearchOutside);
 
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             closeSearchResults();
+            closeMobileSearch();
             const searchInput = document.getElementById('searchInput');
             if (searchInput) {
                 searchInput.blur();
@@ -397,6 +409,114 @@ function setupSearchEvents() {
 
     // Mostrar placeholder inicial
     showSearchPlaceholder('Escribe para buscar productos');
+}
+
+/**
+ * Abre el buscador en modo móvil (invocado desde "BUSCAR" del menú hamburguesa)
+ */
+function openMobileSearch() {
+    closeMobileMenu();
+
+    const searchContainer = document.getElementById('searchContainer');
+    if (!searchContainer) return;
+
+    searchContainer.classList.add('mobile-search-active');
+    document.body.classList.add('mobile-search-open');
+
+    setTimeout(() => {
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) searchInput.focus();
+    }, 320);
+}
+
+/**
+ * Cierra el buscador móvil
+ */
+function closeMobileSearch() {
+    const searchContainer = document.getElementById('searchContainer');
+    if (searchContainer && searchContainer.classList.contains('mobile-search-active')) {
+        searchContainer.classList.remove('mobile-search-active');
+        document.body.classList.remove('mobile-search-open');
+        closeSearchResults();
+    }
+}
+
+/**
+ * Cierra el buscador móvil al hacer click fuera de él
+ */
+function handleMobileSearchOutside(e) {
+    const searchContainer = document.getElementById('searchContainer');
+    if (!searchContainer || !searchContainer.classList.contains('mobile-search-active')) return;
+
+    if (!searchContainer.contains(e.target) && e.target.id !== 'mobileSearchBtn') {
+        closeMobileSearch();
+    }
+}
+
+// ========================================
+// CATEGORÍAS DENTRO DEL MENÚ MÓVIL
+// ========================================
+
+let mobileCategoriesLoaded = false;
+
+/**
+ * Abre/cierra el submenú de categorías dentro del menú móvil
+ * y carga las categorías reales (mismas que el mega menú de escritorio)
+ * la primera vez que se abre.
+ */
+function toggleMobileCategories(btn) {
+    const list = document.getElementById('mobileCategoriesList');
+    if (!list) return;
+
+    const isOpen = list.classList.contains('open');
+
+    if (isOpen) {
+        list.classList.remove('open');
+        btn.classList.remove('open');
+        return;
+    }
+
+    list.classList.add('open');
+    btn.classList.add('open');
+
+    if (!mobileCategoriesLoaded) {
+        loadMobileCategories(list);
+    }
+}
+
+async function loadMobileCategories(list) {
+    try {
+        const categories = await CategoryService.getAll({}, true);
+        const items = (categories || []).filter(cat => cat && cat.name).slice(0, 8);
+
+        if (!items.length) {
+            list.innerHTML = '<li class="mobile-categories-empty">No hay categorías disponibles</li>';
+            return;
+        }
+
+        list.innerHTML = items.map((cat) => {
+            const categoryKey = cat.slug || cat.name;
+            return `<li><a href="/collection?category=${encodeURIComponent(categoryKey)}" data-link>${cat.name}</a></li>`;
+        }).join('');
+
+        mobileCategoriesLoaded = true;
+
+        list.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                closeMobileMenu();
+                const href = link.getAttribute('href');
+                if (window.navigateTo) {
+                    window.navigateTo(href);
+                } else {
+                    window.location.href = href;
+                }
+            });
+        });
+    } catch (error) {
+        console.error('Error cargando categorías en el menú móvil:', error);
+        list.innerHTML = '<li class="mobile-categories-empty">No se pudieron cargar las categorías</li>';
+    }
 }
 
 function bindEvents() {
@@ -430,6 +550,20 @@ function bindEvents() {
         }
 
         newLink.addEventListener('click', (e) => {
+            if (newLink.id === 'mobileCategoriesBtn') {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleMobileCategories(newLink);
+                return;
+            }
+
+            if (newLink.id === 'mobileSearchBtn') {
+                e.preventDefault();
+                e.stopPropagation();
+                openMobileSearch();
+                return;
+            }
+
             const href = newLink.getAttribute('href');
 
             if (!href || href === '#') {
@@ -496,6 +630,7 @@ function bindEvents() {
     document.addEventListener('route:changed', () => {
         closeMobileMenu();
         closeMegaMenu();
+        closeMobileSearch();
         updateCartCount();
         updateWishlistCount();
         setActiveLink();
@@ -552,6 +687,11 @@ function closeMobileMenu() {
     }
 
     document.body.classList.remove('menu-open');
+
+    const mobileCategoriesList = document.getElementById('mobileCategoriesList');
+    const mobileCategoriesBtn = document.getElementById('mobileCategoriesBtn');
+    if (mobileCategoriesList) mobileCategoriesList.classList.remove('open');
+    if (mobileCategoriesBtn) mobileCategoriesBtn.classList.remove('open');
 
     const overlay = document.querySelector('.mobile-overlay');
 
@@ -614,19 +754,6 @@ function initMarquee() {
 
 function initMegaMenu() {
     if (!elements.categoriesBtn || !elements.megaMenu) return;
-
-    if (window.matchMedia("(max-width: 900px)").matches) {
-        elements.categoriesBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-
-            if (window.navigateTo) {
-                window.navigateTo('/categories');
-            } else {
-                window.location.href = '/categories';
-            }
-        });
-    }
 
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && elements.megaMenu?.classList.contains('open')) {

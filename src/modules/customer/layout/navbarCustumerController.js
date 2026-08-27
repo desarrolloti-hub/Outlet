@@ -15,6 +15,7 @@ let isApplyingTheme = false;
 let eventCleanupFunctions = [];
 let searchTimeout = null;
 let isProfileMenuOpen = false;
+let mobileCategoriesLoaded = false;
 
 // ===== CONFIGURACIÓN DE TEMA =====
 const THEME_KEY = 'outlet_theme';
@@ -538,6 +539,7 @@ function handleSearchKeydown(e) {
             if (firstResult && firstResult.dataset && firstResult.dataset.url) {
                 navigateTo(firstResult.dataset.url);
                 closeSearchResults();
+                closeMobileSearch();
                 return;
             }
 
@@ -545,6 +547,7 @@ function handleSearchKeydown(e) {
             const basePath = session ? '/homeCustomer' : '/';
             navigateTo(`${basePath}?search=${encodeURIComponent(termino)}`);
             closeSearchResults();
+            closeMobileSearch();
         }
     }
 }
@@ -688,6 +691,7 @@ function renderSearchResults(products, termino) {
             const url = item.dataset.url;
             navigateTo(url);
             closeSearchResults();
+            closeMobileSearch();
         });
     });
 }
@@ -823,6 +827,117 @@ function closeMobileMenu() {
         if (hamburgerBtn) hamburgerBtn.classList.remove('open');
         if (overlay) overlay.classList.remove('open');
         document.body.classList.remove('menu-open');
+    }
+
+    const mobileCategoriesList = document.getElementById('mobileCategoriesList');
+    const mobileCategoriesBtn = document.getElementById('mobileCategoriesBtn');
+    if (mobileCategoriesList) mobileCategoriesList.classList.remove('open');
+    if (mobileCategoriesBtn) mobileCategoriesBtn.classList.remove('open');
+}
+
+// ========================================
+// BUSCADOR EN MODO MÓVIL
+// ========================================
+
+/**
+ * Abre el buscador en modo móvil (invocado desde "Buscar" del menú hamburguesa)
+ */
+function openMobileSearch() {
+    closeMobileMenu();
+
+    const searchContainer = document.getElementById('searchContainer');
+    if (!searchContainer) return;
+
+    searchContainer.classList.add('mobile-search-active');
+    document.body.classList.add('mobile-search-open');
+
+    setTimeout(() => {
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) searchInput.focus();
+    }, 320);
+}
+
+/**
+ * Cierra el buscador móvil
+ */
+function closeMobileSearch() {
+    const searchContainer = document.getElementById('searchContainer');
+    if (searchContainer && searchContainer.classList.contains('mobile-search-active')) {
+        searchContainer.classList.remove('mobile-search-active');
+        document.body.classList.remove('mobile-search-open');
+        closeSearchResults();
+    }
+}
+
+/**
+ * Cierra el buscador móvil al hacer click fuera de él
+ */
+function handleMobileSearchOutside(e) {
+    const searchContainer = document.getElementById('searchContainer');
+    if (!searchContainer || !searchContainer.classList.contains('mobile-search-active')) return;
+
+    if (!searchContainer.contains(e.target) && e.target.id !== 'mobileSearchBtn') {
+        closeMobileSearch();
+    }
+}
+
+// ========================================
+// CATEGORÍAS DENTRO DEL MENÚ MÓVIL
+// ========================================
+
+/**
+ * Abre/cierra el submenú de categorías dentro del menú móvil
+ * y carga las categorías reales (mismas que el mega menú de escritorio)
+ * la primera vez que se abre.
+ */
+function toggleMobileCategories(btn) {
+    const list = document.getElementById('mobileCategoriesList');
+    if (!list) return;
+
+    const isOpen = list.classList.contains('open');
+
+    if (isOpen) {
+        list.classList.remove('open');
+        btn.classList.remove('open');
+        return;
+    }
+
+    list.classList.add('open');
+    btn.classList.add('open');
+
+    if (!mobileCategoriesLoaded) {
+        loadMobileCategories(list);
+    }
+}
+
+async function loadMobileCategories(list) {
+    try {
+        const categories = await CategoryService.getAll({}, true);
+        const items = (categories || []).filter(cat => cat && cat.name).slice(0, 8);
+
+        if (!items.length) {
+            list.innerHTML = '<li class="mobile-categories-empty">No hay categorías disponibles</li>';
+            return;
+        }
+
+        const session = JSON.parse(localStorage.getItem('outlet_customer'));
+        const basePath = session ? '/homeCustomer' : '/';
+
+        list.innerHTML = items.map((cat) => {
+            const categoryKey = cat.slug || cat.name;
+            return `<li><a href="${basePath}?category=${encodeURIComponent(categoryKey)}" data-link>${cat.name}</a></li>`;
+        }).join('');
+
+        mobileCategoriesLoaded = true;
+
+        list.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                closeMobileMenu();
+            });
+        });
+    } catch (error) {
+        console.error('Error cargando categorías en el menú móvil:', error);
+        list.innerHTML = '<li class="mobile-categories-empty">No se pudieron cargar las categorías</li>';
     }
 }
 
@@ -1012,9 +1127,13 @@ function setupNavbarEvents() {
     document.addEventListener('click', handleSearchOutside);
     eventCleanupFunctions.push(() => document.removeEventListener('click', handleSearchOutside));
 
+    document.addEventListener('click', handleMobileSearchOutside);
+    eventCleanupFunctions.push(() => document.removeEventListener('click', handleMobileSearchOutside));
+
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             closeSearchResults();
+            closeMobileSearch();
             const searchInput = document.getElementById('searchInput');
             if (searchInput) {
                 searchInput.blur();
@@ -1053,6 +1172,45 @@ function setupNavbarEvents() {
         mobileLogoutBtn.addEventListener('click', handler);
         eventCleanupFunctions.push(() => mobileLogoutBtn.removeEventListener('click', handler));
     }
+
+    // CATEGORÍAS DENTRO DEL MENÚ MÓVIL
+    const mobileCategoriesBtn = document.getElementById('mobileCategoriesBtn');
+    if (mobileCategoriesBtn) {
+        const handler = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleMobileCategories(mobileCategoriesBtn);
+        };
+        mobileCategoriesBtn.addEventListener('click', handler);
+        eventCleanupFunctions.push(() => mobileCategoriesBtn.removeEventListener('click', handler));
+    }
+
+    // BUSCADOR DENTRO DEL MENÚ MÓVIL
+    const mobileSearchBtn = document.getElementById('mobileSearchBtn');
+    if (mobileSearchBtn) {
+        const handler = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            openMobileSearch();
+        };
+        mobileSearchBtn.addEventListener('click', handler);
+        eventCleanupFunctions.push(() => mobileSearchBtn.removeEventListener('click', handler));
+    }
+
+    const searchMobileCloseBtn = document.getElementById('searchMobileCloseBtn');
+    if (searchMobileCloseBtn) {
+        const handler = () => closeMobileSearch();
+        searchMobileCloseBtn.addEventListener('click', handler);
+        eventCleanupFunctions.push(() => searchMobileCloseBtn.removeEventListener('click', handler));
+    }
+
+    // Cerrar menú/buscador móvil al navegar
+    const routeChangeHandler = () => {
+        closeMobileMenu();
+        closeMobileSearch();
+    };
+    document.addEventListener('route:changed', routeChangeHandler);
+    eventCleanupFunctions.push(() => document.removeEventListener('route:changed', routeChangeHandler));
 
     updateProfileDropdown();
 

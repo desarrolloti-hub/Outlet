@@ -20,8 +20,10 @@ body {
 /* Hacer espacio adicional específico para la barra de categorías cuando exista */
 .category-nav {
     position: relative;
-    z-index: 900; /* por debajo del navbar (1000) pero encima del resto */
-    margin-top: 0; /* el body ya añade el padding necesario */
+    z-index: 900;
+    /* por debajo del navbar (1000) pero encima del resto */
+    margin-top: 0;
+    /* el body ya añade el padding necesario */
 }
 
 .OUTLET-nav {
@@ -121,6 +123,10 @@ body.dark-mode .nav-gold-line {
     background: #ffffff;
     transition: background 0.3s ease;
     position: relative;
+    /* Mantiene el logo y los iconos (cuenta, wishlist, carrito) visibles
+       y clickeables por encima del menú móvil (z-index 9999) cuando este
+       está abierto. */
+    z-index: 10002;
 }
 
 body.dark-mode .nav-container {
@@ -1147,6 +1153,110 @@ body.menu-open {
     .search-container {
         display: none;
     }
+}
+
+/* ============================================================
+   BUSCADOR EN MODO MÓVIL (activado desde el menú hamburguesa)
+   ============================================================ */
+.search-container.mobile-search-active {
+    display: flex !important;
+    align-items: center;
+    gap: 8px;
+    position: fixed;
+    top: var(--outlet-nav-height);
+    left: 0;
+    right: 0;
+    max-width: none;
+    margin: 0;
+    padding: 12px 16px;
+    background: #ffffff;
+    z-index: 10005;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+body.dark-mode .search-container.mobile-search-active {
+    background: #0a1c2c;
+}
+
+.search-container.mobile-search-active .search-input-wrapper {
+    flex: 1;
+}
+
+.search-mobile-close-btn {
+    display: none;
+    width: 36px;
+    height: 36px;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 50%;
+    background: #f5f5f5;
+    color: #4f4635;
+    cursor: pointer;
+    flex-shrink: 0;
+    font-size: 14px;
+}
+
+body.dark-mode .search-mobile-close-btn {
+    background: #0f243d;
+    color: #b0c4de;
+}
+
+.search-container.mobile-search-active .search-mobile-close-btn {
+    display: flex;
+}
+
+/* ============================================================
+   SUBMENÚ DE CATEGORÍAS DENTRO DEL MENÚ MÓVIL
+   ============================================================ */
+.mobile-categories-list {
+    list-style: none;
+    margin: 6px 0 0;
+    padding: 0;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+}
+
+.mobile-categories-list.open {
+    max-height: 600px;
+    opacity: 1;
+}
+
+.mobile-categories-list li {
+    margin: 12px 0 !important;
+}
+
+.mobile-categories-list li a {
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    letter-spacing: 1px !important;
+    color: #4f4635 !important;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+body.dark-mode .mobile-categories-list li a {
+    color: #b0c4de !important;
+}
+
+.mobile-categories-list .mobile-categories-loading,
+.mobile-categories-list .mobile-categories-empty {
+    font-size: 12px !important;
+    opacity: 0.6;
+    text-transform: none;
+    letter-spacing: normal;
+}
+
+#mobileCategoriesBtn .fa-chevron-down {
+    font-size: 11px;
+    margin-left: 6px;
+    transition: transform 0.3s ease;
+}
+
+#mobileCategoriesBtn.open .fa-chevron-down {
+    transform: rotate(180deg);
 }
 
 @media (max-width: 768px) {

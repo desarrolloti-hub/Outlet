@@ -7,10 +7,28 @@
 
 <!-- Inline fallback styles to ensure visitor navbar stays fixed and content is not hidden under it -->
 <style>
-:root{ --outlet-nav-height: 81px; }
-body{ padding-top: var(--outlet-nav-height) !important; }
-.OUTLET-nav{ position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: #ffffff; }
-.category-nav{ position: relative; z-index: 900; margin-top: 0; }
+    :root {
+        --outlet-nav-height: 81px;
+    }
+
+    body {
+        padding-top: var(--outlet-nav-height) !important;
+    }
+
+    .OUTLET-nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        background: #ffffff;
+    }
+
+    .category-nav {
+        position: relative;
+        z-index: 900;
+        margin-top: 0;
+    }
 </style>
 
 <nav class="OUTLET-nav">
@@ -97,6 +115,9 @@ body{ padding-top: var(--outlet-nav-height) !important; }
                     <i class="fas fa-times"></i>
                 </button>
             </div>
+            <button class="search-mobile-close-btn" id="searchMobileCloseBtn" aria-label="Cerrar buscador">
+                <i class="fas fa-times"></i>
+            </button>
             <!-- Resultados del buscador (dropdown) -->
             <div class="search-results-dropdown" id="searchResultsDropdown">
                 <div class="search-placeholder">
@@ -138,12 +159,18 @@ body{ padding-top: var(--outlet-nav-height) !important; }
             <li><a href="/collection?category=mujer" data-link><i class="fas fa-female"></i> MUJER</a></li>
             <li><a href="/collection?category=hombre" data-link><i class="fas fa-male"></i> HOMBRE</a></li>
             <li><a href="/collection?category=kids" data-link><i class="fas fa-child"></i> NIÑOS</a></li>
-            <li><a href="#" id="mobileCategoriesBtn"><i class="fas fa-th-large"></i> CATEGORÍAS</a></li>
+            <li>
+                <a href="#" id="mobileCategoriesBtn"><i class="fas fa-th-large"></i> CATEGORÍAS <i
+                        class="fas fa-chevron-down"></i></a>
+                <ul class="mobile-categories-list" id="mobileCategoriesList">
+                    <li class="mobile-categories-loading">Cargando categorías...</li>
+                </ul>
+            </li>
             <li><a href="/sale" data-link><i class="fas fa-tags"></i> REBAJAS</a></li>
             <li>
                 <hr class="mobile-divider">
             </li>
-            <li><a href="/search" data-link><i class="fas fa-search"></i> BUSCAR</a></li>
+            <li><a href="#" id="mobileSearchBtn"><i class="fas fa-search"></i> BUSCAR</a></li>
             <li><a href="/login" data-link><i class="fas fa-user-circle"></i> MI CUENTA</a></li>
             <li><a href="/wishlist" data-link><i class="fas fa-heart"></i> LISTA DE DESEOS</a></li>
             <li><a href="/cart" data-link><i class="fas fa-shopping-cart"></i> CARRITO</a></li>

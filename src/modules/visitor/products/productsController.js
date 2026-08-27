@@ -206,6 +206,8 @@ async function loadProductFromId() {
             return;
         }
 
+        actualizarBreadcrumbCategoria(product);
+
         var titleElement = document.querySelector('.product-title');
         var priceElement = document.querySelector('.product-price');
         var descriptionElement = document.querySelector('.product-description');
@@ -238,6 +240,39 @@ async function loadProductFromId() {
     } catch (error) {
         console.error('❌ Error cargando el producto por ID:', error);
     }
+}
+
+// ========================================
+// Resuelve la categoría/género real del producto para
+// construir el breadcrumb (MUJER / HOMBRE / NIÑOS) y su link
+// a la colección correspondiente. Mismo mapeo que se usa en
+// collectionController y en la versión customer.
+// ========================================
+function resolverCategoriaBreadcrumb(product) {
+    var valor = String(
+        (product && (product.genero || product.categoria)) || ''
+    ).toLowerCase();
+
+    var mapa = {
+        mujer: { key: 'mujer', label: 'MUJER', aliases: ['mujer', 'women', 'woman', 'female', 'femenino'] },
+        hombre: { key: 'hombre', label: 'HOMBRE', aliases: ['hombre', 'men', 'man', 'male', 'masculino'] },
+        kids: { key: 'kids', label: 'NIÑOS', aliases: ['kids', 'niños', 'ninos', 'kid', 'child', 'children', 'infantil'] }
+    };
+
+    var match = Object.keys(mapa).find(function (clave) {
+        return mapa[clave].aliases.some(function (alias) { return valor.indexOf(alias) !== -1; });
+    });
+
+    return match ? mapa[match] : mapa.mujer;
+}
+
+function actualizarBreadcrumbCategoria(product) {
+    var link = document.getElementById('breadcrumbCategory');
+    if (!link) return;
+
+    var categoria = resolverCategoriaBreadcrumb(product);
+    link.textContent = categoria.label;
+    link.setAttribute('href', '/collection?category=' + categoria.key);
 }
 
 // ========================================
