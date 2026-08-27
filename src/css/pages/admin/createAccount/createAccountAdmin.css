@@ -4,7 +4,7 @@
    ======================================== */
 
 /* ===== CONTENEDOR PRINCIPAL ===== */
-.outlet-admin-container {
+.outlet-createaccount-container {
     min-height: 100vh;
     display: flex;
     align-items: center;
@@ -119,18 +119,18 @@
 }
 
 /* Encabezado */
-.outlet-admin-header {
+.outlet-createaccount-header {
     margin-bottom: 32px;
     text-align: center;
 }
 
 @media (min-width: 768px) {
-    .outlet-admin-header {
+    .outlet-createaccount-header {
         text-align: left;
     }
 }
 
-.outlet-admin-badge {
+.outlet-createaccount-badge {
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.2em;
@@ -139,7 +139,7 @@
     margin-bottom: 12px;
 }
 
-.outlet-admin-header h1 {
+.outlet-createaccount-header h1 {
     font-family: var(--outlet-font-secondary);
     font-size: 36px;
     font-weight: 700;
@@ -155,7 +155,7 @@
 }
 
 @media (min-width: 768px) {
-    .outlet-admin-header h1 {
+    .outlet-createaccount-header h1 {
         font-size: 42px;
     }
 }
@@ -270,7 +270,7 @@
 }
 
 .outlet-admin-checkbox input {
-    width: 16px; 
+    width: 16px;
     height: 16px;
     cursor: pointer;
     accent-color: var(--outlet-gold);
@@ -383,22 +383,22 @@
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
-    .outlet-admin-container {
+    .outlet-createaccount-container {
         padding: 12px;
     }
-    
+
     .outlet-admin-layout {
         min-height: auto;
     }
-    
+
     .outlet-admin-panel-form {
         padding: 32px 20px;
     }
-    
-    .outlet-admin-header h1 {
+
+    .outlet-createaccount-header h1 {
         font-size: 32px;
     }
-    
+
     .outlet-admin-password-requirements {
         flex-direction: column;
         gap: 6px;
@@ -427,6 +427,7 @@
         transform: translateX(100%);
         opacity: 0;
     }
+
     to {
         transform: translateX(0);
         opacity: 1;
@@ -441,6 +442,7 @@
         text-align: center;
     }
 }
+
 /* ========================================
    INTEGRACIÓN CON NAVBAR LATERAL - VERSIÓN OPTIMIZADA
    ======================================== */
@@ -451,7 +453,7 @@ body {
     min-height: 100vh;
 }
 
-.outlet-admin-container {
+.outlet-createaccount-container {
     margin-left: 280px;
     transition: margin-left 0.3s ease;
     width: auto;
@@ -460,7 +462,7 @@ body {
     box-sizing: border-box;
 }
 
-body:has(.OUTLET-admin-nav.collapsed) .outlet-admin-container {
+body:has(.OUTLET-admin-nav.collapsed) .outlet-createaccount-container {
     margin-left: 80px;
     max-width: calc(100% - 80px);
 }
@@ -470,34 +472,34 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-admin-container {
    ======================================== */
 
 @media (max-width: 1024px) {
-    .outlet-admin-container {
+    .outlet-createaccount-container {
         margin-left: 240px;
         max-width: calc(100% - 240px);
         padding: var(--outlet-spacing-lg);
     }
-    
-    body:has(.OUTLET-admin-nav.collapsed) .outlet-admin-container {
+
+    body:has(.OUTLET-admin-nav.collapsed) .outlet-createaccount-container {
         margin-left: 70px;
         max-width: calc(100% - 70px);
     }
 }
 
 @media (max-width: 768px) {
-    .outlet-admin-container {
+    .outlet-createaccount-container {
         margin-left: 0 !important;
         max-width: 100% !important;
         padding: 12px;
     }
-    
+
     .outlet-admin-layout {
         grid-template-columns: 1fr;
         min-height: auto;
     }
-    
+
     .outlet-admin-panel-image {
         display: none;
     }
-    
+
     .outlet-admin-panel-form {
         padding: 28px 20px;
     }
@@ -507,8 +509,8 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-admin-container {
     .outlet-admin-panel-form {
         padding: 20px 16px;
     }
-    
-    .outlet-admin-header h1 {
+
+    .outlet-createaccount-header h1 {
         font-size: 28px;
     }
 }
@@ -517,16 +519,16 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-admin-container {
    REDUCIR ESPACIOS INTERNOS
    ======================================== */
 
-.outlet-admin-header {
+.outlet-createaccount-header {
     margin-bottom: 28px;
 }
 
-.outlet-admin-header h1 {
+.outlet-createaccount-header h1 {
     font-size: 32px;
 }
 
 @media (max-width: 768px) {
-    .outlet-admin-header h1 {
+    .outlet-createaccount-header h1 {
         font-size: 28px;
     }
 }
@@ -578,7 +580,7 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-admin-container {
     .mobile-menu-btn {
         display: flex;
     }
-    
+
     .OUTLET-admin-nav {
         transform: translateX(-100%);
         transition: transform 0.3s ease;
@@ -589,19 +591,20 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-admin-container {
         z-index: 1050;
         width: 280px !important;
     }
-    
+
     .OUTLET-admin-nav.open {
         transform: translateX(0);
     }
-    
+
     body.menu-open {
         overflow: hidden;
     }
 }
 
-.outlet-admin-container {
+.outlet-createaccount-container {
     transition: margin-left 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
 }
+
 /* ========================================
    MENÚ HAMBURGUESA - ESTILOS GLOBALES
    ======================================== */
@@ -694,7 +697,7 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-admin-container {
     .outlet-mobile-menu-btn {
         display: flex;
     }
-    
+
     /* Ocultar navbar por defecto */
     .OUTLET-admin-nav {
         position: fixed !important;
@@ -708,18 +711,18 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-admin-container {
         overflow-y: auto !important;
         box-shadow: none !important;
     }
-    
+
     /* Navbar abierto */
     .OUTLET-admin-nav.outlet-mobile-open {
         transform: translateX(0) !important;
         box-shadow: 5px 0 25px rgba(0, 0, 0, 0.15) !important;
     }
-    
+
     /* Ajuste para el contenido principal cuando el menú está abierto */
     body.menu-open {
         overflow: hidden;
     }
-    
+
     /* Animación de entrada para el navbar */
     .OUTLET-admin-nav.outlet-mobile-open {
         animation: outletSlideIn 0.3s ease forwards;
@@ -730,6 +733,7 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-admin-container {
     from {
         transform: translateX(-100%);
     }
+
     to {
         transform: translateX(0);
     }
@@ -740,11 +744,11 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-admin-container {
     .outlet-mobile-menu-btn {
         display: none !important;
     }
-    
+
     .outlet-mobile-overlay {
         display: none !important;
     }
-    
+
     .OUTLET-admin-nav {
         transform: translateX(0) !important;
         position: fixed !important;
@@ -755,22 +759,23 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-admin-container {
 
 /* Ajuste para el contenido cuando el navbar está abierto en móvil */
 @media (max-width: 768px) {
+
     body .outlet-categories-container,
     body .categorieslist-container,
     body .updatecategory-container,
     body .outlet-products-container,
-    body .outlet-admin-container,
+    body .outlet-createaccount-container,
     body .productlist-container,
     body .admin-main-content {
         transition: margin-left 0.3s ease, filter 0.3s ease;
     }
-    
+
     /* Cuando el menú está abierto, desenfocar el contenido ligeramente */
     body:has(.OUTLET-admin-nav.outlet-mobile-open) .outlet-categories-container,
     body:has(.OUTLET-admin-nav.outlet-mobile-open) .categorieslist-container,
     body:has(.OUTLET-admin-nav.outlet-mobile-open) .updatecategory-container,
     body:has(.OUTLET-admin-nav.outlet-mobile-open) .outlet-products-container,
-    body:has(.OUTLET-admin-nav.outlet-mobile-open) .outlet-admin-container,
+    body:has(.OUTLET-admin-nav.outlet-mobile-open) .outlet-createaccount-container,
     body:has(.OUTLET-admin-nav.outlet-mobile-open) .productlist-container,
     body:has(.OUTLET-admin-nav.outlet-mobile-open) .admin-main-content {
         filter: blur(2px);
@@ -784,15 +789,15 @@ body:has(.OUTLET-admin-nav.collapsed) .outlet-admin-container {
         -webkit-overflow-scrolling: touch;
         scrollbar-width: thin;
     }
-    
+
     .OUTLET-admin-nav::-webkit-scrollbar {
         width: 4px;
     }
-    
+
     .OUTLET-admin-nav::-webkit-scrollbar-track {
         background: var(--outlet-border-light, #f0f0f0);
     }
-    
+
     .OUTLET-admin-nav::-webkit-scrollbar-thumb {
         background: var(--outlet-gold, #ddab3b);
         border-radius: 4px;

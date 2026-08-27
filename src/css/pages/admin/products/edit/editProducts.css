@@ -617,30 +617,34 @@ body.dark-mode .outlet-preview-price .outlet-price-final {
    TOGGLE SWITCH
    ======================================== */
 
-.outlet-toggle-switch {
+.outlet-featured-toggle {
     display: flex;
     align-items: center;
     gap: 12px;
     flex-wrap: wrap;
 }
 
-.outlet-toggle-switch input {
+.outlet-featured-toggle input {
     display: none;
 }
 
-.outlet-toggle-switch label {
+.outlet-featured-toggle label {
     width: 44px;
     height: 24px;
+    min-width: 44px;
+    flex-shrink: 0;
     background: #e0e0e0;
+    border-radius: 999px;
     cursor: pointer;
     position: relative;
     transition: all 0.25s;
 }
 
-.outlet-toggle-switch label::after {
+.outlet-featured-toggle label::after {
     content: '';
     width: 20px;
     height: 20px;
+    border-radius: 50%;
     background: white;
     position: absolute;
     top: 2px;
@@ -648,17 +652,20 @@ body.dark-mode .outlet-preview-price .outlet-price-final {
     transition: all 0.25s;
 }
 
-.outlet-toggle-switch input:checked+label {
+.outlet-featured-toggle input:checked+label {
     background: var(--outlet-gold, #ddab3b);
 }
 
-.outlet-toggle-switch input:checked+label::after {
+.outlet-featured-toggle input:checked+label::after {
     left: 22px;
 }
 
-.outlet-toggle-switch span {
+.outlet-featured-toggle span {
     font-size: 13px;
     color: var(--outlet-text-secondary, #6b6b6b);
+    flex: 1 1 180px;
+    min-width: 150px;
+    line-height: 1.4;
 }
 
 /* ========================================
@@ -790,7 +797,7 @@ body.dark-mode .outlet-btn-primary {
     color: var(--outlet-black, #1a1a1a);
 }
 
-body.dark-mode .outlet-toggle-switch label {
+body.dark-mode .outlet-featured-toggle label {
     background: var(--outlet-border-color, #2a4a6e);
 }
 

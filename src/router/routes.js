@@ -155,15 +155,15 @@ export const routes = {
         controller: updateAdminController
     },
     "/sales": {
-        view: "public/modules/admin/sale/sales.html",
+        view: "/modules/admin/sale/sales.html",
         controller: salesController
     },
     "/shipping": {
-        view: "public/modules/admin/shipping/shipping.html",
+        view: "/modules/admin/shipping/shipping.html",
         controller: shippingController
     },
     "/adminProfile": {
-        view: "public/modules/admin/profile/adminProfile.html",
+        view: "/modules/admin/profile/adminProfile.html",
         controller: adminProfileController
     },
 

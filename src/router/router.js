@@ -5,6 +5,12 @@
 import { routes } from './routes.js';
 import { AuthService, ROLES } from '../services/authService.js';
 
+// ✅ Evitar que el navegador restaure su propio scroll y compita
+// con el window.scrollTo(0,0) manual que hace este router al navegar
+if ('scrollRestoration' in window.history) {
+    window.history.scrollRestoration = 'manual';
+}
+
 let isNavigating = false;
 
 // ✅ RUTAS PROTEGIDAS - SOLO /cart Y /wishlist
@@ -323,6 +329,8 @@ async function handleRoute() {
 
         // Scroll to top
         window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
 
         console.log(`✅ Vista cargada: ${path}`);
 
