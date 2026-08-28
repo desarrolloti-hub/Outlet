@@ -305,6 +305,25 @@ body.dark-mode .mega-menu-luxury {
     border-bottom: 10px solid #ddab3b;
 }
 
+/* ============================================================
+   FIX MEGA MENÚ — SOLO NAVBAR CUSTOMER
+   Evita que el recuadro se salga de la pantalla en homeCustomer
+   ============================================================ */
+#customerMegaMenuDropdown {
+    left: 0;
+    transform: translateY(15px);
+    min-width: 620px;
+}
+
+.categories-dropdown:hover #customerMegaMenuDropdown {
+    transform: translateY(0);
+}
+
+#customerMegaMenuDropdown::before {
+    left: 30px;
+    transform: translateX(0);
+}
+
 .mega-luxury-container {
     padding: 28px;
     background: #ffffff;
